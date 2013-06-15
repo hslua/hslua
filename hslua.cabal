@@ -6,8 +6,8 @@ License:             BSD3
 Build-type:          Simple
 License-File:        COPYRIGHT
 Copyright:           2007-2012, Gracjan Polak
-Author:              Gracjan Polak <gracjanpolak@gmail.com>
-Maintainer:          Gracjan Polak <gracjanpolak@gmail.com>
+Authors:             Gracjan Polak <gracjanpolak@gmail.com>, Ömer Sinan Ağacan <omeragacan@gmail.com>
+Maintainer:          Ömer Sinan Ağacan <omeragacan@gmail.com>
 Synopsis:            A Lua language interpreter embedding in Haskell
 Description:         The Scripting.Lua module is a wrapper of Lua language interpreter
                      as described in www.lua.org.
@@ -29,7 +29,6 @@ Library
   Exposed-modules:   Scripting.Lua, Scripting.Lua.ConfigFile
   Hs-source-dirs:    src
 
-  include-dirs:      /home/omer/opt/lua-5.1.5/include/, cbits
-  extra-lib-dirs:    /home/omer/opt/lua-5.1.5/lib/
+  include-dirs:      cbits
   extra-libraries:   lua
   C-sources:         cbits/ntrljmp.c
