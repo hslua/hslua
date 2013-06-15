@@ -403,7 +403,7 @@ pushcfunction l f = pushcclosure l f 0
 
 -- | See @lua_strlen@ in Lua Reference Manual.
 strlen :: LuaState -> Int -> IO Int
-strlen l i =  objlen l i
+strlen = objlen
 
 -- | See @lua_type@ in Lua Reference Manual.
 ltype :: LuaState -> Int -> IO LTYPE
@@ -443,19 +443,19 @@ isnoneornil l n = liftM (<=TNIL) (ltype l n)
 
 -- | See @LUA_REGISTRYINDEX@ in Lua Reference Manual.
 registryindex :: Int
-registryindex = (-10000)
+registryindex = -10000
 
 -- | See @LUA_ENVIRONINDEX@ in Lua Reference Manual.
 environindex :: Int
-environindex = (-10001)
+environindex = -10001
 
 -- | See @LUA_GLOBALSINDEX@ in Lua Reference Manual.
 globalsindex :: Int
-globalsindex = (-10002)
+globalsindex = -10002
 
 -- | See @lua_upvalueindex@ in Lua Reference Manual.
 upvalueindex :: Int -> Int
-upvalueindex i = (globalsindex-(i))
+upvalueindex i = globalsindex - i
 
 {-
 The following seem to be really bad idea, as calls from C
@@ -653,8 +653,7 @@ loadstring l script cn = do
                        writeIORef w k
                        F.poke ps (fromIntegral l)
                        return k
-                   else do
-                       return nullPtr
+                   else return nullPtr
     writer <- mkStringReader rd
     res <- withCString cn $ \cn -> c_lua_load l writer nullPtr cn
     freeHaskellFunPtr writer
@@ -664,7 +663,7 @@ loadstring l script cn = do
 
 -- | See @lua_newthread@ in Lua Reference Manual.
 newthread :: LuaState -> IO LuaState
-newthread l = c_lua_newthread l
+newthread = c_lua_newthread
 
 -- | See @lua_newuserdata@ in Lua Reference Manual.
 newuserdata :: LuaState -> Int -> IO (Ptr ())
@@ -827,12 +826,12 @@ maybepeek l n test peek = do
         else return Nothing
 
 instance StackValue LuaInteger where
-    push l x = pushinteger l x
+    push = pushinteger
     peek l n = maybepeek l n isnumber tointeger
     valuetype _ = TNUMBER
 
 instance StackValue LuaNumber where
-    push l x = pushnumber l x
+    push = pushnumber
     peek l n = maybepeek l n isnumber tonumber
     valuetype _ = TNUMBER
 
@@ -847,23 +846,23 @@ instance StackValue Double where
     valuetype _ = TNUMBER
 
 instance StackValue String where
-    push l x = pushstring l x
+    push = pushstring
     peek l n = maybepeek l n isstring tostring
     valuetype _ = TSTRING
 
 instance StackValue Bool where
-    push l x = pushboolean l x
+    push = pushboolean
     peek l n = maybepeek l n isboolean toboolean
     valuetype _ = TBOOLEAN
 
 instance StackValue (FunPtr LuaCFunction) where
-    push l x = pushcfunction l x
+    push = pushcfunction
     peek l n = maybepeek l n iscfunction tocfunction
     valuetype _ = TFUNCTION
 
 -- watch out for the asymetry here
 instance StackValue (Ptr a) where
-    push l x = pushlightuserdata l x
+    push = pushlightuserdata
     peek l n = maybepeek l n isuserdata touserdata
     valuetype _ = TUSERDATA
 
@@ -997,8 +996,7 @@ instance LuaCallProc (IO t) where
                 Just msg <- peek l (-1)
                 pop l 1
                 Prelude.fail msg
-            else do
-                return undefined
+            else undefined
 
 instance (StackValue t) => LuaCallFunc (IO t) where
     callfunc' l f a k = do
@@ -1043,7 +1041,7 @@ hsmethod__gc l = do
 
 hsmethod__call :: LuaState -> IO CInt
 hsmethod__call l = do
-    Just ptr <- peek l (1)
+    Just ptr <- peek l 1
     remove l 1
     stableptr <- F.peek (castPtr ptr)
     f <- deRefStablePtr stableptr
