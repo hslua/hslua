@@ -164,6 +164,13 @@ module Scripting.Lua
     newmetatable,
     argerror,
 
+    -- * Debugging interface
+    LuaDebug(..),
+    sethook,
+    gethook,
+    LuaHook,
+    LuaDebug,
+
     -- * Haskell extensions
     StackValue(..),
     callproc,
@@ -205,7 +212,32 @@ type LuaInteger = CPtrdiff
 -- | Wrapper for @lua_Number@. See @lua_Number@ in Lua Reference Manual.
 -- HsLua uses C @double@ as @lua_Integer@.
 type LuaNumber = CDouble
+-- | Wrapper for @lua_Debug@. See @lua_Debug@ in Lua Reference Manual.
+newtype LuaDebug = LuaDebug (Ptr ())
+-- | Wrapper for @lua_Hook@. See @lua_Debug@ in Lua Reference Manual.
+type LuaHook = LuaState -> LuaDebug -> IO ()
 
+{-
+data LEVENT = EHOOKCALL
+            | EHOOKRET
+            | EHOOKLINE
+            | EHOOKCOUNT
+            | EHOOKTAILRET
+            deriving (Eq,Show,Ord)
+
+instance Enum LEVENT where
+    fromEnum EHOOKCALL    = 0
+    fromEnum EHOOKRET     = 1
+    fromEnum EHOOKLINE    = 2
+    fromEnum EHOOKCOUNT   = 3
+    fromEnum EHOOKTAILRET = 4
+    toEnum 0 = EHOOKCALL
+    toEnum 1 = EHOOKRET
+    toEnum 2 = EHOOKLINE
+    toEnum 3 = EHOOKCOUNT
+    toEnum 4 = EHOOKTAILRET
+    toEnum n = error $ "Cannot convert (" ++ show n ++ ") to LEVENT"
+-}
 
 -- | Enumeration used as type tag. See @lua_type@ in Lua Reference Manual.
 data LTYPE = TNONE
@@ -370,6 +402,19 @@ foreign import ccall "lauxlib.h luaL_argerror" c_luaL_argerror :: LuaState -> CI
 foreign import ccall "ntrljmp.h lua_neutralize_longjmp" c_lua_neutralize_longjmp :: LuaState -> IO CInt
 foreign import ccall "ntrljmp.h &lua_neutralize_longjmp" c_lua_neutralize_longjmp_addr :: FunPtr (LuaState -> IO CInt)
 
+-- Hooks
+foreign import ccall "lua.h lua_gethook" c_lua_gethook :: LuaState -> IO (FunPtr LuaHook)
+foreign import ccall "lua.h lua_sethook" c_lua_sethook :: LuaState -> FunPtr LuaHook -> CInt -> IO CInt
+
+foreign import ccall "wrapper" mkHookWrapper :: LuaHook -> IO (FunPtr LuaHook)
+
+gethook :: LuaState -> IO (FunPtr LuaHook)
+gethook s = c_lua_gethook s
+
+sethook :: LuaState -> LuaHook -> Int -> IO CInt
+sethook l h i = do
+    hw <- mkHookWrapper h
+    c_lua_sethook l hw (fromIntegral i)
 
 -- | See @lua_settop@ in Lua Reference Manual.
 settop :: LuaState -> Int -> IO ()
