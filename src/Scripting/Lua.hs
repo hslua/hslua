@@ -368,7 +368,7 @@ foreign import ccall "lauxlib.h luaL_newmetatable" c_luaL_newmetatable :: LuaSta
 foreign import ccall "lauxlib.h luaL_argerror" c_luaL_argerror :: LuaState -> CInt -> Ptr CChar -> IO CInt
 
 foreign import ccall "ntrljmp.h lua_neutralize_longjmp" c_lua_neutralize_longjmp :: LuaState -> IO CInt
-foreign import ccall "ntrljmp.h &lua_neutralize_longjmp" c_lua_neutralize_longjmp_addr :: FunPtr (LuaState -> IO CInt) 
+foreign import ccall "ntrljmp.h &lua_neutralize_longjmp" c_lua_neutralize_longjmp_addr :: FunPtr (LuaState -> IO CInt)
 
 
 -- | See @lua_settop@ in Lua Reference Manual.
@@ -527,7 +527,7 @@ concat l n = c_lua_concat l (fromIntegral n)
 
 
 
--- | See @lua_call@ and @lua_call@ in Lua Reference Manual. This is 
+-- | See @lua_call@ and @lua_call@ in Lua Reference Manual. This is
 -- a wrapper over @lua_pcall@, as @lua_call@ is unsafe in controlled environment
 -- like Haskell VM.
 call :: LuaState -> Int -> Int -> IO Int
@@ -789,7 +789,7 @@ register l n f = do
 newmetatable :: LuaState -> String -> IO Int
 newmetatable l s = withCString s $ \s -> liftM fromIntegral (c_luaL_newmetatable l s)
 
--- | See @luaL_argerror@ in Lua Reference Manual. Contrary to the 
+-- | See @luaL_argerror@ in Lua Reference Manual. Contrary to the
 -- manual, Haskell function does return with value less than zero.
 argerror :: LuaState -> Int -> String -> IO CInt
 argerror l n msg = withCString msg $ \msg -> do

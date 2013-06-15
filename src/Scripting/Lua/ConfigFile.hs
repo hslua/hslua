@@ -1,4 +1,5 @@
-{-# LANGUAGE DeriveDataTypeable #-} 
+{-# LANGUAGE DeriveDataTypeable #-}
+{-# OPTIONS_GHC -Wall -fno-warn-name-shadowing -fno-warn-unused-do-bind -fno-warn-unused-binds -fno-warn-missing-signatures #-}
 
 -- |
 -- Module      : Scripting.Lua.ConfigFile
@@ -30,9 +31,7 @@ module Scripting.Lua.ConfigFile
        ) where
 
 import qualified Scripting.Lua as Lua
-import System.IO (FilePath)
 import Control.Exception (Exception, throwIO)
-import Control.Monad (forM, forM_)
 import Control.Monad.Reader
 import Data.Typeable (Typeable)
 
@@ -70,7 +69,7 @@ closeConfig (Config l) =
 
 -- | Returns a boolean value from a configuration file.  Returns @False@
 -- if the value is not defined in the file.  Example:
--- 
+--
 -- > someVal = true
 getBool :: Config -> String -> IO Bool
 getBool (Config l) name = do
@@ -83,7 +82,7 @@ getBool (Config l) name = do
 
 -- | Returns a string value from a configuration file.  Returns the
 -- empty string if the value is not defined in the file.  Example:
--- 
+--
 -- > someVal = "foo"
 getString :: Config -> String -> IO String
 getString (Config l) name = do
@@ -95,7 +94,7 @@ getString (Config l) name = do
               "expected string value: " ++ name
 
 -- | Returns an integer value from a configuration file.  Example:
--- 
+--
 -- > someVal = 2
 getInt :: Config -> String -> IO (Maybe Int)
 getInt (Config l) name = do
@@ -107,7 +106,7 @@ getInt (Config l) name = do
               "expected numeric value: " ++ name
 
 -- | Returns a double value from a configuration file.  Example:
--- 
+--
 -- > someVal = 3.1415926
 getDouble :: Config -> String -> IO (Maybe Double)
 getDouble (Config l) name = do
@@ -121,7 +120,7 @@ getDouble (Config l) name = do
 -- | Returns a list of strings (i.e. a Lua table in which the keys
 -- are integers and the values are strings) from a configuration file.
 -- Example:
--- 
+--
 -- > someVal = { "foo", "bar", "baz" }
 getList :: Config -> String -> IO [String]
 getList (Config l) name =
@@ -130,7 +129,7 @@ getList (Config l) name =
 -- | Returns a list of lists, i.e. a Lua table of tables.  In the outer
 -- table, the keys are integers and the values are tables, and in the inner
 -- tables, the keys are integers and the values are strings.  Example:
--- 
+--
 -- > someVal = {
 -- >    { "foo one", "foo two", "foo three" },
 -- >    { "bar one", "bar two", "bar three" }
@@ -141,7 +140,7 @@ getNestedLists (Config l) name =
 
 -- | Returns an association list, i.e. a Lua table in which the keys
 -- and values are strings.  Example:
--- 
+--
 -- > someVal = {
 -- >    one = "foo",
 -- >    two = "bar",
@@ -154,7 +153,7 @@ getAssocList (Config l) name =
 -- | Returns a list of association lists, i.e. a Lua table of tables.
 -- In the outer table, the keys are integers and the values are tables,
 -- and in the inner tables, the keys and values are strings.  Example:
--- 
+--
 -- > someVal = {
 -- >    {
 -- >       foo = "aaa",
@@ -175,7 +174,7 @@ getListOfAssocLists (Config l) name =
 -- of tables.  In the outer table, the keys are strings and the values
 -- are tables, and in the inner tables, the keys and values are strings.
 -- Example:
--- 
+--
 -- > someVal = {
 -- >    something = {
 -- >       foo = "aaa",
@@ -199,13 +198,13 @@ getNestedAssocLists (Config l) name =
 Gets a Lua global and pops it off the Lua stack.
 
 -}
-getGlobalVal l name = do  
+getGlobalVal l name = do
   Lua.getglobal l name
   val <- Lua.peek l (-1)
   valType <- Lua.ltype l (-1)
   Lua.pop l 1
   return (val, valType)
-  
+
 {-
 
 Checks whether a value can be converted to a string.
@@ -233,11 +232,11 @@ getTable name f = do
                      return items
     Lua.TNIL -> return []
     _ -> liftIO $ throwIO $ ConfigFileException $ "expected table: " ++ name
-  
+
 
 {-
 
-Iterates over the elements of a Lua table whose keys are integers,  
+Iterates over the elements of a Lua table whose keys are integers,
 performs some action on each element, and returns the results as a
 list.
 
@@ -377,8 +376,8 @@ getRemainingColumns name = do
       else liftIO $ throwIO $ ConfigFileException $
            "expected string keys and string values: " ++ name
     else return []
-  
-{- 
+
+{-
 
 These are liftIO wrappers for the Lua functions we use, to reduce
 clutter in the monadic code above.
@@ -418,6 +417,7 @@ stackDump l = do
                         putStr $ "TSTRING " ++ sVal
       Lua.TTABLE -> putStr "TTABLE"
       Lua.TFUNCTION -> putStr "TFUNCTION"
+      Lua.TUSERDATA -> putStr "TUSERDATA"
       Lua.TTHREAD -> putStr "TTHREAD"
     putStr "\n"
   putStr "\n"
