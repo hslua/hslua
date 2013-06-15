@@ -176,7 +176,7 @@ module Scripting.Lua
     registerhsfunction
 )
 where
-import Prelude hiding (concat, catch)
+import Prelude hiding (concat)
 import Foreign.C
 import Foreign.Ptr
 import Foreign.StablePtr
