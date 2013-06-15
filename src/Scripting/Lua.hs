@@ -826,12 +826,12 @@ maybepeek l n test peek = do
         else return Nothing
 
 instance StackValue LuaInteger where
-    push = pushinteger
+    push l x = pushinteger l x
     peek l n = maybepeek l n isnumber tointeger
     valuetype _ = TNUMBER
 
 instance StackValue LuaNumber where
-    push = pushnumber
+    push l x = pushnumber l x
     peek l n = maybepeek l n isnumber tonumber
     valuetype _ = TNUMBER
 
@@ -846,23 +846,23 @@ instance StackValue Double where
     valuetype _ = TNUMBER
 
 instance StackValue String where
-    push = pushstring
+    push l x = pushstring l x
     peek l n = maybepeek l n isstring tostring
     valuetype _ = TSTRING
 
 instance StackValue Bool where
-    push = pushboolean
+    push l x = pushboolean l x
     peek l n = maybepeek l n isboolean toboolean
     valuetype _ = TBOOLEAN
 
 instance StackValue (FunPtr LuaCFunction) where
-    push = pushcfunction
+    push l x = pushcfunction l x
     peek l n = maybepeek l n iscfunction tocfunction
     valuetype _ = TFUNCTION
 
 -- watch out for the asymetry here
 instance StackValue (Ptr a) where
-    push = pushlightuserdata
+    push l x = pushlightuserdata l x
     peek l n = maybepeek l n isuserdata touserdata
     valuetype _ = TUSERDATA
 
@@ -996,7 +996,7 @@ instance LuaCallProc (IO t) where
                 Just msg <- peek l (-1)
                 pop l 1
                 Prelude.fail msg
-            else undefined
+            else return undefined
 
 instance (StackValue t) => LuaCallFunc (IO t) where
     callfunc' l f a k = do
