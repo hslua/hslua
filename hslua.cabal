@@ -21,18 +21,25 @@ source-repository head
   type:                 git
   location:             https://github.com/osa1/hslua.git
 
+flag system-lua
+  description: Use the system-wide lua instead of the bundled copy
+  default: False
+
 Library
   Build-depends:        base==4.*, mtl >= 2.1
   Exposed-modules:      Scripting.Lua, Scripting.Lua.ConfigFile
   Hs-source-dirs:       src
-  C-sources:            src/lapi.c, src/lauxlib.c, src/lbaselib.c, src/lcode.c,
+  if flag(system-lua)
+    Pkgconfig-depends:    lua
+  else
+    C-sources:          src/lapi.c, src/lauxlib.c, src/lbaselib.c, src/lcode.c,
                         src/ldblib.c, src/ldebug.c, src/ldo.c, src/ldump.c, src/lfunc.c,
                         src/lgc.c, src/linit.c, src/liolib.c, src/llex.c, src/lmathlib.c,
                         src/lmem.c, src/loadlib.c, src/lobject.c, src/lopcodes.c,
                         src/loslib.c, src/lparser.c, src/lstate.c, src/lstring.c,
                         src/lstrlib.c, src/ltable.c, src/ltablib.c, src/ltm.c,
                         src/lundump.c, src/lvm.c, src/lzio.c, src/ntrljmp.c
-  Include-dirs:         src
+    Include-dirs:       src
 
   if os(linux)
     CC-Options:         "-DLUA_USE_LINUX"
