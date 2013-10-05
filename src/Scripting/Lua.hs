@@ -57,6 +57,7 @@ module Scripting.Lua
     -- * Constants and enumerations
     GCCONTROL(..),
     LTYPE(..),
+    PCALLRET(..),
     multret,
     registryindex,
     environindex,
@@ -285,6 +286,24 @@ data GCCONTROL  = GCSTOP
                 | GCSETPAUSE
                 | GCSETSTEPMUL
                 deriving (Eq,Ord,Show,Enum)
+
+-- | Enumeration used by @pcall@ function.
+data PCALLRET = PCOK
+              | PCERRRUN
+              | PCERRMEM
+              | PCERRERR
+              deriving (Eq, Show)
+
+instance Enum PCALLRET where
+    fromEnum PCOK     = 0
+    fromEnum PCERRRUN  = 2
+    fromEnum PCERRMEM = 4
+    fromEnum PCERRERR = 5
+    toEnum 0 = PCOK
+    toEnum 2 = PCERRRUN
+    toEnum 4 = PCERRMEM
+    toEnum 5 = PCERRERR
+    toEnum n = error $ "Cannot convert (" ++ show n ++ ") to PCCALLRET"
 
 -- | See @LUA_MULTRET@ in Lua Reference Manual.
 multret :: Int
@@ -579,8 +598,8 @@ call :: LuaState -> Int -> Int -> IO Int
 call l a b = liftM fromIntegral (c_lua_pcall l (fromIntegral a) (fromIntegral b) 0)
 
 -- | See @lua_pcall@ in Lua Reference Manual.
-pcall :: LuaState -> Int -> Int -> Int -> IO Int
-pcall l a b c = liftM fromIntegral (c_lua_pcall l (fromIntegral a) (fromIntegral b) (fromIntegral c))
+pcall :: LuaState -> Int -> Int -> Int -> IO PCALLRET
+pcall l a b c = liftM (toEnum . fromIntegral) (c_lua_pcall l (fromIntegral a) (fromIntegral b) (fromIntegral c))
 
 -- | See @lua_cpcall@ in Lua Reference Manual.
 cpcall :: LuaState -> FunPtr LuaCFunction -> Ptr a -> IO Int
@@ -1036,33 +1055,33 @@ instance LuaCallProc (IO t) where
         getglobal2 l f
         a
         z <- pcall l k 0 0
-        if z/=0
-            then do
-                Just msg <- peek l (-1)
-                pop l 1
-                Prelude.fail msg
-            else return undefined
+        case z of
+          PCOK -> return undefined
+          _    -> do
+            Just msg <- peek l (-1)
+            pop l 1
+            Prelude.fail msg
 
 instance (StackValue t) => LuaCallFunc (IO t) where
     callfunc' l f a k = do
         getglobal2 l f
         a
         z <- pcall l k 1 0
-        if z/=0
-            then do
-                Just msg <- peek l (-1)
-                pop l 1
-                Prelude.fail msg
-            else do
-                r <- peek l (-1)
-                pop l 1
-                case r of
-                    Just x -> return x
-                    Nothing -> do
-                        exp <- typename l (valuetype (fromJust r))
-                        t <- ltype l (-1)
-                        got <- typename l t
-                        Prelude.fail ("Incorrect result type (" ++ exp ++ " expected, got " ++ got ++ ")")
+        case z of
+          PCOK -> do
+            Just msg <- peek l (-1)
+            pop l 1
+            Prelude.fail msg
+          _    -> do
+            r <- peek l (-1)
+            pop l 1
+            case r of
+                Just x -> return x
+                Nothing -> do
+                    exp <- typename l (valuetype (fromJust r))
+                    t <- ltype l (-1)
+                    got <- typename l t
+                    Prelude.fail ("Incorrect result type (" ++ exp ++ " expected, got " ++ got ++ ")")
 
 instance (StackValue t,LuaCallProc b) => LuaCallProc (t -> b) where
     callproc' l f a k x = callproc' l f (a >> push l x) (k+1)
