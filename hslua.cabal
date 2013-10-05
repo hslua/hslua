@@ -1,5 +1,5 @@
 Name:                   hslua
-Version:                0.3.6.1
+Version:                0.3.7
 Stability:              beta
 Cabal-version:          >= 1.6
 License:                BSD3
@@ -12,8 +12,8 @@ Synopsis:               A Lua language interpreter embedding in Haskell
 Description:            The Scripting.Lua module is a wrapper of Lua language interpreter
                         as described in www.lua.org.
                         .
-                        The package is standalone: full Lua interpreter version 5.1.4
-                        is distributed in this package as well.
+                        This package contains full Lua interpreter version 5.1.4.
+                        If you want to link it with system-wide Lua installation, use system-lua flag.
 Category:               Scripting
 Extra-source-files:     src/*.h
 
