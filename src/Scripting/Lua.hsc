@@ -71,9 +71,7 @@ module Scripting.Lua
     checkstack,
     close,
     concat,
-#if LUA_VERSION_NUM == 501
     cpcall,
-#endif
     createtable,
     dump,
     --error,    -- cannot import this one, as this uses setjmp/longjmp
@@ -121,7 +119,7 @@ module Scripting.Lua
 #if LUA_VERSION_NUM == 501
     objlen,
 #else
-    rawlen
+    rawlen,
 #endif
     pcall,
     pop,
@@ -367,8 +365,17 @@ foreign import ccall "lua.h lua_lessthan" c_lua_lessthan :: LuaState -> CInt -> 
 #endif
 foreign import ccall "lua.h lua_rawequal" c_lua_rawequal :: LuaState -> CInt -> CInt -> IO CInt
 
+#if LUA_VERSION_NUM == 501
 foreign import ccall "lua.h lua_tonumber" c_lua_tonumber :: LuaState -> CInt -> IO LuaNumber
+#else
+foreign import ccall "lua.h lua_tonumberx" c_lua_tonumberx :: LuaState -> CInt -> Ptr CInt -> IO LuaNumber
+#endif
+
+#if LUA_VERSION_NUM == 501
 foreign import ccall "lua.h lua_tointeger" c_lua_tointeger :: LuaState -> CInt -> IO LuaInteger
+#else
+foreign import ccall "lua.h lua_tointegerx" c_lua_tointegerx :: LuaState -> CInt -> Ptr CInt -> IO LuaInteger
+#endif
 foreign import ccall "lua.h lua_toboolean" c_lua_toboolean :: LuaState -> CInt -> IO CInt
 foreign import ccall "lua.h lua_tolstring" c_lua_tolstring :: LuaState -> CInt -> Ptr CInt -> IO (Ptr CChar)
 #if LUA_VERSION_NUM == 501
@@ -424,11 +431,15 @@ foreign import ccall "lua.h lua_rawseti" c_lua_rawseti :: LuaState -> CInt -> CI
 foreign import ccall "lua.h lua_setmetatable" c_lua_setmetatable :: LuaState -> CInt -> IO ()
 
 
+#if LUA_VERSION_NUM == 501
 foreign import ccall "lua.h lua_call" c_lua_call :: LuaState -> CInt -> CInt -> IO ()
 foreign import ccall "lua.h lua_pcall" c_lua_pcall :: LuaState -> CInt -> CInt -> CInt -> IO CInt
-#if LUA_VERSION_NUM == 501
-foreign import ccall "lua.h lua_cpcall" c_lua_cpcall :: LuaState -> FunPtr LuaCFunction -> Ptr a -> IO CInt
+#else
+foreign import ccall "lua.h lua_callk" c_lua_callk :: LuaState -> CInt -> CInt -> CInt -> FunPtr LuaCFunction -> IO ()
+foreign import ccall "lua.h lua_pcallk" c_lua_pcallk :: LuaState -> CInt -> CInt -> CInt -> CInt -> FunPtr LuaCFunction -> IO CInt
 #endif
+foreign import ccall "lua.h lua_cpcall" c_lua_cpcall :: LuaState -> FunPtr LuaCFunction -> Ptr a -> IO CInt
+        -- FIXME: ^ this is decrecated -- should remove soon
 
 #if LUA_VERSION_NUM == 501
 foreign import ccall "lua.h lua_load" c_lua_load :: LuaState -> FunPtr LuaReader -> Ptr () -> Ptr CChar -> IO CInt
@@ -438,7 +449,13 @@ foreign import ccall "lua.h lua_load" c_lua_load :: LuaState -> FunPtr LuaReader
 
 foreign import ccall "lua.h lua_dump" c_lua_dump :: LuaState -> FunPtr LuaWriter -> Ptr () -> IO ()
 
+#if LUA_VERSION_NUM == 501
 foreign import ccall "lua.h lua_yield" c_lua_yield :: LuaState -> CInt -> IO CInt
+#else
+foreign import ccall "lua.h lua_yieldk" c_lua_yieldk :: LuaState -> CInt -> CInt -> FunPtr LuaCFunction -> IO CInt
+#endif
+
+
 #if LUA_VERSION_NUM == 501
 foreign import ccall "lua.h lua_resume" c_lua_resume :: LuaState -> CInt -> IO CInt
 #else
@@ -612,7 +629,11 @@ xmove l1 l2 n = c_lua_xmove l1 l2 (fromIntegral n)
 
 -- | See @lua_yield@ in Lua Reference Manual.
 yield :: LuaState -> Int -> IO Int
+#if LUA_VERSION_NUM == 501
 yield l n = liftM fromIntegral (c_lua_yield l (fromIntegral n))
+#else
+yield l n = liftM fromIntegral (c_lua_yieldk l (fromIntegral n) (fromIntegral 0) nullFunPtr)
+#endif
 
 -- | See @lua_checkstack@ in Lua Reference Manual.
 checkstack :: LuaState -> Int -> IO Bool
@@ -636,17 +657,23 @@ concat l n = c_lua_concat l (fromIntegral n)
 -- a wrapper over @lua_pcall@, as @lua_call@ is unsafe in controlled environment
 -- like Haskell VM.
 call :: LuaState -> Int -> Int -> IO Int
+#if LUA_VERSION_NUM == 501
 call l a b = liftM fromIntegral (c_lua_pcall l (fromIntegral a) (fromIntegral b) 0)
+#else
+call l a b = liftM fromIntegral (c_lua_pcallk l (fromIntegral a) (fromIntegral b) 0 0 nullFunPtr)
+#endif
 
 -- | See @lua_pcall@ in Lua Reference Manual.
 pcall :: LuaState -> Int -> Int -> Int -> IO PCALLRET
-pcall l a b c = liftM (toEnum . fromIntegral) (c_lua_pcall l (fromIntegral a) (fromIntegral b) (fromIntegral c))
-
 #if LUA_VERSION_NUM == 501
+pcall l a b c = liftM (toEnum . fromIntegral) (c_lua_pcall l (fromIntegral a) (fromIntegral b) (fromIntegral c))
+#else
+pcall l a b c = liftM (toEnum . fromIntegral) (c_lua_pcallk l (fromIntegral a) (fromIntegral b) (fromIntegral c) 0 nullFunPtr)
+#endif
+
 -- | See @lua_cpcall@ in Lua Reference Manual.
 cpcall :: LuaState -> FunPtr LuaCFunction -> Ptr a -> IO Int
 cpcall l a c = liftM fromIntegral (c_lua_cpcall l a c)
-#endif
 
 -- | See @lua_getfield@ in Lua Reference Manual.
 getfield :: LuaState -> Int -> String -> IO ()
@@ -897,11 +924,19 @@ tocfunction l n = c_lua_tocfunction l (fromIntegral n)
 
 -- | See @lua_tointeger@ in Lua Reference Manual.
 tointeger :: LuaState -> Int -> IO LuaInteger
+#if LUA_VERSION_NUM == 501
 tointeger l n = c_lua_tointeger l (fromIntegral n)
+#else
+tointeger l n = c_lua_tointegerx l (fromIntegral n) nullPtr
+#endif
 
 -- | See @lua_tonumber@ in Lua Reference Manual.
 tonumber :: LuaState -> Int -> IO CDouble
+#if LUA_VERSION_NUM == 501
 tonumber l n = c_lua_tonumber l (fromIntegral n)
+#else
+tonumber l n = c_lua_tonumberx l (fromIntegral n) nullPtr
+#endif
 
 -- | See @lua_topointer@ in Lua Reference Manual.
 topointer :: LuaState -> Int -> IO (Ptr ())
@@ -927,7 +962,6 @@ argerror l n msg = withCString msg $ \msg -> do
     freeHaskellFunPtr f
     -- here we should have error message string on top of the stack
     return (-1)
-
 
 
 -- | A value that can be pushed and poped from the Lua stack.

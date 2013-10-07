@@ -30,6 +30,8 @@ module Scripting.Lua.ConfigFile
          ConfigFileException
        ) where
 
+#include "lua.h"
+
 import qualified Scripting.Lua as Lua
 import Control.Exception (Exception, throwIO)
 import Control.Monad.Reader
@@ -386,7 +388,12 @@ clutter in the monadic code above.
 getglobal l name = liftIO $ Lua.getglobal l name
 ltype l n = liftIO $ Lua.ltype l n
 pop l n = liftIO $ Lua.pop l n
-objlen l n = liftIO $ Lua.objlen l n
+objlen l n =
+#if LUA_VERSION_NUM == 501
+    liftIO $ Lua.objlen l n
+#else
+    liftIO $ Lua.rawlen l n
+#endif
 push l n = liftIO $ Lua.push l n
 gettable l n = liftIO $ Lua.gettable l n
 tostring l n = liftIO $ Lua.tostring l n
