@@ -1,12 +1,12 @@
 Name:                hslua
-Version:             0.3.6
+Version:             0.4.0
 Stability:           beta
 Cabal-version:       >= 1.6
 License:             BSD3
 Build-type:          Simple
 License-File:        COPYRIGHT
 Copyright:           2007-2012, Gracjan Polak
-Authors:             Gracjan Polak <gracjanpolak@gmail.com>, Ömer Sinan Ağacan <omeragacan@gmail.com>
+Author:              Gracjan Polak <gracjanpolak@gmail.com>
 Maintainer:          Ömer Sinan Ağacan <omeragacan@gmail.com>
 Synopsis:            A Lua language interpreter embedding in Haskell
 Description:         The Scripting.Lua module is a wrapper of Lua language interpreter
