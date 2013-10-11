@@ -71,7 +71,9 @@ module Scripting.Lua
     checkstack,
     close,
     concat,
+#if LUA_VERSION_NUM == 501
     cpcall,
+#endif
     createtable,
     dump,
     --error,    -- cannot import this one, as this uses setjmp/longjmp
@@ -443,8 +445,10 @@ foreign import ccall "lua.h lua_pcall" c_lua_pcall :: LuaState -> CInt -> CInt -
 foreign import ccall "lua.h lua_callk" c_lua_callk :: LuaState -> CInt -> CInt -> CInt -> FunPtr LuaCFunction -> IO ()
 foreign import ccall "lua.h lua_pcallk" c_lua_pcallk :: LuaState -> CInt -> CInt -> CInt -> CInt -> FunPtr LuaCFunction -> IO CInt
 #endif
+
+#if LUA_VERSION_NUM == 501
 foreign import ccall "lua.h lua_cpcall" c_lua_cpcall :: LuaState -> FunPtr LuaCFunction -> Ptr a -> IO CInt
-        -- FIXME: ^ this is decrecated -- should remove soon
+#endif
 
 #if LUA_VERSION_NUM == 501
 foreign import ccall "lua.h lua_load" c_lua_load :: LuaState -> FunPtr LuaReader -> Ptr () -> Ptr CChar -> IO CInt
@@ -676,9 +680,11 @@ pcall l a b c = liftM (toEnum . fromIntegral) (c_lua_pcall l (fromIntegral a) (f
 pcall l a b c = liftM (toEnum . fromIntegral) (c_lua_pcallk l (fromIntegral a) (fromIntegral b) (fromIntegral c) 0 nullFunPtr)
 #endif
 
+#if LUA_VERSION_NUM == 501
 -- | See @lua_cpcall@ in Lua Reference Manual.
 cpcall :: LuaState -> FunPtr LuaCFunction -> Ptr a -> IO Int
 cpcall l a c = liftM fromIntegral (c_lua_cpcall l a c)
+#endif
 
 -- | See @lua_getfield@ in Lua Reference Manual.
 getfield :: LuaState -> Int -> String -> IO ()
@@ -957,16 +963,9 @@ register l n f = do
 newmetatable :: LuaState -> String -> IO Int
 newmetatable l s = withCString s $ \s -> liftM fromIntegral (c_luaL_newmetatable l s)
 
--- | See @luaL_argerror@ in Lua Reference Manual. Contrary to the
--- manual, Haskell function does return with value less than zero.
+-- | See @luaL_argerror@ in Lua Reference Manual.
 argerror :: LuaState -> Int -> String -> IO CInt
-argerror l n msg = withCString msg $ \msg -> do
-    let doit l = c_luaL_argerror l (fromIntegral n) msg
-    f <- mkWrapper doit
-    c_lua_cpcall l f nullPtr
-    freeHaskellFunPtr f
-    -- here we should have error message string on top of the stack
-    return (-1)
+argerror l n msg = withCString msg $ \msg -> c_luaL_argerror l (fromIntegral n) msg
 
 
 -- | A value that can be pushed and poped from the Lua stack.
