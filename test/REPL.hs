@@ -72,5 +72,6 @@ main :: IO ()
 main = do
     l <- Lua.newstate
     Lua.openlibs l
+    putStrLn ("Lua version: " ++ show Lua.lua_version_num)
     void $ runWriterT (runStateT (unwrapRepl readAndRun) l)
     Lua.close l

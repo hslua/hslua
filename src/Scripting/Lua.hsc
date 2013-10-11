@@ -181,7 +181,6 @@ module Scripting.Lua
     sethook,
     gethook,
     LuaHook,
-    LuaDebug,
 
     -- * Haskell extensions
     StackValue(..),
@@ -192,7 +191,10 @@ module Scripting.Lua
     freecfunction,
     luaimport,
     pushhsfunction,
-    registerhsfunction
+    registerhsfunction,
+
+    -- mostly for testing purposes
+    lua_version_num
 )
 where
 import Prelude hiding (concat)
@@ -208,6 +210,9 @@ import qualified Data.List as L
 import Data.Maybe
 
 #include "lua.h"
+
+lua_version_num :: Int
+lua_version_num = #const LUA_VERSION_NUM
 
 #if LUA_VERSION_NUM != 501 && LUA_VERSION_NUM != 502
 #error "unsupported Lua version version -- only 5.1 and 5.2 supported"
@@ -313,7 +318,7 @@ data PCALLRET = PCOK
 
 instance Enum PCALLRET where
     fromEnum PCOK     = 0
-    fromEnum PCERRRUN  = 2
+    fromEnum PCERRRUN = 2
     fromEnum PCERRMEM = 4
     fromEnum PCERRERR = 5
     toEnum 0 = PCOK
