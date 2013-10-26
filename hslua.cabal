@@ -30,7 +30,9 @@ Library
   Exposed-modules:      Scripting.Lua, Scripting.Lua.ConfigFile
   Hs-source-dirs:       src
   if flag(system-lua)
-    Pkgconfig-depends:    lua
+    Pkgconfig-depends:  lua
+    C-sources:          cbits/ntrljmp.c
+    Include-dirs:       cbits
   else
     C-sources:          src/lapi.c, src/lauxlib.c, src/lbaselib.c, src/lcode.c,
                         src/ldblib.c, src/ldebug.c, src/ldo.c, src/ldump.c, src/lfunc.c,
@@ -38,8 +40,8 @@ Library
                         src/lmem.c, src/loadlib.c, src/lobject.c, src/lopcodes.c,
                         src/loslib.c, src/lparser.c, src/lstate.c, src/lstring.c,
                         src/lstrlib.c, src/ltable.c, src/ltablib.c, src/ltm.c,
-                        src/lundump.c, src/lvm.c, src/lzio.c, src/ntrljmp.c
-    Include-dirs:       src
+                        src/lundump.c, src/lvm.c, src/lzio.c, cbits/ntrljmp.c
+    Include-dirs:       src, cbits
 
   if os(linux)
     CC-Options:         "-DLUA_USE_LINUX"
