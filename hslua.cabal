@@ -1,7 +1,7 @@
 Name:                   hslua
 Version:                0.3.7
 Stability:              beta
-Cabal-version:          >= 1.6
+Cabal-version:          >= 1.8
 License:                BSD3
 Build-type:             Simple
 License-File:           COPYRIGHT
@@ -49,3 +49,9 @@ Library
 
   if os(freebsd)
     CC-Options:         "-DLUA_USE_POSIX"
+
+Test-Suite simple-test
+  type:                 exitcode-stdio-1.0
+  Hs-source-dirs:       test
+  main-is:              simple-test.hs
+  Build-depends:	base, hslua
