@@ -8,10 +8,7 @@
 #define luac_c
 #define LUA_CORE
 
-#include "ldebug.h"
-#include "lobject.h"
-#include "lopcodes.h"
-#include "lundump.h"
+#include "lua.h"
 
 extern int hsmethod__call( lua_State *state );
 
