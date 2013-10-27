@@ -1,5 +1,5 @@
 Name:                   hslua
-Version:                0.3.7.1
+Version:                0.3.8
 Stability:              beta
 Cabal-version:          >= 1.8
 License:                BSD3
@@ -22,8 +22,8 @@ source-repository head
   location:             https://github.com/osa1/hslua.git
 
 flag system-lua
-  description: Use the system-wide lua instead of the bundled copy
-  default: False
+  description:          Use the system-wide lua instead of the bundled copy
+  default:              False
 
 Library
   Build-depends:        base==4.*, mtl >= 2.1
