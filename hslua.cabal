@@ -2,7 +2,7 @@ Name:                   hslua
 Version:                0.3.8
 Stability:              beta
 Cabal-version:          >= 1.8
-License:                BSD3
+License:                MIT
 Build-type:             Simple
 License-File:           COPYRIGHT
 Copyright:              2007-2012, Gracjan Polak
