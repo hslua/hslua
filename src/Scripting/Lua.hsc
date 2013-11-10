@@ -576,16 +576,16 @@ isnoneornil l n = liftM (<=TNIL) (ltype l n)
 
 -- | See @LUA_REGISTRYINDEX@ in Lua Reference Manual.
 registryindex :: Int
-registryindex = -10000
+registryindex = #const LUA_REGISTRYINDEX
 
 -- | See @LUA_ENVIRONINDEX@ in Lua Reference Manual.
 environindex :: Int
-environindex = -10001
+environindex = #const LUA_ENVIRONINDEX
 
 #if LUA_VERSION_NUM == 501
 -- | See @LUA_GLOBALSINDEX@ in Lua Reference Manual.
 globalsindex :: Int
-globalsindex = -10002
+globalsindex = #const LUA_GLOBALSINDEX
 #endif
 
 {-
