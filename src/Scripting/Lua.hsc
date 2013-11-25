@@ -60,8 +60,8 @@ module Scripting.Lua
     PCALLRET(..),
     multret,
     registryindex,
-    environindex,
 #if LUA_VERSION_NUM == 501
+    environindex,
     globalsindex,
 #endif
 
@@ -578,9 +578,11 @@ isnoneornil l n = liftM (<=TNIL) (ltype l n)
 registryindex :: Int
 registryindex = #const LUA_REGISTRYINDEX
 
+#if LUA_VERSION_NUM == 501
 -- | See @LUA_ENVIRONINDEX@ in Lua Reference Manual.
 environindex :: Int
 environindex = #const LUA_ENVIRONINDEX
+#endif
 
 #if LUA_VERSION_NUM == 501
 -- | See @LUA_GLOBALSINDEX@ in Lua Reference Manual.
