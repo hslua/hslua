@@ -55,7 +55,7 @@ openConfig :: FilePath -> IO Config
 openConfig path = do
   l <- Lua.newstate
   loadResult <- Lua.loadfile l path
-  callResult <- Lua.call l 0 0
+  callResult <- Lua.pcall l 0 0 0
   if loadResult /= 0 || callResult /= 0 then
     do
       errMsg <- Lua.tostring l (-1)

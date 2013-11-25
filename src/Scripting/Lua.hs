@@ -530,8 +530,8 @@ concat l n = c_lua_concat l (fromIntegral n)
 -- | See @lua_call@ and @lua_call@ in Lua Reference Manual. This is 
 -- a wrapper over @lua_pcall@, as @lua_call@ is unsafe in controlled environment
 -- like Haskell VM.
-call :: LuaState -> Int -> Int -> IO Int
-call l a b = liftM fromIntegral (c_lua_pcall l (fromIntegral a) (fromIntegral b) 0)
+call :: LuaState -> Int -> Int -> IO ()
+call l a b = c_lua_call l (fromIntegral a) (fromIntegral b)
 
 -- | See @lua_pcall@ in Lua Reference Manual.
 pcall :: LuaState -> Int -> Int -> Int -> IO Int
