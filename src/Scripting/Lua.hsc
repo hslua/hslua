@@ -255,7 +255,7 @@ data LEVENT = EHOOKCALL
 instance Enum LEVENT where
     fromEnum EHOOKCALL    = 0
     fromEnum EHOOKRET     = 1
-    fromEnum EHOOKLINE    = 2ERRORCODE
+    fromEnum EHOOKLINE    = 2
     fromEnum EHOOKCOUNT   = 3
     fromEnum EHOOKTAILRET = 4
     toEnum 0 = EHOOKCALL

@@ -30,5 +30,6 @@ Library
   Hs-source-dirs:    src
 
   include-dirs:      cbits
-  extra-libraries:   lua
+  Pkgconfig-depends:  lua5.1
+  --extra-libraries:   luajit
   C-sources:         cbits/ntrljmp.c
