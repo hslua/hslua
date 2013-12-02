@@ -1,19 +1,12 @@
-/*
-** Lua virtual machine
-** See Copyright Notice in lua.h
-*/
+#ifndef _NTRLJMP_H
+#define _NTRLJMP_H
 
-#ifndef lvm_h
-#define lvm_h
-
-
-#define luac_c
-#define LUA_CORE
 
 #include "lua.h"
-#include "lobject.h"
-#include "ltm.h"
+
+#define HSLUA_LONGJMP_ERROR -1
+#define HSLUA_LONGJMP_ARG_ERROR -2
 
 LUAI_FUNC int lua_neutralize_longjmp(lua_State *state);
 
-#endif
+#endif  //_NTRLJMP_H
