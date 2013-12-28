@@ -491,6 +491,7 @@ tostring l n = do
   lenPtr <- malloc
   cstr <- c_lua_tolstring l (fromIntegral n) lenPtr
   len <- F.peek lenPtr
+  free lenPtr
   peekCStringLen (cstr, fromIntegral len)
 
 -- | See @lua_tothread@ in Lua Reference Manual.
