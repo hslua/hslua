@@ -487,7 +487,11 @@ atpanic = c_lua_atpanic
 
 -- | See @lua_tostring@ in Lua Reference Manual.
 tostring :: LuaState -> Int -> IO String
-tostring l n = c_lua_tolstring l (fromIntegral n) nullPtr >>= peekCString
+tostring l n = do
+  lenPtr <- malloc
+  cstr <- c_lua_tolstring l (fromIntegral n) lenPtr
+  len <- F.peek lenPtr
+  peekCStringLen (cstr, fromIntegral len)
 
 -- | See @lua_tothread@ in Lua Reference Manual.
 tothread :: LuaState -> Int -> IO LuaState
