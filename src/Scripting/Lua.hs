@@ -5,9 +5,9 @@
 -- Module      : Scripting.Lua
 -- Copyright   : (c) Gracjan Polak 2007
 --
--- License     : BSD3-style
+-- License     : MIT
 --
--- Maintainer  : gracjanpolak@gmail.com
+-- Maintainer  : omeragacan@gmail.com
 -- Stability   : alpha
 -- Portability : portable, ffi
 --

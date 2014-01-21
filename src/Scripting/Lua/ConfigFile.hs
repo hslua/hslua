@@ -4,9 +4,9 @@
 -- Module      : Scripting.Lua.ConfigFile
 -- Copyright   : (c) Benjamin Geer 2011, 2013
 --
--- License     : BSD3-style
+-- License     : MIT
 --
--- Maintainer  : benjamin.geer@gmail.com
+-- Maintainer  : omeragacan@gmail.com
 -- Stability   : alpha
 -- Portability : portable, ffi
 --
