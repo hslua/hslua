@@ -163,6 +163,8 @@ module Scripting.Lua
     loadstring,
     newmetatable,
     argerror,
+    ref,
+    unref,
 
     -- * Haskell extensions
     StackValue(..),
@@ -366,6 +368,8 @@ foreign import ccall "lualib.h luaL_openlibs" c_luaL_openlibs :: LuaState -> IO 
 foreign import ccall "lauxlib.h luaL_newstate" c_luaL_newstate :: IO LuaState
 foreign import ccall "lauxlib.h luaL_newmetatable" c_luaL_newmetatable :: LuaState -> Ptr CChar -> IO CInt
 foreign import ccall "lauxlib.h luaL_argerror" c_luaL_argerror :: LuaState -> CInt -> Ptr CChar -> IO CInt
+foreign import ccall "lauxlib.h luaL_ref" c_luaL_ref :: LuaState -> CInt -> IO CInt
+foreign import ccall "lauxlib.h luaL_unref" c_luaL_unref :: LuaState -> CInt -> CInt -> IO ()
 
 foreign import ccall "ntrljmp.h lua_neutralize_longjmp" c_lua_neutralize_longjmp :: LuaState -> IO CInt
 foreign import ccall "ntrljmp.h &lua_neutralize_longjmp" c_lua_neutralize_longjmp_addr :: FunPtr (LuaState -> IO CInt) 
@@ -803,7 +807,13 @@ argerror l n msg = withCString msg $ \msg -> do
     -- here we should have error message string on top of the stack
     return (-1)
 
+-- | See @luaL_ref@ in Lua Reference Manual.
+ref :: LuaState -> Int -> IO Int
+ref l n = fmap fromIntegral $ c_luaL_ref l (fromIntegral n)
 
+-- | See @luaL_unref@ in Lua Reference Manual.
+unref :: LuaState -> Int -> Int -> IO ()
+unref l t ref = c_luaL_unref l (fromIntegral t) (fromIntegral ref)
 
 -- | A value that can be pushed and poped from the Lua stack.
 -- All instances are natural, except following:
