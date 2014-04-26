@@ -30,21 +30,27 @@ addLuaCallbacks cs l = do
     args <- gettop l
     -- make sure arguments are functions
     as <- checkArgs args
-    if not as
-      then do
-        -- TODO: how to handle errors?
-        return 0
-      else do
+    case as of
+      Nothing -> do
+        -- arguments are functions, add them to callback queue and return
+        -- nothing
         addCallbacks 1 args
         return 0
+      Just errArg -> do
+        -- error: argument at `errArg` is not a function, return error
+        -- string
+        pushstring l $ "argument " ++ show errArg ++ " is not a function"
+        return 1
   where
-    checkArgs :: Int -> IO Bool
-    checkArgs 0 = return True
+    -- | Check if all arguments are functions, return `Just argIdx` if
+    -- argument at `argIdx` is not a function and `Nothing` otherwise.
+    checkArgs :: Int -> IO (Maybe Int)
+    checkArgs 0 = return Nothing
     checkArgs n = do
       ty <- ltype l n
       if ty == TFUNCTION
         then checkArgs (n-1)
-        else return False
+        else return $ Just n
 
     addCallbacks n max
       | n > max = return ()
