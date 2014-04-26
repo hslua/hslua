@@ -16,6 +16,8 @@ Description:            The Scripting.Lua module is a wrapper of Lua language in
                         If you want to link it with system-wide Lua installation, use system-lua flag.
 Category:               Scripting
 Extra-source-files:     src/*.h
+                        CHANGELOG.md
+                        LICENSE
 
 source-repository head
   type:                 git
