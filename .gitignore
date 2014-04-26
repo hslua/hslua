@@ -1,2 +1,4 @@
 *dist/*
 .cabal-sandbox*
+*.hi
+*.o
