@@ -17,7 +17,7 @@ Description:            The Scripting.Lua module is a wrapper of Lua language in
 Category:               Scripting
 Extra-source-files:     src/*.h
                         CHANGELOG.md
-                        LICENSE
+                        COPYRIGHT
 
 source-repository head
   type:                 git
