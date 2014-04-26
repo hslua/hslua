@@ -175,7 +175,9 @@ module Scripting.Lua
     freecfunction,
     luaimport,
     pushhsfunction,
-    registerhsfunction
+    pushrawhsfunction,
+    registerhsfunction,
+    registerrawhsfunction
 )
 where
 import Prelude hiding (concat, catch)
@@ -1086,6 +1088,29 @@ pushhsfunction l f = do
     setmetatable l (-2)
     return ()
 
+-- | Pushes _raw_ Haskell function converted to a Lua function.
+-- Raw Haskell functions collect parameters from the stack and return
+-- a `CInt` that represents number of return values left in the stack.
+pushrawhsfunction :: LuaState -> (LuaState -> IO CInt) -> IO ()
+pushrawhsfunction l f = do
+    stableptr <- newStablePtr f
+    p <- newuserdata l (F.sizeOf stableptr);
+    F.poke (castPtr p) stableptr
+    v <- newmetatable l "HaskellImportedFunction"
+    when (v/=0) $ do
+        -- create new metatable, fill it with two entries __gc and __call
+        push l hsmethod__gc_addr
+        setfield l (-2) "__gc"
+        push l c_lua_neutralize_longjmp_addr
+        setfield l (-2) "__call"
+    setmetatable l (-2)
+    return ()
+
 -- | Imports a Haskell function and registers it at global name.
 registerhsfunction :: LuaImport a => LuaState -> String -> a -> IO ()
 registerhsfunction l n f = pushhsfunction l f >> setglobal l n
+
+-- | Imports a raw Haskell function and registers it at global name.
+registerrawhsfunction :: LuaState -> String -> (LuaState -> IO CInt) -> IO ()
+registerrawhsfunction l n f = pushrawhsfunction l f >> setglobal l n
+
