@@ -1,0 +1,9 @@
+begin
+callback 1
+callback 2
+reset callbacks
+add callbacks in reverse order
+callback 3
+callback 2
+callback 1
+end
