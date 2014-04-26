@@ -1,13 +1,16 @@
 local c1 = function ()
   print("callback 1")
+  return "callback 1 return value"
 end
 
 local c2 = function ()
   print("callback 2")
+  return false
 end
 
 local c3 = function ()
   print("callback 3")
+  return 3
 end
 
 print("begin")
@@ -20,5 +23,8 @@ print("add callbacks in reverse order")
 addLuaCallbacks(c3)
 addLuaCallbacks(c2)
 addLuaCallbacks(c1)
-callLuaCallbacks()
+local callbackrets = callLuaCallbacks()
+for _, v in ipairs(callbackrets) do
+  print(v)
+end
 print("end")

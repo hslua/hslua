@@ -4,15 +4,16 @@
 
 import Scripting.Lua as Lua
 import Data.IORef
+import Foreign.C.Types (CInt)
 
 main:: IO ()
 main = do
     callbacks <- newIORef []
     l <- newstate
     openlibs l
-    registerhsfunction l "addLuaCallbacks" (addLuaCallbacks callbacks l)
-    registerhsfunction l "callLuaCallbacks" (callLuaCallbacks callbacks l)
-    registerhsfunction l "resetLuaCallbacks" (resetLuaCallbacks callbacks l)
+    registerrawhsfunction l "addLuaCallbacks" (addLuaCallbacks callbacks)
+    registerrawhsfunction l "callLuaCallbacks" (callLuaCallbacks callbacks)
+    registerrawhsfunction l "resetLuaCallbacks" (resetLuaCallbacks callbacks)
     loadfile l "callbacks.lua"
     call l 0 0
     close l
@@ -23,7 +24,7 @@ type LuaFunRef = Int
 -- Successive calls to this function without calling `resetLuaCallbacks`
 -- adds more callbacks to the queue.
 -- (I know lists are not the best functional queue implementations ...)
-addLuaCallbacks :: IORef [LuaFunRef] -> LuaState -> IO Int
+addLuaCallbacks :: IORef [LuaFunRef] -> LuaState -> IO CInt
 addLuaCallbacks cs l = do
     -- number of arguments passed to this function
     args <- gettop l
@@ -58,23 +59,32 @@ addLuaCallbacks cs l = do
           addCallbacks (n+1) max
 
 -- | Call Lua callbacks collected with `addLuaCallbacks`.
--- TODO: as an exercise, return values returned by callbacks
-callLuaCallbacks :: IORef [LuaFunRef] -> LuaState -> IO ()
+callLuaCallbacks :: IORef [LuaFunRef] -> LuaState -> IO CInt
 callLuaCallbacks cs l = do
     cs' <- readIORef cs
+    -- push new array to the stack
+    createtable l (length cs') 0
+    -- call callbacks and fill array with return values
     iter cs'
+    return 1
   where
     iter [] = return ()
     iter (c : rest) = do
+      getglobal2 l "table.insert"
+      pushvalue l (-2)
       pushinteger l (fromIntegral c)
       gettable l registryindex
-      call l 0 0
+      -- call the callback
+      call l 0 1
+      -- call table.insert
+      call l 2 0
       iter rest
 
 -- | Reset callback queue and remove Lua functions from registry to enable
 -- garbage collection.
-resetLuaCallbacks :: IORef [LuaFunRef] -> LuaState -> IO ()
+resetLuaCallbacks :: IORef [LuaFunRef] -> LuaState -> IO CInt
 resetLuaCallbacks cs l = do
     cs' <- readIORef cs
     mapM_ (unref l registryindex) cs'
     writeIORef cs []
+    return 0
