@@ -1064,6 +1064,7 @@ hsmethod__call l = do
     f <- deRefStablePtr stableptr
     f l
 
+
 -- | Pushes Haskell function converted to a Lua function.
 -- All values created will be garbage collected. Use as:
 --
