@@ -192,6 +192,8 @@ import qualified Foreign.Storable as F
 import qualified Data.List as L
 import Data.Maybe
 
+#include "lua.h"
+
 -- | Wrapper for @lua_State *@. See @lua_State@ in Lua Reference Manual.
 newtype LuaState = LuaState (Ptr ())
 -- | Wrapper for @lua_Alloc@. See @lua_Alloc@ in Lua Reference Manual.
@@ -225,27 +227,28 @@ data LTYPE = TNONE
            deriving (Eq,Show,Ord)
 
 instance Enum LTYPE where
-    fromEnum TNONE          = -1
-    fromEnum TNIL           = 0
-    fromEnum TBOOLEAN       = 1
-    fromEnum TLIGHTUSERDATA = 2
-    fromEnum TNUMBER        = 3
-    fromEnum TSTRING        = 4
-    fromEnum TTABLE         = 5
-    fromEnum TFUNCTION      = 6
-    fromEnum TUSERDATA      = 7
-    fromEnum TTHREAD        = 8
-    toEnum (-1)             = TNONE
-    toEnum 0                = TNIL
-    toEnum 1                = TBOOLEAN
-    toEnum 2                = TLIGHTUSERDATA
-    toEnum 3                = TNUMBER
-    toEnum 4                = TSTRING
-    toEnum 5                = TTABLE
-    toEnum 6                = TFUNCTION
-    toEnum 7                = TUSERDATA
-    toEnum 8                = TTHREAD
-    toEnum n                = error $ "Cannot convert (" ++ show n ++ ") to LTYPE"
+    fromEnum TNONE          = #{const LUA_TNONE}
+    fromEnum TNIL           = #{const LUA_TNIL}
+    fromEnum TBOOLEAN       = #{const LUA_TBOOLEAN}
+    fromEnum TLIGHTUSERDATA = #{const LUA_TLIGHTUSERDATA}
+    fromEnum TNUMBER        = #{const LUA_TNUMBER}
+    fromEnum TSTRING        = #{const LUA_TSTRING}
+    fromEnum TTABLE         = #{const LUA_TTABLE}
+    fromEnum TFUNCTION      = #{const LUA_TFUNCTION}
+    fromEnum TUSERDATA      = #{const LUA_TUSERDATA}
+    fromEnum TTHREAD        = #{const LUA_TTHREAD}
+
+    toEnum (#{const LUA_TNONE})          = TNONE
+    toEnum (#{const LUA_TNIL})           = TNIL
+    toEnum (#{const LUA_TBOOLEAN})       = TBOOLEAN
+    toEnum (#{const LUA_TLIGHTUSERDATA}) = TLIGHTUSERDATA
+    toEnum (#{const LUA_TNUMBER})        = TNUMBER
+    toEnum (#{const LUA_TSTRING})        = TSTRING
+    toEnum (#{const LUA_TTABLE})         = TTABLE
+    toEnum (#{const LUA_TFUNCTION})      = TFUNCTION
+    toEnum (#{const LUA_TUSERDATA})      = TUSERDATA
+    toEnum (#{const LUA_TTHREAD})        = TTHREAD
+    toEnum n                             = error $ "Cannot convert (" ++ show n ++ ") to LTYPE"
 
 -- | Enumeration used by @gc@ function.
 data GCCONTROL  = GCSTOP
@@ -260,7 +263,7 @@ data GCCONTROL  = GCSTOP
 
 -- | See @LUA_MULTRET@ in Lua Reference Manual.
 multret :: Int
-multret = -1
+multret = #{const LUA_MULTRET}
 
 {-
 
@@ -449,19 +452,19 @@ isnoneornil l n = liftM (<=TNIL) (ltype l n)
 
 -- | See @LUA_REGISTRYINDEX@ in Lua Reference Manual.
 registryindex :: Int
-registryindex = (-10000)
+registryindex = #{const LUA_REGISTRYINDEX}
 
 -- | See @LUA_ENVIRONINDEX@ in Lua Reference Manual.
 environindex :: Int
-environindex = (-10001)
+environindex = #{const LUA_ENVIRONINDEX}
 
 -- | See @LUA_GLOBALSINDEX@ in Lua Reference Manual.
 globalsindex :: Int
-globalsindex = (-10002)
+globalsindex = #{const LUA_GLOBALSINDEX}
 
 -- | See @lua_upvalueindex@ in Lua Reference Manual.
 upvalueindex :: Int -> Int
-upvalueindex i = (globalsindex-(i))
+upvalueindex i = globalsindex - i
 
 {-
 The following seem to be really bad idea, as calls from C
@@ -1058,7 +1061,7 @@ hsmethod__gc l = do
 
 hsmethod__call :: LuaState -> IO CInt
 hsmethod__call l = do
-    Just ptr <- peek l (1)
+    Just ptr <- peek l 1
     remove l 1
     stableptr <- F.peek (castPtr ptr)
     f <- deRefStablePtr stableptr
