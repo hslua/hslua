@@ -27,6 +27,10 @@ flag system-lua
   description:          Use the system-wide lua instead of the bundled copy
   default:              False
 
+flag apicheck
+  description:          Compile Lua with -DLUA_USE_APICHECK.
+  default:              False
+
 Library
   Build-depends:        base==4.*, mtl >= 2.1
   Exposed-modules:      Scripting.Lua, Scripting.Lua.ConfigFile
@@ -53,6 +57,9 @@ Library
 
   if os(freebsd)
     CC-Options:         "-DLUA_USE_POSIX"
+
+  if flag(apicheck)
+    CC-Options:         "-DLUA_USE_APICHECK"
 
 Test-Suite simple-test
   type:                 exitcode-stdio-1.0
