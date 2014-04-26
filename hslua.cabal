@@ -6,8 +6,8 @@ License:                MIT
 Build-type:             Simple
 License-File:           COPYRIGHT
 Copyright:              2007-2012, Gracjan Polak
-Author:                 Gracjan Polak <gracjanpolak@gmail.com>
-Maintainer:             Ömer Sinan Ağacan <omeragacan@gmail.com>
+Author:                 Gracjan Polak, Ömer Sinan Ağacan
+Maintainer:             omeragacan@gmail.com
 Synopsis:               A Lua language interpreter embedding in Haskell
 Description:            The Scripting.Lua module is a wrapper of Lua language interpreter
                         as described in www.lua.org.
