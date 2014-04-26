@@ -1011,7 +1011,7 @@ instance LuaCallProc (IO t) where
             then do
                 Just msg <- peek l (-1)
                 pop l 1
-                Prelude.fail msg
+                fail msg
             else do
                 return undefined
 
@@ -1024,7 +1024,7 @@ instance (StackValue t) => LuaCallFunc (IO t) where
             then do
                 Just msg <- peek l (-1)
                 pop l 1
-                Prelude.fail msg
+                fail msg
             else do
                 r <- peek l (-1)
                 pop l 1
@@ -1034,7 +1034,7 @@ instance (StackValue t) => LuaCallFunc (IO t) where
                         exp <- typename l (valuetype (fromJust r))
                         t <- ltype l (-1)
                         got <- typename l t
-                        Prelude.fail ("Incorrect result type (" ++ exp ++ " expected, got " ++ got ++ ")")
+                        fail ("Incorrect result type (" ++ exp ++ " expected, got " ++ got ++ ")")
 
 instance (StackValue t,LuaCallProc b) => LuaCallProc (t -> b) where
     callproc' l f a k x = callproc' l f (a >> push l x) (k+1)
