@@ -65,4 +65,5 @@ Test-Suite simple-test
   type:                 exitcode-stdio-1.0
   Hs-source-dirs:       test
   main-is:              simple-test.hs
-  Build-depends:        base, hslua
+  Build-depends:        base, hslua, utf8-string, bytestring
+
