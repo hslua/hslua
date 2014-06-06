@@ -119,7 +119,7 @@ module Scripting.Lua
     pushnil,
     pushnumber,
     pushstring,
-    pushstring2,
+    pushbytestring,
     pushthread,
     pushvalue,
     --pushvfstring,
@@ -150,7 +150,7 @@ module Scripting.Lua
     tonumber,
     topointer,
     tostring,
-    tostring2,
+    tobytestring,
     tothread,
     touserdata,
     ltype,
@@ -192,6 +192,7 @@ import Foreign.Marshal.Alloc
 import Data.IORef
 import qualified Foreign.Storable as F
 import qualified Data.ByteString  as BS
+import qualified Data.ByteString.Unsafe  as BS
 import qualified Data.List as L
 import Data.Maybe
 
@@ -506,8 +507,8 @@ tostring l n = alloca $ \lenPtr -> do
     peekCStringLen (cstr, fromIntegral len)
 
 -- | See @lua_tostring@ in Lua Reference Manual.
-tostring2 :: LuaState -> Int -> IO BS.ByteString
-tostring2 l n = alloca $ \lenPtr -> do
+tobytestring :: LuaState -> Int -> IO BS.ByteString
+tobytestring l n = alloca $ \lenPtr -> do
     cstr <- c_lua_tolstring l (fromIntegral n) lenPtr
     len <- F.peek lenPtr
     BS.packCStringLen (cstr, fromIntegral len)
@@ -722,8 +723,8 @@ pushstring :: LuaState -> String -> IO ()
 pushstring l s = withCStringLen s $ \(s,z) -> c_lua_pushlstring l s (fromIntegral z)
 
 -- | See @lua_pushstring@ in Lua Reference Manual.
-pushstring2 :: LuaState -> BS.ByteString -> IO ()
-pushstring2 l s = BS.useAsCStringLen s $ \(s,z) -> c_lua_pushlstring l s (fromIntegral z)
+pushbytestring :: LuaState -> BS.ByteString -> IO ()
+pushbytestring l s = BS.unsafeUseAsCStringLen s $ \(s,z) -> c_lua_pushlstring l s (fromIntegral z)
 
 -- | See @lua_pushthread@ in Lua Reference Manual.
 pushthread :: LuaState -> IO Bool
@@ -885,8 +886,8 @@ instance StackValue String where
     valuetype _ = TSTRING
 
 instance StackValue BS.ByteString where
-    push l x = pushstring2 l x
-    peek l n = maybepeek l n isstring tostring2
+    push l x = pushbytestring l x
+    peek l n = maybepeek l n isstring tobytestring
     valuetype _ = TSTRING
 
 instance StackValue Bool where
