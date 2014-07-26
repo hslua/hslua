@@ -58,6 +58,9 @@ Library
   if os(freebsd)
     CC-Options:         "-DLUA_USE_POSIX"
 
+  if os(windows)
+     CC-options:        "-D__NO_ISOCEXT"
+    
   if flag(apicheck)
     CC-Options:         "-DLUA_USE_APICHECK"
 
