@@ -6,7 +6,7 @@ import Scripting.Lua as Lua
 import Data.IORef
 import Foreign.C.Types (CInt)
 
-main:: IO ()
+main :: IO ()
 main = do
     callbacks <- newIORef []
     l <- newstate

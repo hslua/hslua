@@ -6,7 +6,6 @@
 -- stack manually).
 
 import Scripting.Lua as Lua
-import Prelude
 
 main :: IO ()
 main = do
