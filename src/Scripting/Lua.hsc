@@ -119,6 +119,7 @@ module Scripting.Lua
     pushnil,
     pushnumber,
     pushstring,
+    pushbytestring,
     pushthread,
     pushvalue,
     --pushvfstring,
@@ -149,6 +150,7 @@ module Scripting.Lua
     tonumber,
     topointer,
     tostring,
+    tobytestring,
     tothread,
     touserdata,
     ltype,
@@ -189,8 +191,11 @@ import Control.Exception
 import Foreign.Marshal.Alloc
 import Data.IORef
 import qualified Foreign.Storable as F
+import qualified Data.ByteString  as BS
+import qualified Data.ByteString.Unsafe  as BS
 import qualified Data.List as L
 import Data.Maybe
+
 
 #include "lua.h"
 
@@ -501,6 +506,13 @@ tostring l n = alloca $ \lenPtr -> do
     len <- F.peek lenPtr
     peekCStringLen (cstr, fromIntegral len)
 
+-- | See @lua_tostring@ in Lua Reference Manual.
+tobytestring :: LuaState -> Int -> IO BS.ByteString
+tobytestring l n = alloca $ \lenPtr -> do
+    cstr <- c_lua_tolstring l (fromIntegral n) lenPtr
+    len <- F.peek lenPtr
+    BS.packCStringLen (cstr, fromIntegral len)
+
 -- | See @lua_tothread@ in Lua Reference Manual.
 tothread :: LuaState -> Int -> IO LuaState
 tothread l n = c_lua_tothread l (fromIntegral n)
@@ -710,6 +722,10 @@ pushnumber = c_lua_pushnumber
 pushstring :: LuaState -> String -> IO ()
 pushstring l s = withCStringLen s $ \(s,z) -> c_lua_pushlstring l s (fromIntegral z)
 
+-- | See @lua_pushstring@ in Lua Reference Manual.
+pushbytestring :: LuaState -> BS.ByteString -> IO ()
+pushbytestring l s = BS.unsafeUseAsCStringLen s $ \(s,z) -> c_lua_pushlstring l s (fromIntegral z)
+
 -- | See @lua_pushthread@ in Lua Reference Manual.
 pushthread :: LuaState -> IO Bool
 pushthread l = liftM (/=0) (c_lua_pushthread l)
@@ -867,6 +883,11 @@ instance StackValue Double where
 instance StackValue String where
     push l x = pushstring l x
     peek l n = maybepeek l n isstring tostring
+    valuetype _ = TSTRING
+
+instance StackValue BS.ByteString where
+    push l x = pushbytestring l x
+    peek l n = maybepeek l n isstring tobytestring
     valuetype _ = TSTRING
 
 instance StackValue Bool where

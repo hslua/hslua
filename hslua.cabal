@@ -32,7 +32,7 @@ flag apicheck
   default:              False
 
 Library
-  Build-depends:        base==4.*, mtl >= 2.1
+  Build-depends:        base==4.*, mtl >= 2.1, bytestring
   Exposed-modules:      Scripting.Lua, Scripting.Lua.ConfigFile
   Hs-source-dirs:       src
   if flag(system-lua)
@@ -68,4 +68,5 @@ Test-Suite simple-test
   type:                 exitcode-stdio-1.0
   Hs-source-dirs:       test
   main-is:              simple-test.hs
-  Build-depends:        base, hslua
+  Build-depends:        base, hslua, utf8-string, bytestring
+
