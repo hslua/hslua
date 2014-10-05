@@ -1,5 +1,13 @@
 ## Changelog
 
+### 0.3.14
+
+* Pkgconf-based setup removed. Cabal is now using `extra-libraries` to link with Lua.
+* `luajit` flag is added to link hslua with LuaJIT.
+
+### 0.3.13
+
+* Small bugfix related with GHCi running under Windows.
 
 ### 0.3.12
 
