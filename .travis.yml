@@ -6,7 +6,7 @@ script:
 
   # Compile and link against Lua 5.2.3
   - wget http://www.lua.org/ftp/lua-5.2.3.tar.gz
-  - tar -xvf lua-5.2.3.tar.gz
+  - tar -xf lua-5.2.3.tar.gz
   - cd lua-5.2.3
   - make linux
   - sed -i 's?/usr/local?'`pwd`/install'?' Makefile
@@ -20,7 +20,7 @@ script:
 
   # Compile and link against Lua 5.1.5
   - wget http://www.lua.org/ftp/lua-5.1.5.tar.gz
-  - tar -xvf lua-5.1.5.tar.gz
+  - tar -xf lua-5.1.5.tar.gz
   - cd lua-5.1.5
   - make linux
   - sed -i 's?/usr/local?'`pwd`/install'?' Makefile
