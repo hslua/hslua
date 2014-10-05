@@ -4,56 +4,40 @@ ghc: 7.8
 script:
   - git clone https://github.com/osa1/hslua
 
-  # Compile and link against Lua 5.2.3
-  - wget http://www.lua.org/ftp/lua-5.2.3.tar.gz
-  - tar -xf lua-5.2.3.tar.gz
-  - cd lua-5.2.3
-  - make linux
-  - sudo make install
-  - cd ..
-  - cabal install -fsystem-lua --disable-documentation
+  # Compile and link using built-in Lua
+  - cabal install --disable-documentation
 
   # Clean stuff
   - cabal clean
   - ghc-pkg unregister hslua
-  - cd lua-5.2.3
-  - sudo make uninstall
-  - cd ..
 
-  # Compile and link against Lua 5.1.5
-  - wget http://www.lua.org/ftp/lua-5.1.5.tar.gz
-  - tar -xf lua-5.1.5.tar.gz
-  - cd lua-5.1.5
-  - make linux
-  - sudo make install
-  - cd ..
-  - cabal install -fsystem-lua --disable-documentation
-
-  # Clean stuff
-  - cabal clean
-  - ghc-pkg unregister hslua
-  - cd lua-5.1.5
-  - sudo make uninstall
-  - cd ..
-
-  # Compile and link against LuaJIT 2.0.3
+  # Install LuaJIT 2.0.3
   - wget http://luajit.org/download/LuaJIT-2.0.3.tar.gz
   - tar -xf LuaJIT-2.0.3.tar.gz
   - cd LuaJIT-2.0.3
+  - sed -i 's/^TARGET_CC= $(STATIC_CC)/TARGET_CC= $(DYNAMIC_CC)/g' src/Makefile
   - make
   - sudo make install
   - cd ..
-  - cabal install -fsystem-lua --disable-documentation
+
+  # Install Lua 5.1.5
+  - wget http://www.lua.org/ftp/lua-5.1.5.tar.gz
+  - tar -xf lua-5.1.5.tar.gz
+  - cd lua-5.1.5
+  - sed -i 's/^CFLAGS= -O2 -Wall/CFLAGS= -O2 -Wall -fPIC/' src/Makefile
+  - make linux
+  - sudo make install
+  - cd ..
+
+  # Compile and link using system-wide Lua 5.1.5
+  - cabal install -fsystem-lua
 
   # Clean stuff
   - cabal clean
   - ghc-pkg unregister hslua
-  - cd LuaJIT-2.0.3
-  - sudo make uninstall
-  - cd ..
 
-  # Compile and link using built-in Lua
-  - cabal install --disable-documentation
+  # Compile and link using system-wide LuaJIT
+  - cabal install -fsystem-lua -luajit
 
 notifications:
   email:
