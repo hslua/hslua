@@ -10,6 +10,6 @@
 #define luac_c
 #define LUA_CORE
 
-LUAI_FUNC int lua_neutralize_longjmp(lua_State *state);
+extern int lua_neutralize_longjmp(lua_State *state);
 
 #endif
