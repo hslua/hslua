@@ -32,7 +32,7 @@ script:
   - ghc-pkg unregister hslua
 
   # Compile and link using built-in Lua
-  cabal install --disable-documentation
+  - cabal install --disable-documentation
 
 notifications:
   email:
