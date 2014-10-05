@@ -37,7 +37,7 @@ script:
   - ghc-pkg unregister hslua
 
   # Compile and link using system-wide LuaJIT
-  - cabal install -fsystem-lua -luajit
+  - cabal install -fsystem-lua -fluajit
 
 notifications:
   email:
