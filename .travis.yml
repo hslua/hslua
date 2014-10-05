@@ -1,0 +1,41 @@
+language: "haskell"
+ghc: 7.8
+
+script:
+  - git clone https://github.com/osa1/hslua
+
+  # Compile and link against Lua 5.2.3
+  - wget http://www.lua.org/ftp/lua-5.2.3.tar.gz
+  - tar -xvf lua-5.2.3.tar.gz
+  - cd lua-5.2.3
+  - make linux
+  - sed -i 's?/usr/local?'`pwd`/install'?' Makefile
+  - make install
+  - cd ..
+  - cabal install -fno-lua --extra-include-dirs=`pwd`/lua-5.2.3/install/include --extra-lib-dirs=`pwd`/lua-5.2.3/install/lib --disable-documentation
+
+  # Clean stuff
+  - cabal clean
+  - ghc-pkg unregister hslua
+
+  # Compile and link against Lua 5.1.5
+  - wget http://www.lua.org/ftp/lua-5.1.5.tar.gz
+  - tar -xvf lua-5.1.5.tar.gz
+  - cd lua-5.1.5
+  - make linux
+  - sed -i 's?/usr/local?'`pwd`/install'?' Makefile
+  - cd ..
+  - cabal install -fno-lua --extra-include-dirs=`pwd`/lua-5.1.5/install/include --extra-lib-dirs=`pwd`/lua-5.1.5/install/lib --disable-documentation
+
+  # Clean stuff
+  - cabal clean
+  - ghc-pkg unregister hslua
+
+  # Compile and link using built-in Lua
+  cabal install --disable-documentation
+
+notifications:
+  email:
+    recipients: omeragacan@gmail.com
+    on_success: change
+    on_failure: change
