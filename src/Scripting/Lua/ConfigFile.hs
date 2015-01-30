@@ -29,12 +29,12 @@ module Scripting.Lua.ConfigFile
          ConfigFileException
        ) where
 
-import qualified Scripting.Lua as Lua
-import System.IO (FilePath)
 import Control.Exception (Exception, throwIO)
 import Control.Monad (forM, forM_)
 import Control.Monad.Reader
 import Data.Typeable (Typeable)
+import qualified Scripting.Lua as Lua
+import System.IO (FilePath)
 
 -- | Represents an open configuration file.
 data Config = Config Lua.LuaState
