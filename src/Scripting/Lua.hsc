@@ -320,8 +320,8 @@ foreign import ccall "lua.h lua_pushlstring" c_lua_pushlstring :: LuaState -> Pt
 foreign import ccall "lua.h lua_pushstring" c_lua_pushstring :: LuaState -> Ptr CChar -> IO ()
 {-
 LUA_API const char *(lua_pushvfstring) (lua_State *L, const char *fmt,
-                                                      va_list argp);
-LUA_API const char *(lua_pushfstring) (lua_State *L, const char *fmt, ...);
+                                                      va_list argp)
+LUA_API const char *(lua_pushfstring) (lua_State *L, const char *fmt, ...)
 -}
 foreign import ccall "lua.h lua_pushcclosure" c_lua_pushcclosure :: LuaState -> FunPtr LuaCFunction -> CInt -> IO ()
 foreign import ccall "lua.h lua_pushboolean" c_lua_pushboolean :: LuaState -> CInt -> IO ()
@@ -1080,7 +1080,7 @@ hsmethod__call l = do
 pushhsfunction :: LuaImport a => LuaState -> a -> IO ()
 pushhsfunction l f = do
     stableptr <- newStablePtr (luaimport f)
-    p <- newuserdata l (F.sizeOf stableptr);
+    p <- newuserdata l (F.sizeOf stableptr)
     F.poke (castPtr p) stableptr
     v <- newmetatable l "HaskellImportedFunction"
     when (v/=0) $ do
@@ -1098,7 +1098,7 @@ pushhsfunction l f = do
 pushrawhsfunction :: LuaState -> (LuaState -> IO CInt) -> IO ()
 pushrawhsfunction l f = do
     stableptr <- newStablePtr f
-    p <- newuserdata l (F.sizeOf stableptr);
+    p <- newuserdata l (F.sizeOf stableptr)
     F.poke (castPtr p) stableptr
     v <- newmetatable l "HaskellImportedFunction"
     when (v/=0) $ do
