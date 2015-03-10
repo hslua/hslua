@@ -13,6 +13,7 @@ main = do
     openlibs l
     registerhsfunction l "concat" concat'
     registerhsfunction l "pow" pow
+    registerhsfunction l "helloWorld" helloWorld
     loadfile l "haskellfun.lua"
     call l 0 0
     close l
@@ -22,3 +23,6 @@ concat' s1 s2 = return $ s1 ++ s2
 
 pow :: Double -> Double -> IO Double
 pow d1 d2 = return $ d1 ** d2
+
+helloWorld :: IO String
+helloWorld = return "Hello, World!"
