@@ -37,7 +37,7 @@ flag luajit
 
 Library
   Build-depends:        base == 4.*, mtl >= 2.1
-  Exposed-modules:      Scripting.Lua, Scripting.Lua.ConfigFile
+  Exposed-modules:      Scripting.Lua
   Hs-source-dirs:       src
   if flag(system-lua)
     if flag(luajit)
