@@ -919,7 +919,8 @@ hsmethod__call l = do
     remove l 1
     stableptr <- F.peek (castPtr ptr)
     f <- deRefStablePtr stableptr
-    f l
+    ret <- f l
+    if ret < 0 then c_lua_error l else return ret
 
 
 -- | Pushes Haskell function converted to a Lua function.
@@ -941,7 +942,7 @@ pushhsfunction l f = do
         -- create new metatable, fill it with two entries __gc and __call
         push l hsmethod__gc_addr
         setfield l (-2) "__gc"
-        push l c_lua_neutralize_longjmp_addr
+        push l hsmethod__call_addr
         setfield l (-2) "__call"
     setmetatable l (-2)
     return ()
@@ -959,7 +960,7 @@ pushrawhsfunction l f = do
         -- create new metatable, fill it with two entries __gc and __call
         push l hsmethod__gc_addr
         setfield l (-2) "__gc"
-        push l c_lua_neutralize_longjmp_addr
+        push l hsmethod__call_addr
         setfield l (-2) "__call"
     setmetatable l (-2)
     return ()

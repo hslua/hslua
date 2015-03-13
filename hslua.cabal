@@ -45,8 +45,6 @@ Library
     else
       Extra-libraries:  lua
     Includes:           lua.h
-    C-sources:          cbits/ntrljmp.c
-    Include-dirs:       cbits
   else
     C-sources:          lua-5.1.5/lobject.c, lua-5.1.5/ltm.c, lua-5.1.5/ldblib.c,
                         lua-5.1.5/ldo.c, lua-5.1.5/lvm.c, lua-5.1.5/ltable.c,
@@ -58,9 +56,9 @@ Library
                         lua-5.1.5/lcode.c, lua-5.1.5/loadlib.c, lua-5.1.5/lapi.c,
                         lua-5.1.5/lundump.c, lua-5.1.5/loslib.c, lua-5.1.5/lparser.c,
                         lua-5.1.5/ldebug.c, lua-5.1.5/liolib.c,
-                        lua-5.1.5/llex.c, cbits/ntrljmp.c
+                        lua-5.1.5/llex.c
 
-    Include-dirs:       lua-5.1.5, cbits
+    Include-dirs:       lua-5.1.5
 
   if os(linux)
     CC-Options:         "-DLUA_USE_LINUX"

@@ -299,13 +299,3 @@ foreign import ccall "lauxlib.h luaL_ref"
 
 foreign import ccall "lauxlib.h luaL_unref"
   c_luaL_unref :: LuaState -> CInt -> CInt -> IO ()
-
-
---------------------------------------------------------------------------------
--- * TODO: Remove these
-
-foreign import ccall "ntrljmp.h lua_neutralize_longjmp"
-  c_lua_neutralize_longjmp :: LuaState -> IO CInt
-
-foreign import ccall "ntrljmp.h &lua_neutralize_longjmp"
-  c_lua_neutralize_longjmp_addr :: FunPtr (LuaState -> IO CInt)
