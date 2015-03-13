@@ -566,7 +566,10 @@ class LuaImport a where
     luaimportargerror :: Int -> String -> a -> LuaCFunction
 
 instance (StackValue a) => LuaImport (IO a) where
-    luaimportargerror n msg _x l = argerror l n msg
+    luaimportargerror n msg _x l = do
+      -- TODO: maybe improve the error message
+      pushstring l msg
+      return (-1)
     luaimport' _narg x l = x >>= push l >> return 1
 
 instance (StackValue a, LuaImport b) => LuaImport (a -> b) where
@@ -686,8 +689,7 @@ hsmethod__call l = do
     remove l 1
     stableptr <- F.peek (castPtr ptr)
     f <- deRefStablePtr stableptr
-    ret <- f l
-    if ret < 0 then c_lua_error l else return ret
+    f l
 
 
 -- | Pushes Haskell function converted to a Lua function.
@@ -709,7 +711,7 @@ pushhsfunction l f = do
       -- create new metatable, fill it with two entries __gc and __call
       push l hsmethod__gc_addr
       setfield l (-2) "__gc"
-      push l hsmethod__call_addr
+      push l c_lua_neutralize_longjmp_addr
       setfield l (-2) "__call"
     setmetatable l (-2)
     return ()
@@ -727,7 +729,7 @@ pushrawhsfunction l f = do
       -- create new metatable, fill it with two entries __gc and __call
       push l hsmethod__gc_addr
       setfield l (-2) "__gc"
-      push l hsmethod__call_addr
+      push l c_lua_neutralize_longjmp_addr
       setfield l (-2) "__call"
     setmetatable l (-2)
     return ()
