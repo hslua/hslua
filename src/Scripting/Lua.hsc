@@ -702,24 +702,12 @@ hsmethod__call l = do
 -- use an error code of (-1) to the same effect. Push
 -- error message as the sole return value.
 pushhsfunction :: LuaImport a => LuaState -> a -> IO ()
-pushhsfunction l f = do
-    stableptr <- newStablePtr (luaimport f)
-    p <- newuserdata l (F.sizeOf stableptr)
-    F.poke (castPtr p) stableptr
-    v <- newmetatable l "HaskellImportedFunction"
-    when (v/=0) $ do
-      -- create new metatable, fill it with two entries __gc and __call
-      push l hsmethod__gc_addr
-      setfield l (-2) "__gc"
-      push l c_lua_neutralize_longjmp_addr
-      setfield l (-2) "__call"
-    setmetatable l (-2)
-    return ()
+pushhsfunction l f = pushrawhsfunction l (luaimport f)
 
 -- | Pushes _raw_ Haskell function converted to a Lua function.
 -- Raw Haskell functions collect parameters from the stack and return
 -- a `CInt` that represents number of return values left in the stack.
-pushrawhsfunction :: LuaState -> (LuaState -> IO CInt) -> IO ()
+pushrawhsfunction :: LuaState -> LuaCFunction -> IO ()
 pushrawhsfunction l f = do
     stableptr <- newStablePtr f
     p <- newuserdata l (F.sizeOf stableptr)
