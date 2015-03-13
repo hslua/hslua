@@ -1,183 +1,7 @@
+{-# LANGUAGE FlexibleInstances, ForeignFunctionInterface, ScopedTypeVariables #-}
 
-{-# LANGUAGE ForeignFunctionInterface, TypeSynonymInstances, FlexibleInstances, ScopedTypeVariables #-}
-{-# OPTIONS_GHC -Wall -fno-warn-name-shadowing -fno-warn-unused-do-bind -fno-warn-unused-binds #-}
--- |
--- Module      : Scripting.Lua
--- Copyright   : (c) Gracjan Polak 2007
---
--- License     : MIT
---
--- Maintainer  : omeragacan@gmail.com
--- Stability   : alpha
--- Portability : portable, ffi
---
--- A Haskell wrapper library for a scripting language Lua.
--- See @http:\/\/www.lua.org\/@ for more details.
---
--- This module is intended to be imported @qualified@, eg.
---
--- > import qualified Scripting.Lua as Lua
---
--- This way we use Haskell module hierarchy to make Lua names shorter.
--- Haskell functions are named after Lua functions, but the @lua_@ or
--- @luaL_@ prefix.
---
--- Lua types are mapped to Haskell types as in the following table:
---
--- > int (stack index)        Int
--- > lua_Integer              LuaInteger
--- > lua_Number               LuaNumber
--- > int (bool result)        Bool
--- > const char * (string)    String
--- > void *                   Ptr ()
--- > lua_State *              LuaState
---
--- Most functions are one-to-one mappings.
--- Rare special cases are clearly marked in this document.
---
--- Minmal sample embedding:
---
--- > import qualified Scripting.Lua as Lua
---
--- > main = do
--- >     l <- Lua.newstate
--- >     Lua.openlibs l
--- >     Lua.callproc l "print" "Hello from Lua"
--- >     Lua.close l
+module Scripting.Lua where
 
-module Scripting.Lua
-(
-    -- * Basic Lua types
-    LuaState(..),
-    LuaCFunction,
-    LuaInteger,
-    LuaNumber,
-    LuaImport(..),
-
-    -- * Constants and enumerations
-    GCCONTROL(..),
-    LTYPE(..),
-    multret,
-    registryindex,
-    environindex,
-    globalsindex,
-
-    -- * lua_* functions
-    atpanic,
-    call,
-    checkstack,
-    close,
-    concat,
-    cpcall,
-    createtable,
-    dump,
-    equal,
-    --error,    -- cannot import this one, as this uses setjmp/longjmp
-    gc,
-    --getallocf,
-    getfenv,
-    getfield,
-    getglobal,
-    --gethook,
-    --gethookcount,
-    --gethookmask,
-    --getinfo,
-    --getlocal,
-    getmetatable,
-    --getstack,
-    gettable,
-    gettop,
-    insert,
-    isboolean,
-    iscfunction,
-    isfunction,
-    islightuserdata,
-    isnil,
-    isnumber,
-    isstring,
-    istable,
-    isthread,
-    isuserdata,
-    lessthan,
-    --load,
-    newstate,
-    newtable,
-    newthread,
-    newuserdata,
-    next,
-    objlen,
-    pcall,
-    pop,
-    pushboolean,
-    pushcclosure,
-    pushcfunction,
-    --pushfstring,
-    pushinteger,
-    pushlightuserdata,
-    --pushlstring,
-    pushnil,
-    pushnumber,
-    pushstring,
-    pushthread,
-    pushvalue,
-    --pushvfstring,
-    rawequal,
-    rawget,
-    rawgeti,
-    rawset,
-    rawseti,
-    register,
-    remove,
-    replace,
-    resume,
-    --setallocf,
-    setfenv,
-    setfield,
-    setglobal,
-    --sethook,
-    --setlocal,
-    setmetatable,
-    settable,
-    settop,
-    status,
-    toboolean,
-    tocfunction,
-    tointeger,
-    --tolstring,
-    tonumber,
-    topointer,
-    tostring,
-    tothread,
-    touserdata,
-    ltype,
-    typename,
-    upvalueindex,
-    xmove,
-    yield,
-
-    -- * luaL_* functions
-    openlibs,
-    loadfile,
-    loadstring,
-    newmetatable,
-    argerror,
-    ref,
-    unref,
-
-    -- * Haskell extensions
-    StackValue(..),
-    callproc,
-    callfunc,
-    getglobal2,
-    newcfunction,
-    freecfunction,
-    luaimport,
-    pushhsfunction,
-    pushrawhsfunction,
-    registerhsfunction,
-    registerrawhsfunction
-)
-where
 import Control.Exception
 import Control.Monad
 import Data.IORef
@@ -188,25 +12,25 @@ import Foreign.Marshal.Alloc
 import Foreign.Ptr
 import Foreign.StablePtr
 import qualified Foreign.Storable as F
-import Prelude hiding (concat, catch)
+import Prelude hiding (concat)
 
 import Scripting.Lua.Raw
 
 #include "lua.h"
 
-
 -- | Enumeration used as type tag. See @lua_type@ in Lua Reference Manual.
-data LTYPE = TNONE
-           | TNIL
-           | TBOOLEAN
-           | TLIGHTUSERDATA
-           | TNUMBER
-           | TSTRING
-           | TTABLE
-           | TFUNCTION
-           | TUSERDATA
-           | TTHREAD
-           deriving (Eq,Show,Ord)
+data LTYPE
+    = TNONE
+    | TNIL
+    | TBOOLEAN
+    | TLIGHTUSERDATA
+    | TNUMBER
+    | TSTRING
+    | TTABLE
+    | TFUNCTION
+    | TUSERDATA
+    | TTHREAD
+    deriving (Eq,Show,Ord)
 
 instance Enum LTYPE where
     fromEnum TNONE          = #{const LUA_TNONE}
@@ -233,15 +57,16 @@ instance Enum LTYPE where
     toEnum n                             = error $ "Cannot convert (" ++ show n ++ ") to LTYPE"
 
 -- | Enumeration used by @gc@ function.
-data GCCONTROL  = GCSTOP
-                | GCRESTART
-                | GCCOLLECT
-                | GCCOUNT
-                | GCCOUNTB
-                | GCSTEP
-                | GCSETPAUSE
-                | GCSETSTEPMUL
-                deriving (Eq,Ord,Show,Enum)
+data GCCONTROL
+    = GCSTOP
+    | GCRESTART
+    | GCCOLLECT
+    | GCCOUNT
+    | GCCOUNTB
+    | GCSTEP
+    | GCSETPAUSE
+    | GCSETSTEPMUL
+    deriving (Eq,Ord,Show,Enum)
 
 -- | See @LUA_MULTRET@ in Lua Reference Manual.
 multret :: Int
@@ -263,7 +88,6 @@ objlen l n = liftM fromIntegral (c_lua_objlen l (fromIntegral n))
 pop :: LuaState -> Int -> IO ()
 pop l n = settop l (-n-1)
 
-
 -- | See @lua_newtable@ in Lua Reference Manual.
 newtable :: LuaState -> IO ()
 newtable l = createtable l 0 0
@@ -276,10 +100,9 @@ pushcclosure l f n = c_lua_pushcclosure l f (fromIntegral n)
 pushcfunction :: LuaState -> FunPtr LuaCFunction -> IO ()
 pushcfunction l f = pushcclosure l f 0
 
-
 -- | See @lua_strlen@ in Lua Reference Manual.
 strlen :: LuaState -> Int -> IO Int
-strlen l i =  objlen l i
+strlen l i = objlen l i
 
 -- | See @lua_type@ in Lua Reference Manual.
 ltype :: LuaState -> Int -> IO LTYPE
@@ -287,35 +110,35 @@ ltype l n = liftM (toEnum . fromIntegral) (c_lua_type l (fromIntegral n))
 
 -- | See @lua_isfunction@ in Lua Reference Manual.
 isfunction :: LuaState -> Int -> IO Bool
-isfunction l n = liftM (==TFUNCTION) (ltype l n)
+isfunction l n = liftM (== TFUNCTION) (ltype l n)
 
 -- | See @lua_istable@ in Lua Reference Manual.
 istable :: LuaState -> Int -> IO Bool
-istable l n = liftM (==TTABLE) (ltype l n)
+istable l n = liftM (== TTABLE) (ltype l n)
 
 -- | See @lua_islightuserdata@ in Lua Reference Manual.
 islightuserdata :: LuaState -> Int -> IO Bool
-islightuserdata l n = liftM (==TLIGHTUSERDATA) (ltype l n)
+islightuserdata l n = liftM (== TLIGHTUSERDATA) (ltype l n)
 
 -- | See @lua_isnil@ in Lua Reference Manual.
 isnil :: LuaState -> Int -> IO Bool
-isnil l n = liftM (==TNIL) (ltype l n)
+isnil l n = liftM (== TNIL) (ltype l n)
 
 -- | See @lua_isboolean@ in Lua Reference Manual.
 isboolean :: LuaState -> Int -> IO Bool
-isboolean l n = liftM (==TBOOLEAN) (ltype l n)
+isboolean l n = liftM (== TBOOLEAN) (ltype l n)
 
 -- | See @lua_isthread@ in Lua Reference Manual.
 isthread :: LuaState -> Int -> IO Bool
-isthread l n = liftM (==TTHREAD) (ltype l n)
+isthread l n = liftM (== TTHREAD) (ltype l n)
 
 -- | See @lua_none@ in Lua Reference Manual.
 isnone :: LuaState -> Int -> IO Bool
-isnone l n = liftM (==TNONE) (ltype l n)
+isnone l n = liftM (== TNONE) (ltype l n)
 
 -- | See @lua_noneornil@ in Lua Reference Manual.
 isnoneornil :: LuaState -> Int -> IO Bool
-isnoneornil l n = liftM (<=TNIL) (ltype l n)
+isnoneornil l n = liftM (<= TNIL) (ltype l n)
 
 -- | See @LUA_REGISTRYINDEX@ in Lua Reference Manual.
 registryindex :: Int
@@ -332,30 +155,6 @@ globalsindex = #{const LUA_GLOBALSINDEX}
 -- | See @lua_upvalueindex@ in Lua Reference Manual.
 upvalueindex :: Int -> Int
 upvalueindex i = globalsindex - i
-
-{-
-The following seem to be really bad idea, as calls from C
-back to Haskell land are costly.
-
-Use standard Lua malloc based allocator.
-
-foreign export ccall "hslua_alloc" hslua_alloc :: Ptr () -> Ptr () -> CInt -> CInt -> IO (Ptr ())
-foreign import ccall "&hslua_alloc" hslua_alloc_addr :: FunPtr LuaAlloc
-
-hslua_alloc :: Ptr () -> Ptr () -> CInt -> CInt -> IO (Ptr ())
-hslua_alloc ud ptr osize nsize = reallocBytes ptr (fromIntegral nsize)
-
-static void *l_alloc (void *ud, void *ptr, size_t osize,
-                                                size_t nsize) {
-       (void)ud;  (void)osize;  /* not used */
-       if (nsize == 0) {
-         free(ptr);
-         return NULL;
-       }
-       else
-         return realloc(ptr, nsize);
-     }
--}
 
 -- | See @lua_atpanic@ in Lua Reference Manual.
 atpanic :: LuaState -> FunPtr LuaCFunction -> IO (FunPtr LuaCFunction)
@@ -390,7 +189,7 @@ yield l n = liftM fromIntegral (c_lua_yield l (fromIntegral n))
 
 -- | See @lua_checkstack@ in Lua Reference Manual.
 checkstack :: LuaState -> Int -> IO Bool
-checkstack l n = liftM (/=0) (c_lua_checkstack l (fromIntegral n))
+checkstack l n = liftM (/= 0) (c_lua_checkstack l (fromIntegral n))
 
 -- | See @lua_newstate@ and @luaL_newstate@ in Lua Reference Manual.
 newstate :: IO LuaState
@@ -404,11 +203,7 @@ close = c_lua_close
 concat :: LuaState -> Int -> IO ()
 concat l n = c_lua_concat l (fromIntegral n)
 
-
-
--- | See @lua_call@ and @lua_call@ in Lua Reference Manual. This is
--- a wrapper over @lua_pcall@, as @lua_call@ is unsafe in controlled environment
--- like Haskell VM.
+-- | See @lua_call@ and @lua_call@ in Lua Reference Manual.
 call :: LuaState -> Int -> Int -> IO ()
 call l a b = c_lua_call l (fromIntegral a) (fromIntegral b)
 
@@ -447,9 +242,9 @@ dump l = do
     r <- newIORef ""
     let wr :: LuaWriter
         wr _l p s _d = do
-               k <- peekCStringLen (p,fromIntegral s)
-               modifyIORef r (++k)
-               return 0
+          k <- peekCStringLen (p,fromIntegral s)
+          modifyIORef r (++ k)
+          return 0
     writer <- mkStringWriter wr
     c_lua_dump l writer nullPtr
     freeHaskellFunPtr writer
@@ -457,7 +252,7 @@ dump l = do
 
 -- | See @lua_equal@ in Lua Reference Manual.
 equal :: LuaState -> Int -> Int -> IO Bool
-equal l i j = liftM (/=0) (c_lua_equal l (fromIntegral i) (fromIntegral j))
+equal l i j = liftM (/= 0) (c_lua_equal l (fromIntegral i) (fromIntegral j))
 
 -- | See @lua_error@ in Lua Reference Manual.
 --error :: LuaState -> IO Int
@@ -473,7 +268,7 @@ getfenv l n = c_lua_getfenv l (fromIntegral n)
 
 -- | See @lua_getmetatable@ in Lua Reference Manual.
 getmetatable :: LuaState -> Int -> IO Bool
-getmetatable l n = liftM (/=0) (c_lua_getmetatable l (fromIntegral n))
+getmetatable l n = liftM (/= 0) (c_lua_getmetatable l (fromIntegral n))
 
 -- | See @lua_gettable@ in Lua Reference Manual.
 gettable :: LuaState -> Int -> IO ()
@@ -489,29 +284,28 @@ insert l n  = c_lua_insert l (fromIntegral n)
 
 -- | See @lua_iscfunction@ in Lua Reference Manual.
 iscfunction :: LuaState -> Int -> IO Bool
-iscfunction l n = liftM (/=0) (c_lua_iscfunction l (fromIntegral n))
+iscfunction l n = liftM (/= 0) (c_lua_iscfunction l (fromIntegral n))
 
 -- | See @lua_isnumber@ in Lua Reference Manual.
 isnumber :: LuaState -> Int -> IO Bool
-isnumber l n = liftM (/=0) (c_lua_isnumber l (fromIntegral n))
+isnumber l n = liftM (/= 0) (c_lua_isnumber l (fromIntegral n))
 
 -- | See @lua_isstring@ in Lua Reference Manual.
 isstring :: LuaState -> Int -> IO Bool
-isstring l n = liftM (/=0) (c_lua_isstring l (fromIntegral n))
+isstring l n = liftM (/= 0) (c_lua_isstring l (fromIntegral n))
 
 -- | See @lua_isuserdata@ in Lua Reference Manual.
 isuserdata :: LuaState -> Int -> IO Bool
-isuserdata l n = liftM (/=0) (c_lua_isuserdata l (fromIntegral n))
+isuserdata l n = liftM (/= 0) (c_lua_isuserdata l (fromIntegral n))
 
 -- | See @lua_lessthan@ in Lua Reference Manual.
 lessthan :: LuaState -> Int -> Int -> IO Bool
-lessthan l i j = liftM (/=0) (c_lua_lessthan l (fromIntegral i) (fromIntegral j))
+lessthan l i j = liftM (/= 0) (c_lua_lessthan l (fromIntegral i) (fromIntegral j))
 
 
 -- | See @luaL_loadfile@ in Lua Reference Manual.
 loadfile :: LuaState -> String -> IO Int
 loadfile l f = readFile f >>= \c -> loadstring l c f
-
 
 foreign import ccall "wrapper" mkStringReader :: LuaReader -> IO (FunPtr LuaReader)
 
@@ -521,15 +315,14 @@ loadstring l script cn = do
     w <- newIORef nullPtr
     let rd :: LuaReader
         rd _l _d ps = do
-               k <- readIORef w
-               if k==nullPtr
-                   then do
-                       (k,l) <- newCStringLen script
-                       writeIORef w k
-                       F.poke ps (fromIntegral l)
-                       return k
-                   else do
-                       return nullPtr
+          k <- readIORef w
+          if k == nullPtr
+            then do
+              (k,l) <- newCStringLen script
+              writeIORef w k
+              F.poke ps (fromIntegral l)
+              return k
+            else return nullPtr
     writer <- mkStringReader rd
     res <- withCString cn $ \cn -> c_lua_load l writer nullPtr cn
     freeHaskellFunPtr writer
@@ -547,7 +340,7 @@ newuserdata l s = c_lua_newuserdata l (fromIntegral s)
 
 -- | See @lua_next@ in Lua Reference Manual.
 next :: LuaState -> Int -> IO Bool
-next l i = liftM (/=0) (c_lua_next l (fromIntegral i))
+next l i = liftM (/= 0) (c_lua_next l (fromIntegral i))
 
 -- | See @lua_pushboolean@ in Lua Reference Manual.
 pushboolean :: LuaState -> Bool -> IO ()
@@ -575,7 +368,7 @@ pushstring l s = withCStringLen s $ \(s,z) -> c_lua_pushlstring l s (fromIntegra
 
 -- | See @lua_pushthread@ in Lua Reference Manual.
 pushthread :: LuaState -> IO Bool
-pushthread l = liftM (/=0) (c_lua_pushthread l)
+pushthread l = liftM (/= 0) (c_lua_pushthread l)
 
 -- | See @lua_pushvalue@ in Lua Reference Manual.
 pushvalue :: LuaState -> Int -> IO ()
@@ -583,7 +376,7 @@ pushvalue l n = c_lua_pushvalue l (fromIntegral n)
 
 -- | See @lua_rawequal@ in Lua Reference Manual.
 rawequal :: LuaState -> Int -> Int -> IO Bool
-rawequal l n m = liftM (/=0) (c_lua_rawequal l (fromIntegral n) (fromIntegral m))
+rawequal l n m = liftM (/= 0) (c_lua_rawequal l (fromIntegral n) (fromIntegral m))
 
 -- | See @lua_rawget@ in Lua Reference Manual.
 rawget :: LuaState -> Int -> IO ()
@@ -632,7 +425,7 @@ status l = liftM fromIntegral (c_lua_status l)
 
 -- | See @lua_toboolean@ in Lua Reference Manual.
 toboolean :: LuaState -> Int -> IO Bool
-toboolean l n = liftM (/=0) (c_lua_toboolean l (fromIntegral n))
+toboolean l n = liftM (/= 0) (c_lua_toboolean l (fromIntegral n))
 
 -- | See @lua_tocfunction@ in Lua Reference Manual.
 tocfunction :: LuaState -> Int -> IO (FunPtr LuaCFunction)
@@ -700,8 +493,8 @@ maybepeek :: l -> n -> (l -> n -> IO Bool) -> (l -> n -> IO r) -> IO (Maybe r)
 maybepeek l n test peek = do
     v <- test l n
     if v
-        then liftM Just (peek l n)
-        else return Nothing
+      then liftM Just (peek l n)
+      else return Nothing
 
 instance StackValue LuaInteger where
     push l x = pushinteger l x
@@ -750,32 +543,6 @@ instance StackValue () where
     peek l n = maybepeek l n isnil (\_l _n -> return ())
     valuetype _ = TNIL
 
-
-{-
--- | Argument wrapper, to be used in connection with @callproc@ and @callfunc@.
-arg :: StackValue a => a -> LuaState -> IO ()
-arg a l = push l a
-
--- | Call a Lua procedure. Use as:
--- > callproc l "proc" [arg "abc", arg 1, arg 5]
-callproc :: LuaState -> String -> [LuaState -> IO ()] -> IO ()
-callproc l f as = do
-    getglobal2 l f
-    mapM_ ($ l) as
-    call l (length as) 0
-
--- | Call a Lua function. Use as:
--- > v <- callfunc l "proc" [arg "abc", arg 1, arg 5]
-callfunc :: StackValue a => LuaState -> String -> [LuaState -> IO ()] -> IO (Maybe a)
-callfunc l f as = do
-    getglobal2 l f
-    mapM_ ($ l) as
-    call l (length as) 1
-    z <- peek l (-1)
-    pop l 1
-    return z
--}
-
 -- | Like @getglobal@, but knows about packages. e. g.
 --
 -- > getglobal l "math.sin"
@@ -785,9 +552,10 @@ getglobal2 :: LuaState -> String -> IO ()
 getglobal2 l n = do
     getglobal l x
     mapM_ dotable xs
-    where (x:xs) = splitdot n
-          splitdot = filter (/=".") . L.groupBy (\a b -> a/='.' && b/='.')
-          dotable x = getfield l (-1) x >> gettop l >>= \n -> remove l (n-1)
+  where
+    (x:xs) = splitdot n
+    splitdot = filter (/=".") . L.groupBy (\a b -> a/='.' && b/='.')
+    dotable x = getfield l (-1) x >> gettop l >>= \n -> remove l (n-1)
 
 
 typenameindex :: LuaState -> Int -> IO String
@@ -801,7 +569,7 @@ instance (StackValue a) => LuaImport (IO a) where
     luaimportargerror n msg _x l = argerror l n msg
     luaimport' _narg x l = x >>= push l >> return 1
 
-instance (StackValue a,LuaImport b) => LuaImport (a -> b) where
+instance (StackValue a, LuaImport b) => LuaImport (a -> b) where
     luaimportargerror n msg x l = luaimportargerror n msg (x undefined) l
     {-
      - FIXME: Cannot catch this exception here, because we are called from C,
@@ -809,14 +577,14 @@ instance (StackValue a,LuaImport b) => LuaImport (a -> b) where
      - Cannot call lua_error, because it uses longjmp and would skip two layers of abstraction.
      -}
     luaimport' narg x l = do
-        arg <- peek l narg
-        case arg of
-            Just v -> luaimport' (narg+1) (x v) l
-            Nothing -> do
-                t <- ltype l narg
-                exp <- typename l (valuetype (fromJust arg))
-                got <- typename l t
-                luaimportargerror narg (exp ++ " expected, got " ++ got) (x undefined) l
+      arg <- peek l narg
+      case arg of
+        Just v -> luaimport' (narg+1) (x v) l
+        Nothing -> do
+          t <- ltype l narg
+          exp <- typename l (valuetype (fromJust arg))
+          got <- typename l t
+          luaimportargerror narg (exp ++ " expected, got " ++ got) (x undefined) l
 
 foreign import ccall "wrapper" mkWrapper :: LuaCFunction -> IO (FunPtr LuaCFunction)
 
@@ -861,42 +629,41 @@ callfunc l f = callfunc' l f (return ()) 0
 
 instance LuaCallProc (IO t) where
     callproc' l f a k = do
-        getglobal2 l f
-        a
-        z <- pcall l k 0 0
-        if z/=0
-            then do
-                Just msg <- peek l (-1)
-                pop l 1
-                fail msg
-            else do
-                return undefined
+      getglobal2 l f
+      a
+      z <- pcall l k 0 0
+      if z /= 0
+        then do
+          Just msg <- peek l (-1)
+          pop l 1
+          fail msg
+        else return undefined
 
 instance (StackValue t) => LuaCallFunc (IO t) where
     callfunc' l f a k = do
-        getglobal2 l f
-        a
-        z <- pcall l k 1 0
-        if z/=0
-            then do
-                Just msg <- peek l (-1)
-                pop l 1
-                fail msg
-            else do
-                r <- peek l (-1)
-                pop l 1
-                case r of
-                    Just x -> return x
-                    Nothing -> do
-                        exp <- typename l (valuetype (fromJust r))
-                        t <- ltype l (-1)
-                        got <- typename l t
-                        fail ("Incorrect result type (" ++ exp ++ " expected, got " ++ got ++ ")")
+      getglobal2 l f
+      a
+      z <- pcall l k 1 0
+      if z/=0
+        then do
+          Just msg <- peek l (-1)
+          pop l 1
+          fail msg
+        else do
+          r <- peek l (-1)
+          pop l 1
+          case r of
+            Just x -> return x
+            Nothing -> do
+              exp <- typename l (valuetype (fromJust r))
+              t <- ltype l (-1)
+              got <- typename l t
+              fail ("Incorrect result type (" ++ exp ++ " expected, got " ++ got ++ ")")
 
-instance (StackValue t,LuaCallProc b) => LuaCallProc (t -> b) where
+instance (StackValue t, LuaCallProc b) => LuaCallProc (t -> b) where
     callproc' l f a k x = callproc' l f (a >> push l x) (k+1)
 
-instance (StackValue t,LuaCallFunc b) => LuaCallFunc (t -> b) where
+instance (StackValue t, LuaCallFunc b) => LuaCallFunc (t -> b) where
     callfunc' l f a k x = callfunc' l f (a >> push l x) (k+1)
 
 
@@ -939,11 +706,11 @@ pushhsfunction l f = do
     F.poke (castPtr p) stableptr
     v <- newmetatable l "HaskellImportedFunction"
     when (v/=0) $ do
-        -- create new metatable, fill it with two entries __gc and __call
-        push l hsmethod__gc_addr
-        setfield l (-2) "__gc"
-        push l hsmethod__call_addr
-        setfield l (-2) "__call"
+      -- create new metatable, fill it with two entries __gc and __call
+      push l hsmethod__gc_addr
+      setfield l (-2) "__gc"
+      push l hsmethod__call_addr
+      setfield l (-2) "__call"
     setmetatable l (-2)
     return ()
 
@@ -957,11 +724,11 @@ pushrawhsfunction l f = do
     F.poke (castPtr p) stableptr
     v <- newmetatable l "HaskellImportedFunction"
     when (v/=0) $ do
-        -- create new metatable, fill it with two entries __gc and __call
-        push l hsmethod__gc_addr
-        setfield l (-2) "__gc"
-        push l hsmethod__call_addr
-        setfield l (-2) "__call"
+      -- create new metatable, fill it with two entries __gc and __call
+      push l hsmethod__gc_addr
+      setfield l (-2) "__gc"
+      push l hsmethod__call_addr
+      setfield l (-2) "__call"
     setmetatable l (-2)
     return ()
 
@@ -972,4 +739,3 @@ registerhsfunction l n f = pushhsfunction l f >> setglobal l n
 -- | Imports a raw Haskell function and registers it at global name.
 registerrawhsfunction :: LuaState -> String -> (LuaState -> IO CInt) -> IO ()
 registerrawhsfunction l n f = pushrawhsfunction l f >> setglobal l n
-

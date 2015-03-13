@@ -2,9 +2,10 @@
 -- An example hslua program that demonstrates providing Haskell callbacks
 -- to Lua and getting Lua callbacks from Haskell.
 
-import Scripting.Lua as Lua
 import Data.IORef
 import Foreign.C.Types (CInt)
+import Scripting.Lua as Lua
+import Scripting.Lua.Raw as Lua
 
 main :: IO ()
 main = do
