@@ -22,6 +22,26 @@ import Scripting.Lua.Raw
 
 #include "lua.h"
 
+-- * A note about integer functions
+-- $ Lua didn't have integers until Lua 5.3, and the version supported by hslua
+-- is Lua 5.1. In Lua 5.1 and 5.2, integer functions like 'pushinteger' convert
+-- integers to 'LuaNumber's before storing them in Lua stack/heap, and getter
+-- functions like 'tointeger' convert them back to 'LuaInteger's.
+--
+-- This means that you can lose some information during the conversion. For
+-- example:
+--
+-- > main = do
+-- >   l <- newstate
+-- >   let val = maxBound :: LuaInteger
+-- >   pushinteger l val
+-- >   i3 <- tointeger l 1
+-- >   putStrLn $ show val ++ " - " ++ show i3
+--
+-- Prints @9223372036854775807 - -9223372036854775808@.
+--
+
+
 -- | Enumeration used as type tag. See @lua_type@ in Lua Reference Manual.
 data LTYPE
     = TNONE
