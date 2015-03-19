@@ -4,11 +4,15 @@ module Scripting.Lua where
 
 import Control.Exception
 import Control.Monad
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as BC
+import qualified Data.ByteString.Unsafe as B
 import Data.IORef
 import qualified Data.List as L
 import Data.Maybe
 import Foreign.C
 import Foreign.Marshal.Alloc
+import Foreign.Marshal.Array
 import Foreign.Ptr
 import Foreign.StablePtr
 import qualified Foreign.Storable as F
@@ -161,11 +165,14 @@ atpanic :: LuaState -> FunPtr LuaCFunction -> IO (FunPtr LuaCFunction)
 atpanic = c_lua_atpanic
 
 -- | See @lua_tostring@ in Lua Reference Manual.
-tostring :: LuaState -> Int -> IO String
+tostring :: LuaState -> Int -> IO B.ByteString
 tostring l n = alloca $ \lenPtr -> do
     cstr <- c_lua_tolstring l (fromIntegral n) lenPtr
     len <- F.peek lenPtr
-    peekCStringLen (cstr, fromIntegral len)
+    -- Lua string may change or get garbage collected, copy it
+    cstr' <- mallocBytes (fromIntegral len)
+    copyArray cstr' cstr (fromIntegral len)
+    B.unsafePackMallocCStringLen (cstr', fromIntegral len)
 
 -- | See @lua_tothread@ in Lua Reference Manual.
 tothread :: LuaState -> Int -> IO LuaState
@@ -363,8 +370,8 @@ pushnumber :: LuaState -> LuaNumber -> IO ()
 pushnumber = c_lua_pushnumber
 
 -- | See @lua_pushstring@ in Lua Reference Manual.
-pushstring :: LuaState -> String -> IO ()
-pushstring l s = withCStringLen s $ \(s,z) -> c_lua_pushlstring l s (fromIntegral z)
+pushstring :: LuaState -> B.ByteString -> IO ()
+pushstring l s = B.unsafeUseAsCStringLen s $ \(s,z) -> c_lua_pushlstring l s (fromIntegral z)
 
 -- | See @lua_pushthread@ in Lua Reference Manual.
 pushthread :: LuaState -> IO Bool
@@ -511,7 +518,7 @@ instance StackValue Int where
     peek l n = maybepeek l n isnumber (\l n -> liftM fromIntegral (tointeger l n))
     valuetype _ = TNUMBER
 
-instance StackValue String where
+instance StackValue B.ByteString where
     push l x = pushstring l x
     peek l n = maybepeek l n isstring tostring
     valuetype _ = TSTRING
@@ -568,7 +575,7 @@ class LuaImport a where
 instance (StackValue a) => LuaImport (IO a) where
     luaimportargerror n msg _x l = do
       -- TODO: maybe improve the error message
-      pushstring l msg
+      pushstring l (BC.pack msg)
       return (-1)
     luaimport' _narg x l = x >>= push l >> return 1
 
@@ -605,7 +612,7 @@ newcfunction = mkWrapper . luaimport
 -- Any Haskell exception will be converted to a string and returned
 -- as Lua error.
 luaimport :: LuaImport a => a -> LuaCFunction
-luaimport a l = luaimport' 1 a l `catch` (\(e :: IOError) -> push l (show e) >> return (-1))
+luaimport a l = luaimport' 1 a l
 
 -- | Free function pointer created with @newcfunction@.
 freecfunction :: FunPtr LuaCFunction -> IO ()
@@ -639,7 +646,7 @@ instance LuaCallProc (IO t) where
         then do
           Just msg <- peek l (-1)
           pop l 1
-          fail msg
+          fail (BC.unpack msg)
         else return undefined
 
 instance (StackValue t) => LuaCallFunc (IO t) where
@@ -651,7 +658,7 @@ instance (StackValue t) => LuaCallFunc (IO t) where
         then do
           Just msg <- peek l (-1)
           pop l 1
-          fail msg
+          fail (BC.unpack msg)
         else do
           r <- peek l (-1)
           pop l 1
@@ -713,7 +720,7 @@ pushrawhsfunction l f = do
     p <- newuserdata l (F.sizeOf stableptr)
     F.poke (castPtr p) stableptr
     v <- newmetatable l "HaskellImportedFunction"
-    when (v/=0) $ do
+    when (v /= 0) $ do
       -- create new metatable, fill it with two entries __gc and __call
       push l hsmethod__gc_addr
       setfield l (-2) "__gc"

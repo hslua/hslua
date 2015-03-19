@@ -36,7 +36,7 @@ flag luajit
   default:              False
 
 Library
-  Build-depends:        base == 4.*, mtl >= 2.1
+  Build-depends:        base == 4.*, mtl >= 2.1, bytestring >= 0.10 && < 0.11
   Exposed-modules:      Scripting.Lua, Scripting.Lua.Raw
   Hs-source-dirs:       src
   if flag(system-lua)
