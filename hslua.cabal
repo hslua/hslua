@@ -12,7 +12,7 @@ Synopsis:               A Lua language interpreter embedding in Haskell
 Description:            The Scripting.Lua module is a wrapper of Lua language interpreter
                         as described in www.lua.org.
                         .
-                        This package contains full Lua interpreter version 5.1.4.
+                        This package contains full Lua interpreter version 5.1.5.
                         If you want to link it with system-wide Lua installation, use system-lua flag.
 Category:               Scripting
 Extra-source-files:     lua-5.1.5/*.h
