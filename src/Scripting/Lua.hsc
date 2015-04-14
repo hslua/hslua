@@ -2,7 +2,6 @@
 
 module Scripting.Lua where
 
-import Control.Exception
 import Control.Monad
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
@@ -261,11 +260,11 @@ cpcall l a c = liftM fromIntegral (c_lua_cpcall l a c)
 
 -- | See @lua_getfield@ in Lua Reference Manual.
 getfield :: LuaState -> Int -> String -> IO ()
-getfield l i n = withCString n $ \n -> c_lua_getfield l (fromIntegral i) n
+getfield l i s = withCString s $ \sPtr -> c_lua_getfield l (fromIntegral i) sPtr
 
 -- | See @lua_setfield@ in Lua Reference Manual.
 setfield :: LuaState -> Int -> String -> IO ()
-setfield l i n = withCString n $ \n -> c_lua_setfield l (fromIntegral i) n
+setfield l i s = withCString s $ \sPtr -> c_lua_setfield l (fromIntegral i) sPtr
 
 -- | See @lua_getglobal@ in Lua Reference Manual.
 getglobal :: LuaState -> String -> IO ()
@@ -362,13 +361,13 @@ loadstring l script cn = do
           k <- readIORef w
           if k == nullPtr
             then do
-              (k,l) <- newCStringLen script
-              writeIORef w k
-              F.poke ps (fromIntegral l)
-              return k
+              (s, len) <- newCStringLen script
+              writeIORef w s
+              F.poke ps (fromIntegral len)
+              return s
             else return nullPtr
     writer <- mkStringReader rd
-    res <- withCString cn $ \cn -> c_lua_load l writer nullPtr cn
+    res <- withCString cn $ \cnPtr -> c_lua_load l writer nullPtr cnPtr
     freeHaskellFunPtr writer
     k <- readIORef w
     free k
@@ -408,7 +407,7 @@ pushnumber = c_lua_pushnumber
 
 -- | See @lua_pushstring@ in Lua Reference Manual.
 pushstring :: LuaState -> B.ByteString -> IO ()
-pushstring l s = B.unsafeUseAsCStringLen s $ \(s,z) -> c_lua_pushlstring l s (fromIntegral z)
+pushstring l s = B.unsafeUseAsCStringLen s $ \(sPtr, z) -> c_lua_pushlstring l sPtr (fromIntegral z)
 
 pushlist :: StackValue a => LuaState -> [a] -> IO ()
 pushlist l list = do
@@ -502,15 +501,15 @@ register l n f = do
 
 -- | See @luaL_newmetatable@ in Lua Reference Manual.
 newmetatable :: LuaState -> String -> IO Int
-newmetatable l s = withCString s $ \s -> liftM fromIntegral (c_luaL_newmetatable l s)
+newmetatable l s = withCString s $ \sPtr -> liftM fromIntegral (c_luaL_newmetatable l sPtr)
 
 -- | See @luaL_argerror@ in Lua Reference Manual. Contrary to the
 -- manual, Haskell function does return with value less than zero.
 argerror :: LuaState -> Int -> String -> IO CInt
-argerror l n msg = withCString msg $ \msg -> do
-    let doit l = c_luaL_argerror l (fromIntegral n) msg
+argerror l n msg = withCString msg $ \msgPtr -> do
+    let doit l' = c_luaL_argerror l' (fromIntegral n) msgPtr
     f <- mkWrapper doit
-    c_lua_cpcall l f nullPtr
+    _ <- c_lua_cpcall l f nullPtr
     freeHaskellFunPtr f
     -- here we should have error message string on top of the stack
     return (-1)
@@ -521,7 +520,7 @@ ref l n = fmap fromIntegral $ c_luaL_ref l (fromIntegral n)
 
 -- | See @luaL_unref@ in Lua Reference Manual.
 unref :: LuaState -> Int -> Int -> IO ()
-unref l t ref = c_luaL_unref l (fromIntegral t) (fromIntegral ref)
+unref l t r = c_luaL_unref l (fromIntegral t) (fromIntegral r)
 
 -- | A value that can be pushed and poped from the Lua stack.
 -- All instances are natural, except following:
@@ -543,10 +542,10 @@ class StackValue a where
     valuetype :: a -> LTYPE
 
 maybepeek :: l -> n -> (l -> n -> IO Bool) -> (l -> n -> IO r) -> IO (Maybe r)
-maybepeek l n test peek = do
+maybepeek l n test peekfn = do
     v <- test l n
     if v
-      then liftM Just (peek l n)
+      then liftM Just (peekfn l n)
       else return Nothing
 
 instance StackValue LuaInteger where
@@ -561,7 +560,7 @@ instance StackValue LuaNumber where
 
 instance StackValue Int where
     push l x = pushinteger l (fromIntegral x)
-    peek l n = maybepeek l n isnumber (\l n -> liftM fromIntegral (tointeger l n))
+    peek l n = maybepeek l n isnumber (\l' n' -> liftM fromIntegral (tointeger l' n'))
     valuetype _ = TNUMBER
 
 instance StackValue B.ByteString where
@@ -611,9 +610,9 @@ getglobal2 l n = do
     getglobal l x
     mapM_ dotable xs
   where
-    (x:xs) = splitdot n
-    splitdot = filter (/=".") . L.groupBy (\a b -> a/='.' && b/='.')
-    dotable x = getfield l (-1) x >> gettop l >>= \n -> remove l (n-1)
+    (x : xs)  = splitdot n
+    splitdot  = filter (/= ".") . L.groupBy (\a b -> a /= '.' && b /= '.')
+    dotable a = getfield l (-1) a >> gettop l >>= \i -> remove l (i - 1)
 
 
 typenameindex :: LuaState -> Int -> IO String
@@ -624,7 +623,7 @@ class LuaImport a where
     luaimportargerror :: Int -> String -> a -> LuaCFunction
 
 instance (StackValue a) => LuaImport (IO a) where
-    luaimportargerror n msg _x l = do
+    luaimportargerror _n msg _x l = do
       -- TODO: maybe improve the error message
       pushstring l (BC.pack msg)
       return (-1)

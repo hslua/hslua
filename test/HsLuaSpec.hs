@@ -10,7 +10,6 @@ import Test.Hspec.Contrib.HUnit
 import Test.HUnit
 
 import Scripting.Lua
-import Scripting.Lua.Raw
 
 main :: IO ()
 main = hspec spec
