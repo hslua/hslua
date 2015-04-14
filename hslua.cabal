@@ -78,8 +78,18 @@ library
   if flag(apicheck)
     cc-Options:         "-DLUA_USE_APICHECK"
 
-test-suite simple-test
+test-suite test
   type:                 exitcode-stdio-1.0
+  default-language:     Haskell2010
+  main-is:              Spec.hs
   hs-source-dirs:       test
-  main-is:              simple-test.hs
-  build-depends:        base, hslua
+  ghc-options:          -Wall -threaded
+
+  build-depends:
+    base,
+    bytestring,
+    hslua,
+    hspec,
+    hspec-contrib,
+    HUnit,
+    text
