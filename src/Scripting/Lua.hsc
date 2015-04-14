@@ -140,6 +140,23 @@ isfunction l n = liftM (== TFUNCTION) (ltype l n)
 istable :: LuaState -> Int -> IO Bool
 istable l n = liftM (== TTABLE) (ltype l n)
 
+tolist :: StackValue a => LuaState -> Int -> IO (Maybe [a])
+tolist l n = do
+    len <- objlen l n
+    iter [1..len]
+  where
+    iter [] = return $ Just []
+    iter (i : is) = do
+      rawgeti l n i
+      ret <- peek l (-1)
+      case ret of
+        Nothing  -> return Nothing
+        Just val -> do
+          rest <- iter is
+          return $ case rest of
+                     Nothing -> Nothing
+                     Just vals -> Just (val : vals)
+
 -- | See @lua_islightuserdata@ in Lua Reference Manual.
 islightuserdata :: LuaState -> Int -> IO Bool
 islightuserdata l n = liftM (== TLIGHTUSERDATA) (ltype l n)
@@ -393,6 +410,13 @@ pushnumber = c_lua_pushnumber
 pushstring :: LuaState -> B.ByteString -> IO ()
 pushstring l s = B.unsafeUseAsCStringLen s $ \(s,z) -> c_lua_pushlstring l s (fromIntegral z)
 
+pushlist :: StackValue a => LuaState -> [a] -> IO ()
+pushlist l list = do
+    newtable l
+    forM_ (zip [1..] list) $ \(idx, val) -> do
+      push l val
+      rawseti l (-2) idx
+
 -- | See @lua_pushthread@ in Lua Reference Manual.
 pushthread :: LuaState -> IO Bool
 pushthread l = liftM (/= 0) (c_lua_pushthread l)
@@ -542,6 +566,11 @@ instance StackValue B.ByteString where
     push l x = pushstring l x
     peek l n = maybepeek l n isstring tostring
     valuetype _ = TSTRING
+
+instance StackValue a => StackValue [a] where
+    push l x = pushlist l x
+    peek l n = tolist l n
+    valuetype _ = TTABLE
 
 instance StackValue Bool where
     push l x = pushboolean l x
