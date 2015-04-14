@@ -126,7 +126,7 @@ pushcfunction l f = pushcclosure l f 0
 
 -- | See @lua_strlen@ in Lua Reference Manual.
 strlen :: LuaState -> Int -> IO Int
-strlen l i = objlen l i
+strlen = objlen
 
 -- | See @lua_type@ in Lua Reference Manual.
 ltype :: LuaState -> Int -> IO LTYPE
@@ -531,6 +531,8 @@ unref l t ref = c_luaL_unref l (fromIntegral t) (fromIntegral ref)
 --  * @()@ push ignores its argument, just pushes nil
 --
 --  * @Ptr ()@ pushes light user data, peek checks for lightuserdata or userdata
+--
+--  * See "A note about integer functions" for integer functions.
 class StackValue a where
     -- | Pushes a value onto Lua stack, casting it into meaningfully nearest Lua type.
     push :: LuaState -> a -> IO ()
