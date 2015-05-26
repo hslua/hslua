@@ -85,9 +85,9 @@ callLuaCallbacks cs l = do
       pushinteger l (fromIntegral c)
       gettable l registryindex
       -- call the callback
-      call l 0 1
+      pcall l 0 1 0
       -- call table.insert
-      call l 2 0
+      pcall l 2 0 0
       iter rest
 
 -- | Reset callback queue and remove Lua functions from registry to enable
