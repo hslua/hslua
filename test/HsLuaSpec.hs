@@ -17,7 +17,7 @@ main = hspec spec
 spec :: Spec
 spec = do
     describe "StackValue" $ mapM_ fromHUnitTest
-      [bytestring, bsShouldLive, listInstance]
+      [bytestring, bsShouldLive, listInstance, nulString]
 
 bytestring :: Test
 bytestring = TestLabel "ByteString -- unicode stuff" $ TestCase $ do
@@ -53,3 +53,13 @@ listInstance = TestLabel "Push/pop StackValue lists" $ TestCase $ do
     lst' <- tolist l 1
     close l
     assertEqual "Popped a different list or pop failed" (Just lst) lst'
+
+nulString :: Test
+nulString =
+  TestLabel "String with NUL byte should be pushed/popped correctly" $ TestCase $ do
+    l <- newstate
+    let str = "A\NULB"
+    pushstring l (B.pack str)
+    str' <- tostring l 1
+    close l
+    assertEqual "Popped string is different than what's pushed" str (B.unpack str')

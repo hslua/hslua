@@ -78,6 +78,15 @@ library
   if flag(apicheck)
     cc-Options:         "-DLUA_USE_APICHECK"
 
+-- This is not necessary because we have a test suite now. Still keeping here as
+-- a very simple test. Originally added with 799a4c2 to test if linking with
+-- system-wide Lua is really working.
+test-suite simple-test
+  type:                 exitcode-stdio-1.0
+  main-is:              simple-test.hs
+  hs-source-dirs:       test
+  build-depends:        base, hslua
+
 test-suite test
   type:                 exitcode-stdio-1.0
   main-is:              Spec.hs
