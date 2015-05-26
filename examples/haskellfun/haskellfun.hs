@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 -- An example with higher-level Haskell functions. Haskell functions are
 -- wrapped by hslua automatically for ensuring argument types and nubmers
@@ -7,8 +7,8 @@
 -- stack manually).
 
 import qualified Data.ByteString as B
-import           Data.Monoid
-import           Scripting.Lua   as Lua
+import Data.Monoid
+import Scripting.Lua as Lua
 
 main :: IO ()
 main = do
@@ -17,7 +17,7 @@ main = do
     registerhsfunction l "concat" concat'
     registerhsfunction l "pow" pow
     registerhsfunction l "helloWorld" helloWorld
-    loadfile l "haskellfun.lua"
+    loadfile l "examples/haskellfun/haskellfun.lua"
     call l 0 0
     close l
 

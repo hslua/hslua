@@ -93,6 +93,12 @@ test-suite callbacks
   hs-source-dirs:       examples/callbacks
   build-depends:        base, bytestring, hslua
 
+test-suite haskellfun
+  type:                 exitcode-stdio-1.0
+  main-is:              haskellfun.hs
+  hs-source-dirs:       examples/haskellfun
+  build-depends:        base, bytestring, hslua
+
 test-suite test
   type:                 exitcode-stdio-1.0
   main-is:              Spec.hs

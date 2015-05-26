@@ -16,6 +16,7 @@ import Foreign.Ptr
 import Foreign.StablePtr
 import qualified Foreign.Storable as F
 import Prelude hiding (concat)
+import qualified Prelude
 
 import Scripting.Lua.Raw
 
@@ -236,7 +237,11 @@ checkstack l n = liftM (/= 0) (c_lua_checkstack l (fromIntegral n))
 
 -- | See @lua_newstate@ and @luaL_newstate@ in Lua Reference Manual.
 newstate :: IO LuaState
-newstate = c_luaL_newstate
+newstate = do
+    l <- c_luaL_newstate
+    createtable l 0 0
+    setglobal l "_HASKELLERR"
+    return l
 
 -- | See @lua_close@ in Lua Reference Manual.
 close :: LuaState -> IO ()
@@ -644,7 +649,10 @@ instance (StackValue a, LuaImport b) => LuaImport (a -> b) where
           t <- ltype l narg
           exp <- typename l (valuetype (fromJust arg))
           got <- typename l t
-          luaimportargerror narg (exp ++ " expected, got " ++ got) (x undefined) l
+          luaimportargerror narg
+            (Prelude.concat ["argument ", show narg, " of Haskell function: ",
+                             exp, " expected, got ", got])
+            (x undefined) l
 
 foreign import ccall "wrapper" mkWrapper :: LuaCFunction -> IO (FunPtr LuaCFunction)
 
