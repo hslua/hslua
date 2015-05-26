@@ -1,7 +1,9 @@
+{-# LANGUAGE OverloadedStrings #-}
 
 -- An example hslua program that demonstrates providing Haskell callbacks
 -- to Lua and getting Lua callbacks from Haskell.
 
+import qualified Data.ByteString.Char8 as BC
 import Data.IORef
 import Foreign.C.Types (CInt)
 import Scripting.Lua as Lua
@@ -15,7 +17,7 @@ main = do
     registerrawhsfunction l "addLuaCallbacks" (addLuaCallbacks callbacks)
     registerrawhsfunction l "callLuaCallbacks" (callLuaCallbacks callbacks)
     registerrawhsfunction l "resetLuaCallbacks" (resetLuaCallbacks callbacks)
-    loadfile l "callbacks.lua"
+    loadfile l "examples/callbacks/callbacks.lua"
     call l 0 0
     close l
 
@@ -40,7 +42,8 @@ addLuaCallbacks cs l = do
       Just errArg -> do
         -- error: argument at `errArg` is not a function, return error
         -- string
-        pushstring l $ "argument " ++ show errArg ++ " is not a function"
+        pushstring l $ BC.pack $
+          "argument " ++ show errArg ++ " is not a function"
         return 1
   where
     -- | Check if all arguments are functions, return `Just argIdx` if

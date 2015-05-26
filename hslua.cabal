@@ -87,6 +87,12 @@ test-suite simple-test
   hs-source-dirs:       test
   build-depends:        base, hslua
 
+test-suite callbacks
+  type:                 exitcode-stdio-1.0
+  main-is:              callbacks.hs
+  hs-source-dirs:       examples/callbacks
+  build-depends:        base, bytestring, hslua
+
 test-suite test
   type:                 exitcode-stdio-1.0
   main-is:              Spec.hs
