@@ -22,26 +22,6 @@ import Scripting.Lua.Raw
 
 #include "lua.h"
 
--- * A note about integer functions
--- $ Lua didn't have integers until Lua 5.3, and the version supported by hslua
--- is Lua 5.1. In Lua 5.1 and 5.2, integer functions like 'pushinteger' convert
--- integers to 'LuaNumber's before storing them in Lua stack/heap, and getter
--- functions like 'tointeger' convert them back to 'LuaInteger's.
---
--- This means that you can lose some information during the conversion. For
--- example:
---
--- > main = do
--- >   l <- newstate
--- >   let val = maxBound :: LuaInteger
--- >   pushinteger l val
--- >   i3 <- tointeger l 1
--- >   putStrLn $ show val ++ " - " ++ show i3
---
--- Prints @9223372036854775807 - -9223372036854775808@.
---
-
-
 -- | Enumeration used as type tag. See @lua_type@ in Lua Reference Manual.
 data LTYPE
     = TNONE
@@ -794,3 +774,92 @@ registerhsfunction l n f = pushhsfunction l f >> setglobal l n
 -- | Imports a raw Haskell function and registers it at global name.
 registerrawhsfunction :: LuaState -> String -> (LuaState -> IO CInt) -> IO ()
 registerrawhsfunction l n f = pushrawhsfunction l f >> setglobal l n
+
+-- * Error handling in hslua
+-- $ Error handling is tricky, because we can call Haskell from Lua which calls
+-- Lua again etc. (or the other way around, e.g. Lua loads Haskell program
+-- compiled as a dynamic library, see
+-- http://osa1.net/posts/2015-01-16-haskell-so-lua.html as an example)
+--
+-- At each language boundary we should check for errors and propagate them properly
+-- to the next level in stack.
+--
+-- Let's say we have this call stack: (stack grows upwards)
+--
+-- > Haskell function
+-- > Lua function
+-- > Haskell program
+--
+-- and we want to report an error in top-most Haskell function. We can't use
+-- `lua_error` from Lua C API, because it uses `longjmp`, which means it skips
+-- layers of abstractions, including Haskell RTS. Only way to prevent `longjmp`
+-- is to wrap the call with `lua_pcall`, but this is useless, because it would
+-- be same as printing the error message, which we can do using usual printing
+-- function(`putStr` etc.). (Also, it'd still be unsafe because it'd skip a
+-- layer of abstraction)
+--
+-- So we need to find a convention here. Currently hslua does this: `lua_error`
+-- has same type as Lua's `lua_error`, but instead of calling real `lua_error`,
+-- it's returning two values: A special value `_HASKELLERR` and error message as
+-- a string.
+--
+-- Using this, we can write a function to catch errors from Haskell like this:
+--
+-- > function catch_haskell(ret, err_msg)
+-- >     if ret == _HASKELLERR then
+-- >       print("Error caught from Haskell land: " .. err_msg)
+-- >       return
+-- >     end
+-- >     return ret
+-- > end
+--
+-- (`_HASKELLERR` is created by `lua_newstate`)
+--
+-- (Type errors in Haskell functions are also handled using this convention.
+-- E.g.  if you pass a Lua value with wrong type to a Haskell function, error
+-- will be reported in this way)
+--
+-- At this point our call stack is like this:
+--
+-- > Lua function (Haskell function returned with error, which we caught)
+-- > Haskell program
+--
+-- If we further want to propagate the error message to Haskell program, we
+-- should again implement a calling convention, like we did to propagate error
+-- from Lua to Haskell, or we can just use standard `error` function and use
+-- `pcall` in Haskell side. Note that if we use `error` in Lua side and forget
+-- to use `pcall` in calling Haskell function, we can start skipping layers of
+-- abstractions and we get a segfault in the best case.
+--
+-- This use of `error` in Lua side and `pcall` in Haskell side is safe, as
+-- long as there are no Haskell-Lua interactions going on between those two
+-- calls. (e.g. we can only remove one layer from our stack, otherwise it's
+-- unsafe)
+--
+-- The reason it's safe is because `lua_pcall` C function is calling the Lua
+-- function using Lua C functions, and when called Lua function calls `error` it
+-- `longjmp`s to `lua_pcall` C function, without skipping any layers of
+-- abstraction. `lua_pcall` then returns to Haskell.
+--
+-- FIXME, TODO: `_HASKELLERR` won't be defined if Haskell is called from Lua
+-- program.
+--
+-- TODO: `lua_error` is not implemented.
+
+-- * A note about integer functions
+-- $ Lua didn't have integers until Lua 5.3, and the version supported by hslua
+-- is Lua 5.1. In Lua 5.1 and 5.2, integer functions like 'pushinteger' convert
+-- integers to 'LuaNumber's before storing them in Lua stack/heap, and getter
+-- functions like 'tointeger' convert them back to 'LuaInteger's.
+--
+-- This means that you can lose some information during the conversion. For
+-- example:
+--
+-- > main = do
+-- >   l <- newstate
+-- >   let val = maxBound :: LuaInteger
+-- >   pushinteger l val
+-- >   i3 <- tointeger l 1
+-- >   putStrLn $ show val ++ " - " ++ show i3
+--
+-- Prints @9223372036854775807 - -9223372036854775808@.
