@@ -9,7 +9,7 @@ function catch_haskell(ret, err_msg)
 end
 
 print(concat("hello", " world!"))
-print(pow(3.2, 5))
-print(helloWorld())
+print(catch_haskell(pow(3.2, 5)))
+print(catch_haskell(helloWorld()))
 print(catch_haskell(pow("wrong")))
 print(catch_haskell(pow(3)))
