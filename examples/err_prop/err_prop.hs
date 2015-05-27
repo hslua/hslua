@@ -24,7 +24,6 @@
 import qualified Data.ByteString.Char8 as BC
 import Foreign.C.Types (CInt)
 import Scripting.Lua as Lua
-import Scripting.Lua.Raw as Lua
 
 main :: IO ()
 main = do

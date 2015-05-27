@@ -1,6 +1,12 @@
 {-# LANGUAGE FlexibleInstances, ForeignFunctionInterface, ScopedTypeVariables #-}
 
-module Scripting.Lua where
+module Scripting.Lua
+  ( module Scripting.Lua
+  , LuaState
+  , LuaCFunction
+  , LuaInteger
+  , LuaNumber
+  ) where
 
 import Control.Monad
 import qualified Data.ByteString as B
@@ -801,7 +807,7 @@ registerrawhsfunction l n f = pushrawhsfunction l f >> setglobal l n
 -- function(`putStr` etc.). (Also, it'd still be unsafe because it'd skip a
 -- layer of abstraction)
 --
--- So we need to find a convention here. Currently hslua does this: `lua_error`
+-- So we need to find a convention here. Currently hslua does this: `lerror`
 -- has same type as Lua's `lua_error`, but instead of calling real `lua_error`,
 -- it's returning two values: A special value `_HASKELLERR` and error message as
 -- a string.
@@ -846,8 +852,6 @@ registerrawhsfunction l n f = pushrawhsfunction l f >> setglobal l n
 --
 -- FIXME, TODO: `_HASKELLERR` won't be defined if Haskell is called from Lua
 -- program.
---
--- TODO: `lua_error` is not implemented.
 
 -- * A note about integer functions
 -- $ Lua didn't have integers until Lua 5.3, and the version supported by hslua
