@@ -31,6 +31,7 @@ script:
 
   # Compile and link using system-wide Lua 5.1.5
   - cabal install -fsystem-lua
+  - cabal test
 
   # Clean stuff
   - cabal clean
@@ -38,6 +39,7 @@ script:
 
   # Compile and link using system-wide LuaJIT
   - cabal install -fsystem-lua -fluajit
+  - cabal test
 
 notifications:
   email:
