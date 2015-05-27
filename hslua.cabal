@@ -99,6 +99,12 @@ test-suite haskellfun
   hs-source-dirs:       examples/haskellfun
   build-depends:        base, bytestring, hslua
 
+test-suite err_prop
+  type:                 exitcode-stdio-1.0
+  main-is:              err_prop.hs
+  hs-source-dirs:       examples/err_prop
+  build-depends:        base, bytestring, hslua
+
 test-suite test
   type:                 exitcode-stdio-1.0
   main-is:              Spec.hs

@@ -283,8 +283,11 @@ equal :: LuaState -> Int -> Int -> IO Bool
 equal l i j = liftM (/= 0) (c_lua_equal l (fromIntegral i) (fromIntegral j))
 
 -- | See @lua_error@ in Lua Reference Manual.
---error :: LuaState -> IO Int
---error l = liftM fromIntegral (c_lua_error l)
+lerror :: LuaState -> IO Int
+lerror l = do
+    getglobal l "_HASKELLERR"
+    insert l (-2)
+    return 2
 
 -- | See @lua_gc@ in Lua Reference Manual.
 gc :: LuaState -> GCCONTROL -> Int -> IO Int
@@ -813,7 +816,7 @@ registerrawhsfunction l n f = pushrawhsfunction l f >> setglobal l n
 -- >     return ret
 -- > end
 --
--- (`_HASKELLERR` is created by `lua_newstate`)
+-- (`_HASKELLERR` is created by `newstate`)
 --
 -- (Type errors in Haskell functions are also handled using this convention.
 -- E.g.  if you pass a Lua value with wrong type to a Haskell function, error
