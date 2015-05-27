@@ -6,7 +6,9 @@ add callbacks in reverse order
 callback 3
 callback 2
 callback 1
+Failing from Lua
 3
 false
 callback 1 return value
+[string "examples/callbacks/callbacks.lua"]:18: failed
 end

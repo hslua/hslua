@@ -1,5 +1,7 @@
 hello world!
 335.54432
 Hello, World!
-bad argument #1 to '?' (number expected, got string)
-bad argument #2 to '?' (number expected, got no value)
+Error caught from Haskell land: argument 1 of Haskell function: number expected, got string
+
+Error caught from Haskell land: argument 2 of Haskell function: number expected, got no value
+
