@@ -288,7 +288,8 @@ dump l = do
 equal :: LuaState -> Int -> Int -> IO Bool
 equal l i j = liftM (/= 0) (c_lua_equal l (fromIntegral i) (fromIntegral j))
 
--- | See @lua_error@ in Lua Reference Manual.
+-- | See @lua_error@ in Lua Reference Manual. FIXME: Lua Reference Manual entry
+-- does not describe this.
 lerror :: LuaState -> IO Int
 lerror l = do
     getglobal l "_HASKELLERR"
@@ -620,7 +621,7 @@ instance (StackValue a) => LuaImport (IO a) where
     luaimportargerror _n msg _x l = do
       -- TODO: maybe improve the error message
       pushstring l (BC.pack msg)
-      return (-1)
+      fromIntegral <$> lerror l
     luaimport' _narg x l = x >>= push l >> return 1
 
 instance (StackValue a, LuaImport b) => LuaImport (a -> b) where
@@ -771,7 +772,7 @@ pushrawhsfunction l f = do
       -- create new metatable, fill it with two entries __gc and __call
       push l hsmethod__gc_addr
       setfield l (-2) "__gc"
-      push l c_lua_neutralize_longjmp_addr
+      push l hsmethod__call_addr
       setfield l (-2) "__call"
     setmetatable l (-2)
     return ()
