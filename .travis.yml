@@ -67,7 +67,7 @@ script:
   - cabal clean
 
 after_script:
-  - cabal install hpc-coveralls
+  - cabal install hpc-coveralls --force-reinstalls
   - export PATH=$HOME/.cabal/bin:$PATH
   - echo $PATH
   - which hpc-coveralls
