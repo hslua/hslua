@@ -21,6 +21,7 @@ script:
   - git clone https://github.com/osa1/hslua
 
   # Compile and link using built-in Lua
+  - cabal configure --enable-tests
   - cabal install --enable-tests
   - cabal test
 
@@ -47,6 +48,7 @@ script:
   - cd ..
 
   # Compile and link using system-wide Lua 5.1.5
+  - cabal configure -fsystem-lua --enable-tests
   - cabal install -fsystem-lua --enable-tests
   - cabal test
 
@@ -57,8 +59,10 @@ script:
   # Compile and link using system-wide LuaJIT
   - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
   - echo $LD_LIBRARY_PATH
+  - cabal configure -fsystem-lua -fluajit --enable-tests
   - cabal install -fsystem-lua -fluajit --enable-tests
   - cabal test
+  - cabal clean
 
 notifications:
   email:
