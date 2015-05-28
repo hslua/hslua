@@ -1,11 +1,11 @@
 {-# LANGUAGE FlexibleInstances, ForeignFunctionInterface, ScopedTypeVariables #-}
 
 module Scripting.Lua
-  ( module Scripting.Lua
-  , LuaState
+  ( LuaState
   , LuaCFunction
   , LuaInteger
   , LuaNumber
+  , module Scripting.Lua
   ) where
 
 import Control.Applicative ((<$>))
