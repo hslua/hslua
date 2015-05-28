@@ -289,8 +289,10 @@ dump l = do
 equal :: LuaState -> Int -> Int -> IO Bool
 equal l i j = liftM (/= 0) (c_lua_equal l (fromIntegral i) (fromIntegral j))
 
--- | See @lua_error@ in Lua Reference Manual. FIXME: Lua Reference Manual entry
--- does not describe this.
+-- | This is a convenience function to implement error propagation convention
+-- described in [Error handling in hslua](#g:1). hslua doesn't implement
+-- `lua_error` function from Lua C API because it's never safe to use. (see
+-- [Error handling in hslua](#g:1) for details)
 lerror :: LuaState -> IO Int
 lerror l = do
     getglobal l "_HASKELLERR"
@@ -627,11 +629,6 @@ instance (StackValue a) => LuaImport (IO a) where
 
 instance (StackValue a, LuaImport b) => LuaImport (a -> b) where
     luaimportargerror n msg x l = luaimportargerror n msg (x undefined) l
-    {-
-     - FIXME: Cannot catch this exception here, because we are called from C,
-     - and error propagation, stack unwinding, etc does not work.
-     - Cannot call lua_error, because it uses longjmp and would skip two layers of abstraction.
-     -}
     luaimport' narg x l = do
       arg <- peek l narg
       case arg of
