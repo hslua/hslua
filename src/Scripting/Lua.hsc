@@ -787,10 +787,10 @@ registerrawhsfunction :: LuaState -> String -> (LuaState -> IO CInt) -> IO ()
 registerrawhsfunction l n f = pushrawhsfunction l f >> setglobal l n
 
 -- * Error handling in hslua
--- $ Error handling is tricky, because we can call Haskell from Lua which calls
+-- $ Error handling in hslua is tricky, because we can call Haskell from Lua which calls
 -- Lua again etc. (or the other way around, e.g. Lua loads Haskell program
--- compiled as a dynamic library, see
--- http://osa1.net/posts/2015-01-16-haskell-so-lua.html as an example)
+-- compiled as a dynamic library, see [this blog
+-- post](http://osa1.net/posts/2015-01-16-haskell-so-lua.html) as an example)
 --
 -- At each language boundary we should check for errors and propagate them properly
 -- to the next level in stack.
@@ -803,16 +803,24 @@ registerrawhsfunction l n f = pushrawhsfunction l f >> setglobal l n
 --
 -- and we want to report an error in top-most Haskell function. We can't use
 -- `lua_error` from Lua C API, because it uses `longjmp`, which means it skips
--- layers of abstractions, including Haskell RTS. Only way to prevent `longjmp`
--- is to wrap the call with `lua_pcall`, but this is useless, because it would
--- be same as printing the error message, which we can do using usual printing
--- function(`putStr` etc.). (Also, it'd still be unsafe because it'd skip a
--- layer of abstraction)
+-- layers of abstractions, including Haskell RTS. There's no way to prevent this
+-- `longjmp`. `lua_pcall` sets the jump target, but even with `lua_pcall` it's
+-- not safe. Consider this call stack:
 --
--- So we need to find a convention here. Currently hslua does this: `lerror`
--- has same type as Lua's `lua_error`, but instead of calling real `lua_error`,
--- it's returning two values: A special value `_HASKELLERR` and error message as
--- a string.
+-- > Haskell function which calls `lua_error`
+-- > Lua function, uses pcall
+-- > Haskell program
+--
+-- This program jumps to Lua function, skipping Haskell RTS code that would run
+-- before Haskell function returns. For this reason we can use
+-- `lua_pcall`(`pcall`) only for catching errors from Lua, and even in that case
+-- we need to make sure there are no Haskell calls between error-throwing Lua
+-- call and our `pcall` call.
+--
+-- To be able to catch errors from Haskell functions in Lua, we need to find a
+-- convention. Currently hslua does this: `lerror` has same type as Lua's
+-- `lua_error`, but instead of calling real `lua_error`, it's returning two
+-- values: A special value `_HASKELLERR` and error message as a string.
 --
 -- Using this, we can write a function to catch errors from Haskell like this:
 --
@@ -836,24 +844,29 @@ registerrawhsfunction l n f = pushrawhsfunction l f >> setglobal l n
 -- > Haskell program
 --
 -- If we further want to propagate the error message to Haskell program, we
--- should again implement a calling convention, like we did to propagate error
--- from Lua to Haskell, or we can just use standard `error` function and use
--- `pcall` in Haskell side. Note that if we use `error` in Lua side and forget
--- to use `pcall` in calling Haskell function, we can start skipping layers of
--- abstractions and we get a segfault in the best case.
+-- we can just use standard @error@ function and use `pcall` in Haskell side.
+-- Note that if we use @error@ in Lua side and forget to use `pcall` in calling
+-- Haskell function, we start skipping layers of abstractions and we get a
+-- segfault in the best case.
 --
--- This use of `error` in Lua side and `pcall` in Haskell side is safe, as
+-- This use of @error@ in Lua side and `pcall` in Haskell side is safe, as
 -- long as there are no Haskell-Lua interactions going on between those two
 -- calls. (e.g. we can only remove one layer from our stack, otherwise it's
 -- unsafe)
 --
 -- The reason it's safe is because `lua_pcall` C function is calling the Lua
--- function using Lua C functions, and when called Lua function calls `error` it
+-- function using Lua C API, and when called Lua function calls @error@ it
 -- `longjmp`s to `lua_pcall` C function, without skipping any layers of
 -- abstraction. `lua_pcall` then returns to Haskell.
 --
--- FIXME, TODO: `_HASKELLERR` won't be defined if Haskell is called from Lua
--- program.
+-- As an example program that does error propagations between Haskell and Lua(in
+-- both ways), see [this
+-- example](https://github.com/osa1/hslua/tree/master/examples/err_prop) from
+-- hslua repository.
+--
+-- NOTE: If you're loading a hslua program compiled to a dynamic library from a
+-- Lua program, you need to define @_HASKELLERR = {}@ manually, after creating
+-- the Lua state.
 
 -- * A note about integer functions
 -- $ Lua didn't have integers until Lua 5.3, and the version supported by hslua
