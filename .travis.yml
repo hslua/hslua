@@ -57,12 +57,18 @@ script:
   - ghc-pkg unregister hslua
 
   # Compile and link using system-wide LuaJIT
+  # (also enable library coverage)
   - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
   - echo $LD_LIBRARY_PATH
-  - cabal install -fsystem-lua -fluajit --enable-tests
-  - cabal configure -fsystem-lua -fluajit --enable-tests
+  - cabal install -fsystem-lua -fluajit --enable-tests --enable-library-coverage
+  - cabal configure -fsystem-lua -fluajit --enable-tests --enable-library-coverage
+  - cabal build
   - cabal test
   - cabal clean
+
+after_script:
+  - cabal install hpc-coveralls
+  - hpc-coveralls simple-test callbacks haskellfun err_prop test
 
 notifications:
   email:
