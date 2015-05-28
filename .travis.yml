@@ -55,6 +55,8 @@ script:
   - ghc-pkg unregister hslua
 
   # Compile and link using system-wide LuaJIT
+  - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+  - echo $LD_LIBRARY_PATH
   - cabal install -fsystem-lua -fluajit --enable-tests
   - cabal test
 
