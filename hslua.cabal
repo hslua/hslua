@@ -18,6 +18,9 @@ category:               Scripting
 extra-source-files:     lua-5.1.5/*.h
                         CHANGELOG.md
                         COPYRIGHT
+                        examples/callbacks/callbacks.lua
+                        examples/haskellfun/haskellfun.lua
+                        examples/err_prop/err_prop.lua
 
 source-repository head
   type:                 git
