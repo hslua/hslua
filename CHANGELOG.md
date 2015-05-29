@@ -4,7 +4,7 @@
 
 * `pushstring` and `tostring` now uses `ByteString` instead of `[Char]`.
 * `StackValue [Char]` instance is removed, `StackValue ByteString` is added.
-* `StackValue a => StackValue [a]` instance is added. It pushed a Lua array to
+* `StackValue a => StackValue [a]` instance is added. It pushes a Lua array to
   the stack. `pushlist`, `islist` and `tolist` functions are added.
 * Type errors in Haskell functions now propagated differently. See the
   `Scripting.Lua` documentation for detailed explanation. This should fix
