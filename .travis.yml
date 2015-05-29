@@ -66,11 +66,13 @@ script:
   - cabal test
 
 after_script:
-  - cabal install hpc-coveralls --force-reinstalls
-  - export PATH=$HOME/.cabal/bin:$PATH
-  - echo $PATH
-  - which hpc-coveralls
-  - hpc-coveralls simple-test callbacks haskellfun err_prop test
+  - if [ $(ghc --numeric-version) == "7.10.1" ]; then
+      cabal install hpc-coveralls --force-reinstalls
+      export PATH=$HOME/.cabal/bin:$PATH
+      echo $PATH
+      which hpc-coveralls
+      hpc-coveralls simple-test callbacks haskellfun err_prop test
+    fi
 
 notifications:
   email:
