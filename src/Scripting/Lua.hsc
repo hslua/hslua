@@ -127,6 +127,7 @@ isfunction l n = liftM (== TFUNCTION) (ltype l n)
 istable :: LuaState -> Int -> IO Bool
 istable l n = liftM (== TTABLE) (ltype l n)
 
+-- | Try to convert Lua array at given index to Haskell list.
 tolist :: StackValue a => LuaState -> Int -> IO (Maybe [a])
 tolist l n = do
     len <- objlen l n
@@ -272,12 +273,13 @@ openlibs = c_luaL_openlibs
 
 foreign import ccall "wrapper" mkStringWriter :: LuaWriter -> IO (FunPtr LuaWriter)
 
+-- | See @lua_dump@ in Lua Reference Manual.
 dump :: LuaState -> IO String
 dump l = do
     r <- newIORef ""
     let wr :: LuaWriter
         wr _l p s _d = do
-          k <- peekCStringLen (p,fromIntegral s)
+          k <- peekCStringLen (p, fromIntegral s)
           modifyIORef r (++ k)
           return 0
     writer <- mkStringWriter wr
@@ -407,6 +409,7 @@ pushnumber = c_lua_pushnumber
 pushstring :: LuaState -> B.ByteString -> IO ()
 pushstring l s = B.unsafeUseAsCStringLen s $ \(sPtr, z) -> c_lua_pushlstring l sPtr (fromIntegral z)
 
+-- | Push a list to Lua stack as a Lua array.
 pushlist :: StackValue a => LuaState -> [a] -> IO ()
 pushlist l list = do
     newtable l
