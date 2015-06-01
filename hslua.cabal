@@ -41,7 +41,7 @@ flag luajit
   default:              False
 
 library
-  build-depends:        base == 4.*, bytestring >= 0.10 && < 0.11
+  build-depends:        base == 4.*, bytestring >= 0.10.2.0 && < 0.11
   exposed-modules:      Scripting.Lua, Scripting.Lua.Raw
   hs-source-dirs:       src
   ghc-options:          -Wall -O2
