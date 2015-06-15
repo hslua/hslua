@@ -1,5 +1,10 @@
 {-# LANGUAGE FlexibleInstances, ForeignFunctionInterface, ScopedTypeVariables #-}
 
+-- In older versions of GHC, FlexibleInstances doesn't imply
+-- TypeSynonymInstances, so we need to enable it explicitly.
+-- See #29.
+{-# LANGUAGE TypeSynonymInstances #-}
+
 module Scripting.Lua
   ( LuaState
   , LuaCFunction
