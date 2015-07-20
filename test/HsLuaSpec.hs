@@ -47,10 +47,16 @@ listInstance = TestLabel "Push/pop StackValue lists" $ TestCase $ do
     l <- newstate
     pushlist l lst
     setglobal l "mylist"
-    size <- gettop l
-    assertBool "After pushing the list and assigning to a variable, stack is not empty" (size == 0)
+    size0 <- gettop l
+    assertEqual
+      "After pushing the list and assigning to a variable, stack is not empty"
+      0 size0
     getglobal l "mylist"
+    size1 <- gettop l
+    assertEqual "`getglobal` pushed more than one value to the stack" 1 size1
     lst' <- tolist l 1
+    size2 <- gettop l
+    assertEqual "`tolist` left stuff on the stack" size1 size2
     close l
     assertEqual "Popped a different list or pop failed" (Just lst) lst'
 
