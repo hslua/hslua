@@ -643,11 +643,11 @@ instance (StackValue a, LuaImport b) => LuaImport (a -> b) where
         Just v -> luaimport' (narg+1) (x v) l
         Nothing -> do
           t <- ltype l narg
-          exp <- typename l (valuetype (fromJust arg))
+          expected <- typename l (valuetype (fromJust arg))
           got <- typename l t
           luaimportargerror narg
             (Prelude.concat ["argument ", show narg, " of Haskell function: ",
-                             exp, " expected, got ", got])
+                             expected, " expected, got ", got])
             (x undefined) l
 
 foreign import ccall "wrapper" mkWrapper :: LuaCFunction -> IO (FunPtr LuaCFunction)
@@ -719,10 +719,11 @@ instance (StackValue t) => LuaCallFunc (IO t) where
           case r of
             Just x -> return x
             Nothing -> do
-              exp <- typename l (valuetype (fromJust r))
+              expected <- typename l (valuetype (fromJust r))
               t <- ltype l (-1)
               got <- typename l t
-              fail ("Incorrect result type (" ++ exp ++ " expected, got " ++ got ++ ")")
+              fail $ Prelude.concat
+                [ "Incorrect result type (", expected, " expected, got ", got, ")" ]
 
 instance (StackValue t, LuaCallProc b) => LuaCallProc (t -> b) where
     callproc' l f a k x = callproc' l f (a >> push l x) (k+1)
