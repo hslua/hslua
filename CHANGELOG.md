@@ -1,5 +1,9 @@
 ## Changelog
 
+### 0.4.1
+
+* Bugfix(#30): `tolist` wasn't popping elements of the list from stack.
+
 ### 0.4.0
 
 * `pushstring` and `tostring` now uses `ByteString` instead of `[Char]`.
