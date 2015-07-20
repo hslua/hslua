@@ -142,6 +142,7 @@ tolist l n = do
     iter (i : is) = do
       rawgeti l n i
       ret <- peek l (-1)
+      pop l 1
       case ret of
         Nothing  -> return Nothing
         Just val -> do
