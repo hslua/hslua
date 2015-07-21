@@ -57,16 +57,16 @@ script:
   - ghc-pkg unregister hslua
 
   # Compile and link using system-wide LuaJIT
-  # (also enable coverage)
+  # (also enable library coverage)
   - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
   - echo $LD_LIBRARY_PATH
-  - cabal install -fsystem-lua -fluajit --enable-tests --enable-coverage
-  - cabal configure -fsystem-lua -fluajit --enable-tests --enable-coverage
+  - cabal install -fsystem-lua -fluajit --enable-tests --enable-library-coverage
+  - cabal configure -fsystem-lua -fluajit --enable-tests --enable-library-coverage
   - cabal build
   - cabal test
 
 after_script:
-  - if [ $(ghc --numeric-version) == "7.10.1" ]; then
+  - if [ $(ghc --numeric-version) == "7.8.4" ]; then
       cabal install hpc-coveralls;
       export PATH=$HOME/.cabal/bin:$PATH;
       echo $PATH;
