@@ -66,12 +66,12 @@ script:
   - cabal test
 
 after_script:
+  - set -e
+  - set -x
   - if [ $(ghc --numeric-version) == "7.8.4" ]; then
+      cabal sandbox init;
       cabal install hpc-coveralls;
-      export PATH=$HOME/.cabal/bin:$PATH;
-      echo $PATH;
-      which hpc-coveralls;
-      hpc-coveralls simple-test callbacks haskellfun err_prop test;
+      ./.cabal-sandbox/bin/hpc-coveralls simple-test callbacks haskellfun err_prop test;
     fi
 
 notifications:
