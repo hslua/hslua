@@ -67,7 +67,7 @@ script:
 
 after_script:
   - if [ $(ghc --numeric-version) == "7.10.1" ]; then
-      cabal install hpc-coveralls --force-reinstalls;
+      cabal install hpc-coveralls;
       export PATH=$HOME/.cabal/bin:$PATH;
       echo $PATH;
       which hpc-coveralls;
