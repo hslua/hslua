@@ -57,11 +57,11 @@ script:
   - ghc-pkg unregister hslua
 
   # Compile and link using system-wide LuaJIT
-  # (also enable library coverage)
+  # (also enable coverage)
   - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
   - echo $LD_LIBRARY_PATH
-  - cabal install -fsystem-lua -fluajit --enable-tests --enable-library-coverage
-  - cabal configure -fsystem-lua -fluajit --enable-tests --enable-library-coverage
+  - cabal install -fsystem-lua -fluajit --enable-tests --enable-coverage
+  - cabal configure -fsystem-lua -fluajit --enable-tests --enable-coverage
   - cabal build
   - cabal test
 
