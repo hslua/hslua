@@ -18,6 +18,7 @@ description:            The Scripting.Lua module is a wrapper of Lua language in
                         [Example programs](https://github.com/osa1/hslua/tree/master/examples)
 category:               Scripting
 extra-source-files:     lua-5.1.5/*.h
+                        README.md
                         CHANGELOG.md
                         COPYRIGHT
                         examples/callbacks/callbacks.lua
