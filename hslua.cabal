@@ -122,4 +122,6 @@ test-suite test
     hspec,
     hspec-contrib,
     HUnit,
-    text
+    text,
+    QuickCheck >= 2.7,
+    quickcheck-instances
