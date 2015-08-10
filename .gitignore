@@ -1,4 +1,5 @@
 *dist/*
 .cabal-sandbox*
+.stack-work
 *.hi
 *.o
