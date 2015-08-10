@@ -118,6 +118,8 @@ testStackValueInstance t = QM.monadicIO $ do
   Ordered indices' <- QM.pick arbitrary
   let indices = map getPositive indices'
   let nItems = if null indices then 0 else last indices
+  -- Make sure there's enough room in the stack
+  QM.assert =<< QM.run (checkstack l nItems)
   -- Push elements
   QM.run $ forM_ [1..nItems] $ \n ->
     if n `elem` indices
