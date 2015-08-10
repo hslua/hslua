@@ -5,16 +5,15 @@ import qualified Data.ByteString.Char8 as B
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import System.Mem (performMajorGC)
+import Control.Monad (forM, forM_)
 
 import Test.Hspec
 import Test.Hspec.Contrib.HUnit
 import Test.HUnit
 
 import Test.QuickCheck
-import qualified Test.QuickCheck.Monadic as QM
 import Test.QuickCheck.Instances ()
-
-import Data.Maybe (fromJust)
+import qualified Test.QuickCheck.Monadic as QM
 
 import Scripting.Lua
 
@@ -91,47 +90,53 @@ nulString =
 
 -- Bools
 prop_bool :: Bool -> Property
-prop_bool = testAllStackValueInstance
+prop_bool = testStackValueInstance
 -- Ints
 prop_int :: Int -> Property
-prop_int = testAllStackValueInstance
+prop_int = testStackValueInstance
 -- Bytestrings
 prop_bytestring :: ByteString -> Property
-prop_bytestring = testAllStackValueInstance
+prop_bytestring = testStackValueInstance
 -- Lists of bools
 prop_lists_bool :: [Bool] -> Property
-prop_lists_bool = testAllStackValueInstance
+prop_lists_bool = testStackValueInstance
 -- Lists of ints
 prop_lists_int :: [Int] -> Property
-prop_lists_int = testAllStackValueInstance
+prop_lists_int = testStackValueInstance
 -- Lists of bytestrings
 prop_lists_bytestring :: [ByteString] -> Property
-prop_lists_bytestring = testAllStackValueInstance
+prop_lists_bytestring = testStackValueInstance
 
 -- Check that the StackValue instance for a datatype works
-testStackValueInstance :: (Eq t, StackValue t) => t -> Property
-testStackValueInstance xs = QM.monadicIO $ do
-  x <- QM.run $ do
-         l <- newstate
-         push l xs
-         peek l (-1)
-  QM.assert $ xs == (fromJust x)
+testStackValueInstance :: (Show t, Eq t, StackValue t) => t -> Property
+testStackValueInstance t = QM.monadicIO $ do
+  -- Init Lua state
+  l <- QM.run newstate
+  -- Get an ascending list of small (1-100) positive integers
+  -- These are the indices at which we will push the value to be tested
+  -- Note that duplicate values don't matter so we don't need to guard against that
+  Ordered indices' <- QM.pick arbitrary
+  let indices = map getPositive indices'
+  let nItems = if null indices then 0 else last indices
+  -- Push elements
+  QM.run $ forM_ [1..nItems] $ \n ->
+    if n `elem` indices
+      then push l t
+      else push l n
+  -- Check that the stack size is the same as the total number of pushed items
+  stackSize <- QM.run $ gettop l
+  QM.assert $ stackSize == nItems
+  -- Peek all items
+  vals <- QM.run $ forM indices $ peek l
+  -- Check that the stack size did not change after peeking
+  newStackSize <- QM.run $ gettop l
+  QM.assert $ stackSize == newStackSize
+  -- Check that we were able to peek at all pushed elements
+  forM_ vals $ QM.assert . (== Just t)
 
--- Check that pushing/popping multiple times works
-testMultiStackValueInstance :: (Eq t, StackValue t) => t -> Property
-testMultiStackValueInstance xs = QM.monadicIO $ do
-  (x1,x2) <- QM.run $ do
-             l <- newstate
-             push l xs
-             push l ()
-             push l ()
-             push l xs
-             x1 <- peek l (-1)
-             x2 <- peek l (-4)
-             return (x1, x2)
-  QM.assert $ xs == (fromJust x1)
-  QM.assert $ xs == (fromJust x2)
-
--- Test both regular and multi instances
-testAllStackValueInstance :: (Eq t, StackValue t) => t -> Property
-testAllStackValueInstance xs = testStackValueInstance xs .&&. testMultiStackValueInstance xs
+  -- DEBUGGING -----------------------------------------------
+  -- QM.run $ putStrLn $ "Testing value -------- " ++ show t
+  -- QM.run $ putStrLn $ "Indices: " ++ show indices
+  -- QM.run $ putStrLn $ "StackSize: " ++ show stackSize
+  -- QM.run $ putStrLn $ "NewStackSize: " ++ show newStackSize
+  -- QM.run $ putStrLn $ "Peeked Values: " ++ show vals
