@@ -1,11 +1,11 @@
 module HsLuaSpec where
 
+import Control.Monad (forM, forM_)
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as B
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import System.Mem (performMajorGC)
-import Control.Monad (forM, forM_)
 
 import Test.Hspec
 import Test.Hspec.Contrib.HUnit
