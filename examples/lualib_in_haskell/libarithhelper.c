@@ -15,7 +15,7 @@ int hs_exit_lua(lua_State *L)
 
 int luaopen_lualibhelper(lua_State *L)
 {
-  lua_pushcfunction(L, add);
+  lua_pushcfunction(L, (int (*)(lua_State*))add);
   lua_setglobal(L, "add_in_haskell");
   lua_pushcfunction(L, hs_init_lua);
   lua_setglobal(L, "hs_init");
