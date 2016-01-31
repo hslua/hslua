@@ -72,14 +72,11 @@ foreign import ccall "lua.h lua_settop"
 foreign import ccall "lua.h lua_pushvalue"
   c_lua_pushvalue :: LuaState -> CInt -> IO ()
 
-foreign import ccall "lua.h lua_remove"
-  c_lua_remove :: LuaState -> CInt -> IO ()
+foreign import ccall "lua.h lua_rotate"
+  c_lua_rotate :: LuaState -> CInt -> CInt -> IO ()
 
-foreign import ccall "lua.h lua_insert"
-  c_lua_insert :: LuaState -> CInt -> IO ()
-
-foreign import ccall "lua.h lua_replace"
-  c_lua_replace :: LuaState -> CInt -> IO ()
+foreign import ccall "lua.h lua_copy"
+  c_lua_copy :: LuaState -> CInt -> CInt -> IO ()
 
 foreign import ccall "lua.h lua_checkstack"
   c_lua_checkstack :: LuaState -> CInt -> IO CInt
@@ -109,20 +106,14 @@ foreign import ccall "lua.h lua_type"
 foreign import ccall "lua.h lua_typename"
   c_lua_typename :: LuaState -> CInt -> IO (Ptr CChar)
 
-foreign import ccall "lua.h lua_equal"
-  c_lua_equal :: LuaState -> CInt -> CInt -> IO CInt
-
 foreign import ccall "lua.h lua_rawequal"
   c_lua_rawequal :: LuaState -> CInt -> CInt -> IO CInt
 
-foreign import ccall "lua.h lua_lessthan"
-  c_lua_lessthan :: LuaState -> CInt -> CInt -> IO CInt
+foreign import ccall "lua.h lua_tonumberx"
+  c_lua_tonumberx :: LuaState -> CInt -> CInt -> IO LuaNumber
 
-foreign import ccall "lua.h lua_tonumber"
-  c_lua_tonumber :: LuaState -> CInt -> IO LuaNumber
-
-foreign import ccall "lua.h lua_tointeger"
-  c_lua_tointeger :: LuaState -> CInt -> IO LuaInteger
+foreign import ccall "lua.h lua_tointegerx"
+  c_lua_tointegerx :: LuaState -> CInt -> CInt -> IO LuaInteger
 
 foreign import ccall "lua.h lua_toboolean"
   c_lua_toboolean :: LuaState -> CInt -> IO CInt
@@ -130,8 +121,8 @@ foreign import ccall "lua.h lua_toboolean"
 foreign import ccall "lua.h lua_tolstring"
   c_lua_tolstring :: LuaState -> CInt -> Ptr CSize -> IO (Ptr CChar)
 
-foreign import ccall "lua.h lua_objlen"
-  c_lua_objlen :: LuaState -> CInt -> IO CSize
+foreign import ccall "lua.h lua_rawlen"
+  c_lua_rawlen :: LuaState -> CInt -> IO CSize
 
 foreign import ccall "lua.h lua_tocfunction"
   c_lua_tocfunction :: LuaState -> CInt -> IO (FunPtr LuaCFunction)
@@ -180,6 +171,9 @@ foreign import ccall "lua.h lua_pushthread"
 --------------------------------------------------------------------------------
 -- * Get functions
 
+foreign import ccall "lua.h lua_getglobal"
+  c_lua_getglobal :: LuaState -> Ptr CChar -> IO CInt
+
 foreign import ccall "lua.h lua_gettable"
   c_lua_gettable :: LuaState -> CInt -> IO ()
 
@@ -201,15 +195,15 @@ foreign import ccall "lua.h lua_newuserdata"
 foreign import ccall "lua.h lua_getmetatable"
   c_lua_getmetatable :: LuaState -> CInt -> IO CInt
 
-foreign import ccall "lua.h lua_getfenv"
-  c_lua_getfenv :: LuaState -> CInt -> IO ()
-
 
 --------------------------------------------------------------------------------
--- * Get functions
+-- * Set functions
 
 foreign import ccall "lua.h lua_settable"
   c_lua_settable :: LuaState -> CInt -> IO ()
+
+foreign import ccall "lua.h lua_setglobal"
+  c_lua_setglobal :: LuaState -> Ptr CChar -> IO ()
 
 foreign import ccall "lua.h lua_setfield"
   c_lua_setfield :: LuaState -> CInt -> Ptr CChar -> IO ()
@@ -223,24 +217,17 @@ foreign import ccall "lua.h lua_rawseti"
 foreign import ccall "lua.h lua_setmetatable"
   c_lua_setmetatable :: LuaState -> CInt -> IO ()
 
-foreign import ccall "lua.h lua_setfenv"
-  c_lua_setfenv :: LuaState -> CInt -> IO CInt
-
-
 --------------------------------------------------------------------------------
 -- * 'load' and 'call' functions (load and run Lua code)
 
-foreign import ccall "lua.h lua_call"
-  c_lua_call :: LuaState -> CInt -> CInt -> IO ()
+foreign import ccall "lua.h lua_callk"
+  c_lua_callk :: LuaState -> CInt -> CInt -> CInt -> CInt -> IO ()
 
-foreign import ccall "lua.h lua_pcall"
-  c_lua_pcall :: LuaState -> CInt -> CInt -> CInt -> IO CInt
-
-foreign import ccall "lua.h lua_cpcall"
-  c_lua_cpcall :: LuaState -> FunPtr LuaCFunction -> Ptr a -> IO CInt
+foreign import ccall "lua.h lua_pcallk"
+  c_lua_pcallk :: LuaState -> CInt -> CInt -> CInt -> CInt -> CInt -> IO CInt
 
 foreign import ccall "lua.h lua_load"
-  c_lua_load :: LuaState -> FunPtr LuaReader -> Ptr () -> Ptr CChar -> IO CInt
+  c_lua_load :: LuaState -> FunPtr LuaReader -> Ptr () -> Ptr CChar -> CInt -> IO CInt
 
 foreign import ccall "lua.h lua_dump"
   c_lua_dump :: LuaState -> FunPtr LuaWriter -> Ptr () -> IO ()
@@ -249,8 +236,8 @@ foreign import ccall "lua.h lua_dump"
 --------------------------------------------------------------------------------
 -- * Coroutine functions
 
-foreign import ccall "lua.h lua_yield"
-  c_lua_yield :: LuaState -> CInt -> IO CInt
+foreign import ccall "lua.h lua_yieldk"
+  c_lua_yieldk :: LuaState -> CInt -> CInt -> IO CInt
 
 foreign import ccall "lua.h lua_resume"
   c_lua_resume :: LuaState -> CInt -> IO CInt
@@ -348,8 +335,8 @@ foreign import ccall "lauxlib.h luaL_ref"
 foreign import ccall "lauxlib.h luaL_unref"
   c_luaL_unref :: LuaState -> CInt -> CInt -> IO ()
 
-foreign import ccall "lauxlib.h luaL_loadfile"
-  c_luaL_loadfile :: LuaState -> Ptr CChar -> IO CInt
+foreign import ccall "lauxlib.h luaL_loadfilex"
+  c_luaL_loadfilex :: LuaState -> Ptr CChar -> Ptr CChar -> IO CInt
 
 foreign import ccall "lauxlib.h luaL_loadstring"
   c_luaL_loadstring :: LuaState -> Ptr CChar -> IO CInt
