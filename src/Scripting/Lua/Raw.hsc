@@ -281,6 +281,54 @@ foreign import ccall "lua.h lua_concat"
 foreign import ccall "lualib.h luaL_openlibs"
   c_luaL_openlibs :: LuaState -> IO ()
 
+foreign import ccall "lualib.h luaopen_base"
+  c_lua_open_base :: LuaState -> IO CInt
+
+foreign import ccall "lualib.h &luaopen_base"
+  c_lua_open_base_ptr :: FunPtr (LuaState -> IO CInt)
+
+foreign import ccall "lualib.h luaopen_table"
+  c_lua_open_table :: LuaState -> IO CInt
+
+foreign import ccall "lualib.h &luaopen_table"
+  c_lua_open_table_ptr :: FunPtr (LuaState -> IO CInt)
+
+foreign import ccall "lualib.h luaopen_io"
+  c_lua_open_io :: LuaState -> IO CInt
+
+foreign import ccall "lualib.h &luaopen_io"
+  c_lua_open_io_ptr :: FunPtr (LuaState -> IO CInt)
+
+foreign import ccall "lualib.h luaopen_os"
+  c_lua_open_os :: LuaState -> IO CInt
+
+foreign import ccall "lualib.h &luaopen_os"
+  c_lua_open_os_ptr :: FunPtr (LuaState -> IO CInt)
+
+foreign import ccall "lualib.h luaopen_string"
+  c_lua_open_string :: LuaState -> IO CInt
+
+foreign import ccall "lualib.h &luaopen_string"
+  c_lua_open_string_ptr :: FunPtr (LuaState -> IO CInt)
+
+foreign import ccall "lualib.h luaopen_math"
+  c_lua_open_math :: LuaState -> IO CInt
+
+foreign import ccall "lualib.h &luaopen_math"
+  c_lua_open_math_ptr :: FunPtr (LuaState -> IO CInt)
+
+foreign import ccall "lualib.h luaopen_debug"
+  c_lua_open_debug :: LuaState -> IO CInt
+
+foreign import ccall "lualib.h &luaopen_debug"
+  c_lua_open_debug_ptr :: FunPtr (LuaState -> IO CInt)
+
+foreign import ccall "lualib.h luaopen_package"
+  c_lua_open_package :: LuaState -> IO CInt
+
+foreign import ccall "lualib.h &luaopen_package"
+  c_lua_open_package_ptr :: FunPtr (LuaState -> IO CInt)
+
 
 --------------------------------------------------------------------------------
 -- * The Auxiliary Library

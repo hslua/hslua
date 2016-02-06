@@ -277,6 +277,30 @@ setglobal l n = setfield l globalsindex n
 openlibs :: LuaState -> IO ()
 openlibs = c_luaL_openlibs
 
+openbase :: LuaState -> IO ()
+openbase l = pushcfunction l c_lua_open_base_ptr >> call l 0 multret
+
+opentable :: LuaState -> IO ()
+opentable l = pushcfunction l c_lua_open_table_ptr >> call l 0 multret
+
+openio :: LuaState -> IO ()
+openio l = pushcfunction l c_lua_open_io_ptr >> call l 0 multret
+
+openos :: LuaState -> IO ()
+openos l = pushcfunction l c_lua_open_os_ptr >> call l 0 multret
+
+openstring :: LuaState -> IO ()
+openstring l = pushcfunction l c_lua_open_string_ptr >> call l 0 multret
+
+openmath :: LuaState -> IO ()
+openmath l = pushcfunction l c_lua_open_math_ptr >> call l 0 multret
+
+opendebug :: LuaState -> IO ()
+opendebug l = pushcfunction l c_lua_open_debug_ptr >> call l 0 multret
+
+openpackage :: LuaState -> IO ()
+openpackage l = pushcfunction l c_lua_open_package_ptr >> call l 0 multret
+
 foreign import ccall "wrapper" mkStringWriter :: LuaWriter -> IO (FunPtr LuaWriter)
 
 -- | See @lua_dump@ in Lua Reference Manual.

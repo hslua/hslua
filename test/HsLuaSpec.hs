@@ -1,6 +1,6 @@
 module HsLuaSpec where
 
-import Control.Monad (forM, forM_)
+import Control.Monad (forM, forM_, when)
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as B
 import qualified Data.Text as T
@@ -31,6 +31,11 @@ spec = do
       it "can push/pop lists of booleans" $ property prop_lists_bool
       it "can push/pop lists of ints" $ property prop_lists_int
       it "can push/pop lists of bytestrings" $ property prop_lists_bytestring
+    describe "luaopen_* functions" $ mapM_ fromHUnitTest $ map (uncurry testOpen) $
+      [ ("table", opentable), ("io", openio), ("os", openos),
+        ("string", openstring), ("math", openmath), ("debug", opendebug),
+        ("package", openpackage) ]
+    describe "luaopen_base returns two tables" $ fromHUnitTest $ testOpenBase
 
 bytestring :: Test
 bytestring = TestLabel "ByteString -- unicode stuff" $ TestCase $ do
@@ -142,3 +147,60 @@ testStackValueInstance t = QM.monadicIO $ do
   -- QM.run $ putStrLn $ "StackSize: " ++ show stackSize
   -- QM.run $ putStrLn $ "NewStackSize: " ++ show newStackSize
   -- QM.run $ putStrLn $ "Peeked Values: " ++ show vals
+
+--------------------------------------------------------------------------------
+-- luaopen_* functions
+
+testOpen :: String -> (LuaState -> IO ())  -> Test
+testOpen lib openfn = TestLabel ("open" ++ lib) $ TestCase $ do
+    l <- newstate
+    openlibs l
+    loadInspect l
+
+    getglobal l "print"
+    getglobal2 l "inspect.inspect"
+    openfn l
+    call l 1 1
+    call l 1 0
+
+    close l
+
+testOpenBase :: Test
+testOpenBase = TestLabel "openbase" $ TestCase $ do
+    l <- newstate
+    openlibs l
+    loadInspect l
+
+    getglobal l "print"
+    getglobal2 l "inspect.inspect"
+    getglobal l "print"
+    getglobal2 l "inspect.inspect"
+
+    openbase l
+    insert l 3
+
+    putStrLn "--- First table ---"
+
+    call l 1 1
+    call l 1 0
+
+    putStrLn "--- Second table ---"
+
+    call l 1 1
+    call l 1 0
+
+    return ()
+
+loadInspect :: LuaState -> Assertion
+loadInspect l = do
+    loadRet <- loadfile l "test/inspect.lua"
+    assertEqual "load failed" 0 loadRet
+    pcallRet <- pcall l 0 multret 0
+
+    when (pcallRet /= 0) $ do
+      msg <- tostring l 1
+      close l
+      assertFailure ("pcall failed with " ++ show pcallRet ++ "\n" ++
+                     "error message was: " ++ B.unpack msg)
+
+    setglobal l "inspect"
