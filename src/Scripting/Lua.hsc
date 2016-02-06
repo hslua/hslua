@@ -354,30 +354,11 @@ lessthan l i j = liftM (/= 0) (c_lua_lessthan l (fromIntegral i) (fromIntegral j
 
 -- | See @luaL_loadfile@ in Lua Reference Manual.
 loadfile :: LuaState -> String -> IO Int
-loadfile l f = readFile f >>= \c -> loadstring l c f
-
-foreign import ccall "wrapper" mkStringReader :: LuaReader -> IO (FunPtr LuaReader)
+loadfile l f = withCString f $ \fPtr -> fmap fromIntegral (c_luaL_loadfile l fPtr)
 
 -- | See @luaL_loadstring@ in Lua Reference Manual.
-loadstring :: LuaState -> String -> String -> IO Int
-loadstring l script cn = do
-    w <- newIORef nullPtr
-    let rd :: LuaReader
-        rd _l _d ps = do
-          k <- readIORef w
-          if k == nullPtr
-            then do
-              (s, len) <- newCStringLen script
-              writeIORef w s
-              F.poke ps (fromIntegral len)
-              return s
-            else return nullPtr
-    writer <- mkStringReader rd
-    res <- withCString cn $ \cnPtr -> c_lua_load l writer nullPtr cnPtr
-    freeHaskellFunPtr writer
-    k <- readIORef w
-    free k
-    return (fromIntegral res)
+loadstring :: LuaState -> String -> IO Int
+loadstring l str = withCString str $ \strPtr -> fmap fromIntegral (c_luaL_loadstring l strPtr)
 
 -- | See @lua_newthread@ in Lua Reference Manual.
 newthread :: LuaState -> IO LuaState

@@ -299,3 +299,9 @@ foreign import ccall "lauxlib.h luaL_ref"
 
 foreign import ccall "lauxlib.h luaL_unref"
   c_luaL_unref :: LuaState -> CInt -> CInt -> IO ()
+
+foreign import ccall "lauxlib.h luaL_loadfile"
+  c_luaL_loadfile :: LuaState -> Ptr CChar -> IO CInt
+
+foreign import ccall "lauxlib.h luaL_loadstring"
+  c_luaL_loadstring :: LuaState -> Ptr CChar -> IO CInt
