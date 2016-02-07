@@ -1,5 +1,12 @@
 ## Changelog
 
+### 0.4.2
+
+* New raw functions for `luaopen_base`, `luaopen_package`, `luaopen_string`,
+  `luaopen_table`, `luaopen_math`, `luaopen_io`, `luaopen_os`, `luaopen_debug`
+  and their high-level wrappers (with names `openbase`, `opentable` etc.)
+  implemented.
+
 ### 0.4.1
 
 * Bugfix(#30): `tolist` wasn't popping elements of the list from stack.
