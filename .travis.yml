@@ -1,71 +1,102 @@
-env:
- - CABALVER=1.20 GHCVER=7.8.4
- - CABALVER=1.22 GHCVER=7.10.1
- - CABALVER=head GHCVER=head
+sudo: false
+language: generic
+
+apt:
+  - alex-3.1.4
+
+# Speed builds up by caching install requirements
+cache:
+  directories:
+  - $HOME/.ghc
+  - $HOME/.cabal
+  - $HOME/usr
 
 matrix:
   allow_failures:
-    - env: CABALVER=head GHCVER=head
+    - env: GHCVER=head CABALVER=head
+  include:
+    - env: GHCVER=7.8.4 CABALVER=1.20 LUAVER=default
+      compiler: ": #GHC 7.8.4"
+      addons: {apt: {packages: [cabal-install-1.20,ghc-7.8.4], sources: [hvr-ghc]}}
+    - env: GHCVER=7.8.4 CABALVER=1.20 LUAVER=lua-5.1
+      compiler: ": #GHC 7.8.4"
+      addons: {apt: {packages: [cabal-install-1.20,ghc-7.8.4], sources: [hvr-ghc]}}
+    - env: GHCVER=7.8.4 CABALVER=1.20 COVERAGE=true LUAVER=luajit
+      compiler: ": #GHC 7.8.4"
+      addons: {apt: {packages: [cabal-install-1.20,ghc-7.8.4], sources: [hvr-ghc]}}
+
+    - env: GHCVER=7.10.3 CABALVER=1.22 LUAVER=default
+      compiler: ": #GHC 7.10.3"
+      addons: {apt: {packages: [cabal-install-1.22,ghc-7.10.3], sources: [hvr-ghc]}}
+    - env: GHCVER=7.10.3 CABALVER=1.22 LUAVER=lua-5.1
+      compiler: ": #GHC 7.10.3"
+      addons: {apt: {packages: [cabal-install-1.22,ghc-7.10.3], sources: [hvr-ghc]}}
+    - env: GHCVER=7.10.3 CABALVER=1.22 LUAVER=luajit
+      compiler: ": #GHC 7.10.3"
+      addons: {apt: {packages: [cabal-install-1.22,ghc-7.10.3], sources: [hvr-ghc]}}
+
+    - env: GHCVER=head CABALVER=head
+      compiler: ": #GHC HEAD"
+      addons: {apt: {packages: [cabal-install-head,ghc-head], sources: [hvr-ghc]}}
+
+  # mark build as successful as soon as all required successes are in.
+  fast_finish: true
 
 before_install:
-  - travis_retry sudo add-apt-repository -y ppa:hvr/ghc
-  - travis_retry sudo apt-get update
-  - travis_retry sudo apt-get install cabal-install-$CABALVER ghc-$GHCVER
-  - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
+  - export PATH=/opt/alex/3.1.4/bin:/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
   - cabal update
 
-  - travis_retry sudo apt-get install alex-3.1.4
-  - export PATH=/opt/alex/3.1.4/bin:$PATH
+install:
+  - cabal install --only-dependencies --enable-tests
 
 script:
-  - git clone https://github.com/osa1/hslua
+  - export CABAL_CONFIG_ARGS="--enable-tests"
+  - if [ -n "${COVERAGE}" ]; then CABAL_CONFIG_ARGS="--enable-library-coverage"; fi
+  - |
+    case "$LUAVER" in
+      (lua-5.1):
+          # Install Lua 5.1.5
+          if ! ([ -e "${HOME}/usr/bin/lua" ] &&
+                ${HOME}/usr/bin/lua -v 2>&1 | grep -q "Lua 5.1.5")  ; then
+              wget http://www.lua.org/ftp/lua-5.1.5.tar.gz
+              tar -xf lua-5.1.5.tar.gz
+              cd lua-5.1.5
+              sed -i 's/^CFLAGS= -O2 -Wall/CFLAGS= -O2 -Wall -fPIC/' src/Makefile
+              make linux
+              make install INSTALL_TOP=${HOME}/usr
+              cd ..
+          fi
 
-  # Compile and link using built-in Lua
-  - cabal install --enable-tests
-  - cabal configure --enable-tests
-  - cabal test
+          # Compile and link using system-wide Lua 5.1.5
+          CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS -fsystem-lua"
+          CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS --extra-include-dirs=${HOME}/usr/include"
+          CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS --extra-lib-dirs=${HOME}/usr/lib"
+          ;;
+      (luajit):
+          # Install LuaJIT 2.0.3
+          wget http://luajit.org/download/LuaJIT-2.0.3.tar.gz
+          tar -xf LuaJIT-2.0.3.tar.gz
+          cd LuaJIT-2.0.3
+          sed -i 's/^TARGET_CC= $(STATIC_CC)/TARGET_CC= $(DYNAMIC_CC)/g' src/Makefile
+          make
+          make install PREFIX=${HOME}/usr
+          cd ..
 
-  # Clean stuff
-  - cabal clean
-  - ghc-pkg unregister hslua
-
-  # Install LuaJIT 2.0.3
-  - wget http://luajit.org/download/LuaJIT-2.0.3.tar.gz
-  - tar -xf LuaJIT-2.0.3.tar.gz
-  - cd LuaJIT-2.0.3
-  - sed -i 's/^TARGET_CC= $(STATIC_CC)/TARGET_CC= $(DYNAMIC_CC)/g' src/Makefile
-  - make
-  - sudo make install
-  - cd ..
-
-  # Install Lua 5.1.5
-  - wget http://www.lua.org/ftp/lua-5.1.5.tar.gz
-  - tar -xf lua-5.1.5.tar.gz
-  - cd lua-5.1.5
-  - sed -i 's/^CFLAGS= -O2 -Wall/CFLAGS= -O2 -Wall -fPIC/' src/Makefile
-  - make linux
-  - sudo make install
-  - cd ..
-
-  # Compile and link using system-wide Lua 5.1.5
-  - cabal install -fsystem-lua --enable-tests
-  - cabal configure -fsystem-lua --enable-tests
-  - cabal test
-
-  # Clean stuff
-  - cabal clean
-  - ghc-pkg unregister hslua
-
-  # Compile and link using system-wide LuaJIT
-  # (also enable library coverage)
-  - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-  - echo $LD_LIBRARY_PATH
-  - cabal install -fsystem-lua -fluajit --enable-tests --enable-library-coverage
-  - cabal configure -fsystem-lua -fluajit --enable-tests --enable-library-coverage
+          # Compile and link using system-wide LuaJIT
+          CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS -fsystem-lua -fluajit"
+          CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS --extra-include-dirs=${HOME}/usr/include/luajit-2.0"
+          CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS --extra-lib-dirs=${HOME}/usr/lib"
+          ;;
+    esac
+  - export LD_LIBRARY_PATH=${HOME}/usr/lib:$LD_LIBRARY_PATH
+  - echo $CABAL_CONFIG_ARGS
+  - cabal configure $CABAL_CONFIG_ARGS
   - cabal build
   - cabal test
+  - cabal copy
+  - cabal sdist
 
-after_script:
+after_success:
   - set -e
   - set -x
   - if [ $(ghc --numeric-version) == "7.8.4" ]; then
@@ -73,9 +104,3 @@ after_script:
       cabal install hpc-coveralls;
       ./.cabal-sandbox/bin/hpc-coveralls simple-test callbacks haskellfun err_prop test;
     fi
-
-notifications:
-  email:
-    recipients: omeragacan@gmail.com
-    on_success: change
-    on_failure: change
