@@ -14,6 +14,7 @@ Glue to hslua for aeson values.
 -}
 module Scripting.Lua.Aeson
   ( module Scripting.Lua
+  , newstate
   ) where
 
 import Data.HashMap.Lazy (HashMap)
@@ -24,7 +25,9 @@ import Data.Text.Encoding (decodeUtf8, encodeUtf8)
 import Data.Vector (Vector, fromList, toList)
 import Scripting.Lua (LuaState, StackValue)
 
+import qualified Data.Aeson as Aeson
 import qualified Data.HashMap.Lazy as HashMap
+import qualified Data.Vector as Vector
 import qualified Scripting.Lua as Lua
 
 instance StackValue Scientific where
@@ -49,8 +52,66 @@ instance (Eq a, Hashable a, StackValue a, StackValue b)
   peek lua i = fmap HashMap.fromList <$> getPairs lua i
   valuetype _ = Lua.TTABLE
 
+-- | Hslua StackValue instance for the Aeson Value data type.
+instance StackValue Aeson.Value where
+  push lua = \case
+    Aeson.Object o -> Lua.push lua o
+    Aeson.Number n -> Lua.push lua n
+    Aeson.String s -> Lua.push lua s
+    Aeson.Array a -> Lua.push lua a
+    Aeson.Bool b -> Lua.push lua b
+    Aeson.Null -> Lua.getglobal lua "_NULL"
+  peek lua i = do
+    ltype <- Lua.ltype lua i
+    case ltype of
+      Lua.TBOOLEAN -> fmap Aeson.Bool  <$> Lua.peek lua i
+      Lua.TNUMBER -> fmap Aeson.Number <$> Lua.peek lua i
+      Lua.TSTRING -> fmap Aeson.String <$> Lua.peek lua i
+      Lua.TTABLE -> do
+        Lua.rawgeti lua i 0
+        len <- Lua.peek lua (-1)
+        Lua.pop lua 1
+        case (len :: Maybe Int) of
+          Just _  -> fmap Aeson.Array <$> Lua.peek lua i
+          Nothing -> do
+            objlen <- Lua.objlen lua i
+            if objlen > 0
+              then fmap Aeson.Array <$> Lua.peek lua i
+              else do
+                isNull <- isLuaNull lua i
+                if isNull
+                  then return $ Just Aeson.Null
+                  else fmap Aeson.Object <$> Lua.peek lua i
+      Lua.TNIL -> return $ Just Aeson.Null
+      _        -> error $ "Unexpected type: " ++ (show ltype)
+  valuetype = \case
+    Aeson.Object _ -> Lua.TTABLE
+    Aeson.Number _ -> Lua.TNUMBER
+    Aeson.String _ -> Lua.TSTRING
+    Aeson.Array _ -> Lua.TTABLE
+    Aeson.Bool _ -> Lua.TBOOLEAN
+    Aeson.Null -> Lua.TTABLE
+
+newstate :: IO LuaState
+newstate = do
+  lua <- Lua.newstate
+  Lua.createtable lua 0 0
+  Lua.setglobal lua "_NULL"
+  return lua
+
+isLuaNull :: LuaState -> Int -> IO Bool
+isLuaNull lua i = do
+  let i' = if i < 0 then i - 1 else i
+  Lua.getglobal lua "_NULL"
+  res <- Lua.equal lua i' (-1)
+  Lua.pop lua 1
+  return res
+
 pushvector :: StackValue a => LuaState -> Vector a -> IO ()
-pushvector lua = Lua.pushlist lua . toList
+pushvector lua v = do
+  Lua.pushlist lua . toList $ v
+  Lua.push lua (Vector.length v)
+  Lua.rawseti lua (-2) 0
 
 tovector :: StackValue a => LuaState -> Int -> IO (Maybe (Vector a))
 tovector = fmap (fmap (fmap fromList)) . Lua.tolist

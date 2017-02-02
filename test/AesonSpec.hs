@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-|
 Copyright   :  © 2017 Albert Krewinkel
@@ -5,18 +6,19 @@ License     :  MIT
 
 Tests for Aeson–Lua glue.
 -}
-import Control.Monad (forM_)
+import Control.Monad (forM_, when)
 import Data.AEq ((~==))
 import Data.HashMap.Lazy (HashMap)
-import Data.Scientific (Scientific, toRealFloat)
+import Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
 import Data.Text (Text)
 import Data.Vector (Vector)
+import Scripting.Lua.Aeson (StackValue, newstate)
 import Test.Hspec
 import Test.HUnit
 import Test.QuickCheck
 import Test.QuickCheck.Instances ()
-import Scripting.Lua.Aeson (StackValue)
 
+import qualified Data.Aeson as Aeson
 import qualified Scripting.Lua as Lua
 
 -- | Run this spec.
@@ -53,6 +55,9 @@ spec = do
         property $ \x -> assertRoundtripEqual (x::HashMap Text Bool)
       it "can be round-tripped through the stack with Text keys and Vector Bool values" $
         property $ \x -> assertRoundtripEqual (x::HashMap Text (Vector Bool))
+    describe "Value" $ do
+      it "can be round-tripped through the stack" $ property $
+        \x -> assertRoundtripEqual (x::Aeson.Value)
 
 assertRoundtripApprox :: Scientific -> IO ()
 assertRoundtripApprox x = do
@@ -68,13 +73,15 @@ assertRoundtripEqual x = do
 
 roundtrip :: (StackValue a) => a -> IO a
 roundtrip x = do
-  lua <- Lua.newstate
+  lua <- newstate
   Lua.push lua x
+  size <- Lua.gettop lua
+  when (size /= 1) $
+    error ("not the right amount of elements on the stack: " ++ show size)
   res <- Lua.peek lua (-1)
-  retval <- res `seq` case res of
+  retval <- case res of
         Nothing -> error "could not read from stack"
-        Just y  -> do
-          return y
+        Just y  -> return y
   Lua.close lua
   return retval
 
@@ -90,3 +97,19 @@ luaTest luaTestCode xs = do
   retval <- Lua.callfunc lua "run"
   Lua.close lua
   return retval
+
+luaNumberToScientific :: Lua.LuaNumber -> Scientific
+luaNumberToScientific = fromFloatDigits
+
+instance Arbitrary Aeson.Value where
+  arbitrary = arbitraryValue 7
+
+arbitraryValue :: Int -> Gen Aeson.Value
+arbitraryValue size = frequency $
+    [ (1, return Aeson.Null)
+    , (4, Aeson.Bool <$> arbitrary)
+    , (4, Aeson.Number . luaNumberToScientific <$> arbitrary)
+    , (4, Aeson.String <$> arbitrary)
+    , (2, resize (size - 1) $ Aeson.Array <$> arbitrary)
+    , (2, resize (size - 1) $ Aeson.Object <$> arbitrary)
+    ]
