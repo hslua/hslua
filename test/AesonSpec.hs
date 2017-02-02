@@ -32,8 +32,10 @@ spec = do
     describe "Scientific" $ do
       it "can be converted to a lua number" $ property $
         \x -> assert =<< luaTest "type(x) == 'number'" [("x", x::Scientific)]
-      it "can be round-tripped through the stack (lossy)" $ property $
-        \x -> assertRoundtripApprox (x::Scientific)
+      it "can be round-tripped through the stack with numbers of double precision" $
+        property $ \x -> assertRoundtripEqual (luaNumberToScientific x)
+      it "can be round-tripped through the stack and stays approximately equal" $
+        property $ \x -> assertRoundtripApprox (x :: Scientific)
     describe "Text" $ do
       it "can be converted to a lua string" $ property $
         \x -> assert =<< luaTest "type(x) == 'string'" [("x", x::Text)]
@@ -46,7 +48,7 @@ spec = do
         \x -> assertRoundtripEqual (x::Vector Bool)
       it "can contain Texts and be round-tripped through the stack" $ property $
         \x -> assertRoundtripEqual (x::Vector Text)
-      it "can contain Bools and be round-tripped through the stack" $ property $
+      it "can contain Vector of Bools and be round-tripped through the stack" $ property $
         \x -> assertRoundtripEqual (x::(Vector (Vector Bool)))
     describe "HashMap" $ do
       it "is converted to a lua table" $ property $
