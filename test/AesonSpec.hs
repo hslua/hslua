@@ -7,17 +7,17 @@ Tests for Aeson–Lua glue.
 -}
 import Control.Monad (forM_)
 import Data.AEq ((~==))
+import Data.HashMap.Lazy (HashMap)
 import Data.Scientific (Scientific, toRealFloat)
 import Data.Text (Text)
 import Data.Vector (Vector)
-import Scripting.Lua.Aeson (StackValue)
-
-import qualified Scripting.Lua as Lua
-
 import Test.Hspec
 import Test.HUnit
 import Test.QuickCheck
 import Test.QuickCheck.Instances ()
+import Scripting.Lua.Aeson (StackValue)
+
+import qualified Scripting.Lua as Lua
 
 -- | Run this spec.
 main :: IO ()
@@ -46,6 +46,13 @@ spec = do
         \x -> assertRoundtripEqual (x::Vector Text)
       it "can contain Bools and be round-tripped through the stack" $ property $
         \x -> assertRoundtripEqual (x::(Vector (Vector Bool)))
+    describe "HashMap" $ do
+      it "is converted to a lua table" $ property $
+        \x -> assert =<< luaTest "type(x) == 'table'" [("x", x::HashMap Text Bool)]
+      it "can be round-tripped through the stack with Text keys and Bool values" $
+        property $ \x -> assertRoundtripEqual (x::HashMap Text Bool)
+      it "can be round-tripped through the stack with Text keys and Vector Bool values" $
+        property $ \x -> assertRoundtripEqual (x::HashMap Text (Vector Bool))
 
 assertRoundtripApprox :: Scientific -> IO ()
 assertRoundtripApprox x = do
@@ -55,7 +62,9 @@ assertRoundtripApprox x = do
   assert (xdouble ~== ydouble)
 
 assertRoundtripEqual :: (Show a, Eq a, StackValue a) => a -> IO ()
-assertRoundtripEqual x = assert =<< (x ==) <$> roundtrip x
+assertRoundtripEqual x = do
+  y <- roundtrip x
+  assert (x == y)
 
 roundtrip :: (StackValue a) => a -> IO a
 roundtrip x = do
