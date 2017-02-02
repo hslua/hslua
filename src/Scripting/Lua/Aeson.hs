@@ -17,6 +17,8 @@ module Scripting.Lua.Aeson
   ) where
 
 import Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
+import Data.Text (Text)
+import Data.Text.Encoding (decodeUtf8, encodeUtf8)
 import Scripting.Lua (LuaState, StackValue)
 
 import qualified Scripting.Lua as Lua
@@ -26,3 +28,8 @@ instance StackValue Scientific where
   peek lua n = fmap fromFloatDigits <$>
                (Lua.peek lua n :: IO (Maybe Lua.LuaNumber))
   valuetype _ = Lua.TNUMBER
+
+instance StackValue Text where
+  push lua t = Lua.push lua (encodeUtf8 t)
+  peek lua i = fmap decodeUtf8 <$> Lua.peek lua i
+  valuetype _ = Lua.TSTRING

@@ -8,6 +8,7 @@ Tests for Aeson–Lua glue.
 import Control.Monad (forM_)
 import Data.AEq ((~==))
 import Data.Scientific (Scientific, toRealFloat)
+import Data.Text (Text)
 import Scripting.Lua.Aeson (StackValue)
 
 import qualified Scripting.Lua as Lua
@@ -30,6 +31,11 @@ spec = do
         \x -> assert =<< luaTest "type(x) == 'number'" [("x", x::Scientific)]
       it "can be round-tripped through the stack (lossy)" $ property $
         \x -> assertRoundtripApprox (x::Scientific)
+    describe "Text" $ do
+      it "can be converted to a lua string" $ property $
+        \x -> assert =<< luaTest "type(x) == 'string'" [("x", x::Text)]
+      it "can be round-tripped through the stack" $ property $
+        \x -> assertRoundtripEqual (x::Text)
 
 assertRoundtripApprox :: Scientific -> IO ()
 assertRoundtripApprox x = do
@@ -37,6 +43,9 @@ assertRoundtripApprox x = do
   let xdouble = toRealFloat x :: Double
   let ydouble = toRealFloat y :: Double
   assert (xdouble ~== ydouble)
+
+assertRoundtripEqual :: (Show a, Eq a, StackValue a) => a -> IO ()
+assertRoundtripEqual x = assert =<< (x ==) <$> roundtrip x
 
 roundtrip :: (StackValue a) => a -> IO a
 roundtrip x = do
