@@ -9,6 +9,7 @@ import Control.Monad (forM_)
 import Data.AEq ((~==))
 import Data.Scientific (Scientific, toRealFloat)
 import Data.Text (Text)
+import Data.Vector (Vector)
 import Scripting.Lua.Aeson (StackValue)
 
 import qualified Scripting.Lua as Lua
@@ -36,6 +37,15 @@ spec = do
         \x -> assert =<< luaTest "type(x) == 'string'" [("x", x::Text)]
       it "can be round-tripped through the stack" $ property $
         \x -> assertRoundtripEqual (x::Text)
+    describe "Vector" $ do
+      it "is converted to a lua table" $ property $
+        \x -> assert =<< luaTest "type(x) == 'table'" [("x", x::Vector Bool)]
+      it "can contain Bools and be round-tripped through the stack" $ property $
+        \x -> assertRoundtripEqual (x::Vector Bool)
+      it "can contain Texts and be round-tripped through the stack" $ property $
+        \x -> assertRoundtripEqual (x::Vector Text)
+      it "can contain Bools and be round-tripped through the stack" $ property $
+        \x -> assertRoundtripEqual (x::(Vector (Vector Bool)))
 
 assertRoundtripApprox :: Scientific -> IO ()
 assertRoundtripApprox x = do
