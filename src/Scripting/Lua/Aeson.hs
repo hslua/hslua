@@ -11,6 +11,18 @@ Stability   :  experimental
 Portability :  portable
 
 Glue to hslua for aeson values.
+
+This provides a @StackValue@ instance for aeson's @Value@ type. The following
+conventions are used:
+
+- @Null@ values are encoded as the special global @_NULL@. Using @Nil@ would
+  cause problems with null-containing arrays.
+
+- Objects are converted to tables in a straight-forward way.
+
+- Arrays are converted to lua tables. Array-length is included as the value at
+  index 0. This makes it possible to distinguish between empty arrays and empty
+  objects.
 -}
 module Scripting.Lua.Aeson
   ( module Scripting.Lua
@@ -92,6 +104,9 @@ instance StackValue Aeson.Value where
     Aeson.Bool _ -> Lua.TBOOLEAN
     Aeson.Null -> Lua.TTABLE
 
+-- | Create a new lua state suitable for use with aeson values. This behaves
+-- like @newstate@ in hslua, but initializes the @_NULL@ global. That variable
+-- is used to encode null values.
 newstate :: IO LuaState
 newstate = do
   lua <- Lua.newstate
@@ -99,6 +114,7 @@ newstate = do
   Lua.setglobal lua "_NULL"
   return lua
 
+-- | Check if the value under the given index is lua-equal to @_NULL@.
 isLuaNull :: LuaState -> Int -> IO Bool
 isLuaNull lua i = do
   let i' = if i < 0 then i - 1 else i
@@ -107,15 +123,18 @@ isLuaNull lua i = do
   Lua.pop lua 1
   return res
 
+-- | Push a vector unto the stack.
 pushvector :: StackValue a => LuaState -> Vector a -> IO ()
 pushvector lua v = do
   Lua.pushlist lua . toList $ v
   Lua.push lua (Vector.length v)
   Lua.rawseti lua (-2) 0
 
+-- | Try reading the value under the given index as a vector.
 tovector :: StackValue a => LuaState -> Int -> IO (Maybe (Vector a))
 tovector = fmap (fmap (fmap fromList)) . Lua.tolist
 
+-- | Try reading the value under the given index as a list of key-value pairs.
 getPairs :: (StackValue a, StackValue b)
          => LuaState -> Int -> IO (Maybe [(a, b)])
 getPairs lua t = do
@@ -140,10 +159,11 @@ getPairs lua t = do
       else do
         return Nothing
 
+-- | Push a hashmap unto the stack.
 pushTextHashMap :: (StackValue a, StackValue b) => LuaState -> HashMap a b -> IO ()
 pushTextHashMap lua hm = do
     let xs = HashMap.toList hm
     Lua.createtable lua (length xs + 1) 0
-    let addValue (k, v) = Lua.push lua k >> Lua.push lua v >>
+    let addValue (k, v) = Lua.push lua k *> Lua.push lua v *>
                           Lua.rawset lua (-3)
     mapM_ addValue xs
