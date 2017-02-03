@@ -1,6 +1,10 @@
 hslua-aeson
 ===========
 
+[![travis build status](https://img.shields.io/travis/tarleb/hslua-aeson/master.svg?style=flat-square)](https://travis-ci.org/tarleb/hslua-aeson)
+[![MIT License](https://img.shields.io/github/license/tarleb/hslua-aeson.svg?style=flat-square)](./LICENSE)
+
+
 Glue to hslua for aeson values.
 
 This provides a `StackValue` instance for aeson's `Value` type. The following
