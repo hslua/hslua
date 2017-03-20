@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-|
 Copyright   :  © 2017 Albert Krewinkel
@@ -6,6 +7,10 @@ License     :  MIT
 
 Tests for Aeson–Lua glue.
 -}
+#if MIN_VERSION_base(4,8,0)
+#else
+import Control.Applicative ((<$>), (*>))
+#endif
 import Control.Monad (forM_, when)
 import Data.AEq ((~==))
 import Data.HashMap.Lazy (HashMap)
