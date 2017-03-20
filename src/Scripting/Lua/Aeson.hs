@@ -164,6 +164,6 @@ pushTextHashMap :: (StackValue a, StackValue b) => LuaState -> HashMap a b -> IO
 pushTextHashMap lua hm = do
     let xs = HashMap.toList hm
     Lua.createtable lua (length xs + 1) 0
-    let addValue (k, v) = Lua.push lua k *> Lua.push lua v *>
+    let addValue (k, v) = Lua.push lua k >> Lua.push lua v >>
                           Lua.rawset lua (-3)
     mapM_ addValue xs
