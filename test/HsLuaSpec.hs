@@ -27,6 +27,7 @@ spec = do
     describe "Random StackValues" $ do
       it "can push/pop booleans" $ property prop_bool
       it "can push/pop ints" $ property prop_int
+      it "can push/pop doubles" $ property prop_double
       it "can push/pop bytestrings" $ property prop_bytestring
       it "can push/pop lists of booleans" $ property prop_lists_bool
       it "can push/pop lists of ints" $ property prop_lists_int
@@ -99,6 +100,9 @@ prop_bool = testStackValueInstance
 -- Ints
 prop_int :: Int -> Property
 prop_int = testStackValueInstance
+-- Doubles
+prop_double :: Double -> Property
+prop_double = testStackValueInstance
 -- Bytestrings
 prop_bytestring :: ByteString -> Property
 prop_bytestring = testStackValueInstance
