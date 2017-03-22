@@ -23,7 +23,6 @@ import qualified Data.List as L
 import Data.Maybe
 import Foreign.C
 import Foreign.Marshal.Alloc
-import Foreign.Marshal.Array
 import Foreign.Ptr
 import Foreign.StablePtr
 import qualified Foreign.Storable as F
