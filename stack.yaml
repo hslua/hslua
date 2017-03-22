@@ -1,7 +1,5 @@
 flags: {}
 packages:
 - '.'
-extra-deps:
-- hspec-contrib-0.3.0
-resolver: lts-2.21
+resolver: lts-8.5
 
