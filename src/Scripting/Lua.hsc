@@ -199,11 +199,8 @@ atpanic = c_lua_atpanic
 tostring :: LuaState -> Int -> IO B.ByteString
 tostring l n = alloca $ \lenPtr -> do
     cstr <- c_lua_tolstring l (fromIntegral n) lenPtr
-    len <- F.peek lenPtr
-    -- Lua string may change or get garbage collected, copy it
-    cstr' <- mallocBytes (fromIntegral len)
-    copyArray cstr' cstr (fromIntegral len)
-    B.unsafePackMallocCStringLen (cstr', fromIntegral len)
+    cstrLen <- F.peek lenPtr
+    B.packCStringLen (cstr, fromIntegral cstrLen)
 
 -- | See @lua_tothread@ in Lua Reference Manual.
 tothread :: LuaState -> Int -> IO LuaState
