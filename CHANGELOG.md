@@ -1,11 +1,18 @@
 ## Changelog
 
-### 0.4.2
+### 0.5.0
 
 * New raw functions for `luaopen_base`, `luaopen_package`, `luaopen_string`,
   `luaopen_table`, `luaopen_math`, `luaopen_io`, `luaopen_os`, `luaopen_debug`
   and their high-level wrappers (with names `openbase`, `opentable` etc.)
   implemented.
+* Remove custom versions of `loadfile` and `loadstring`.
+* Drop support for GHC versions < 7.8, avoid compiler warnings.
+* Ensure no symbols are stripped when linking the bundled lua interpreter.
+* Simplify `tostring` function definition. (Sean Proctor)
+* Explicitly decprecate `strlen`. (Sean Proctor)
+* Add links to lua documentation for functions wrapping the official lua C API.
+  (Sean Proctor).
 
 ### 0.4.1
 
