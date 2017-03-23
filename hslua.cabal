@@ -117,7 +117,7 @@ test-suite test
   main-is:              Spec.hs
   hs-source-dirs:       test
   ghc-options:          -Wall -threaded
-
+  other-modules:        HsLuaSpec
   build-depends:
     base,
     bytestring,
