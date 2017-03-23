@@ -95,9 +95,9 @@ settop l n = c_lua_settop l (fromIntegral n)
 createtable :: LuaState -> Int -> Int -> IO ()
 createtable l s z = c_lua_createtable l (fromIntegral s) (fromIntegral z)
 
--- | See @lua_objlen@ in Lua Reference Manual.
-objlen :: LuaState -> Int -> IO Int
-objlen l n = liftM fromIntegral (c_lua_objlen l (fromIntegral n))
+-- | See @lua_rawlen@ in Lua Reference Manual.
+rawlen :: LuaState -> Int -> IO Int
+rawlen l n = liftM fromIntegral (c_lua_rawlen l (fromIntegral n))
 
 -- | See @lua_pop@ in Lua Reference Manual.
 pop :: LuaState -> Int -> IO ()
@@ -117,7 +117,7 @@ pushcfunction l f = pushcclosure l f 0
 
 -- | See @lua_strlen@ in Lua Reference Manual.
 strlen :: LuaState -> Int -> IO Int
-strlen = objlen
+strlen = rawlen
 
 -- | See @lua_type@ in Lua Reference Manual.
 ltype :: LuaState -> Int -> IO LTYPE
@@ -134,7 +134,7 @@ istable l n = liftM (== TTABLE) (ltype l n)
 -- | Try to convert Lua array at given index to Haskell list.
 tolist :: StackValue a => LuaState -> Int -> IO (Maybe [a])
 tolist l n = do
-    len <- objlen l n
+    len <- rawlen l n
     iter [1..len]
   where
     iter [] = return $ Just []
@@ -178,18 +178,6 @@ isnoneornil l n = liftM (<= TNIL) (ltype l n)
 registryindex :: Int
 registryindex = #{const LUA_REGISTRYINDEX}
 
--- | See @LUA_ENVIRONINDEX@ in Lua Reference Manual.
-environindex :: Int
-environindex = #{const LUA_ENVIRONINDEX}
-
--- | See @LUA_GLOBALSINDEX@ in Lua Reference Manual.
-globalsindex :: Int
-globalsindex = #{const LUA_GLOBALSINDEX}
-
--- | See @lua_upvalueindex@ in Lua Reference Manual.
-upvalueindex :: Int -> Int
-upvalueindex i = globalsindex - i
-
 -- | See @lua_atpanic@ in Lua Reference Manual.
 atpanic :: LuaState -> FunPtr LuaCFunction -> IO (FunPtr LuaCFunction)
 atpanic = c_lua_atpanic
@@ -219,7 +207,7 @@ xmove l1 l2 n = c_lua_xmove l1 l2 (fromIntegral n)
 
 -- | See @lua_yield@ in Lua Reference Manual.
 yield :: LuaState -> Int -> IO Int
-yield l n = liftM fromIntegral (c_lua_yield l (fromIntegral n))
+yield l n = liftM fromIntegral (c_lua_yieldk l (fromIntegral n) 0)
 
 -- | See @lua_checkstack@ in Lua Reference Manual.
 checkstack :: LuaState -> Int -> IO Bool
@@ -243,15 +231,11 @@ concat l n = c_lua_concat l (fromIntegral n)
 
 -- | See @lua_call@ and @lua_call@ in Lua Reference Manual.
 call :: LuaState -> Int -> Int -> IO ()
-call l a b = c_lua_call l (fromIntegral a) (fromIntegral b)
+call l a b = c_lua_callk l (fromIntegral a) (fromIntegral b) 0 0
 
 -- | See @lua_pcall@ in Lua Reference Manual.
 pcall :: LuaState -> Int -> Int -> Int -> IO Int
-pcall l a b c = liftM fromIntegral (c_lua_pcall l (fromIntegral a) (fromIntegral b) (fromIntegral c))
-
--- | See @lua_cpcall@ in Lua Reference Manual.
-cpcall :: LuaState -> FunPtr LuaCFunction -> Ptr a -> IO Int
-cpcall l a c = liftM fromIntegral (c_lua_cpcall l a c)
+pcall l a b c = liftM fromIntegral (c_lua_pcallk l (fromIntegral a) (fromIntegral b) (fromIntegral c) 0 0)
 
 -- | See @lua_getfield@ in Lua Reference Manual.
 getfield :: LuaState -> Int -> String -> IO ()
@@ -263,11 +247,11 @@ setfield l i s = withCString s $ \sPtr -> c_lua_setfield l (fromIntegral i) sPtr
 
 -- | See @lua_getglobal@ in Lua Reference Manual.
 getglobal :: LuaState -> String -> IO ()
-getglobal l n = getfield l globalsindex n
+getglobal l n = void $ withCString n $ \sPtr -> c_lua_getglobal l sPtr
 
 -- | See @lua_setglobal@ in Lua Reference Manual.
 setglobal :: LuaState -> String -> IO ()
-setglobal l n = setfield l globalsindex n
+setglobal l n = withCString n $ \sPtr -> c_lua_setglobal l sPtr
 
 -- | See @luaL_openlibs@ in Lua Reference Manual.
 openlibs :: LuaState -> IO ()
@@ -313,10 +297,6 @@ dump l = do
     freeHaskellFunPtr writer
     readIORef r
 
--- | See @lua_equal@ in Lua Reference Manual.
-equal :: LuaState -> Int -> Int -> IO Bool
-equal l i j = liftM (/= 0) (c_lua_equal l (fromIntegral i) (fromIntegral j))
-
 -- | This is a convenience function to implement error propagation convention
 -- described in [Error handling in hslua](#g:1). hslua doesn't implement
 -- `lua_error` function from Lua C API because it's never safe to use. (see
@@ -330,10 +310,6 @@ lerror l = do
 -- | See @lua_gc@ in Lua Reference Manual.
 gc :: LuaState -> GCCONTROL -> Int -> IO Int
 gc l i j= liftM fromIntegral (c_lua_gc l (fromIntegral (fromEnum i)) (fromIntegral j))
-
--- | See @lua_getfenv@ in Lua Reference Manual.
-getfenv :: LuaState -> Int -> IO ()
-getfenv l n = c_lua_getfenv l (fromIntegral n)
 
 -- | See @lua_getmetatable@ in Lua Reference Manual.
 getmetatable :: LuaState -> Int -> IO Bool
@@ -349,7 +325,7 @@ gettop l = liftM fromIntegral (c_lua_gettop l)
 
 -- | See @lua_insert@ in Lua Reference Manual.
 insert :: LuaState -> Int -> IO ()
-insert l n  = c_lua_insert l (fromIntegral n)
+insert l n  = c_lua_rotate l (fromIntegral n) 1
 
 -- | See @lua_iscfunction@ in Lua Reference Manual.
 iscfunction :: LuaState -> Int -> IO Bool
@@ -367,14 +343,10 @@ isstring l n = liftM (/= 0) (c_lua_isstring l (fromIntegral n))
 isuserdata :: LuaState -> Int -> IO Bool
 isuserdata l n = liftM (/= 0) (c_lua_isuserdata l (fromIntegral n))
 
--- | See @lua_lessthan@ in Lua Reference Manual.
-lessthan :: LuaState -> Int -> Int -> IO Bool
-lessthan l i j = liftM (/= 0) (c_lua_lessthan l (fromIntegral i) (fromIntegral j))
-
 
 -- | See @luaL_loadfile@ in Lua Reference Manual.
 loadfile :: LuaState -> String -> IO Int
-loadfile l f = withCString f $ \fPtr -> fmap fromIntegral (c_luaL_loadfile l fPtr)
+loadfile l f = withCString f $ \fPtr -> fmap fromIntegral (c_luaL_loadfilex l fPtr nullPtr)
 
 -- | See @luaL_loadstring@ in Lua Reference Manual.
 loadstring :: LuaState -> String -> IO Int
@@ -454,19 +426,15 @@ rawseti l k m = c_lua_rawseti l (fromIntegral k) (fromIntegral m)
 
 -- | See @lua_remove@ in Lua Reference Manual.
 remove :: LuaState -> Int -> IO ()
-remove l n = c_lua_remove l (fromIntegral n)
+remove l n = c_lua_rotate l (fromIntegral n) (-1) >> pop l 1
 
 -- | See @lua_replace@ in Lua Reference Manual.
 replace :: LuaState -> Int -> IO ()
-replace l n = c_lua_replace l (fromIntegral n)
+replace l n = c_lua_copy l (-1) (fromIntegral n) >> pop l 1
 
 -- | See @lua_resume@ in Lua Reference Manual.
 resume :: LuaState -> Int -> IO Int
 resume l n = liftM fromIntegral (c_lua_resume l (fromIntegral n))
-
--- | See @lua_setfenv@ in Lua Reference Manual.
-setfenv :: LuaState -> Int -> IO Int
-setfenv l n = liftM fromIntegral (c_lua_setfenv l (fromIntegral n))
 
 -- | See @lua_setmetatable@ in Lua Reference Manual.
 setmetatable :: LuaState -> Int -> IO ()
@@ -491,11 +459,11 @@ tocfunction l n = c_lua_tocfunction l (fromIntegral n)
 
 -- | See @lua_tointeger@ in Lua Reference Manual.
 tointeger :: LuaState -> Int -> IO LuaInteger
-tointeger l n = c_lua_tointeger l (fromIntegral n)
+tointeger l n = c_lua_tointegerx l (fromIntegral n) 0
 
 -- | See @lua_tonumber@ in Lua Reference Manual.
 tonumber :: LuaState -> Int -> IO LuaNumber
-tonumber l n = c_lua_tonumber l (fromIntegral n)
+tonumber l n = c_lua_tonumberx l (fromIntegral n) 0
 
 -- | See @lua_topointer@ in Lua Reference Manual.
 topointer :: LuaState -> Int -> IO (Ptr ())
@@ -510,17 +478,6 @@ register l n f = do
 -- | See @luaL_newmetatable@ in Lua Reference Manual.
 newmetatable :: LuaState -> String -> IO Int
 newmetatable l s = withCString s $ \sPtr -> liftM fromIntegral (c_luaL_newmetatable l sPtr)
-
--- | See @luaL_argerror@ in Lua Reference Manual. Contrary to the
--- manual, Haskell function does return with value less than zero.
-argerror :: LuaState -> Int -> String -> IO CInt
-argerror l n msg = withCString msg $ \msgPtr -> do
-    let doit l' = c_luaL_argerror l' (fromIntegral n) msgPtr
-    f <- mkWrapper doit
-    _ <- c_lua_cpcall l f nullPtr
-    freeHaskellFunPtr f
-    -- here we should have error message string on top of the stack
-    return (-1)
 
 -- | See @luaL_ref@ in Lua Reference Manual.
 ref :: LuaState -> Int -> IO Int

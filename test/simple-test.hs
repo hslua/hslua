@@ -8,8 +8,8 @@ main :: IO ()
 main = do
     l <- Lua.newstate
     Lua.openlibs l
-    Lua.getfield l Lua.globalsindex "print"
+    Lua.getglobal l "print"
     Lua.pushstring l "Hello from"
-    Lua.getfield l Lua.globalsindex "_VERSION"
+    Lua.getglobal l "_VERSION"
     Lua.call l 2 0
     Lua.close l
