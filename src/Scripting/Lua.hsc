@@ -13,7 +13,10 @@ module Scripting.Lua
   , module Scripting.Lua
   ) where
 
+#if MIN_VERSION_base(4,8,0)
+#else
 import Control.Applicative ((<$>))
+#endif
 import Control.Monad
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
