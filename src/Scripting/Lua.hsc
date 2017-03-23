@@ -116,6 +116,7 @@ pushcclosure l f n = c_lua_pushcclosure l f (fromIntegral n)
 pushcfunction :: LuaState -> FunPtr LuaCFunction -> IO ()
 pushcfunction l f = pushcclosure l f 0
 
+{-# DEPRECATED strlen "Use objlen instead." #-}
 -- | Compatibility alias for objlen
 strlen :: LuaState -> Int -> IO Int
 strlen = objlen
