@@ -2,12 +2,12 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Scripting.Lua
+module Foreign.Lua
   ( LuaState
   , LuaCFunction
   , LuaInteger
   , LuaNumber
-  , module Scripting.Lua
+  , module Foreign.Lua
   ) where
 
 #if MIN_VERSION_base(4,8,0)
@@ -29,7 +29,7 @@ import qualified Foreign.Storable as F
 import Prelude hiding (concat)
 import qualified Prelude
 
-import Scripting.Lua.Raw
+import Foreign.Lua.Raw
 
 #include "lua.h"
 

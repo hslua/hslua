@@ -1,6 +1,6 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module Scripting.Lua.Raw where
+module Foreign.Lua.Raw where
 
 import Data.Int
 import Foreign.C

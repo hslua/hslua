@@ -5,8 +5,8 @@ module LibArith where
 import Data.Maybe
 import Foreign.C.Types
 
-import Scripting.Lua
-import Scripting.Lua.Raw
+import Foreign.Lua
+import Foreign.Lua.Raw
 
 foreign export ccall
   add :: LuaState -> IO CInt

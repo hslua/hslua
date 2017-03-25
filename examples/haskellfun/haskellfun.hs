@@ -8,7 +8,7 @@
 
 import qualified Data.ByteString as B
 import Data.Monoid
-import Scripting.Lua as Lua
+import Foreign.Lua as Lua
 
 main :: IO ()
 main = do

@@ -15,7 +15,7 @@ import Test.QuickCheck
 import Test.QuickCheck.Instances ()
 import qualified Test.QuickCheck.Monadic as QM
 
-import Scripting.Lua
+import Foreign.Lua
 
 main :: IO ()
 main = hspec spec

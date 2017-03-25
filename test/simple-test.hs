@@ -2,7 +2,7 @@
 
 module Main where
 
-import qualified Scripting.Lua as Lua
+import qualified Foreign.Lua as Lua
 
 main :: IO ()
 main = do
