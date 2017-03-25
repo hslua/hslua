@@ -2,39 +2,14 @@
 
 module Foreign.Lua.Raw where
 
-import Data.Int
 import Foreign.C
+import Foreign.Lua.Types
 import Foreign.Ptr
 
 #include "lua.h"
 
 -- TODO: lua_getallocf, lua_setallocf
 -- TODO: Debugger functions
-
---------------------------------------------------------------------------------
--- * Types
-
--- | Synonym for @lua_State *@. See @lua_State@ in Lua Reference Manual.
-newtype LuaState = LuaState (Ptr ())
-
--- | Synonym for @lua_Alloc@. See @lua_Alloc@ in Lua Reference Manual.
-type LuaAlloc = Ptr () -> Ptr () -> CSize -> CSize -> IO (Ptr ())
-
--- | Synonym for @lua_Reader@. See @lua_Reader@ in Lua Reference Manual.
-type LuaReader = Ptr () -> Ptr () -> Ptr CSize -> IO (Ptr CChar)
-
--- | Synonym for @lua_Writer@. See @lua_Writer@ in Lua Reference Manual.
-type LuaWriter = LuaState -> Ptr CChar -> CSize -> Ptr () -> IO CInt
-
--- | Synonym for @lua_CFunction@. See @lua_CFunction@ in Lua Reference Manual.
-type LuaCFunction = LuaState -> IO CInt
-
--- | Synonym for @lua_Integer@. See @lua_Integer@ in Lua Reference Manual.
-type LuaInteger = #{type LUA_INTEGER}
-
--- | Synonym for @lua_Number@. See @lua_Number@ in Lua Reference Manual.
-type LuaNumber = #{type LUA_NUMBER}
-
 
 -- Some of the Lua functions may call a Haskell function, and trigger
 -- garbage collection, rescheduling etc. This means we must declare these

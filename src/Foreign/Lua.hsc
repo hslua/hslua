@@ -3,11 +3,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Foreign.Lua
-  ( LuaState
-  , LuaCFunction
-  , LuaInteger
-  , LuaNumber
-  , module Foreign.Lua
+  ( module Foreign.Lua
+  , module Foreign.Lua.Types
   ) where
 
 #if MIN_VERSION_base(4,8,0)
@@ -22,6 +19,8 @@ import Data.IORef
 import qualified Data.List as L
 import Data.Maybe
 import Foreign.C
+import Foreign.Lua.Raw
+import Foreign.Lua.Types
 import Foreign.Marshal.Alloc
 import Foreign.Ptr
 import Foreign.StablePtr
@@ -29,59 +28,7 @@ import qualified Foreign.Storable as F
 import Prelude hiding (concat)
 import qualified Prelude
 
-import Foreign.Lua.Raw
-
 #include "lua.h"
-
--- | Enumeration used as type tag. See <https://www.lua.org/manual/5.1/manual.html#lua_type lua_type>.
-data LTYPE
-    = TNONE
-    | TNIL
-    | TBOOLEAN
-    | TLIGHTUSERDATA
-    | TNUMBER
-    | TSTRING
-    | TTABLE
-    | TFUNCTION
-    | TUSERDATA
-    | TTHREAD
-    deriving (Eq,Show,Ord)
-
-instance Enum LTYPE where
-    fromEnum TNONE          = #{const LUA_TNONE}
-    fromEnum TNIL           = #{const LUA_TNIL}
-    fromEnum TBOOLEAN       = #{const LUA_TBOOLEAN}
-    fromEnum TLIGHTUSERDATA = #{const LUA_TLIGHTUSERDATA}
-    fromEnum TNUMBER        = #{const LUA_TNUMBER}
-    fromEnum TSTRING        = #{const LUA_TSTRING}
-    fromEnum TTABLE         = #{const LUA_TTABLE}
-    fromEnum TFUNCTION      = #{const LUA_TFUNCTION}
-    fromEnum TUSERDATA      = #{const LUA_TUSERDATA}
-    fromEnum TTHREAD        = #{const LUA_TTHREAD}
-
-    toEnum (#{const LUA_TNONE})          = TNONE
-    toEnum (#{const LUA_TNIL})           = TNIL
-    toEnum (#{const LUA_TBOOLEAN})       = TBOOLEAN
-    toEnum (#{const LUA_TLIGHTUSERDATA}) = TLIGHTUSERDATA
-    toEnum (#{const LUA_TNUMBER})        = TNUMBER
-    toEnum (#{const LUA_TSTRING})        = TSTRING
-    toEnum (#{const LUA_TTABLE})         = TTABLE
-    toEnum (#{const LUA_TFUNCTION})      = TFUNCTION
-    toEnum (#{const LUA_TUSERDATA})      = TUSERDATA
-    toEnum (#{const LUA_TTHREAD})        = TTHREAD
-    toEnum n                             = error $ "Cannot convert (" ++ show n ++ ") to LTYPE"
-
--- | Enumeration used by @gc@ function.
-data GCCONTROL
-    = GCSTOP
-    | GCRESTART
-    | GCCOLLECT
-    | GCCOUNT
-    | GCCOUNTB
-    | GCSTEP
-    | GCSETPAUSE
-    | GCSETSTEPMUL
-    deriving (Eq,Ord,Show,Enum)
 
 -- | Alias for C constant @LUA_MULTRET@. See <https://www.lua.org/manual/5.1/manual.html#lua_call lua_call>.
 multret :: Int
