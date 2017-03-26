@@ -268,6 +268,7 @@ getglobal :: LuaState -> String -> IO ()
 getglobal l s = withCString s $ \sPtr -> c_lua_getglobal l sPtr
 #else
 getglobal l s = getfield l globalsindex s
+#endif
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_setglobal lua_setglobal>.
 setglobal :: LuaState -> String -> IO ()
