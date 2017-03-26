@@ -135,12 +135,12 @@ testStackValueInstance t = QM.monadicIO $ do
       then push l t
       else push l n
   -- Check that the stack size is the same as the total number of pushed items
-  stackSize <- QM.run $ gettop l
+  stackSize <- QM.run $ fromIntegral `fmap` gettop l
   QM.assert $ stackSize == nItems
   -- Peek all items
-  vals <- QM.run $ forM indices $ peek l
+  vals <- QM.run $ forM indices $ peek l . StackIndex . fromIntegral
   -- Check that the stack size did not change after peeking
-  newStackSize <- QM.run $ gettop l
+  newStackSize <- QM.run $ fromIntegral `fmap` gettop l
   QM.assert $ stackSize == newStackSize
   -- Check that we were able to peek at all pushed elements
   forM_ vals $ QM.assert . (== Just t)

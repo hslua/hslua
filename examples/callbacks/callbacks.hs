@@ -47,7 +47,7 @@ addLuaCallbacks cs l = do
   where
     -- | Check if all arguments are functions, return `Just argIdx` if
     -- argument at `argIdx` is not a function and `Nothing` otherwise.
-    checkArgs :: Int -> IO (Maybe Int)
+    checkArgs :: StackIndex -> IO (Maybe StackIndex)
     checkArgs 0 = return Nothing
     checkArgs n = do
       ty <- ltype l n
@@ -55,6 +55,7 @@ addLuaCallbacks cs l = do
         then checkArgs (n-1)
         else return $ Just n
 
+    addCallbacks :: StackIndex -> StackIndex -> IO ()
     addCallbacks n max
       | n > max = return ()
       | otherwise = do

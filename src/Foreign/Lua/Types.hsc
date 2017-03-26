@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-|
 Module      : Foreign.Lua.Types
 Copyright   : © 2007–2012 Gracjan Polak,
@@ -46,6 +47,12 @@ module Foreign.Lua.Types (
   -- Numbers
   , LuaInteger
   , LuaNumber
+  -- Stack values
+  , StackIndex (..)
+  -- Number of arguments/results
+  , NumArgs (..)
+  , NumResults (..)
+  , multret
   ) where
 
 import Data.Int
@@ -124,3 +131,23 @@ data GCCONTROL
   | GCSETPAUSE
   | GCSETSTEPMUL
   deriving (Eq,Ord,Show,Enum)
+
+-- | A stack index
+newtype StackIndex = StackIndex { fromStackIndex :: CInt }
+  deriving (Enum, Eq, Integral, Num, Ord, Real, Show)
+
+--
+-- Number of arguments and return values
+--
+
+-- | The number of arguments expected a function.
+newtype NumArgs = NumArgs { fromNumArgs :: CInt }
+  deriving (Enum, Eq, Integral, Num, Ord, Real, Show)
+
+-- | The number of results returned by a function call.
+newtype NumResults = NumResults { fromNumResults :: CInt }
+  deriving (Enum, Eq, Integral, Num, Ord, Real, Show)
+
+-- | Alias for C constant @LUA_MULTRET@. See <https://www.lua.org/manual/5.1/manual.html#lua_call lua_call>.
+multret :: NumResults
+multret = NumResults $ #{const LUA_MULTRET}
