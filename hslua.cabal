@@ -55,6 +55,7 @@ library
                       , Foreign.Lua.Types
   hs-source-dirs:       src
   ghc-options:          -Wall -O2
+  extensions:           CPP
   if flag(system-lua)
     if flag(luajit)
       Extra-libraries:  luajit-5.1
@@ -77,9 +78,9 @@ library
     include-dirs:       lua-5.1.5
 
   if flag(lua502)
-    cpp-options:        -DLUA_VERSION_NUMBER=502
+    cpp-options:        -DLUA_VERSION_NUMBER=502 -DLUA_VERSION_MAJORMINOR=5.2
   else
-    cpp-options:        -DLUA_VERSION_NUMBER=501
+    cpp-options:        -DLUA_VERSION_NUMBER=501 -DLUA_VERSION_MAJORMINOR=5.1
 
   if os(linux)
     cc-options:         "-DLUA_USE_LINUX"
