@@ -43,6 +43,10 @@ flag luajit
   description:          Link with LuaJIT (should be used with -fsystem-lua)
   default:              False
 
+flag lua502
+  description:          Build against lua 5.2.
+  default:              False
+
 library
   build-depends:        base       >= 4.7    && < 5,
                         bytestring >= 0.10.2 && < 0.11
@@ -71,6 +75,11 @@ library
                         lua-5.1.5/llex.c
 
     include-dirs:       lua-5.1.5
+
+  if flag(lua502)
+    cpp-options:        -DLUA_VERSION_NUMBER=502
+  else
+    cpp-options:        -DLUA_VERSION_NUMBER=501
 
   if os(linux)
     cc-options:         "-DLUA_USE_LINUX"
@@ -121,6 +130,10 @@ test-suite test
   main-is:              Spec.hs
   hs-source-dirs:       test
   ghc-options:          -Wall -threaded
+  if flag(lua502)
+    cpp-options:        -DLUA_VERSION_NUMBER=502
+  else
+    cpp-options:        -DLUA_VERSION_NUMBER=501
   other-modules:        HsLuaSpec
   build-depends:
     base,

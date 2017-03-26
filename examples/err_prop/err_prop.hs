@@ -36,7 +36,7 @@ main = do
     call l 0 0
 
     -- Start the loop by calling Lua function with argument 10
-    getfield l globalsindex "fail_when_zero"
+    getglobal l "fail_when_zero"
     pushinteger l 10
     -- Since Lua function will be the one that propagates error to the program,
     -- we need to catch it using `pcall`
@@ -50,7 +50,7 @@ main = do
     pop l 1
 
     -- start the loop by calling Haskell function with argument 10
-    getfield l globalsindex "fail_when_zero_haskell"
+    getglobal l "fail_when_zero_haskell"
     pushinteger l 10
     -- Our convention is that Haskell functions never use `lua_error` because
     -- it's never safe(it's not even exported by the library for this reason).
@@ -72,7 +72,7 @@ failWhenZero l = do
     if i == 0
       then pushstring l "Failing from Haskell" >> fmap fromIntegral (lerror l)
       else do
-        getfield l globalsindex "fail_when_zero"
+        getglobal l "fail_when_zero"
         pushinteger l (i - 1)
         ret <- pcall l 1 1 0
         if ret /= 0

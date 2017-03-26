@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module HsLuaSpec where
 
 import Control.Monad (forM, forM_, when)
@@ -177,6 +178,11 @@ testOpenBase = TestLabel "openbase" $ TestCase $ do
 
     getglobal l "print"
     getglobal2 l "inspect.inspect"
+#if LUA_VERSION_NUMBER >= 502
+    -- openbase returns one table in lua 5.2 and later
+    openbase l
+#else
+    -- openbase returns two tables in lua 5.1
     getglobal l "print"
     getglobal2 l "inspect.inspect"
 
@@ -189,6 +195,7 @@ testOpenBase = TestLabel "openbase" $ TestCase $ do
     call l 1 0
 
     putStrLn "--- Second table ---"
+#endif
 
     call l 1 1
     call l 1 0

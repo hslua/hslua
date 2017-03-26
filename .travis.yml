@@ -19,7 +19,10 @@ matrix:
     - env: GHCVER=7.8.4 CABALVER=1.20 LUAVER=default
       compiler: ": #GHC 7.8.4"
       addons: {apt: {packages: [cabal-install-1.20,ghc-7.8.4], sources: [hvr-ghc]}}
-    - env: GHCVER=7.8.4 CABALVER=1.20 LUAVER=lua-5.1
+    - env: GHCVER=7.8.4 CABALVER=1.20 LUAVER=lua-5.1.5
+      compiler: ": #GHC 7.8.4"
+      addons: {apt: {packages: [cabal-install-1.20,ghc-7.8.4], sources: [hvr-ghc]}}
+    - env: GHCVER=7.8.4 CABALVER=1.20 LUAVER=lua-5.2.4
       compiler: ": #GHC 7.8.4"
       addons: {apt: {packages: [cabal-install-1.20,ghc-7.8.4], sources: [hvr-ghc]}}
     - env: GHCVER=7.8.4 CABALVER=1.20 LUAVER=luajit
@@ -49,20 +52,17 @@ script:
   - if [ -n "${COVERAGE}" ]; then CABAL_CONFIG_ARGS="--enable-library-coverage"; fi
   - |
     case "$LUAVER" in
-      (lua-5.1):
-          # Install Lua 5.1.5
-          if ! ([ -e "${HOME}/usr/bin/lua" ] &&
-                ${HOME}/usr/bin/lua -v 2>&1 | grep -q "Lua 5.1.5")  ; then
-              wget http://www.lua.org/ftp/lua-5.1.5.tar.gz
-              tar -xf lua-5.1.5.tar.gz
-              cd lua-5.1.5
-              sed -i 's/^CFLAGS= -O2 -Wall/CFLAGS= -O2 -Wall -fPIC/' src/Makefile
-              make linux
-              make install INSTALL_TOP=${HOME}/usr
-              cd ..
-          fi
+      (lua-5*):
+          # Install Lua
+          wget http://www.lua.org/ftp/${LUAVER}.tar.gz
+          tar -xf ${LUAVER}.tar.gz
+          cd ${LUAVER}
+          sed -i 's/^CFLAGS= -O2 -Wall/CFLAGS= -O2 -Wall -fPIC/' src/Makefile
+          make linux
+          make install INSTALL_TOP=${HOME}/usr
+          cd ..
 
-          # Compile and link using system-wide Lua 5.1.5
+          # Compile and link using system-wide Lua
           CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS -fsystem-lua"
           CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS --extra-include-dirs=${HOME}/usr/include"
           CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS --extra-lib-dirs=${HOME}/usr/lib"
@@ -81,6 +81,11 @@ script:
           CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS -fsystem-lua -fluajit"
           CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS --extra-include-dirs=${HOME}/usr/include/luajit-2.0"
           CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS --extra-lib-dirs=${HOME}/usr/lib"
+          ;;
+    esac
+    case "$LUAVER" in
+      (lua-5.2*):
+          CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS -flua502"
           ;;
     esac
   - export LD_LIBRARY_PATH=${HOME}/usr/lib:$LD_LIBRARY_PATH

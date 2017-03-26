@@ -53,6 +53,9 @@ module Foreign.Lua.Types (
   , NumArgs (..)
   , NumResults (..)
   , multret
+#if LUA_VERSION_NUMBER >= 502
+  , LuaComparerOp (..)
+#endif
   ) where
 
 import Data.Int
@@ -119,6 +122,25 @@ instance Enum LTYPE where
   toEnum (#{const LUA_TUSERDATA})      = TUSERDATA
   toEnum (#{const LUA_TTHREAD})        = TTHREAD
   toEnum n                             = error $ "Cannot convert (" ++ show n ++ ") to LTYPE"
+
+#if LUA_VERSION_NUMBER >= 502
+-- | Lua comparison operations
+data LuaComparerOp
+  = OpEQ
+  | OpLT
+  | OpLE
+  deriving (Eq, Ord, Show)
+
+instance Enum LuaComparerOp where
+  fromEnum OpEQ = #{const LUA_OPEQ}
+  fromEnum OpLT = #{const LUA_OPLT}
+  fromEnum OpLE = #{const LUA_OPLE}
+
+  toEnum (#{const LUA_OPEQ}) = OpEQ
+  toEnum (#{const LUA_OPLT}) = OpLT
+  toEnum (#{const LUA_OPLE}) = OpLE
+  toEnum n = error $ "Cannot convert (" ++ show n ++ ") to LuaComparerOp"
+#endif
 
 -- | Enumeration used by @gc@ function.
 data GCCONTROL
