@@ -14,7 +14,7 @@ cache:
 matrix:
   allow_failures:
     # Coverage is currently broken, so allow failure
-    - env: GHCVER=7.8.4 CABALVER=1.20 COVERAGE=true
+    - env: GHCVER=8.0.2 CABALVER=1.24 COVERAGE=true
   include:
     - env: GHCVER=7.8.4 CABALVER=1.20 LUAVER=default
       compiler: ": #GHC 7.8.4"
@@ -26,13 +26,13 @@ matrix:
       compiler: ": #GHC 7.8.4"
       addons: {apt: {packages: [cabal-install-1.20,ghc-7.8.4], sources: [hvr-ghc]}}
 
-    - env: GHCVER=7.10.3 CABALVER=1.22 LUAVER=default
-      compiler: ": #GHC 7.10.3"
-      addons: {apt: {packages: [cabal-install-1.22,ghc-7.10.3], sources: [hvr-ghc]}}
+    - env: GHCVER=8.0.2 CABALVER=1.24 LUAVER=default
+      compiler: ": #GHC 8.0.2"
+      addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.2], sources: [hvr-ghc]}}
 
-    - env: GHCVER=7.8.4 CABALVER=1.20 COVERAGE=true
-      compiler: ": #GHC 7.8.4"
-      addons: {apt: {packages: [cabal-install-1.20,ghc-7.8.4], sources: [hvr-ghc]}}
+    - env: GHCVER=8.0.2 CABALVER=1.24 COVERAGE=true
+      compiler: ": #GHC 8.0.2"
+      addons: {apt: {packages: [cabal-install-1.20,ghc-8.0.2], sources: [hvr-ghc]}}
 
   # mark build as successful as soon as all required successes are in.
   fast_finish: true
