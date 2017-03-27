@@ -81,7 +81,7 @@ script:
           cd ..
 
           # Compile and link using system-wide LuaJIT
-          CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS -fsystem-lua -fluajit"
+          CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS -fluajit"
           CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS --extra-include-dirs=${HOME}/usr/include/luajit-2.0"
           CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS --extra-lib-dirs=${HOME}/usr/lib"
           ;;

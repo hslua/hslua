@@ -32,7 +32,7 @@ source-repository head
   location:             https://github.com/osa1/hslua.git
 
 flag system-lua
-  description:          Use the system-wide Lua instead of the bundled copy
+  description:          Use the system-wide Lua instead of the bundled copy.
   default:              False
 
 flag apicheck
@@ -40,7 +40,7 @@ flag apicheck
   default:              False
 
 flag luajit
-  description:          Link with LuaJIT (should be used with -fsystem-lua)
+  description:          Link with LuaJIT.  This implies flag system-lua as well.
   default:              False
 
 flag lua502
@@ -60,7 +60,7 @@ library
   hs-source-dirs:       src
   ghc-options:          -Wall -O2
   extensions:           CPP
-  if flag(system-lua)
+  if flag(system-lua) || flag(luajit)
     if flag(luajit)
       Extra-libraries:  luajit-5.1
     else
