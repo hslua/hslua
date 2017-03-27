@@ -48,6 +48,13 @@ foreign import ccall "lua.h lua_settop"
 foreign import ccall "lua.h lua_pushvalue"
   c_lua_pushvalue :: LuaState -> CInt -> IO ()
 
+#if LUA_VERSION_NUMBER >= 503
+foreign import ccall "lua.h lua_rotate"
+  c_lua_rotate :: LuaState -> CInt -> CInt -> IO ()
+
+foreign import ccall "lua.h lua_copy"
+  c_lua_copy :: LuaState -> CInt -> CInt -> IO ()
+#else
 foreign import ccall "lua.h lua_remove"
   c_lua_remove :: LuaState -> CInt -> IO ()
 
@@ -56,6 +63,7 @@ foreign import ccall "lua.h lua_insert"
 
 foreign import ccall "lua.h lua_replace"
   c_lua_replace :: LuaState -> CInt -> IO ()
+#endif
 
 foreign import ccall "lua.h lua_checkstack"
   c_lua_checkstack :: LuaState -> CInt -> IO CInt

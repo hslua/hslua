@@ -47,6 +47,10 @@ flag lua502
   description:          Build against lua 5.2.
   default:              False
 
+flag lua503
+  description:          Build against lua 5.3.
+  default:              False
+
 library
   build-depends:        base       >= 4.7    && < 5,
                         bytestring >= 0.10.2 && < 0.11
@@ -77,10 +81,13 @@ library
 
     include-dirs:       lua-5.1.5
 
-  if flag(lua502)
-    cpp-options:        -DLUA_VERSION_NUMBER=502 -DLUA_VERSION_MAJORMINOR=5.2
+  if flag(lua503)
+    cpp-options:        -DLUA_VERSION_NUMBER=503 -DLUA_VERSION_MAJORMINOR=5.3
   else
-    cpp-options:        -DLUA_VERSION_NUMBER=501 -DLUA_VERSION_MAJORMINOR=5.1
+    if flag(lua502)
+      cpp-options:      -DLUA_VERSION_NUMBER=502 -DLUA_VERSION_MAJORMINOR=5.2
+    else
+      cpp-options:      -DLUA_VERSION_NUMBER=501 -DLUA_VERSION_MAJORMINOR=5.1
 
   if os(linux)
     cc-options:         "-DLUA_USE_LINUX"
@@ -131,10 +138,13 @@ test-suite test
   main-is:              Spec.hs
   hs-source-dirs:       test
   ghc-options:          -Wall -threaded
-  if flag(lua502)
-    cpp-options:        -DLUA_VERSION_NUMBER=502
+  if flag(lua503)
+    cpp-options:        -DLUA_VERSION_NUMBER=503 -DLUA_VERSION_MAJORMINOR=5.3
   else
-    cpp-options:        -DLUA_VERSION_NUMBER=501
+    if flag(lua502)
+      cpp-options:      -DLUA_VERSION_NUMBER=502 -DLUA_VERSION_MAJORMINOR=5.2
+    else
+      cpp-options:      -DLUA_VERSION_NUMBER=501 -DLUA_VERSION_MAJORMINOR=5.1
   other-modules:        HsLuaSpec
   build-depends:
     base,

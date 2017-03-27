@@ -392,7 +392,16 @@ gettop l = liftM fromIntegral (c_lua_gettop l)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_insert lua_insert>.
 insert :: LuaState -> StackIndex -> IO ()
-insert l n  = c_lua_insert l (fromIntegral n)
+#if LUA_VERSION_NUMBER >= 503
+insert l index = c_lua_rotate l (fromIntegral index) 1
+#else
+insert l index = c_lua_insert l (fromIntegral index)
+#endif
+
+#if LUA_VERSION_NUMBER >= 503
+copy :: LuaState -> StackIndex -> StackIndex -> IO ()
+copy l fromidx toidx = c_lua_copy l (fromStackIndex fromidx) (fromStackIndex toidx)
+#endif
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_iscfunction lua_iscfunction>.
 iscfunction :: LuaState -> StackIndex -> IO Bool
@@ -478,11 +487,11 @@ pushvalue :: LuaState -> StackIndex -> IO ()
 pushvalue l n = c_lua_pushvalue l (fromIntegral n)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_rawequal lua_rawequal>.
-rawequal :: LuaState -> Int -> Int -> IO Bool
+rawequal :: LuaState -> StackIndex -> StackIndex -> IO Bool
 rawequal l n m = liftM (/= 0) (c_lua_rawequal l (fromIntegral n) (fromIntegral m))
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_rawget lua_rawget>.
-rawget :: LuaState -> Int -> IO ()
+rawget :: LuaState -> StackIndex -> IO ()
 rawget l n = c_lua_rawget l (fromIntegral n)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_rawgeti lua_rawgeti>.
@@ -490,20 +499,28 @@ rawgeti :: LuaState -> StackIndex -> Int -> IO ()
 rawgeti l k m = c_lua_rawgeti l (fromIntegral k) (fromIntegral m)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_rawset lua_rawset>.
-rawset :: LuaState -> Int -> IO ()
+rawset :: LuaState -> StackIndex -> IO ()
 rawset l n = c_lua_rawset l (fromIntegral n)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_rawseti lua_rawseti>.
-rawseti :: LuaState -> Int -> Int -> IO ()
+rawseti :: LuaState -> StackIndex -> Int -> IO ()
 rawseti l k m = c_lua_rawseti l (fromIntegral k) (fromIntegral m)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_remove lua_remove>.
 remove :: LuaState -> StackIndex -> IO ()
+#if LUA_VERSION_NUMBER >= 503
+remove l n = c_lua_rotate l (fromIntegral n) (-1) >> pop l 1
+#else
 remove l n = c_lua_remove l (fromIntegral n)
+#endif
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_replace lua_replace>.
 replace :: LuaState -> StackIndex -> IO ()
+#if LUA_VERSION_NUMBER >= 503
+replace l n = c_lua_copy l (-1) (fromIntegral n) >> pop l 1
+#else
 replace l n = c_lua_replace l (fromIntegral n)
+#endif
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_resume lua_resume>.
 resume :: LuaState -> Int -> IO Int

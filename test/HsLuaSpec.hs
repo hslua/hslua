@@ -1,6 +1,10 @@
 {-# LANGUAGE CPP #-}
 module HsLuaSpec where
 
+#if MIN_VERSION_base(4,8,0)
+#else
+import Control.Applicative ( (<$>), (<*>) )
+#endif
 import Control.Monad (forM, forM_, when)
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as B
@@ -157,50 +161,26 @@ testStackValueInstance t = QM.monadicIO $ do
 -- luaopen_* functions
 
 testOpen :: String -> (LuaState -> IO ())  -> Test
-testOpen lib openfn = TestLabel ("open" ++ lib) $ TestCase $ do
+testOpen lib openfn = TestLabel ("open" ++ lib) . TestCase . assert $ do
     l <- newstate
     openlibs l
-    loadInspect l
-
-    getglobal l "print"
-    getglobal2 l "inspect.inspect"
     openfn l
-    call l 1 1
-    call l 1 0
-
+    ret <- istable l (-1)
     close l
+    return ret
 
 testOpenBase :: Test
-testOpenBase = TestLabel "openbase" $ TestCase $ do
+testOpenBase = TestLabel "openbase" . TestCase . assert $ do
     l <- newstate
     openlibs l
-    loadInspect l
-
-    getglobal l "print"
-    getglobal2 l "inspect.inspect"
-#if LUA_VERSION_NUMBER >= 502
+    openbase l
     -- openbase returns one table in lua 5.2 and later
-    openbase l
+#if LUA_VERSION_NUMBER >= 502
+    ret <- istable l (-1)
 #else
-    -- openbase returns two tables in lua 5.1
-    getglobal l "print"
-    getglobal2 l "inspect.inspect"
-
-    openbase l
-    insert l 3
-
-    putStrLn "--- First table ---"
-
-    call l 1 1
-    call l 1 0
-
-    putStrLn "--- Second table ---"
+    ret <- (&&) <$> istable l (-1) <*> istable l (-2)
 #endif
-
-    call l 1 1
-    call l 1 0
-
-    return ()
+    return ret
 
 loadInspect :: LuaState -> Assertion
 loadInspect l = do
