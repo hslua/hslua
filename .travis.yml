@@ -87,11 +87,11 @@ script:
           ;;
     esac
     case "$LUAVER" in
+      (lua-5.1*):
+          CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS -flua501"
+          ;;
       (lua-5.2*):
           CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS -flua502"
-          ;;
-      (lua-5.3*):
-          CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS -flua503"
           ;;
     esac
   - export LD_LIBRARY_PATH=${HOME}/usr/lib:$LD_LIBRARY_PATH
