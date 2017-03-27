@@ -14,12 +14,12 @@ synopsis:               A Lua language interpreter embedding in Haskell
 description:            The Foreign.Lua module is a wrapper of Lua language interpreter
                         as described in [lua.org](http://www.lua.org/).
                         .
-                        This package contains full Lua interpreter version 5.1.5.
+                        This package contains full Lua interpreter version 5.3.4.
                         If you want to link it with system-wide Lua installation, use @system-lua@ flag.
                         .
                         [Example programs](https://github.com/osa1/hslua/tree/master/examples)
 category:               Foreign
-extra-source-files:     lua-5.1.5/*.h
+extra-source-files:     lua-5.3.4/*.h
                         README.md
                         CHANGELOG.md
                         COPYRIGHT
@@ -67,19 +67,42 @@ library
       Extra-libraries:  lua
     includes:           lua.h
   else
-    c-sources:          lua-5.1.5/lobject.c, lua-5.1.5/ltm.c, lua-5.1.5/ldblib.c,
-                        lua-5.1.5/ldo.c, lua-5.1.5/lvm.c, lua-5.1.5/ltable.c,
-                        lua-5.1.5/lstrlib.c, lua-5.1.5/lfunc.c,
-                        lua-5.1.5/lstate.c, lua-5.1.5/lmathlib.c, lua-5.1.5/lmem.c,
-                        lua-5.1.5/ltablib.c, lua-5.1.5/lzio.c, lua-5.1.5/lstring.c,
-                        lua-5.1.5/ldump.c, lua-5.1.5/linit.c, lua-5.1.5/lbaselib.c,
-                        lua-5.1.5/lauxlib.c, lua-5.1.5/lopcodes.c, lua-5.1.5/lgc.c,
-                        lua-5.1.5/lcode.c, lua-5.1.5/loadlib.c, lua-5.1.5/lapi.c,
-                        lua-5.1.5/lundump.c, lua-5.1.5/loslib.c, lua-5.1.5/lparser.c,
-                        lua-5.1.5/ldebug.c, lua-5.1.5/liolib.c,
-                        lua-5.1.5/llex.c
+    c-sources:          lua-5.3.4/lapi.c
+                      , lua-5.3.4/lcode.c
+                      , lua-5.3.4/lctype.c
+                      , lua-5.3.4/ldebug.c
+                      , lua-5.3.4/ldo.c
+                      , lua-5.3.4/ldump.c
+                      , lua-5.3.4/lfunc.c
+                      , lua-5.3.4/lgc.c
+                      , lua-5.3.4/llex.c
+                      , lua-5.3.4/lmem.c
+                      , lua-5.3.4/lobject.c
+                      , lua-5.3.4/lopcodes.c
+                      , lua-5.3.4/lparser.c
+                      , lua-5.3.4/lstate.c
+                      , lua-5.3.4/lstring.c
+                      , lua-5.3.4/ltable.c
+                      , lua-5.3.4/ltm.c
+                      , lua-5.3.4/lundump.c
+                      , lua-5.3.4/lvm.c
+                      , lua-5.3.4/lzio.c
 
-    include-dirs:       lua-5.1.5
+                      , lua-5.3.4/lauxlib.c
+                      , lua-5.3.4/lbaselib.c
+                      , lua-5.3.4/lbitlib.c
+                      , lua-5.3.4/lcorolib.c
+                      , lua-5.3.4/ldblib.c
+                      , lua-5.3.4/liolib.c
+                      , lua-5.3.4/lmathlib.c
+                      , lua-5.3.4/lstrlib.c
+                      , lua-5.3.4/loslib.c
+                      , lua-5.3.4/ltablib.c
+                      , lua-5.3.4/lutf8lib.c
+                      , lua-5.3.4/loadlib.c
+                      , lua-5.3.4/linit.c
+
+    include-dirs:       lua-5.3.4
 
   if flag(lua501) || flag(luajit)
     cpp-options:        -DLUA_VERSION_NUMBER=501 -DLUA_VERSION_MAJORMINOR=5.1
