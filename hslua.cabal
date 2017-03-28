@@ -64,7 +64,7 @@ library
   hs-source-dirs:       src
   ghc-options:          -Wall -O2
   extensions:           CPP
-  if flag(system-lua) || flag(luajit)
+  if flag(system-lua) || flag(luajit) || flag(lua501) || flag(lua502)
     if flag(luajit)
       if flag(use-pkgconfig)
         pkgconfig-depends: luajit
