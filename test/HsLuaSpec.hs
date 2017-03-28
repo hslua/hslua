@@ -163,7 +163,6 @@ testStackValueInstance t = QM.monadicIO $ do
 testOpen :: String -> (LuaState -> IO ())  -> Test
 testOpen lib openfn = TestLabel ("open" ++ lib) . TestCase . assert $ do
     l <- newstate
-    openlibs l
     openfn l
     ret <- istable l (-1)
     close l
@@ -172,7 +171,6 @@ testOpen lib openfn = TestLabel ("open" ++ lib) . TestCase . assert $ do
 testOpenBase :: Test
 testOpenBase = TestLabel "openbase" . TestCase . assert $ do
     l <- newstate
-    openlibs l
     openbase l
     -- openbase returns one table in lua 5.2 and later
 #if LUA_VERSION_NUMBER >= 502

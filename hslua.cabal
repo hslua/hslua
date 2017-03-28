@@ -51,6 +51,10 @@ flag lua502
   description:          Build against lua 5.2.
   default:              False
 
+flag use-pkgconfig
+  description:          Build using pkg-config to discover library and include paths. This is only used with system-lua and luajit.
+  default:              False
+
 library
   build-depends:        base       >= 4.7    && < 5,
                         bytestring >= 0.10.2 && < 0.11
@@ -60,12 +64,25 @@ library
   hs-source-dirs:       src
   ghc-options:          -Wall -O2
   extensions:           CPP
-  if flag(system-lua) || flag(luajit)
+  if flag(system-lua) || flag(luajit) || flag(lua501) || flag(lua502)
     if flag(luajit)
-      Extra-libraries:  luajit-5.1
+      if flag(use-pkgconfig)
+        pkgconfig-depends: luajit
+      else
+        Extra-libraries:  luajit-5.1
     else
-      Extra-libraries:  lua
-    includes:           lua.h
+      if flag(use-pkgconfig)
+        if flag(lua501)
+          pkgconfig-depends: lua5.1
+        else
+          if flag(lua502)
+            pkgconfig-depends: lua5.2
+          else
+            pkgconfig-depends: lua5.3
+      else
+        Extra-libraries:  lua
+    if !flag(use-pkgconfig)
+      includes:         lua.h
   else
     c-sources:          lua-5.3.4/lapi.c
                       , lua-5.3.4/lcode.c

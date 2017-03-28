@@ -199,7 +199,7 @@ yield l n = liftM fromIntegral (c_lua_yield l (fromIntegral n))
 checkstack :: LuaState -> Int -> IO Bool
 checkstack l n = liftM (/= 0) (c_lua_checkstack l (fromIntegral n))
 
--- | See @lua_newstate@ and <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#luaL_newstate luaL_newstate>.
+-- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#luaL_newstate luaL_newstate>.
 newstate :: IO LuaState
 newstate = do
     l <- c_luaL_newstate
@@ -215,7 +215,7 @@ close = c_lua_close
 concat :: LuaState -> Int -> IO ()
 concat l n = c_lua_concat l (fromIntegral n)
 
--- | See @lua_call@ and <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_call lua_call>.
+-- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_call lua_call>.
 call :: LuaState -> NumArgs -> NumResults -> IO ()
 #if LUA_VERSION_NUMBER >= 502
 call l a nresults =
