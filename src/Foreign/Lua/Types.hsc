@@ -64,28 +64,28 @@ import Foreign.Ptr
 
 #include "lua.h"
 
--- | Synonym for @lua_State *@. See @lua_State@ in Lua Reference Manual.
+-- | Synonym for @lua_State *@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_State lua_State>.
 newtype LuaState = LuaState (Ptr ())
 
--- | Synonym for @lua_Alloc@. See @lua_Alloc@ in Lua Reference Manual.
+-- | Synonym for @lua_Alloc@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_Alloc lua_Alloc>.
 type LuaAlloc = Ptr () -> Ptr () -> CSize -> CSize -> IO (Ptr ())
 
--- | Synonym for @lua_Reader@. See @lua_Reader@ in Lua Reference Manual.
+-- | Synonym for @lua_Reader@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_Reader lua_Reader>.
 type LuaReader = Ptr () -> Ptr () -> Ptr CSize -> IO (Ptr CChar)
 
--- | Synonym for @lua_Writer@. See @lua_Writer@ in Lua Reference Manual.
+-- | Synonym for @lua_Writer@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_Writer lua_Writer>.
 type LuaWriter = LuaState -> Ptr CChar -> CSize -> Ptr () -> IO CInt
 
--- | Synonym for @lua_CFunction@. See @lua_CFunction@ in Lua Reference Manual.
+-- | Synonym for @lua_CFunction@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_CFunction lua_CFunction>.
 type LuaCFunction = LuaState -> IO CInt
 
--- | Synonym for @lua_Integer@. See @lua_Integer@ in Lua Reference Manual.
+-- | Synonym for @lua_Integer@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_Integer lua_Integer>.
 type LuaInteger = #{type LUA_INTEGER}
 
--- | Synonym for @lua_Number@. See @lua_Number@ in Lua Reference Manual.
+-- | Synonym for @lua_Number@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_Number lua_Number>.
 type LuaNumber = #{type LUA_NUMBER}
 
--- | Enumeration used as type tag. See @lua_type@ in Lua Reference Manual.
+-- | Enumeration used as type tag. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_type lua_type>.
 data LTYPE
   = TNONE
   | TNIL
@@ -170,6 +170,6 @@ newtype NumArgs = NumArgs { fromNumArgs :: CInt }
 newtype NumResults = NumResults { fromNumResults :: CInt }
   deriving (Enum, Eq, Integral, Num, Ord, Real, Show)
 
--- | Alias for C constant @LUA_MULTRET@. See <https://www.lua.org/manual/5.1/manual.html#lua_call lua_call>.
+-- | Alias for C constant @LUA_MULTRET@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_call lua_call>.
 multret :: NumResults
 multret = NumResults $ #{const LUA_MULTRET}
