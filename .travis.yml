@@ -49,7 +49,7 @@ before_install:
 install:
   - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
   - echo "$(cabal --version)"
-  - cabal install --only-dependencies --enable-tests
+  - cabal install --only-dependencies --enable-tests --disable-optimization
 
 script:
   - CABAL_CONFIG_ARGS=""
@@ -110,7 +110,6 @@ after_success:
   - set -e
   - set -x
   - if [ -n "${COVERAGE}" ]; then
-      cabal sandbox init;
-      cabal install hpc-coveralls;
-      .cabal-sandbox/bin/hpc-coveralls simple-test callbacks haskellfun err_prop test;
+      cabal install --disable-optimization hpc-coveralls;
+      hpc-coveralls simple-test callbacks haskellfun err_prop test;
     fi
