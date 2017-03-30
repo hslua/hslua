@@ -9,20 +9,17 @@ cache:
   - $HOME/usr
 
 matrix:
-  allow_failures:
-    # Coverage is currently broken, so allow failure
-    - env: GHCVER=8.0.2 CABALVER=1.24 LUAVER=default COVERAGE=true
   include:
     # Default test
     - env: GHCVER=8.0.2 CABALVER=1.24 LUAVER=default COVERAGE=true
       compiler: ": #GHC 8.0.2"
       addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.2], sources: [hvr-ghc]}}
     # Test GHC 7.8
-    - env: GHCVER=7.8.4 CABALVER=1.20 LUAVER=default
+    - env: GHCVER=7.8.4 CABALVER=1.18 LUAVER=default
       compiler: ": #GHC 7.8.4"
-      addons: {apt: {packages: [cabal-install-1.20,ghc-7.8.4], sources: [hvr-ghc]}}
+      addons: {apt: {packages: [cabal-install-1.18,ghc-7.8.4], sources: [hvr-ghc]}}
     # Test GHC 7.10
-    - env: GHCVER=7.10.3 CABALVER=1.20 LUAVER=default
+    - env: GHCVER=7.10.3 CABALVER=1.22 LUAVER=default
       compiler: ": #GHC 7.10.3"
       addons: {apt: {packages: [cabal-install-1.22,ghc-7.10.3], sources: [hvr-ghc]}}
     # Test system Lua 5.1
@@ -53,7 +50,7 @@ install:
   - cabal install --only-dependencies --enable-tests
 
 script:
-  - export CABAL_CONFIG_ARGS="--enable-tests"
+  - CABAL_CONFIG_ARGS=""
   - if [ -n "${COVERAGE}" ]; then CABAL_CONFIG_ARGS="--enable-library-coverage"; fi
   - |
     case "$LUAVER" in
@@ -101,7 +98,7 @@ script:
     esac
   - export LD_LIBRARY_PATH=${HOME}/usr/lib:$LD_LIBRARY_PATH
   - echo $CABAL_CONFIG_ARGS
-  - cabal configure $CABAL_CONFIG_ARGS
+  - cabal configure --enable-tests --disable-optimization --ghc-options="-j +RTS -A128m -n2m -RTS" $CABAL_CONFIG_ARGS
   - cabal build
   - cabal test
   - cabal copy
@@ -113,5 +110,5 @@ after_success:
   - if [ -n "${COVERAGE}" ]; then
       cabal sandbox init;
       cabal install hpc-coveralls;
-      ./.cabal-sandbox/bin/hpc-coveralls simple-test callbacks haskellfun err_prop test;
+      .cabal-sandbox/bin/hpc-coveralls simple-test callbacks haskellfun err_prop test;
     fi
