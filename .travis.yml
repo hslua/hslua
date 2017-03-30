@@ -47,6 +47,8 @@ before_install:
   - cabal update
 
 install:
+  - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
+  - echo "$(cabal --version)"
   - cabal install --only-dependencies --enable-tests
 
 script:
