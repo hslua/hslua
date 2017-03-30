@@ -1,9 +1,6 @@
 sudo: false
 language: generic
 
-apt:
-  - alex-3.1.4
-
 # Speed builds up by caching install requirements
 cache:
   directories:
@@ -14,37 +11,42 @@ cache:
 matrix:
   allow_failures:
     # Coverage is currently broken, so allow failure
-    - env: GHCVER=8.0.2 CABALVER=1.24 COVERAGE=true
+    - env: GHCVER=8.0.2 CABALVER=1.24 LUAVER=default COVERAGE=true
   include:
+    # Default test
+    - env: GHCVER=8.0.2 CABALVER=1.24 LUAVER=default COVERAGE=true
+      compiler: ": #GHC 8.0.2"
+      addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.2], sources: [hvr-ghc]}}
+    # Test GHC 7.8
     - env: GHCVER=7.8.4 CABALVER=1.20 LUAVER=default
       compiler: ": #GHC 7.8.4"
       addons: {apt: {packages: [cabal-install-1.20,ghc-7.8.4], sources: [hvr-ghc]}}
-    - env: GHCVER=7.8.4 CABALVER=1.20 LUAVER=lua-5.1.5
-      compiler: ": #GHC 7.8.4"
-      addons: {apt: {packages: [cabal-install-1.20,ghc-7.8.4], sources: [hvr-ghc]}}
-    - env: GHCVER=7.8.4 CABALVER=1.20 LUAVER=lua-5.2.4
-      compiler: ": #GHC 7.8.4"
-      addons: {apt: {packages: [cabal-install-1.20,ghc-7.8.4], sources: [hvr-ghc]}}
-    - env: GHCVER=7.8.4 CABALVER=1.20 LUAVER=lua-5.3.4
-      compiler: ": #GHC 7.8.4"
-      addons: {apt: {packages: [cabal-install-1.20,ghc-7.8.4], sources: [hvr-ghc]}}
-    - env: GHCVER=7.8.4 CABALVER=1.20 LUAVER=luajit
-      compiler: ": #GHC 7.8.4"
-      addons: {apt: {packages: [cabal-install-1.20,ghc-7.8.4], sources: [hvr-ghc]}}
-
-    - env: GHCVER=8.0.2 CABALVER=1.24 LUAVER=default
+    # Test GHC 7.10
+    - env: GHCVER=7.10.3 CABALVER=1.20 LUAVER=default
+      compiler: ": #GHC 7.10.3"
+      addons: {apt: {packages: [cabal-install-1.22,ghc-7.10.3], sources: [hvr-ghc]}}
+    # Test system Lua 5.1
+    - env: GHCVER=8.0.2 CABALVER=1.24 LUAVER=lua-5.1.5
       compiler: ": #GHC 8.0.2"
       addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.2], sources: [hvr-ghc]}}
-
-    - env: GHCVER=8.0.2 CABALVER=1.24 COVERAGE=true
+    # Test system Lua 5.2
+    - env: GHCVER=8.0.2 CABALVER=1.24 LUAVER=lua-5.2.4
       compiler: ": #GHC 8.0.2"
-      addons: {apt: {packages: [cabal-install-1.20,ghc-8.0.2], sources: [hvr-ghc]}}
+      addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.2], sources: [hvr-ghc]}}
+    # Test system Lua 5.3
+    - env: GHCVER=8.0.2 CABALVER=1.24 LUAVER=lua-5.3.4
+      compiler: ": #GHC 8.0.2"
+      addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.2], sources: [hvr-ghc]}}
+    # Test luajit
+    - env: GHCVER=8.0.2 CABALVER=1.24 LUAVER=luajit
+      compiler: ": #GHC 8.0.2"
+      addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.2], sources: [hvr-ghc]}}
 
   # mark build as successful as soon as all required successes are in.
   fast_finish: true
 
 before_install:
-  - export PATH=/opt/alex/3.1.4/bin:/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
+  - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
   - cabal update
 
 install:
@@ -57,6 +59,7 @@ script:
     case "$LUAVER" in
       (lua-5*):
           # Install Lua
+          # TODO: test for existing install and skip if one is found
           wget http://www.lua.org/ftp/${LUAVER}.tar.gz
           tar -xf ${LUAVER}.tar.gz
           cd ${LUAVER}
@@ -71,10 +74,12 @@ script:
           CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS --extra-lib-dirs=${HOME}/usr/lib"
           ;;
       (luajit):
-          # Install LuaJIT 2.0.3
-          wget http://luajit.org/download/LuaJIT-2.0.3.tar.gz
-          tar -xf LuaJIT-2.0.3.tar.gz
-          cd LuaJIT-2.0.3
+          # Install LuaJIT
+          # TODO: test for existing install and skip if one is found
+          export LUAJIT_VERSION=2.0.4
+          wget http://luajit.org/download/LuaJIT-${LUAJIT_VERSION}.tar.gz
+          tar -xf LuaJIT-${LUAJIT_VERSION}.tar.gz
+          cd LuaJIT-${LUAJIT_VERSION}
           sed -i 's/^TARGET_CC= $(STATIC_CC)/TARGET_CC= $(DYNAMIC_CC)/g' src/Makefile
           make
           make install PREFIX=${HOME}/usr
