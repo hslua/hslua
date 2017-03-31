@@ -1,12 +1,11 @@
 sudo: false
-language: generic
+language: c
 
 # Speed builds up by caching install requirements
 cache:
   directories:
   - $HOME/.ghc
   - $HOME/.cabal
-  - $HOME/usr
 
 matrix:
   include:
@@ -58,7 +57,6 @@ script:
     case "$LUAVER" in
       (lua-5*):
           # Install Lua
-          # TODO: test for existing install and skip if one is found
           wget http://www.lua.org/ftp/${LUAVER}.tar.gz
           tar -xf ${LUAVER}.tar.gz
           cd ${LUAVER}
@@ -74,7 +72,6 @@ script:
           ;;
       (luajit):
           # Install LuaJIT
-          # TODO: test for existing install and skip if one is found
           export LUAJIT_VERSION=2.0.4
           wget http://luajit.org/download/LuaJIT-${LUAJIT_VERSION}.tar.gz
           tar -xf LuaJIT-${LUAJIT_VERSION}.tar.gz
