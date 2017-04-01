@@ -1,7 +1,7 @@
 {-# LANGUAGE CPP #-}
 module HsLuaSpec where
 
-import Control.Monad (forM, forM_, when, liftM2)
+import Control.Monad
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as B
 import qualified Data.Text as T
