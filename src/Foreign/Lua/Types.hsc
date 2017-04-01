@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-|
@@ -47,8 +48,14 @@ module Foreign.Lua.Types (
   -- Numbers
   , LuaInteger
   , LuaNumber
-  -- Stack values
+  -- ** Stack Indices
   , StackIndex (..)
+  , registryindex
+#if LUA_VERSION_NUMBER < 502
+  , globalsindex
+  , environindex
+  , upvalueindex
+#endif
   -- Number of arguments/results
   , NumArgs (..)
   , NumResults (..)
@@ -157,6 +164,24 @@ data GCCONTROL
 -- | A stack index
 newtype StackIndex = StackIndex { fromStackIndex :: CInt }
   deriving (Enum, Eq, Integral, Num, Ord, Real, Show)
+
+-- | Alias for C constant @LUA_REGISTRYINDEX@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#3.5 Lua registry>.
+registryindex :: StackIndex
+registryindex = StackIndex $ #{const LUA_REGISTRYINDEX}
+
+#if LUA_VERSION_NUMBER < 502
+-- | Alias for C constant @LUA_ENVIRONINDEX@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#3.3 pseudo-indices>.
+environindex :: StackIndex
+environindex = StackIndex $ #{const LUA_ENVIRONINDEX}
+
+-- | Alias for C constant @LUA_GLOBALSINDEX@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#3.3 pseudo-indices>.
+globalsindex :: StackIndex
+globalsindex = StackIndex $ #{const LUA_GLOBALSINDEX}
+
+-- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_upvalueindex lua_upvalueindex>.
+upvalueindex :: StackIndex -> StackIndex
+upvalueindex i = globalsindex - i
+#endif
 
 --
 -- Number of arguments and return values
