@@ -1,11 +1,7 @@
 {-# LANGUAGE CPP #-}
 module HsLuaSpec where
 
-#if MIN_VERSION_base(4,8,0)
-#else
-import Control.Applicative ( (<$>), (<*>) )
-#endif
-import Control.Monad (forM, forM_, when)
+import Control.Monad
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as B
 import qualified Data.Text as T
@@ -174,11 +170,10 @@ testOpenBase = TestLabel "openbase" . TestCase . assert $ do
     openbase l
     -- openbase returns one table in lua 5.2 and later
 #if LUA_VERSION_NUMBER >= 502
-    ret <- istable l (-1)
+    istable l (-1)
 #else
-    ret <- (&&) <$> istable l (-1) <*> istable l (-2)
+    liftM2 (&&) (istable l (-1)) (istable l (-2))
 #endif
-    return ret
 
 loadInspect :: LuaState -> Assertion
 loadInspect l = do
