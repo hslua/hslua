@@ -1,5 +1,5 @@
 sudo: false
-language: c
+language: generic
 
 # Speed builds up by caching install requirements
 cache:
@@ -37,6 +37,10 @@ matrix:
     - env: GHCVER=8.0.2 CABALVER=1.24 LUAVER=luajit
       compiler: ": #GHC 8.0.2"
       addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.2], sources: [hvr-ghc]}}
+    # Test GHC 7.8 and LuaJIT
+    - env: GHCVER=7.8.4 CABALVER=1.18 LUAVER=luajit
+      compiler: ": #GHC 7.8.4"
+      addons: {apt: {packages: [cabal-install-1.18,ghc-7.8.4], sources: [hvr-ghc]}}
 
   # mark build as successful as soon as all required successes are in.
   fast_finish: true
