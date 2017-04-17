@@ -1,5 +1,5 @@
 name:                hslua-aeson
-version:             0.1.0.3
+version:             0.1.0.4
 synopsis:            Glue between aeson and hslua
 description:         Please see README.md
 homepage:            https://github.com/tarleb/hslua-aeson#readme
