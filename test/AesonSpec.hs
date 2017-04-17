@@ -99,7 +99,7 @@ luaTest luaTestCode xs = do
     Lua.push lua value *> Lua.setglobal lua var
   let luaScript = "function run() return (" ++ luaTestCode ++ ") end"
   Lua.openlibs lua
-  _ <- Lua.loadstring lua luaScript "test script"
+  _ <- loadstring lua luaScript "test script"
   Lua.call lua 0 0
   retval <- Lua.callfunc lua "run"
   Lua.close lua
@@ -120,3 +120,11 @@ arbitraryValue size = frequency $
     , (2, resize (size - 1) $ Aeson.Array <$> arbitrary)
     , (2, resize (size - 1) $ Aeson.Object <$> arbitrary)
     ]
+
+-- | Interpret string as lua code and load into the lua environment.
+loadstring :: Lua.LuaState -> String -> String -> IO Int
+#if MIN_VERSION_hslua(0,5,0)
+loadstring lua script _ = Lua.loadstring lua script
+#else
+loadstring lua script cn = Lua.loadstring lua script cn
+#endif
