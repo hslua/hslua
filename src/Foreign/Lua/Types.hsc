@@ -21,7 +21,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
-{-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE CPP                        #-}
+{-# LANGUAGE ForeignFunctionInterface   #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-|
 Module      : Foreign.Lua.Types
@@ -31,7 +32,7 @@ Copyright   : © 2007–2012 Gracjan Polak,
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta
-Portability : ForeignFunctionInterface
+Portability : ForeignFunctionInterface, GeneralizedNewtypeDeriving
 
 Mapping of Lua types to Haskell.
 -}
@@ -39,6 +40,7 @@ module Foreign.Lua.Types (
     GCCONTROL
   , LTYPE (..)
   , LuaState (..)
+  , Lua (..)
   -- Function type synonymes
   , LuaAlloc
   , LuaCFunction
@@ -58,6 +60,10 @@ module Foreign.Lua.Types (
 #endif
   ) where
 
+#if !MIN_VERSION_base(4,8,0)
+import Control.Applicative (Applicative)
+#endif
+import Control.Monad.Reader (ReaderT, MonadReader, MonadIO)
 import Data.Int
 import Foreign.C
 import Foreign.Ptr
@@ -66,6 +72,10 @@ import Foreign.Ptr
 
 -- | Synonym for @lua_State *@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_State lua_State>.
 newtype LuaState = LuaState (Ptr ())
+
+-- | Lua computation
+newtype Lua a = Lua { unLua :: ReaderT LuaState IO a }
+  deriving (Functor, Applicative, Monad, MonadReader LuaState, MonadIO)
 
 -- | Synonym for @lua_Alloc@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_Alloc lua_Alloc>.
 type LuaAlloc = Ptr () -> Ptr () -> CSize -> CSize -> IO (Ptr ())

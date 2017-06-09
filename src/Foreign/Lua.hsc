@@ -11,9 +11,10 @@ import Prelude hiding ( compare, concat )
 
 #if MIN_VERSION_base(4,8,0)
 #else
-import Control.Applicative ( (<$>) )
+import Control.Applicative ( (<$>), (*>), (<*) )
 #endif
 import Control.Monad
+import Control.Monad.Reader (ReaderT (..), ask, liftIO)
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 import qualified Data.ByteString.Unsafe as B
@@ -31,30 +32,41 @@ import qualified Prelude
 
 #include "lua.h"
 
+liftLua :: (LuaState -> IO a) -> Lua a
+liftLua f = ask >>= liftIO . f
+
+liftLua1 :: (LuaState -> a -> IO b) -> a -> Lua b
+liftLua1 f x = ask >>= liftIO . flip f x
+
+liftLua2 :: (LuaState -> a -> b -> IO c) -> a -> b -> Lua c
+liftLua2 f x y = ask >>= liftIO . \l -> f l x y
+
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_settop lua_settop>.
-settop :: LuaState -> StackIndex -> IO ()
-settop l idx = c_lua_settop l (fromStackIndex idx)
+settop :: StackIndex -> Lua ()
+settop = liftLua1 c_lua_settop . fromStackIndex
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_createtable lua_createtable>.
-createtable :: LuaState -> Int -> Int -> IO ()
-createtable l s z = c_lua_createtable l (fromIntegral s) (fromIntegral z)
+createtable :: Int -> Int -> Lua ()
+createtable s z = liftLua $ \l ->
+  c_lua_createtable l (fromIntegral s) (fromIntegral z)
 
 --
 -- Size of objects
 --
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_objlen lua_objlen>.
-objlen :: LuaState -> StackIndex -> IO Int
+objlen :: StackIndex -> Lua Int
 
 #if LUA_VERSION_NUMBER >= 502
 {-# DEPRECATED objlen "Use rawlen instead." #-}
 objlen = rawlen
 
 -- | See <https://www.lua.org/manual/5.2/manual.html#lua_objlen lua_objlen>.
-rawlen :: LuaState -> StackIndex -> IO Int
-rawlen l n = liftM fromIntegral (c_lua_rawlen l (fromIntegral n))
+rawlen :: StackIndex -> Lua Int
+rawlen idx = liftLua $ \l -> fromIntegral <$> c_lua_rawlen l (fromIntegral idx)
+
 #else
-objlen l n = liftM fromIntegral (c_lua_objlen l (fromIntegral n))
+objlen n = liftLua $ \l -> fromIntegral <$> c_lua_objlen l (fromIntegral n)
 #endif
 
 #if LUA_VERSION_NUMBER >= 502
@@ -63,7 +75,7 @@ objlen l n = liftM fromIntegral (c_lua_objlen l (fromIntegral n))
 {-# DEPRECATED strlen "Use objlen instead." #-}
 #endif
 -- | Compatibility alias for objlen
-strlen :: LuaState -> StackIndex -> IO Int
+strlen :: StackIndex -> Lua Int
 strlen = objlen
 
 
@@ -72,75 +84,77 @@ strlen = objlen
 --
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_pop lua_pop>.
-pop :: LuaState -> StackIndex -> IO ()
-pop l idx = settop l (-idx - 1)
+pop :: StackIndex -> Lua ()
+pop idx = settop (-idx - 1)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_newtable lua_newtable>.
-newtable :: LuaState -> IO ()
-newtable l = createtable l 0 0
+newtable :: Lua ()
+newtable = createtable 0 0
+
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_pushcclosure lua_pushcclosure>.
-pushcclosure :: LuaState -> FunPtr LuaCFunction -> Int -> IO ()
-pushcclosure l f n = c_lua_pushcclosure l f (fromIntegral n)
+pushcclosure :: FunPtr LuaCFunction -> Int -> Lua ()
+pushcclosure f n = liftLua $ \l -> c_lua_pushcclosure l f (fromIntegral n)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_pushcfunction lua_pushcfunction>.
-pushcfunction :: LuaState -> FunPtr LuaCFunction -> IO ()
-pushcfunction l f = pushcclosure l f 0
+pushcfunction :: FunPtr LuaCFunction -> Lua ()
+pushcfunction f = pushcclosure f 0
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_type lua_type>.
-ltype :: LuaState -> StackIndex -> IO LTYPE
-ltype l n = liftM (toEnum . fromIntegral) (c_lua_type l (fromIntegral n))
+ltype :: StackIndex -> Lua LTYPE
+ltype idx = toEnum . fromIntegral <$>
+  liftLua (flip c_lua_type $ fromStackIndex idx)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_isfunction lua_isfunction>.
-isfunction :: LuaState -> StackIndex -> IO Bool
-isfunction l n = liftM (== TFUNCTION) (ltype l n)
+isfunction :: StackIndex -> Lua Bool
+isfunction n = liftM (== TFUNCTION) (ltype n)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_istable lua_istable>.
-istable :: LuaState -> StackIndex -> IO Bool
-istable l n = liftM (== TTABLE) (ltype l n)
+istable :: StackIndex -> Lua Bool
+istable n = (== TTABLE) <$> ltype n
 
 -- | Try to convert Lua array at given index to Haskell list.
-tolist :: StackValue a => LuaState -> StackIndex -> IO (Maybe [a])
-tolist l n = do
-    len <- objlen l n
-    iter [1..len]
-  where
-    iter [] = return $ Just []
-    iter (i : is) = do
-      rawgeti l n i
-      ret <- peek l (-1)
-      pop l 1
-      case ret of
-        Nothing  -> return Nothing
-        Just val -> do
-          rest <- iter is
-          return $ case rest of
-                     Nothing -> Nothing
-                     Just vals -> Just (val : vals)
+tolist :: StackValue a => StackIndex -> Lua (Maybe [a])
+tolist n = do
+  len <- objlen n
+  iter [1..len]
+ where
+  iter [] = return $ Just []
+  iter (i : is) = do
+    rawgeti n i
+    ret <- peek (-1)
+    pop 1
+    case ret of
+      Nothing  -> return Nothing
+      Just val -> do
+        rest <- iter is
+        return $ case rest of
+                   Nothing -> Nothing
+                   Just vals -> Just (val : vals)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_islightuserdata lua_islightuserdata>.
-islightuserdata :: LuaState -> StackIndex -> IO Bool
-islightuserdata l n = liftM (== TLIGHTUSERDATA) (ltype l n)
+islightuserdata :: StackIndex -> Lua Bool
+islightuserdata n = (== TLIGHTUSERDATA) <$> ltype n
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_isnil lua_isnil>.
-isnil :: LuaState -> StackIndex -> IO Bool
-isnil l n = liftM (== TNIL) (ltype l n)
+isnil :: StackIndex -> Lua Bool
+isnil n = (== TNIL) <$> ltype n
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_isboolean lua_isboolean>.
-isboolean :: LuaState -> StackIndex -> IO Bool
-isboolean l n = liftM (== TBOOLEAN) (ltype l n)
+isboolean :: StackIndex -> Lua Bool
+isboolean n = (== TBOOLEAN) <$> ltype n
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_isthread lua_isthread>.
-isthread :: LuaState -> StackIndex -> IO Bool
-isthread l n = liftM (== TTHREAD) (ltype l n)
+isthread :: StackIndex -> Lua Bool
+isthread n = (== TTHREAD) <$> ltype n
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_isnone lua_isnone>.
-isnone :: LuaState -> StackIndex -> IO Bool
-isnone l n = liftM (== TNONE) (ltype l n)
+isnone :: StackIndex -> Lua Bool
+isnone n = (== TNONE) <$> ltype n
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_isnoneornil lua_isnoneornil>.
-isnoneornil :: LuaState -> StackIndex -> IO Bool
-isnoneornil l n = liftM (<= TNIL) (ltype l n)
+isnoneornil :: StackIndex -> Lua Bool
+isnoneornil idx = (<= TNIL) <$> (ltype idx)
 
 -- | Alias for C constant @LUA_REGISTRYINDEX@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#3.5 Lua registry>.
 registryindex :: StackIndex
@@ -161,74 +175,90 @@ upvalueindex i = globalsindex - i
 #endif
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_atpanic lua_atpanic>.
-atpanic :: LuaState -> FunPtr LuaCFunction -> IO (FunPtr LuaCFunction)
-atpanic = c_lua_atpanic
+atpanic :: FunPtr LuaCFunction -> Lua (FunPtr LuaCFunction)
+atpanic = liftLua1 c_lua_atpanic
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_tostring lua_tostring>.
-tostring :: LuaState -> StackIndex -> IO B.ByteString
-tostring l n = alloca $ \lenPtr -> do
+tostring :: StackIndex -> Lua B.ByteString
+tostring n = liftLua $ \l -> alloca $ \lenPtr -> do
     cstr <- c_lua_tolstring l (fromIntegral n) lenPtr
     cstrLen <- F.peek lenPtr
     B.packCStringLen (cstr, fromIntegral cstrLen)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_tothread lua_tothread>.
-tothread :: LuaState -> StackIndex -> IO LuaState
-tothread l n = c_lua_tothread l (fromIntegral n)
+tothread :: StackIndex -> Lua LuaState
+tothread n = liftLua $ \l -> c_lua_tothread l (fromIntegral n)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_touserdata lua_touserdata>.
-touserdata :: LuaState -> StackIndex -> IO (Ptr a)
-touserdata l n = c_lua_touserdata l (fromIntegral n)
+touserdata :: StackIndex -> Lua (Ptr a)
+touserdata n = liftLua $ \l -> c_lua_touserdata l (fromIntegral n)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_typename lua_typename>.
-typename :: LuaState -> LTYPE -> IO String
-typename l n = c_lua_typename l (fromIntegral (fromEnum n)) >>= peekCString
+typename :: LTYPE -> Lua String
+typename n = liftLua $ \l ->
+  c_lua_typename l (fromIntegral (fromEnum n)) >>= peekCString
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_xmove lua_xmove>.
-xmove :: LuaState -> LuaState -> Int -> IO ()
-xmove l1 l2 n = c_lua_xmove l1 l2 (fromIntegral n)
+xmove :: LuaState -> Int -> Lua ()
+xmove l2 n = liftLua $ \l1 -> c_lua_xmove l1 l2 (fromIntegral n)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_yield lua_yield>.
-yield :: LuaState -> Int -> IO Int
+yield :: Int -> Lua Int
 #if LUA_VERSION_NUMBER >= 502
-yield l n = fromIntegral <$> c_lua_yieldk l (fromIntegral n) 0 nullPtr
+yield n = liftLua $ \l -> fromIntegral <$> c_lua_yieldk l (fromIntegral n) 0 nullPtr
 #else
-yield l n = liftM fromIntegral (c_lua_yield l (fromIntegral n))
+yield n = liftLua $ \l -> fromIntegral <$> (c_lua_yield l (fromIntegral n))
 #endif
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_checkstack lua_checkstack>.
-checkstack :: LuaState -> Int -> IO Bool
-checkstack l n = liftM (/= 0) (c_lua_checkstack l (fromIntegral n))
+checkstack :: Int -> Lua Bool
+checkstack n = liftLua $ \l -> liftM (/= 0) (c_lua_checkstack l (fromIntegral n))
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#luaL_newstate luaL_newstate>.
 newstate :: IO LuaState
 newstate = do
     l <- c_luaL_newstate
-    createtable l 0 0
-    setglobal l "_HASKELLERR"
-    return l
+    runLuaWith l $ do
+      createtable 0 0
+      setglobal "_HASKELLERR"
+      return l
+
+-- | Run lua computation using the default HsLua state as starting point.
+runLua :: Lua a -> IO a
+runLua lua = do
+  st <- newstate
+  res <- runLuaWith st lua
+  c_lua_close st
+  return res
+
+-- | Run lua computation with custom lua state.
+runLuaWith :: LuaState -> Lua a -> IO a
+runLuaWith = flip $ runReaderT . unLua
+
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_close lua_close>.
 close :: LuaState -> IO ()
 close = c_lua_close
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_concat lua_concat>.
-concat :: LuaState -> Int -> IO ()
-concat l n = c_lua_concat l (fromIntegral n)
+concat :: Int -> Lua ()
+concat n = liftLua $ \l -> c_lua_concat l (fromIntegral n)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_call lua_call>.
-call :: LuaState -> NumArgs -> NumResults -> IO ()
+call :: NumArgs -> NumResults -> Lua ()
 #if LUA_VERSION_NUMBER >= 502
-call l a nresults =
+call a nresults = liftLua $ \l ->
   c_lua_callk l (fromNumArgs a) (fromNumResults nresults) 0 nullPtr
 #else
-call l a nresults =
+call a nresults = liftLua $ \l ->
   c_lua_call l (fromNumArgs a) (fromNumResults nresults)
 #endif
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_pcall lua_pcall>.
-pcall :: LuaState -> NumArgs -> NumResults -> Int -> IO Int
+pcall :: NumArgs -> NumResults -> Int -> Lua Int
 #if LUA_VERSION_NUMBER >= 502
-pcall l nargs nresults errfunc = fromIntegral <$>
+pcall nargs nresults errfunc = liftLua $ \l ->
+  fromIntegral <$>
   c_lua_pcallk l
     (fromNumArgs nargs)
     (fromNumResults nresults)
@@ -236,7 +266,8 @@ pcall l nargs nresults errfunc = fromIntegral <$>
     0
     nullPtr
 #else
-pcall l nargs nresults errfunc = fromIntegral <$>
+pcall nargs nresults errfunc = liftLua $ \l ->
+  fromIntegral <$>
   c_lua_pcall l
     (fromNumArgs nargs)
     (fromNumResults nresults)
@@ -244,81 +275,84 @@ pcall l nargs nresults errfunc = fromIntegral <$>
 #endif
 
 -- | See <https://www.lua.org/manual/5.2/manual.html#lua_cpcall lua_cpcall>.
-cpcall :: LuaState -> FunPtr LuaCFunction -> Ptr a -> IO Int
+cpcall :: FunPtr LuaCFunction -> Ptr a -> Lua Int
 #if LUA_VERSION_NUMBER >= 502
-cpcall l a c = do
-  pushcfunction l a
-  pushlightuserdata l c
-  pcall l 1 0 0
+cpcall a c = do
+  pushcfunction a
+  pushlightuserdata c
+  pcall 1 0 0
 #else
-cpcall l a c = liftM fromIntegral (c_lua_cpcall l a c)
+cpcall a c = liftLua $ \l -> fmap fromIntegral (c_lua_cpcall l a c)
 #endif
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_getfield lua_getfield>.
-getfield :: LuaState -> StackIndex -> String -> IO ()
-getfield l i s = withCString s $ \sPtr -> c_lua_getfield l (fromIntegral i) sPtr
+getfield :: StackIndex -> String -> Lua ()
+getfield i s = liftLua $ \l ->
+  withCString s $ \sPtr -> c_lua_getfield l (fromIntegral i) sPtr
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_setfield lua_setfield>.
-setfield :: LuaState -> StackIndex -> String -> IO ()
-setfield l i s = withCString s $ \sPtr -> c_lua_setfield l (fromIntegral i) sPtr
+setfield :: StackIndex -> String -> Lua ()
+setfield i s = liftLua $ \l ->
+  withCString s $ \sPtr -> c_lua_setfield l (fromIntegral i) sPtr
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_getglobal lua_getglobal>.
-getglobal :: LuaState -> String -> IO ()
+getglobal :: String -> Lua ()
 #if LUA_VERSION_NUMBER >= 502
-getglobal l s = withCString s $ \sPtr -> c_lua_getglobal l sPtr
+getglobal s = liftLua $ \l ->
+  withCString s $ \sPtr -> c_lua_getglobal l sPtr
 #else
-getglobal l s = getfield l globalsindex s
+getglobal s = getfield globalsindex s
 #endif
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_setglobal lua_setglobal>.
-setglobal :: LuaState -> String -> IO ()
+setglobal :: String -> Lua ()
 #if LUA_VERSION_NUMBER >= 502
-setglobal l s = withCString s $ \sPtr -> c_lua_setglobal l sPtr
+setglobal s = liftLua $ \l -> withCString s $ \sPtr -> c_lua_setglobal l sPtr
 #else
-setglobal l n = setfield l globalsindex n
+setglobal n = setfield globalsindex n
 #endif
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#luaL_openlibs luaL_openlibs>.
-openlibs :: LuaState -> IO ()
-openlibs = c_luaL_openlibs
+openlibs :: Lua ()
+openlibs = liftLua c_luaL_openlibs
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#pdf-luaopen_base luaopen_base>.
-openbase :: LuaState -> IO ()
-openbase l = pushcfunction l c_lua_open_base_ptr >> call l 0 multret
+openbase :: Lua ()
+openbase = pushcfunction c_lua_open_base_ptr *> call 0 multret
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#pdf-luaopen_table luaopen_table>.
-opentable :: LuaState -> IO ()
-opentable l = pushcfunction l c_lua_open_table_ptr >> call l 0 multret
+opentable :: Lua ()
+opentable = pushcfunction c_lua_open_table_ptr *> call 0 multret
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#pdf-luaopen_io luaopen_io>.
-openio :: LuaState -> IO ()
-openio l = pushcfunction l c_lua_open_io_ptr >> call l 0 multret
+openio :: Lua ()
+openio = pushcfunction c_lua_open_io_ptr *> call 0 multret
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#pdf-luaopen_os luaopen_os>.
-openos :: LuaState -> IO ()
-openos l = pushcfunction l c_lua_open_os_ptr >> call l 0 multret
+openos :: Lua ()
+openos = pushcfunction c_lua_open_os_ptr *> call 0 multret
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#pdf-luaopen_string luaopen_string>.
-openstring :: LuaState -> IO ()
-openstring l = pushcfunction l c_lua_open_string_ptr >> call l 0 multret
+openstring :: Lua ()
+openstring = pushcfunction c_lua_open_string_ptr *> call 0 multret
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#pdf-luaopen_math luaopen_math>.
-openmath :: LuaState -> IO ()
-openmath l = pushcfunction l c_lua_open_math_ptr >> call l 0 multret
+openmath :: Lua ()
+openmath = pushcfunction c_lua_open_math_ptr *> call 0 multret
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#pdf-luaopen_debug luaopen_debug>.
-opendebug :: LuaState -> IO ()
-opendebug l = pushcfunction l c_lua_open_debug_ptr >> call l 0 multret
+opendebug :: Lua ()
+opendebug = pushcfunction c_lua_open_debug_ptr *> call 0 multret
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#pdf-luaopen_package luaopen_package>.
-openpackage :: LuaState -> IO ()
-openpackage l = pushcfunction l c_lua_open_package_ptr >> call l 0 multret
+openpackage :: Lua ()
+openpackage = pushcfunction c_lua_open_package_ptr *> call 0 multret
 
 foreign import ccall "wrapper" mkStringWriter :: LuaWriter -> IO (FunPtr LuaWriter)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_dump lua_dump>.
-dump :: LuaState -> IO String
-dump l = do
+dump :: Lua String
+dump = liftLua $ \l -> do
     r <- newIORef ""
     let wr :: LuaWriter
         wr _l p s _d = do
@@ -331,219 +365,231 @@ dump l = do
     readIORef r
 
 #if LUA_VERSION_NUMBER >= 502
-compare :: LuaState -> StackIndex -> StackIndex -> LuaComparerOp -> IO Bool
-compare l index1 index2 op = (/= 0) <$>
+compare :: StackIndex -> StackIndex -> LuaComparerOp -> Lua Bool
+compare index1 index2 op = liftLua $ \l -> (/= 0) <$>
   c_lua_compare l
     (fromStackIndex index1)
     (fromStackIndex index2)
     (fromIntegral (fromEnum op))
 
 -- | Tests whether the objects under the given indices are equal.
-equal :: LuaState -> StackIndex -> StackIndex -> IO Bool
-equal l index1 index2 = compare l index1 index2 OpEQ
+equal :: StackIndex -> StackIndex -> Lua Bool
+equal index1 index2 = compare index1 index2 OpEQ
 
 -- | Tests whether the object under the first index is smaller than that under
 -- the second.
-lessthan :: LuaState -> StackIndex -> StackIndex -> IO Bool
-lessthan l index1 index2 = compare l index1 index2 OpLT
+lessthan :: StackIndex -> StackIndex -> Lua Bool
+lessthan index1 index2 = compare index1 index2 OpLT
 
 #else
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_equal lua_equal>.
-equal :: LuaState -> StackIndex -> StackIndex -> IO Bool
-equal l i j = liftM (/= 0) (c_lua_equal l (fromStackIndex i) (fromStackIndex j))
+equal :: StackIndex -> StackIndex -> Lua Bool
+equal i j = liftLua $ \l ->
+  (/= 0) <$> c_lua_equal l (fromStackIndex i) (fromStackIndex j)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_lessthan lua_lessthan>.
-lessthan :: LuaState -> StackIndex -> StackIndex -> IO Bool
-lessthan l i j = liftM (/= 0) (c_lua_lessthan l (fromIntegral i) (fromIntegral j))
+lessthan :: StackIndex -> StackIndex -> Lua Bool
+lessthan i j = liftLua $ \l ->
+  (/= 0) <$> c_lua_lessthan l (fromIntegral i) (fromIntegral j)
 #endif
 
 -- | This is a convenience function to implement error propagation convention
 -- described in [Error handling in hslua](#g:1). hslua doesn't implement
 -- `lua_error` function from Lua C API because it's never safe to use. (see
 -- [Error handling in hslua](#g:1) for details)
-lerror :: LuaState -> IO Int
-lerror l = do
-    getglobal l "_HASKELLERR"
-    insert l (-2)
-    return 2
+lerror :: Lua Int
+lerror = do
+  getglobal "_HASKELLERR"
+  insert (-2)
+  return 2
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_gc lua_gc>.
-gc :: LuaState -> GCCONTROL -> Int -> IO Int
-gc l i j= liftM fromIntegral (c_lua_gc l (fromIntegral (fromEnum i)) (fromIntegral j))
+gc :: GCCONTROL -> Int -> Lua Int
+gc i j= liftLua $ \l ->
+  fromIntegral <$> c_lua_gc l (fromIntegral (fromEnum i)) (fromIntegral j)
 
 #if LUA_VERSION_NUMBER < 502
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_getfenv lua_getfenv>.
-getfenv :: LuaState -> Int -> IO ()
-getfenv l n = c_lua_getfenv l (fromIntegral n)
+getfenv :: Int -> Lua ()
+getfenv n = liftLua $ \l ->
+  c_lua_getfenv l (fromIntegral n)
 #endif
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_getmetatable lua_getmetatable>.
-getmetatable :: LuaState -> StackIndex -> IO Bool
-getmetatable l n = liftM (/= 0) (c_lua_getmetatable l (fromStackIndex n))
+getmetatable :: StackIndex -> Lua Bool
+getmetatable n = liftLua $ \l ->
+  fmap (/= 0) (c_lua_getmetatable l (fromStackIndex n))
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_gettable lua_gettable>.
-gettable :: LuaState -> StackIndex -> IO ()
-gettable l n = c_lua_gettable l (fromStackIndex n)
+gettable :: StackIndex -> Lua ()
+gettable n = liftLua $ \l -> c_lua_gettable l (fromStackIndex n)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_gettop lua_gettop>.
-gettop :: LuaState -> IO StackIndex
-gettop l = liftM fromIntegral (c_lua_gettop l)
+gettop :: Lua StackIndex
+gettop = liftLua $ fmap fromIntegral . c_lua_gettop
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_insert lua_insert>.
-insert :: LuaState -> StackIndex -> IO ()
+insert :: StackIndex -> Lua ()
 #if LUA_VERSION_NUMBER >= 503
-insert l index = c_lua_rotate l (fromIntegral index) 1
+insert index = liftLua $ \l -> c_lua_rotate l (fromIntegral index) 1
 #else
-insert l index = c_lua_insert l (fromIntegral index)
+insert index = liftLua $ \l -> c_lua_insert l (fromIntegral index)
 #endif
 
 #if LUA_VERSION_NUMBER >= 503
-copy :: LuaState -> StackIndex -> StackIndex -> IO ()
-copy l fromidx toidx = c_lua_copy l (fromStackIndex fromidx) (fromStackIndex toidx)
+copy :: StackIndex -> StackIndex -> Lua ()
+copy fromidx toidx = liftLua $ \l ->
+  c_lua_copy l (fromStackIndex fromidx) (fromStackIndex toidx)
 #endif
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_iscfunction lua_iscfunction>.
-iscfunction :: LuaState -> StackIndex -> IO Bool
-iscfunction l n = liftM (/= 0) (c_lua_iscfunction l (fromIntegral n))
+iscfunction :: StackIndex -> Lua Bool
+iscfunction n = liftLua $ \l -> (/= 0) <$> c_lua_iscfunction l (fromIntegral n)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_isnumber lua_isnumber>.
-isnumber :: LuaState -> StackIndex -> IO Bool
-isnumber l n = liftM (/= 0) (c_lua_isnumber l (fromIntegral n))
+isnumber :: StackIndex -> Lua Bool
+isnumber n = liftLua $ \l -> (/= 0) <$> c_lua_isnumber l (fromIntegral n)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_isstring lua_isstring>.
-isstring :: LuaState -> StackIndex -> IO Bool
-isstring l n = liftM (/= 0) (c_lua_isstring l (fromIntegral n))
+isstring :: StackIndex -> Lua Bool
+isstring n = liftLua $ \l -> (/= 0) <$> c_lua_isstring l (fromIntegral n)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_isuserdata lua_isuserdata>.
-isuserdata :: LuaState -> StackIndex -> IO Bool
-isuserdata l n = liftM (/= 0) (c_lua_isuserdata l (fromIntegral n))
+isuserdata :: StackIndex -> Lua Bool
+isuserdata n = liftLua $ \l -> (/= 0) <$> c_lua_isuserdata l (fromIntegral n)
 
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#luaL_loadfile luaL_loadfile>.
-loadfile :: LuaState -> String -> IO Int
+loadfile :: String -> Lua Int
 #if LUA_VERSION_NUMBER >= 502
-loadfile l f = withCString f $ \fPtr ->
+loadfile f = liftLua $ \l ->
+  withCString f $ \fPtr ->
   fromIntegral <$> c_luaL_loadfilex l fPtr nullPtr
 #else
-loadfile l f = withCString f $ \fPtr ->
+loadfile f = liftLua $ \l ->
+  withCString f $ \fPtr ->
   fromIntegral <$> c_luaL_loadfile l fPtr
 #endif
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#luaL_loadstring luaL_loadstring>.
-loadstring :: LuaState -> String -> IO Int
-loadstring l str = withCString str $ \strPtr -> fmap fromIntegral (c_luaL_loadstring l strPtr)
+loadstring :: String -> Lua Int
+loadstring str = liftLua $ \l ->
+  withCString str $ \strPtr ->
+  fromIntegral <$> c_luaL_loadstring l strPtr
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_newthread lua_newthread>.
-newthread :: LuaState -> IO LuaState
-newthread l = c_lua_newthread l
+newthread :: Lua LuaState
+newthread = liftLua c_lua_newthread
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_newuserdata lua_newuserdata>.
-newuserdata :: LuaState -> Int -> IO (Ptr ())
-newuserdata l s = c_lua_newuserdata l (fromIntegral s)
+newuserdata :: Int -> Lua (Ptr ())
+newuserdata = liftLua1 c_lua_newuserdata . fromIntegral
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_next lua_next>.
-next :: LuaState -> Int -> IO Bool
-next l i = liftM (/= 0) (c_lua_next l (fromIntegral i))
+next :: Int -> Lua Bool
+next i = liftLua $ \l -> (/= 0) <$> c_lua_next l (fromIntegral i)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_pushboolean lua_pushboolean>.
-pushboolean :: LuaState -> Bool -> IO ()
-pushboolean l v = c_lua_pushboolean l (fromIntegral (fromEnum v))
+pushboolean :: Bool -> Lua ()
+pushboolean v = liftLua $ \l -> c_lua_pushboolean l (fromIntegral (fromEnum v))
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_pushinteger lua_pushinteger>.
-pushinteger :: LuaState -> LuaInteger -> IO ()
-pushinteger = c_lua_pushinteger
+pushinteger :: LuaInteger -> Lua ()
+pushinteger = liftLua1 c_lua_pushinteger
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_pushlightuserdata lua_pushlightuserdata>.
-pushlightuserdata :: LuaState -> Ptr a -> IO ()
-pushlightuserdata = c_lua_pushlightuserdata
+pushlightuserdata :: Ptr a -> Lua ()
+pushlightuserdata = liftLua1 c_lua_pushlightuserdata
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_pushnil lua_pushnil>.
-pushnil :: LuaState -> IO ()
-pushnil = c_lua_pushnil
+pushnil :: Lua ()
+pushnil = liftLua c_lua_pushnil
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_pushnumber lua_pushnumber>.
-pushnumber :: LuaState -> LuaNumber -> IO ()
-pushnumber = c_lua_pushnumber
+pushnumber :: LuaNumber -> Lua ()
+pushnumber = liftLua1 c_lua_pushnumber
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_pushstring lua_pushstring>.
-pushstring :: LuaState -> B.ByteString -> IO ()
-pushstring l s = B.unsafeUseAsCStringLen s $ \(sPtr, z) -> c_lua_pushlstring l sPtr (fromIntegral z)
+pushstring :: B.ByteString -> Lua ()
+pushstring s = liftLua $ \l ->
+  B.unsafeUseAsCStringLen s $ \(sPtr, z) -> c_lua_pushlstring l sPtr (fromIntegral z)
 
 -- | Push a list to Lua stack as a Lua array.
-pushlist :: StackValue a => LuaState -> [a] -> IO ()
-pushlist l list = do
-    newtable l
-    forM_ (zip [1..] list) $ \(idx, val) -> do
-      push l val
-      rawseti l (-2) idx
+pushlist :: StackValue a => [a] -> Lua ()
+pushlist list = do
+  newtable
+  forM_ (zip [1..] list) $ \(idx, val) -> do
+    push val
+    rawseti (-2) idx
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_pushthread lua_pushthread>.
-pushthread :: LuaState -> IO Bool
-pushthread l = liftM (/= 0) (c_lua_pushthread l)
+pushthread :: Lua Bool
+pushthread = (/= 0) <$> liftLua c_lua_pushthread
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_pushvalue lua_pushvalue>.
-pushvalue :: LuaState -> StackIndex -> IO ()
-pushvalue l n = c_lua_pushvalue l (fromIntegral n)
+pushvalue :: StackIndex -> Lua ()
+pushvalue n = liftLua $ \l -> c_lua_pushvalue l (fromIntegral n)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_rawequal lua_rawequal>.
-rawequal :: LuaState -> StackIndex -> StackIndex -> IO Bool
-rawequal l n m = liftM (/= 0) (c_lua_rawequal l (fromIntegral n) (fromIntegral m))
+rawequal :: StackIndex -> StackIndex -> Lua Bool
+rawequal n m = liftLua $ \l ->
+  (/= 0) <$> c_lua_rawequal l (fromIntegral n) (fromIntegral m)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_rawget lua_rawget>.
-rawget :: LuaState -> StackIndex -> IO ()
-rawget l n = c_lua_rawget l (fromIntegral n)
+rawget :: StackIndex -> Lua ()
+rawget n = liftLua $ \l -> c_lua_rawget l (fromIntegral n)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_rawgeti lua_rawgeti>.
-rawgeti :: LuaState -> StackIndex -> Int -> IO ()
-rawgeti l k m = c_lua_rawgeti l (fromIntegral k) (fromIntegral m)
+rawgeti :: StackIndex -> Int -> Lua ()
+rawgeti k m = liftLua $ \l -> c_lua_rawgeti l (fromIntegral k) (fromIntegral m)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_rawset lua_rawset>.
-rawset :: LuaState -> StackIndex -> IO ()
-rawset l n = c_lua_rawset l (fromIntegral n)
+rawset :: StackIndex -> Lua ()
+rawset n = liftLua $ \l -> c_lua_rawset l (fromIntegral n)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_rawseti lua_rawseti>.
-rawseti :: LuaState -> StackIndex -> Int -> IO ()
-rawseti l k m = c_lua_rawseti l (fromIntegral k) (fromIntegral m)
+rawseti :: StackIndex -> Int -> Lua ()
+rawseti k m = liftLua $ \l -> c_lua_rawseti l (fromIntegral k) (fromIntegral m)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_remove lua_remove>.
-remove :: LuaState -> StackIndex -> IO ()
+remove :: StackIndex -> Lua ()
 #if LUA_VERSION_NUMBER >= 503
-remove l n = c_lua_rotate l (fromIntegral n) (-1) >> pop l 1
+remove n = liftLua (\l -> c_lua_rotate l (fromIntegral n) (-1)) *> pop 1
 #else
-remove l n = c_lua_remove l (fromIntegral n)
+remove n = liftLua $ \l -> c_lua_remove l (fromIntegral n)
 #endif
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_replace lua_replace>.
-replace :: LuaState -> StackIndex -> IO ()
+replace :: StackIndex -> Lua ()
 #if LUA_VERSION_NUMBER >= 503
-replace l n = c_lua_copy l (-1) (fromIntegral n) >> pop l 1
+replace n = liftLua (\l -> c_lua_copy l (-1) (fromIntegral n)) *> pop 1
 #else
-replace l n = c_lua_replace l (fromIntegral n)
+replace n = liftLua $ \l ->  c_lua_replace l (fromIntegral n)
 #endif
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_resume lua_resume>.
-resume :: LuaState -> Int -> IO Int
-resume l n = liftM fromIntegral (c_lua_resume l (fromIntegral n))
+resume :: Int -> Lua Int
+resume n = liftLua $ \l -> fromIntegral <$> c_lua_resume l (fromIntegral n)
 
 #if LUA_VERSION_NUMBER < 502
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_setfenv lua_setfenv>.
-setfenv :: LuaState -> Int -> IO Int
-setfenv l n = liftM fromIntegral (c_lua_setfenv l (fromIntegral n))
+setfenv :: Int -> Lua Int
+setfenv n = liftLua $ \l -> fromIntegral <$> c_lua_setfenv l (fromIntegral n)
 #endif
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_setmetatable lua_setmetatable>.
-setmetatable :: LuaState -> Int -> IO ()
-setmetatable l n = c_lua_setmetatable l (fromIntegral n)
+setmetatable :: Int -> Lua ()
+setmetatable n = liftLua $ \l -> c_lua_setmetatable l (fromIntegral n)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_settable lua_settable>.
-settable :: LuaState -> Int -> IO ()
-settable l index = c_lua_settable l (fromIntegral index)
+settable :: Int -> Lua ()
+settable index = liftLua $ \l -> c_lua_settable l (fromIntegral index)
 
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_status lua_status>.
-status :: LuaState -> IO Int
-status l = liftM fromIntegral (c_lua_status l)
+status :: Lua Int
+status = liftLua $ fmap fromIntegral . c_lua_status
 
 
 --
@@ -551,62 +597,65 @@ status l = liftM fromIntegral (c_lua_status l)
 --
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_toboolean lua_toboolean>.
-toboolean :: LuaState -> StackIndex -> IO Bool
-toboolean l n = liftM (/= 0) (c_lua_toboolean l (fromIntegral n))
+toboolean :: StackIndex -> Lua Bool
+toboolean n = liftLua $ \l -> (/= 0) <$> c_lua_toboolean l (fromIntegral n)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_tocfunction lua_tocfunction>.
-tocfunction :: LuaState -> StackIndex -> IO (FunPtr LuaCFunction)
-tocfunction l n = c_lua_tocfunction l (fromIntegral n)
+tocfunction :: StackIndex -> Lua (FunPtr LuaCFunction)
+tocfunction n = liftLua $ \l -> c_lua_tocfunction l (fromIntegral n)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_tointeger lua_tointeger>.
-tointeger :: LuaState -> StackIndex -> IO LuaInteger
+tointeger :: StackIndex -> Lua LuaInteger
 #if LUA_VERSION_NUMBER >= 502
-tointeger l n = c_lua_tointegerx l (fromIntegral n) 0
+tointeger n = liftLua $ \l -> c_lua_tointegerx l (fromIntegral n) 0
 #else
-tointeger l n = c_lua_tointeger l (fromIntegral n)
+tointeger n = liftLua $ \l -> c_lua_tointeger l (fromIntegral n)
 #endif
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_tonumber lua_tonumber>.
-tonumber :: LuaState -> StackIndex -> IO LuaNumber
+tonumber :: StackIndex -> Lua LuaNumber
 #if LUA_VERSION_NUMBER >= 502
-tonumber l n = c_lua_tonumberx l (fromIntegral n) 0
+tonumber n = liftLua $ \l -> c_lua_tonumberx l (fromIntegral n) 0
 #else
-tonumber l n = c_lua_tonumber l (fromIntegral n)
+tonumber n = liftLua $ \l -> c_lua_tonumber l (fromIntegral n)
 #endif
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_topointer lua_topointer>.
-topointer :: LuaState -> StackIndex -> IO (Ptr ())
-topointer l n = c_lua_topointer l (fromIntegral n)
+topointer :: StackIndex -> Lua (Ptr ())
+topointer n = liftLua $ \l -> c_lua_topointer l (fromIntegral n)
 
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_register lua_register>.
-register :: LuaState -> String -> FunPtr LuaCFunction -> IO ()
-register l n f = do
-    pushcclosure l f 0
-    setglobal l n
+register :: String -> FunPtr LuaCFunction -> Lua ()
+register n f = do
+    pushcclosure f 0
+    setglobal n
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#luaL_newmetatable luaL_newmetatable>.
-newmetatable :: LuaState -> String -> IO Int
-newmetatable l s = withCString s $ \sPtr -> liftM fromIntegral (c_luaL_newmetatable l sPtr)
+newmetatable :: String -> Lua Int
+newmetatable s = liftLua $ \l ->
+  withCString s $ \sPtr -> fromIntegral <$> c_luaL_newmetatable l sPtr
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#luaL_argerror luaL_argerror>. Contrary to the
 -- manual, Haskell function does return with value less than zero.
-argerror :: LuaState -> Int -> String -> IO CInt
-argerror l n msg = withCString msg $ \msgPtr -> do
+argerror :: Int -> String -> Lua CInt
+argerror n msg = do
+  f <- liftIO $ withCString msg $ \msgPtr -> do
     let doit l' = c_luaL_argerror l' (fromIntegral n) msgPtr
-    f <- mkWrapper doit
-    _ <- cpcall l f nullPtr
-    freeHaskellFunPtr f
-    -- here we should have error message string on top of the stack
-    return (-1)
+    mkWrapper doit
+  _ <- cpcall f nullPtr
+  liftIO $ freeHaskellFunPtr f
+  -- here we should have error message string on top of the stack
+  return (-1)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#luaL_ref luaL_ref>.
-ref :: LuaState -> StackIndex -> IO Int
-ref l t = fromIntegral <$> c_luaL_ref l (fromStackIndex t)
+ref :: StackIndex -> Lua Int
+ref t = liftLua $ \l -> fromIntegral <$> c_luaL_ref l (fromStackIndex t)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#luaL_unref luaL_unref>.
-unref :: LuaState -> StackIndex -> Int -> IO ()
-unref l idx r = c_luaL_unref l (fromStackIndex idx) (fromIntegral r)
+unref :: StackIndex -> Int -> Lua ()
+unref idx r = liftLua $ \l ->
+  c_luaL_unref l (fromStackIndex idx) (fromIntegral r)
 
 -- | A value that can be pushed and poped from the Lua stack.
 -- All instances are natural, except following:
@@ -620,70 +669,70 @@ unref l idx r = c_luaL_unref l (fromStackIndex idx) (fromIntegral r)
 --  * See "A note about integer functions" for integer functions.
 class StackValue a where
     -- | Pushes a value onto Lua stack, casting it into meaningfully nearest Lua type.
-    push :: LuaState -> a -> IO ()
+    push :: a -> Lua ()
     -- | Check if at index @n@ there is a convertible Lua value and if so return it
     -- wrapped in @Just@. Return @Nothing@ otherwise.
-    peek :: LuaState -> StackIndex -> IO (Maybe a)
+    peek :: StackIndex -> Lua (Maybe a)
     -- | Lua type id code of the vaule expected. Parameter is unused.
     valuetype :: a -> LTYPE
 
-maybepeek :: l -> n -> (l -> n -> IO Bool) -> (l -> n -> IO r) -> IO (Maybe r)
-maybepeek l n test peekfn = do
-    v <- test l n
+maybepeek :: n -> (n -> Lua Bool) -> (n -> Lua r) -> Lua (Maybe r)
+maybepeek n test peekfn = do
+    v <- test n
     if v
-      then liftM Just (peekfn l n)
+      then Just <$> (peekfn n)
       else return Nothing
 
 instance StackValue LuaInteger where
-    push l x = pushinteger l x
-    peek l n = maybepeek l n isnumber tointeger
+    push x = pushinteger x
+    peek n = maybepeek n isnumber tointeger
     valuetype _ = TNUMBER
 
 instance StackValue LuaNumber where
-    push l x = pushnumber l x
-    peek l n = maybepeek l n isnumber tonumber
+    push x = pushnumber x
+    peek n = maybepeek n isnumber tonumber
     valuetype _ = TNUMBER
 
 instance StackValue Int where
-    push l x = pushinteger l (fromIntegral x)
-    peek l n = maybepeek l n isnumber (\l' n' -> liftM fromIntegral (tointeger l' n'))
+    push x = pushinteger (fromIntegral x)
+    peek n = maybepeek n isnumber (fmap fromIntegral . tointeger)
     valuetype _ = TNUMBER
 
 instance StackValue B.ByteString where
-    push l x = pushstring l x
-    peek l n = maybepeek l n isstring tostring
+    push x = pushstring x
+    peek n = maybepeek n isstring tostring
     valuetype _ = TSTRING
 
 instance StackValue a => StackValue [a] where
-    push l x = pushlist l x
-    peek l n = tolist l n
+    push x = pushlist x
+    peek n = tolist n
     valuetype _ = TTABLE
 
 instance StackValue Bool where
-    push l x = pushboolean l x
-    peek l n = maybepeek l n isboolean toboolean
+    push x = pushboolean x
+    peek n = maybepeek n isboolean toboolean
     valuetype _ = TBOOLEAN
 
 instance StackValue (FunPtr LuaCFunction) where
-    push l x = pushcfunction l x
-    peek l n = maybepeek l n iscfunction tocfunction
+    push x = pushcfunction x
+    peek n = maybepeek n iscfunction tocfunction
     valuetype _ = TFUNCTION
 
 -- watch out for the asymetry here
 instance StackValue (Ptr a) where
-    push l x = pushlightuserdata l x
-    peek l n = maybepeek l n isuserdata touserdata
+    push x = pushlightuserdata x
+    peek n = maybepeek n isuserdata touserdata
     valuetype _ = TUSERDATA
 
 -- watch out for push here
 instance StackValue LuaState where
-    push l _ = pushthread l >> return ()
-    peek l n = maybepeek l n isthread tothread
+    push _ = pushthread >> return ()
+    peek n = maybepeek n isthread tothread
     valuetype _ = TTHREAD
 
 instance StackValue () where
-    push l _ = pushnil l
-    peek l n = maybepeek l n isnil (\_l _n -> return ())
+    push _ = pushnil
+    peek n = maybepeek n isnil . const $ return ()
     valuetype _ = TNIL
 
 -- | Like @getglobal@, but knows about packages. e. g.
@@ -691,41 +740,42 @@ instance StackValue () where
 -- > getglobal l "math.sin"
 --
 -- returns correct result
-getglobal2 :: LuaState -> String -> IO ()
-getglobal2 l n = do
-    getglobal l x
+getglobal2 :: String -> Lua ()
+getglobal2 n = do
+    getglobal x
     mapM_ dotable xs
   where
     (x : xs)  = splitdot n
     splitdot  = filter (/= ".") . L.groupBy (\a b -> a /= '.' && b /= '.')
-    dotable a = getfield l (-1) a >> gettop l >>= \i -> remove l (i - 1)
+    dotable a = getfield (-1) a *> gettop >>= \i -> remove (i - 1)
 
 
-typenameindex :: LuaState -> StackIndex -> IO String
-typenameindex l n = ltype l n >>= typename l
+typenameindex :: StackIndex -> Lua String
+typenameindex n = ltype n >>= typename
 
 class LuaImport a where
     luaimport' :: StackIndex -> a -> LuaCFunction
     luaimportargerror :: StackIndex -> String -> a -> LuaCFunction
 
 instance (StackValue a) => LuaImport (IO a) where
-    luaimportargerror _n msg _x l = do
+    luaimportargerror _n msg _x l =
       -- TODO: maybe improve the error message
-      pushstring l (BC.pack msg)
-      fromIntegral <$> lerror l
-    luaimport' _narg x l = x >>= push l >> return 1
+      runLuaWith l $ do
+        pushstring (BC.pack msg)
+        fromIntegral <$> lerror
+    luaimport' _narg x l = runLuaWith l (liftIO x >>= push) *> return 1
 
 instance (StackValue a, LuaImport b) => LuaImport (a -> b) where
     luaimportargerror n msg x l = luaimportargerror n msg (x undefined) l
-    luaimport' narg x l = do
-      arg <- peek l narg
+    luaimport' narg x l = runLuaWith l $ do
+      arg <- peek narg
       case arg of
-        Just v -> luaimport' (narg+1) (x v) l
+        Just v -> liftIO $ luaimport' (narg+1) (x v) l
         Nothing -> do
-          t <- ltype l narg
-          expected <- typename l (valuetype (fromJust arg))
-          got <- typename l t
-          luaimportargerror narg
+          t <- ltype narg
+          expected <- typename $ valuetype (fromJust arg)
+          got <- typename t
+          liftIO $ luaimportargerror narg
             (Prelude.concat [ "argument ", show (fromStackIndex narg)
                             , " of Haskell function: ", expected
                             , " expected, got ", got])
@@ -754,63 +804,63 @@ freecfunction :: FunPtr LuaCFunction -> IO ()
 freecfunction = freeHaskellFunPtr
 
 class LuaCallProc a where
-    callproc' :: LuaState -> String -> IO () -> NumArgs -> a
+  callproc' :: String -> Lua () -> NumArgs -> a
 
 -- | Call a Lua procedure. Use as:
 --
--- > callproc l "proc" "abc" (1::Int) (5.0::Double)
+-- > callproc "proc" "abc" (1::Int) (5.0::Double)
 --
-callproc :: (LuaCallProc a) => LuaState -> String -> a
-callproc l f = callproc' l f (return ()) 0
+callproc :: (LuaCallProc a) => String -> a
+callproc f = callproc' f (return ()) 0
 
 class LuaCallFunc a where
-    callfunc' :: LuaState -> String -> IO () -> NumArgs -> a
+    callfunc' :: String -> Lua () -> NumArgs -> a
 
 -- | Call a Lua function. Use as:
 --
 -- > Just v <- callfunc l "proc" "abc" (1::Int) (5.0::Double)
-callfunc :: (LuaCallFunc a) => LuaState -> String -> a
-callfunc l f = callfunc' l f (return ()) 0
+callfunc :: (LuaCallFunc a) => String -> a
+callfunc f = callfunc' f (return ()) 0
 
-instance LuaCallProc (IO t) where
-    callproc' l f a k = do
-      getglobal2 l f
-      a
-      z <- pcall l k 0 0
-      if z /= 0
-        then do
-          Just msg <- peek l (-1)
-          pop l 1
-          fail (BC.unpack msg)
-        else return undefined
+instance LuaCallProc (Lua t) where
+  callproc' f a k = do
+    getglobal2 f
+    a
+    z <- pcall k 0 0
+    if z /= 0
+      then do
+        Just msg <- peek (-1)
+        pop 1
+        fail (BC.unpack msg)
+      else return undefined
 
-instance (StackValue t) => LuaCallFunc (IO t) where
-    callfunc' l f a k = do
-      getglobal2 l f
-      a
-      z <- pcall l k 1 0
-      if z/=0
-        then do
-          Just msg <- peek l (-1)
-          pop l 1
-          fail (BC.unpack msg)
-        else do
-          r <- peek l (-1)
-          pop l 1
-          case r of
-            Just x -> return x
-            Nothing -> do
-              expected <- typename l (valuetype (fromJust r))
-              t <- ltype l (-1)
-              got <- typename l t
-              fail $ Prelude.concat
-                [ "Incorrect result type (", expected, " expected, got ", got, ")" ]
+instance (StackValue t) => LuaCallFunc (Lua t) where
+  callfunc' f a k = do
+    getglobal2 f
+    a
+    z <- pcall k 1 0
+    if z /= 0
+      then do
+        Just msg <- peek (-1)
+        pop 1
+        fail (BC.unpack msg)
+      else do
+        r <- peek (-1)
+        pop 1
+        case r of
+          Just x -> return x
+          Nothing -> do
+            expected <- typename (valuetype (fromJust r))
+            t <- ltype (-1)
+            got <- typename t
+            fail $ Prelude.concat
+              [ "Incorrect result type (", expected, " expected, got ", got, ")" ]
 
 instance (StackValue t, LuaCallProc b) => LuaCallProc (t -> b) where
-    callproc' l f a k x = callproc' l f (a >> push l x) (k+1)
+    callproc' f a k x = callproc' f (a *> push x) (k+1)
 
 instance (StackValue t, LuaCallFunc b) => LuaCallFunc (t -> b) where
-    callfunc' l f a k x = callfunc' l f (a >> push l x) (k+1)
+    callfunc' f a k x = callfunc' f (a *> push x) (k+1)
 
 
 foreign export ccall hsmethod__gc :: LuaState -> IO CInt
@@ -821,18 +871,17 @@ foreign import ccall "&hsmethod__call" hsmethod__call_addr :: FunPtr LuaCFunctio
 
 hsmethod__gc :: LuaState -> IO CInt
 hsmethod__gc l = do
-    Just ptr <- peek l (-1)
-    stableptr <- F.peek (castPtr ptr)
-    freeStablePtr stableptr
-    return 0
+  Just ptr <- runLuaWith l $ peek (-1)
+  stableptr <- F.peek (castPtr ptr)
+  freeStablePtr stableptr
+  return 0
 
 hsmethod__call :: LuaState -> IO CInt
 hsmethod__call l = do
-    Just ptr <- peek l 1
-    remove l 1
-    stableptr <- F.peek (castPtr ptr)
-    f <- deRefStablePtr stableptr
-    f l
+  Just ptr <- runLuaWith l $ peek 1 <* remove 1
+  stableptr <- F.peek (castPtr ptr)
+  f <- deRefStablePtr stableptr
+  f l
 
 
 -- | Pushes Haskell function converted to a Lua function.
@@ -844,34 +893,35 @@ hsmethod__call l = do
 -- You are not allowed to use @lua_error@ anywhere, but
 -- use an error code of (-1) to the same effect. Push
 -- error message as the sole return value.
-pushhsfunction :: LuaImport a => LuaState -> a -> IO ()
-pushhsfunction l f = pushrawhsfunction l (luaimport f)
+pushhsfunction :: LuaImport a => a -> Lua ()
+pushhsfunction f = pushrawhsfunction (luaimport f)
 
 -- | Pushes _raw_ Haskell function converted to a Lua function.
 -- Raw Haskell functions collect parameters from the stack and return
 -- a `CInt` that represents number of return values left in the stack.
-pushrawhsfunction :: LuaState -> LuaCFunction -> IO ()
-pushrawhsfunction l f = do
-    stableptr <- newStablePtr f
-    p <- newuserdata l (F.sizeOf stableptr)
-    F.poke (castPtr p) stableptr
-    v <- newmetatable l "HaskellImportedFunction"
-    when (v /= 0) $ do
-      -- create new metatable, fill it with two entries __gc and __call
-      push l hsmethod__gc_addr
-      setfield l (-2) "__gc"
-      push l hsmethod__call_addr
-      setfield l (-2) "__call"
-    setmetatable l (-2)
-    return ()
+pushrawhsfunction :: LuaCFunction -> Lua ()
+pushrawhsfunction f = do
+  stableptr <- liftIO $ newStablePtr f
+  p <- newuserdata (F.sizeOf stableptr)
+  liftIO $ F.poke (castPtr p) stableptr
+  v <- newmetatable "HaskellImportedFunction"
+  when (v /= 0) $ do
+    -- create new metatable, fill it with two entries __gc and __call
+    push hsmethod__gc_addr
+    setfield (-2) "__gc"
+    push hsmethod__call_addr
+    setfield (-2) "__call"
+  setmetatable (-2)
+  return ()
 
 -- | Imports a Haskell function and registers it at global name.
-registerhsfunction :: LuaImport a => LuaState -> String -> a -> IO ()
-registerhsfunction l n f = pushhsfunction l f >> setglobal l n
+registerhsfunction :: LuaImport a => String -> a -> Lua ()
+registerhsfunction n f = pushhsfunction f *> setglobal n
 
 -- | Imports a raw Haskell function and registers it at global name.
-registerrawhsfunction :: LuaState -> String -> (LuaState -> IO CInt) -> IO ()
-registerrawhsfunction l n f = pushrawhsfunction l f >> setglobal l n
+registerrawhsfunction :: String -> LuaCFunction -> Lua ()
+registerrawhsfunction n f = pushrawhsfunction f *> setglobal n
+
 
 -- * Error handling in hslua
 -- $ Error handling in hslua is tricky, because we can call Haskell from Lua which calls

@@ -11,15 +11,13 @@ import Data.Monoid
 import Foreign.Lua as Lua
 
 main :: IO ()
-main = do
-    l <- newstate
-    openlibs l
-    registerhsfunction l "concat" concat'
-    registerhsfunction l "pow" pow
-    registerhsfunction l "helloWorld" helloWorld
-    loadfile l "examples/haskellfun/haskellfun.lua"
-    call l 0 0
-    close l
+main = runLua $ do
+  openlibs
+  registerhsfunction "concat" concat'
+  registerhsfunction "pow" pow
+  registerhsfunction "helloWorld" helloWorld
+  loadfile "examples/haskellfun/haskellfun.lua"
+  call 0 0
 
 concat' :: B.ByteString -> B.ByteString -> IO B.ByteString
 concat' s1 s2 = return $ s1 <> s2

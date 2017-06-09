@@ -56,8 +56,9 @@ flag use-pkgconfig
   default:              False
 
 library
-  build-depends:        base       >= 4.7    && < 5,
-                        bytestring >= 0.10.2 && < 0.11
+  build-depends:        base       >= 4.7    && < 5
+                      , bytestring >= 0.10.2 && < 0.11
+                      , mtl        >= 2.2    && < 2.3
   exposed-modules:      Foreign.Lua
                       , Foreign.Lua.Raw
                       , Foreign.Lua.Types
@@ -159,7 +160,7 @@ test-suite callbacks
   type:                 exitcode-stdio-1.0
   main-is:              callbacks.hs
   hs-source-dirs:       examples/callbacks
-  build-depends:        base, bytestring, hslua
+  build-depends:        base, bytestring, hslua, mtl
 
 test-suite haskellfun
   type:                 exitcode-stdio-1.0
@@ -171,7 +172,7 @@ test-suite err_prop
   type:                 exitcode-stdio-1.0
   main-is:              err_prop.hs
   hs-source-dirs:       examples/err_prop
-  build-depends:        base, bytestring, hslua
+  build-depends:        base, bytestring, hslua, mtl
 
 test-suite test
   type:                 exitcode-stdio-1.0
@@ -190,6 +191,7 @@ test-suite test
     base,
     bytestring,
     hslua,
+    mtl,
     hspec,
     hspec-contrib,
     HUnit,
