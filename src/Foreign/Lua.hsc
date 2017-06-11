@@ -754,39 +754,46 @@ typenameindex :: StackIndex -> Lua String
 typenameindex n = ltype n >>= typename
 
 class LuaImport a where
-    luaimport' :: StackIndex -> a -> LuaCFunction
-    luaimportargerror :: StackIndex -> String -> a -> LuaCFunction
+  luaimport' :: StackIndex -> a -> Lua CInt
+  luaimportargerror :: StackIndex -> String -> a -> Lua CInt
 
 instance (StackValue a) => LuaImport (IO a) where
-    luaimportargerror _n msg _x l =
-      -- TODO: maybe improve the error message
-      runLuaWith l $ do
-        pushstring (BC.pack msg)
-        fromIntegral <$> lerror
-    luaimport' _narg x l = runLuaWith l (liftIO x >>= push) *> return 1
+  luaimportargerror n msg x = luaimportargerror n msg (liftIO x :: Lua a)
+  luaimport' narg x = luaimport' narg (liftIO x :: Lua a)
+
+instance (StackValue a) => LuaImport (LuaState -> IO a) where
+  luaimportargerror n msg = luaimportargerror n msg . liftLua
+  luaimport' narg = luaimport' narg . liftLua
+
+instance (StackValue a) => LuaImport (Lua a) where
+  luaimportargerror _n msg _x = do
+    -- TODO: maybe improve the error message
+    pushstring (BC.pack msg)
+    fromIntegral <$> lerror
+  luaimport' _narg x = (x >>= push) *> return 1
 
 instance (StackValue a, LuaImport b) => LuaImport (a -> b) where
-    luaimportargerror n msg x l = luaimportargerror n msg (x undefined) l
-    luaimport' narg x l = runLuaWith l $ do
-      arg <- peek narg
-      case arg of
-        Just v -> liftIO $ luaimport' (narg+1) (x v) l
-        Nothing -> do
-          t <- ltype narg
-          expected <- typename $ valuetype (fromJust arg)
-          got <- typename t
-          liftIO $ luaimportargerror narg
-            (Prelude.concat [ "argument ", show (fromStackIndex narg)
-                            , " of Haskell function: ", expected
-                            , " expected, got ", got])
-            (x undefined) l
+  luaimportargerror n msg x = luaimportargerror n msg (x undefined)
+  luaimport' narg x = do
+    arg <- peek narg
+    case arg of
+      Just v -> luaimport' (narg+1) (x v)
+      Nothing -> do
+        t <- ltype narg
+        expected <- typename $ valuetype (fromJust arg)
+        got <- typename t
+        luaimportargerror narg
+          (Prelude.concat [ "argument ", show (fromStackIndex narg)
+                          , " of Haskell function: ", expected
+                          , " expected, got ", got])
+          (x undefined)
 
 foreign import ccall "wrapper" mkWrapper :: LuaCFunction -> IO (FunPtr LuaCFunction)
 
 -- | Create new foreign Lua function. Function created can be called
 -- by Lua engine. Remeber to free the pointer with @freecfunction@.
 newcfunction :: LuaImport a => a -> IO (FunPtr LuaCFunction)
-newcfunction = mkWrapper . luaimport
+newcfunction = mkWrapper . flip runLuaWith . luaimport
 
 -- | Convert a Haskell function to Lua function. Any Haskell function
 -- can be converted provided that:
@@ -796,8 +803,8 @@ newcfunction = mkWrapper . luaimport
 --
 -- Any Haskell exception will be converted to a string and returned
 -- as Lua error.
-luaimport :: LuaImport a => a -> LuaCFunction
-luaimport a l = luaimport' 1 a l
+luaimport :: LuaImport a => a -> Lua CInt
+luaimport a = luaimport' 1 a
 
 -- | Free function pointer created with @newcfunction@.
 freecfunction :: FunPtr LuaCFunction -> IO ()
@@ -894,7 +901,7 @@ hsmethod__call l = do
 -- use an error code of (-1) to the same effect. Push
 -- error message as the sole return value.
 pushhsfunction :: LuaImport a => a -> Lua ()
-pushhsfunction f = pushrawhsfunction (luaimport f)
+pushhsfunction = pushrawhsfunction . flip runLuaWith . luaimport
 
 -- | Pushes _raw_ Haskell function converted to a Lua function.
 -- Raw Haskell functions collect parameters from the stack and return
