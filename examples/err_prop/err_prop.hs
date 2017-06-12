@@ -22,65 +22,63 @@
 --   Program
 
 import qualified Data.ByteString.Char8 as BC
+import Control.Monad.Reader (liftIO)
 import Foreign.C.Types (CInt)
 import Foreign.Lua as Lua
 
 main :: IO ()
-main = do
-    l <- newstate
-    openlibs l
-    registerrawhsfunction l "fail_when_zero_haskell" failWhenZero
+main = runLua $ do
+  openlibs
+  registerrawhsfunction "fail_when_zero_haskell" failWhenZero
 
-    -- Define the Lua function
-    loadfile l "examples/err_prop/err_prop.lua"
-    call l 0 0
+  -- Define the Lua function
+  loadfile "examples/err_prop/err_prop.lua"
+  call 0 0
 
-    -- Start the loop by calling Lua function with argument 10
-    getglobal l "fail_when_zero"
-    pushinteger l 10
-    -- Since Lua function will be the one that propagates error to the program,
-    -- we need to catch it using `pcall`
-    ret <- pcall l 1 1 0
-    errMsg <- tostring l 1
-    putStrLn $ "ret: " ++ show ret -- TODO: Implement pcall return values as a type
-    putStrLn $ "errMsg: " ++ BC.unpack errMsg
+  -- Start the loop by calling Lua function with argument 10
+  getglobal "fail_when_zero"
+  pushinteger 10
+  -- Since Lua function will be the one that propagates error to the program,
+  -- we need to catch it using `pcall`
+  ret <- pcall 1 1 0
+  errMsg <- tostring 1
+  liftIO $ putStrLn $ "ret: " ++ show ret -- TODO: Implement pcall return values as a type
+  liftIO $ putStrLn $ "errMsg: " ++ BC.unpack errMsg
 
-    top <- gettop l
-    putStrLn $ "top: " ++ show top
-    pop l 1
+  top <- gettop
+  liftIO $ putStrLn $ "top: " ++ show top
+  pop 1
 
-    -- start the loop by calling Haskell function with argument 10
-    getglobal l "fail_when_zero_haskell"
-    pushinteger l 10
-    -- Our convention is that Haskell functions never use `lua_error` because
-    -- it's never safe(it's not even exported by the library for this reason).
-    -- So if we're calling a Haskell function that `pcall` and `call` does the
-    -- same thing.
-    call l 1 2
-    -- We know it failed, so just read the error message without checking first
-    -- argument
-    errMsg <- tostring l 2
-    putStrLn $ "errMsg: " ++ BC.unpack errMsg
-    pop l 2
-
-    close l
+  -- start the loop by calling Haskell function with argument 10
+  getglobal "fail_when_zero_haskell"
+  pushinteger 10
+  -- Our convention is that Haskell functions never use `lua_error` because
+  -- it's never safe(it's not even exported by the library for this reason).
+  -- So if we're calling a Haskell function that `pcall` and `call` does the
+  -- same thing.
+  call 1 2
+  -- We know it failed, so just read the error message without checking first
+  -- argument
+  errMsg <- tostring 2
+  liftIO $ putStrLn $ "errMsg: " ++ BC.unpack errMsg
+  pop 2
 
 failWhenZero :: LuaState -> IO CInt
-failWhenZero l = do
-    i <- tointeger l 1
-    putStrLn $ "Haskell: " ++ show i
-    if i == 0
-      then pushstring l "Failing from Haskell" >> fmap fromIntegral (lerror l)
-      else do
-        getglobal l "fail_when_zero"
-        pushinteger l (i - 1)
-        ret <- pcall l 1 1 0
-        if ret /= 0
-          then
-            -- propagate the error. no need to push error message since it's
-            -- already at the top of the stack at this point. (because of how
-            -- `pcall` works)
-            fmap fromIntegral (lerror l)
-          else
-            -- Lua function's return value is on the stack, return it
-            return 1
+failWhenZero l = runLuaWith l $ do
+  i <- tointeger 1
+  liftIO $ putStrLn $ "Haskell: " ++ show i
+  if i == 0
+    then pushstring "Failing from Haskell" >> fmap fromIntegral lerror
+    else do
+      getglobal "fail_when_zero"
+      pushinteger (i - 1)
+      ret <- pcall 1 1 0
+      if ret /= 0
+        then
+          -- propagate the error. no need to push error message since it's
+          -- already at the top of the stack at this point. (because of how
+          -- `pcall` works)
+          fmap fromIntegral lerror
+        else
+          -- Lua function's return value is on the stack, return it
+          return 1
