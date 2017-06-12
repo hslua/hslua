@@ -22,7 +22,6 @@
 --   Program
 
 import qualified Data.ByteString.Char8 as BC
-import Control.Monad.Reader (liftIO)
 import Foreign.C.Types (CInt)
 import Foreign.Lua as Lua
 

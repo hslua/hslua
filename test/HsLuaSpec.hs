@@ -2,7 +2,6 @@
 module HsLuaSpec where
 
 import Control.Monad
-import Control.Monad.Reader (liftIO)
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as B
 import qualified Data.Text as T

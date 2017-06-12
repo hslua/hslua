@@ -14,7 +14,6 @@ import Prelude hiding ( compare, concat )
 import Control.Applicative ( (<$>), (*>), (<*) )
 #endif
 import Control.Monad
-import Control.Monad.Reader (ReaderT (..), ask, liftIO)
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 import qualified Data.ByteString.Unsafe as B
@@ -32,14 +31,13 @@ import qualified Prelude
 
 #include "lua.h"
 
+-- | Turn a function of typ @LuaState -> IO a@ into a monadic lua operation.
 liftLua :: (LuaState -> IO a) -> Lua a
-liftLua f = ask >>= liftIO . f
+liftLua f = luaState >>= liftIO . f
 
+-- | Turn a function of typ @LuaState -> a -> IO b@ into a monadic lua operation.
 liftLua1 :: (LuaState -> a -> IO b) -> a -> Lua b
-liftLua1 f x = ask >>= liftIO . flip f x
-
-liftLua2 :: (LuaState -> a -> b -> IO c) -> a -> b -> Lua c
-liftLua2 f x y = ask >>= liftIO . \l -> f l x y
+liftLua1 f x = liftLua $ \l -> f l x
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_settop lua_settop>.
 settop :: StackIndex -> Lua ()
@@ -230,11 +228,6 @@ runLua lua = do
   res <- runLuaWith st lua
   c_lua_close st
   return res
-
--- | Run lua computation with custom lua state.
-runLuaWith :: LuaState -> Lua a -> IO a
-runLuaWith = flip $ runReaderT . unLua
-
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_close lua_close>.
 close :: LuaState -> IO ()

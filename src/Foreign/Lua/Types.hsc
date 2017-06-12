@@ -41,6 +41,9 @@ module Foreign.Lua.Types (
   , LTYPE (..)
   , LuaState (..)
   , Lua (..)
+  , runLuaWith
+  , luaState
+  , Control.Monad.Reader.liftIO
   -- Function type synonymes
   , LuaAlloc
   , LuaCFunction
@@ -63,7 +66,7 @@ module Foreign.Lua.Types (
 #if !MIN_VERSION_base(4,8,0)
 import Control.Applicative (Applicative)
 #endif
-import Control.Monad.Reader (ReaderT, MonadReader, MonadIO)
+import Control.Monad.Reader (ReaderT (..), MonadReader, MonadIO, ask, liftIO)
 import Data.Int
 import Foreign.C
 import Foreign.Ptr
@@ -76,6 +79,13 @@ newtype LuaState = LuaState (Ptr ())
 -- | Lua computation
 newtype Lua a = Lua { unLua :: ReaderT LuaState IO a }
   deriving (Functor, Applicative, Monad, MonadReader LuaState, MonadIO)
+
+luaState :: Lua LuaState
+luaState = ask
+
+-- | Run lua computation with custom lua state.
+runLuaWith :: LuaState -> Lua a -> IO a
+runLuaWith = flip $ runReaderT . unLua
 
 -- | Synonym for @lua_Alloc@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_Alloc lua_Alloc>.
 type LuaAlloc = Ptr () -> Ptr () -> CSize -> CSize -> IO (Ptr ())

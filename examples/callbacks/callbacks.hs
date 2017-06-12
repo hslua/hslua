@@ -4,7 +4,6 @@
 -- to Lua and getting Lua callbacks from Haskell.
 
 import qualified Data.ByteString.Char8 as BC
-import Control.Monad.Reader (ask, liftIO)
 import Data.IORef
 import Foreign.C.Types (CInt)
 import Foreign.Lua as Lua
