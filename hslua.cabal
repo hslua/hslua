@@ -60,7 +60,7 @@ library
                       , bytestring >= 0.10.2 && < 0.11
                       , mtl        >= 2.2    && < 2.3
   exposed-modules:      Foreign.Lua
-                      , Foreign.Lua.Raw
+                      , Foreign.Lua.Bindings
                       , Foreign.Lua.Types
   hs-source-dirs:       src
   ghc-options:          -Wall -O2

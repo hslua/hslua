@@ -22,7 +22,7 @@ import Data.IORef
 import qualified Data.List as L
 import Data.Maybe
 import Foreign.C
-import Foreign.Lua.Raw
+import Foreign.Lua.Bindings
 import Foreign.Lua.Types
 import Foreign.Marshal.Alloc
 import Foreign.Ptr

@@ -1,7 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module Foreign.Lua.Raw where
+module Foreign.Lua.Bindings where
 
 import Foreign.C
 import Foreign.Lua.Types
