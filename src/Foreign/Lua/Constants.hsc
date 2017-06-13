@@ -49,26 +49,26 @@ import Foreign.Lua.Types
 #include "lua.h"
 
 -- | Alias for C constant @LUA_MULTRET@. See
--- <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_call
+-- <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_call\
 -- lua_call>.
 multret :: NumResults
 multret = NumResults $ #{const LUA_MULTRET}
 
 -- | Alias for C constant @LUA_REGISTRYINDEX@. See
--- <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#3.5 Lua
--- registry>.
+-- <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#3.5\
+-- Lua registry>.
 registryindex :: StackIndex
 registryindex = StackIndex $ #{const LUA_REGISTRYINDEX}
 
 #if LUA_VERSION_NUMBER < 502
 -- | Alias for C constant @LUA_ENVIRONINDEX@. See
--- <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#3.3
+-- <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#3.3\
 -- pseudo-indices>.
 environindex :: StackIndex
 environindex = StackIndex $ #{const LUA_ENVIRONINDEX}
 
 -- | Alias for C constant @LUA_GLOBALSINDEX@. See
--- <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#3.3
+-- <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#3.3\
 -- pseudo-indices>.
 globalsindex :: StackIndex
 globalsindex = StackIndex $ #{const LUA_GLOBALSINDEX}

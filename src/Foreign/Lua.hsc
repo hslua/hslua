@@ -55,7 +55,7 @@ createtable s z = liftLua $ \l ->
 --
 
 -- | See
--- <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_rawlen
+-- <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_rawlen\
 -- lua_rawlen>.
 rawlen :: StackIndex -> Lua Int
 #if LUA_VERSION_NUMBER >= 502
