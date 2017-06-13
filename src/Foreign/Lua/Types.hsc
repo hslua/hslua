@@ -43,7 +43,7 @@ module Foreign.Lua.Types (
   , Lua (..)
   , runLuaWith
   , luaState
-  , Control.Monad.Reader.liftIO
+  , liftIO
   -- Function type synonymes
   , LuaAlloc
   , LuaCFunction
@@ -57,7 +57,6 @@ module Foreign.Lua.Types (
   -- Number of arguments/results
   , NumArgs (..)
   , NumResults (..)
-  , multret
 #if LUA_VERSION_NUMBER >= 502
   , LuaComparerOp (..)
 #endif
@@ -189,7 +188,3 @@ newtype NumArgs = NumArgs { fromNumArgs :: CInt }
 -- | The number of results returned by a function call.
 newtype NumResults = NumResults { fromNumResults :: CInt }
   deriving (Enum, Eq, Integral, Num, Ord, Real, Show)
-
--- | Alias for C constant @LUA_MULTRET@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_call lua_call>.
-multret :: NumResults
-multret = NumResults $ #{const LUA_MULTRET}

@@ -4,6 +4,7 @@
 
 module Foreign.Lua
   ( module Foreign.Lua
+  , module Foreign.Lua.Constants
   , module Foreign.Lua.Types
   ) where
 
@@ -22,6 +23,7 @@ import qualified Data.List as L
 import Data.Maybe
 import Foreign.C
 import Foreign.Lua.Bindings
+import Foreign.Lua.Constants
 import Foreign.Lua.Types
 import Foreign.Marshal.Alloc
 import Foreign.Ptr
@@ -150,21 +152,11 @@ isnone n = (== TNONE) <$> ltype n
 isnoneornil :: StackIndex -> Lua Bool
 isnoneornil idx = (<= TNIL) <$> (ltype idx)
 
--- | Alias for C constant @LUA_REGISTRYINDEX@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#3.5 Lua registry>.
-registryindex :: StackIndex
-registryindex = StackIndex $ #{const LUA_REGISTRYINDEX}
-
-#if LUA_VERSION_NUMBER < 502
--- | Alias for C constant @LUA_ENVIRONINDEX@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#3.3 pseudo-indices>.
-environindex :: StackIndex
-environindex = StackIndex $ #{const LUA_ENVIRONINDEX}
-
--- | Alias for C constant @LUA_GLOBALSINDEX@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#3.3 pseudo-indices>.
-globalsindex :: StackIndex
-globalsindex = StackIndex $ #{const LUA_GLOBALSINDEX}
-
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_upvalueindex lua_upvalueindex>.
 upvalueindex :: StackIndex -> StackIndex
+#if LUA_VERSION_NUMBER >= 502
+upvalueindex i = registryindex - i
+#else
 upvalueindex i = globalsindex - i
 #endif
 
