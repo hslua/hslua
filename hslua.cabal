@@ -1,5 +1,5 @@
 name:                   hslua
-version:                0.5.0
+version:                0.6.0
 stability:              beta
 cabal-version:          >= 1.8
 license:                MIT
@@ -9,7 +9,7 @@ copyright:              © 2007–2012 Gracjan Polak
                         © 2012–2016 Ömer Sinan Ağacan
                         © 2016–2017 Albert Krewinkel
 author:                 Gracjan Polak, Ömer Sinan Ağacan
-maintainer:             omeragacan@gmail.com
+maintainer:             albert+hslua@zeitkraut.de
 synopsis:               A Lua language interpreter embedding in Haskell
 description:            The Foreign.Lua module is a wrapper of Lua language interpreter
                         as described in [lua.org](http://www.lua.org/).
