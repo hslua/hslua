@@ -52,26 +52,22 @@ createtable s z = liftLua $ \l ->
 -- Size of objects
 --
 
--- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_objlen lua_objlen>.
-objlen :: StackIndex -> Lua Int
-
+-- | See
+-- <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_rawlen
+-- lua_rawlen>.
+rawlen :: StackIndex -> Lua Int
 #if LUA_VERSION_NUMBER >= 502
+rawlen idx = liftLua $ \l -> fromIntegral <$> c_lua_rawlen l (fromIntegral idx)
+#else
+rawlen idx = liftLua $ \l -> fromIntegral <$> c_lua_objlen l (fromIntegral idx)
+#endif
+
 {-# DEPRECATED objlen "Use rawlen instead." #-}
+-- | Obso
+objlen :: StackIndex -> Lua Int
 objlen = rawlen
 
--- | See <https://www.lua.org/manual/5.2/manual.html#lua_objlen lua_objlen>.
-rawlen :: StackIndex -> Lua Int
-rawlen idx = liftLua $ \l -> fromIntegral <$> c_lua_rawlen l (fromIntegral idx)
-
-#else
-objlen n = liftLua $ \l -> fromIntegral <$> c_lua_objlen l (fromIntegral n)
-#endif
-
-#if LUA_VERSION_NUMBER >= 502
 {-# DEPRECATED strlen "Use rawlen instead." #-}
-#else
-{-# DEPRECATED strlen "Use objlen instead." #-}
-#endif
 -- | Compatibility alias for objlen
 strlen :: StackIndex -> Lua Int
 strlen = objlen
