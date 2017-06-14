@@ -345,35 +345,35 @@ dump = liftLua $ \l -> do
     freeHaskellFunPtr writer
     readIORef r
 
-#if LUA_VERSION_NUMBER >= 502
 compare :: StackIndex -> StackIndex -> LuaComparerOp -> Lua Bool
-compare index1 index2 op = liftLua $ \l -> (/= 0) <$>
+#if LUA_VERSION_NUMBER >= 502
+compare idx1 idx2 op = liftLua $ \l -> (/= 0) <$>
   c_lua_compare l
-    (fromStackIndex index1)
-    (fromStackIndex index2)
+    (fromStackIndex idx1)
+    (fromStackIndex idx2)
     (fromIntegral (fromEnum op))
+#else
+compare idx1 idx2 op = liftLua $ \l ->
+  (/= 0) <$>
+  case op of
+    OpEQ -> c_lua_equal l (fromStackIndex idx1) (fromStackIndex idx2)
+    OpLT -> c_lua_lessthan l (fromStackIndex idx1) (fromStackIndex idx2)
+    OpLE -> (+) <$> c_lua_equal l (fromStackIndex idx1) (fromStackIndex idx2)
+                <*> c_lua_lessthan l (fromStackIndex idx1) (fromStackIndex idx2)
+#endif
 
--- | Tests whether the objects under the given indices are equal.
+-- | Tests whether the objects under the given indices are equal. See
+-- <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_equal
+-- lua_equal>.
 equal :: StackIndex -> StackIndex -> Lua Bool
 equal index1 index2 = compare index1 index2 OpEQ
 
 -- | Tests whether the object under the first index is smaller than that under
--- the second.
+-- the second. See
+-- <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_lessthan
+-- lua_lessthan>.
 lessthan :: StackIndex -> StackIndex -> Lua Bool
 lessthan index1 index2 = compare index1 index2 OpLT
-
-#else
-
--- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_equal lua_equal>.
-equal :: StackIndex -> StackIndex -> Lua Bool
-equal i j = liftLua $ \l ->
-  (/= 0) <$> c_lua_equal l (fromStackIndex i) (fromStackIndex j)
-
--- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_lessthan lua_lessthan>.
-lessthan :: StackIndex -> StackIndex -> Lua Bool
-lessthan i j = liftLua $ \l ->
-  (/= 0) <$> c_lua_lessthan l (fromIntegral i) (fromIntegral j)
-#endif
 
 -- | This is a convenience function to implement error propagation convention
 -- described in [Error handling in hslua](#g:1). hslua doesn't implement

@@ -24,6 +24,7 @@ THE SOFTWARE.
 {-# LANGUAGE CPP                        #-}
 {-# LANGUAGE ForeignFunctionInterface   #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE StandaloneDeriving         #-}
 {-|
 Module      : Foreign.Lua.Types
 Copyright   : © 2007–2012 Gracjan Polak,
@@ -57,9 +58,7 @@ module Foreign.Lua.Types (
   -- Number of arguments/results
   , NumArgs (..)
   , NumResults (..)
-#if LUA_VERSION_NUMBER >= 502
   , LuaComparerOp (..)
-#endif
   ) where
 
 #if !MIN_VERSION_base(4,8,0)
@@ -142,7 +141,6 @@ instance Enum LTYPE where
   toEnum (#{const LUA_TTHREAD})        = TTHREAD
   toEnum n                             = error $ "Cannot convert (" ++ show n ++ ") to LTYPE"
 
-#if LUA_VERSION_NUMBER >= 502
 -- | Lua comparison operations
 data LuaComparerOp
   = OpEQ
@@ -150,6 +148,7 @@ data LuaComparerOp
   | OpLE
   deriving (Eq, Ord, Show)
 
+#if LUA_VERSION_NUMBER >= 502
 instance Enum LuaComparerOp where
   fromEnum OpEQ = #{const LUA_OPEQ}
   fromEnum OpLT = #{const LUA_OPLT}
@@ -159,6 +158,8 @@ instance Enum LuaComparerOp where
   toEnum (#{const LUA_OPLT}) = OpLT
   toEnum (#{const LUA_OPLE}) = OpLE
   toEnum n = error $ "Cannot convert (" ++ show n ++ ") to LuaComparerOp"
+#else
+deriving instance Enum LuaComparerOp
 #endif
 
 -- | Enumeration used by @gc@ function.
@@ -171,7 +172,7 @@ data GCCONTROL
   | GCSTEP
   | GCSETPAUSE
   | GCSETSTEPMUL
-  deriving (Eq,Ord,Show,Enum)
+  deriving (Enum, Eq, Ord, Show)
 
 -- | A stack index
 newtype StackIndex = StackIndex { fromStackIndex :: CInt }

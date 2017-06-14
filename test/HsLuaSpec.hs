@@ -17,6 +17,7 @@ import Test.QuickCheck.Instances ()
 import qualified Test.QuickCheck.Monadic as QM
 
 import Foreign.Lua
+import qualified Foreign.Lua as Lua
 
 main :: IO ()
 main = hspec spec
@@ -33,6 +34,11 @@ spec = do
       it "can push/pop lists of booleans" $ property prop_lists_bool
       it "can push/pop lists of ints" $ property prop_lists_int
       it "can push/pop lists of bytestrings" $ property prop_lists_bytestring
+    describe "Operations" $
+      describe "compare" $ do
+        it "identifies strictly smaller values" . property $ compareWith (<) OpLT
+        it "identifies smaller or equal values" . property $ compareWith (<=) OpLE
+        it "identifies equal values" . property $ compareWith (==) OpEQ
     describe "luaopen_* functions" $ mapM_ fromHUnitTest $ map (uncurry testOpen) $
       [ ("table", opentable), ("io", openio), ("os", openos),
         ("string", openstring), ("math", openmath), ("debug", opendebug),
@@ -85,6 +91,32 @@ nulString =
     tostring 1
   assertEqual "Popped string is different than what's pushed" str (B.unpack str')
 
+compareWith :: (Int -> Int -> Bool) -> LuaComparerOp -> Int -> Property
+compareWith op luaOp n = compareLT .&&. compareEQ .&&. compareGT
+ where
+  compareLT :: Property
+  compareLT = QM.monadicIO  $ do
+    luaCmp <- QM.run . runLua $ do
+      push $ n - 1
+      push n
+      Lua.compare (-2) (-1) luaOp
+    QM.assert $ luaCmp == op (n - 1) n
+
+  compareEQ :: Property
+  compareEQ = QM.monadicIO  $ do
+    luaCmp <- QM.run . runLua $ do
+      push n
+      push n
+      Lua.compare (-2) (-1) luaOp
+    QM.assert $ luaCmp == op n n
+
+  compareGT :: Property
+  compareGT = QM.monadicIO $ do
+    luaRes <- QM.run . runLua $ do
+      push $ n + 1
+      push n
+      Lua.compare (-2) (-1) luaOp
+    QM.assert $ luaRes == op (n + 1) n
 
 -----
 -- Random Quickcheck testing for StackValue instances
