@@ -55,7 +55,6 @@ import Data.ByteString (ByteString)
 import Data.Monoid ((<>))
 import Foreign.C (CInt (..))
 import Foreign.Lua.Functions
-import Foreign.Lua.Types
 import Foreign.Ptr (FunPtr, Ptr, castPtr, freeHaskellFunPtr)
 import Foreign.StablePtr (deRefStablePtr, freeStablePtr, newStablePtr)
 

@@ -520,10 +520,21 @@ insert index = liftLua $ \l -> c_lua_rotate l (fromIntegral index) 1
 insert index = liftLua $ \l -> c_lua_insert l (fromIntegral index)
 #endif
 
-#if LUA_VERSION_NUMBER >= 503
+-- | Copies the element at index @fromidx@ into the valid index @toidx@,
+-- replacing the value at that position. Values at other positions are not
+-- affected.
+--
+-- See also <https://www.lua.org/manual/5.3/manual.html#lua_copy lua_copy> in
+-- the lua manual.
 copy :: StackIndex -> StackIndex -> Lua ()
+#if LUA_VERSION_NUMBER >= 503
 copy fromidx toidx = liftLua $ \l ->
   c_lua_copy l (fromStackIndex fromidx) (fromStackIndex toidx)
+#else
+copy fromidx toidx = do
+  pushvalue fromidx
+  remove toidx
+  insert toidx
 #endif
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_iscfunction lua_iscfunction>.
