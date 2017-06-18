@@ -492,13 +492,6 @@ gc :: GCCONTROL -> Int -> Lua Int
 gc i j= liftLua $ \l ->
   fromIntegral <$> c_lua_gc l (fromIntegral (fromEnum i)) (fromIntegral j)
 
-#if LUA_VERSION_NUMBER < 502
--- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_getfenv lua_getfenv>.
-getfenv :: Int -> Lua ()
-getfenv n = liftLua $ \l ->
-  c_lua_getfenv l (fromIntegral n)
-#endif
-
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_getmetatable lua_getmetatable>.
 getmetatable :: StackIndex -> Lua Bool
 getmetatable n = liftLua $ \l ->
@@ -657,12 +650,6 @@ replace n = liftLua $ \l ->  c_lua_replace l (fromIntegral n)
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_resume lua_resume>.
 resume :: Int -> Lua Int
 resume n = liftLua $ \l -> fromIntegral <$> c_lua_resume l (fromIntegral n)
-
-#if LUA_VERSION_NUMBER < 502
--- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_setfenv lua_setfenv>.
-setfenv :: Int -> Lua Int
-setfenv n = liftLua $ \l -> fromIntegral <$> c_lua_setfenv l (fromIntegral n)
-#endif
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_setmetatable lua_setmetatable>.
 setmetatable :: Int -> Lua ()
