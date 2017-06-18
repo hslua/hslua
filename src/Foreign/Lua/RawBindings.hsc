@@ -24,7 +24,7 @@ THE SOFTWARE.
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-|
-Module      : Foreign.Lua.Bindings
+Module      : Foreign.Lua.RawBindings
 Copyright   : © 2007–2012 Gracjan Polak,
                 2012–2016 Ömer Sinan Ağacan,
                 2017 Albert Krewinkel
@@ -35,7 +35,7 @@ Portability : ForeignFunctionInterface
 
 Haskell bindings to lua C API functions.
 -}
-module Foreign.Lua.Bindings where
+module Foreign.Lua.RawBindings where
 
 import Foreign.C
 import Foreign.Lua.Types

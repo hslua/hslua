@@ -141,8 +141,8 @@ import Prelude hiding (compare, concat)
 import Control.Monad
 import Data.IORef
 import Foreign.C
-import Foreign.Lua.Bindings
 import Foreign.Lua.Constants
+import Foreign.Lua.RawBindings
 import Foreign.Lua.Types
 import Foreign.Marshal.Alloc
 import Foreign.Ptr

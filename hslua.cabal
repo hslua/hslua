@@ -60,10 +60,10 @@ library
                       , bytestring >= 0.10.2 && < 0.11
                       , mtl        >= 2.2    && < 2.3
   exposed-modules:      Foreign.Lua
-                      , Foreign.Lua.Bindings
                       , Foreign.Lua.Constants
                       , Foreign.Lua.Functions
                       , Foreign.Lua.Interop
+                      , Foreign.Lua.RawBindings
                       , Foreign.Lua.Types
   hs-source-dirs:       src
   if impl(ghc < 7.10)
