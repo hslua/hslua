@@ -64,6 +64,9 @@ library
                       , Foreign.Lua.Constants
                       , Foreign.Lua.Types
   hs-source-dirs:       src
+  if impl(ghc < 7.10)
+     hs-source-dirs:    prelude
+     other-modules:     Prelude
   ghc-options:          -Wall -O2
   extensions:           CPP
   if flag(system-lua) || flag(luajit) || flag(lua501) || flag(lua502)
@@ -156,24 +159,36 @@ test-suite simple-test
   main-is:              simple-test.hs
   hs-source-dirs:       test
   build-depends:        base, hslua
+  if impl(ghc < 7.10)
+     hs-source-dirs:    prelude
+     other-modules:     Prelude
 
 test-suite callbacks
   type:                 exitcode-stdio-1.0
   main-is:              callbacks.hs
   hs-source-dirs:       examples/callbacks
   build-depends:        base, bytestring, hslua, mtl
+  if impl(ghc < 7.10)
+     hs-source-dirs:    prelude
+     other-modules:     Prelude
 
 test-suite haskellfun
   type:                 exitcode-stdio-1.0
   main-is:              haskellfun.hs
   hs-source-dirs:       examples/haskellfun
   build-depends:        base, bytestring, hslua
+  if impl(ghc < 7.10)
+     hs-source-dirs:    prelude
+     other-modules:     Prelude
 
 test-suite err_prop
   type:                 exitcode-stdio-1.0
   main-is:              err_prop.hs
   hs-source-dirs:       examples/err_prop
   build-depends:        base, bytestring, hslua, mtl
+  if impl(ghc < 7.10)
+     hs-source-dirs:    prelude
+     other-modules:     Prelude
 
 test-suite test
   type:                 exitcode-stdio-1.0
@@ -199,3 +214,6 @@ test-suite test
     text,
     QuickCheck >= 2.7,
     quickcheck-instances
+  if impl(ghc < 7.10)
+     hs-source-dirs:    prelude
+     other-modules:     Prelude

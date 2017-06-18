@@ -61,9 +61,6 @@ module Foreign.Lua.Types (
   , LuaComparerOp (..)
   ) where
 
-#if !MIN_VERSION_base(4,8,0)
-import Control.Applicative (Applicative)
-#endif
 import Control.Monad.Reader (ReaderT (..), MonadReader, MonadIO, ask, liftIO)
 import Data.Int
 import Foreign.C
