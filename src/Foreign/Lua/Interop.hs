@@ -183,6 +183,8 @@ instance (FromLuaStack a, LuaImport b) => LuaImport (a -> b) where
                    ])
           (x undefined)
 
+foreign import ccall "wrapper" mkWrapper :: LuaCFunction -> IO (FunPtr LuaCFunction)
+
 -- | Create new foreign Lua function. Function created can be called
 -- by Lua engine. Remeber to free the pointer with @freecfunction@.
 newcfunction :: LuaImport a => a -> IO (FunPtr LuaCFunction)

@@ -35,7 +35,106 @@ Portability : CPP, ForeignFunctionInterface
 
 Monadic functions which operate within the Lua type.
 -}
-module Foreign.Lua.Functions where
+module Foreign.Lua.Functions
+  ( module Foreign.Lua.Constants
+  , module Foreign.Lua.Types
+  , liftLua
+  , argerror
+  , atpanic
+  , call
+  , checkstack
+  , close
+  , compare
+  , concat
+  , copy
+  , cpcall
+  , createtable
+  , dump
+  , equal
+  , getfield
+  , getglobal
+  , getglobal2
+  , getmetatable
+  , gettable
+  , gettop
+  , gc
+  , isboolean
+  , iscfunction
+  , isfunction
+  , islightuserdata
+  , isnil
+  , isnone
+  , isnoneornil
+  , isnumber
+  , isstring
+  , istable
+  , isthread
+  , isuserdata
+  , lerror
+  , lessthan
+  , loadfile
+  , loadstring
+  , ltype
+  , newmetatable
+  , newstate
+  , newtable
+  , newthread
+  , newuserdata
+  , next
+  , objlen
+  , openbase
+  , opendebug
+  , openio
+  , openlibs
+  , openmath
+  , openpackage
+  , openos
+  , openstring
+  , opentable
+  , pcall
+  , pop
+  , pushboolean
+  , pushcfunction
+  , pushinteger
+  , pushlightuserdata
+  , pushnil
+  , pushnumber
+  , pushstring
+  , pushthread
+  , pushvalue
+  , rawequal
+  , rawget
+  , rawgeti
+  , rawlen
+  , rawset
+  , rawseti
+  , ref
+  , register
+  , remove
+  , replace
+  , resume
+  , runLua
+  , setfield
+  , setglobal
+  , setmetatable
+  , settable
+  , settop
+  , status
+  , strlen
+  , toboolean
+  , tocfunction
+  , tointeger
+  , tonumber
+  , topointer
+  , tostring
+  , tothread
+  , touserdata
+  , typename
+  , upvalueindex
+  , unref
+  , xmove
+  , yield
+  ) where
 
 import Prelude hiding (compare, concat)
 
