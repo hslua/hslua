@@ -23,7 +23,7 @@
 
 import qualified Data.ByteString.Char8 as BC
 import Foreign.C.Types (CInt)
-import Foreign.Lua as Lua
+import Foreign.Lua
 
 main :: IO ()
 main = runLua $ do

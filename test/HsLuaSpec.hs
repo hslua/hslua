@@ -68,7 +68,7 @@ listInstance :: Test
 listInstance = TestLabel "Push/pop StackValue lists" $ TestCase $ do
     let lst = [B.pack "first", B.pack "second"]
     runLua $ do
-      pushlist lst
+      push lst
       setglobal "mylist"
       size0 <- gettop
       liftIO $ assertEqual
@@ -77,7 +77,7 @@ listInstance = TestLabel "Push/pop StackValue lists" $ TestCase $ do
       getglobal "mylist"
       size1 <- gettop
       liftIO $ assertEqual "`getglobal` pushed more than one value to the stack" 1 size1
-      lst' <- tolist 1
+      lst' <- peek 1
       size2 <- gettop
       liftIO $ assertEqual "`tolist` left stuff on the stack" size1 size2
       liftIO $ assertEqual "Popped a different list or pop failed" (Just lst) lst'
@@ -145,7 +145,7 @@ prop_lists_bytestring :: [ByteString] -> Property
 prop_lists_bytestring = testStackValueInstance
 
 -- Check that the StackValue instance for a datatype works
-testStackValueInstance :: (Show t, Eq t, StackValue t) => t -> Property
+testStackValueInstance :: (Show t, Eq t, ToLuaStack t, FromLuaStack t) => t -> Property
 testStackValueInstance t = QM.monadicIO $ do
   -- Init Lua state
   l <- QM.run newstate

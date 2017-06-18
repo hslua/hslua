@@ -37,161 +37,150 @@ Portability : FlexibleInstances, ForeignFunctionInterface, ScopedTypeVariables
 Classes and functions enabling straight-forward interoperability between lua and
 haskell.
 -}
-module Foreign.Lua.Interop where
+module Foreign.Lua.Interop
+  ( FromLuaStack (..)
+  , ToLuaStack (..)
+  , LuaImport
+  , freecfunction
+  , luaimport
+  , callfunc
+  , callproc
+  , newcfunction
+  , registerhsfunction
+  , registerrawhsfunction
+  ) where
 
-import Prelude hiding ( compare, concat )
-import qualified Prelude
-
-import Control.Monad
-import Data.Maybe
-import Foreign.C
+import Control.Monad (when, zipWithM_)
+import Data.ByteString (ByteString)
+import Data.Monoid ((<>))
+import Foreign.C (CInt (..))
 import Foreign.Lua.Functions
 import Foreign.Lua.Types
-import Foreign.Ptr
-import Foreign.StablePtr
+import Foreign.Ptr (FunPtr, Ptr, castPtr, freeHaskellFunPtr)
+import Foreign.StablePtr (deRefStablePtr, freeStablePtr, newStablePtr)
 
-import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 import qualified Foreign.Storable as F
 
--- | Try to convert Lua array at given index to Haskell list.
-tolist :: StackValue a => StackIndex -> Lua (Maybe [a])
-tolist n = do
-  len <- rawlen n
-  iter [1..len]
- where
-  iter [] = return $ Just []
-  iter (i : is) = do
-    rawgeti n i
-    ret <- peek (-1)
-    pop 1
-    case ret of
-      Nothing  -> return Nothing
-      Just val -> do
-        rest <- iter is
-        return $ case rest of
-                   Nothing -> Nothing
-                   Just vals -> Just (val : vals)
+-- | A value that can be pushed to the Lua stack.
+class ToLuaStack a where
+  -- | Pushes a value onto Lua stack, casting it into meaningfully nearest Lua
+  -- type.
+  push :: a -> Lua ()
 
--- | Push a list to Lua stack as a Lua array.
-pushlist :: StackValue a => [a] -> Lua ()
-pushlist list = do
-  newtable
-  forM_ (zip [1..] list) $ \(idx, val) -> do
-    push val
-    rawseti (-2) idx
+instance ToLuaStack LuaInteger where
+  push = pushinteger
 
--- | A value that can be pushed and poped from the Lua stack.
--- All instances are natural, except following:
---
---  * @LuaState@ push ignores its argument, pushes current state
---
---  * @()@ push ignores its argument, just pushes nil
---
---  * @Ptr ()@ pushes light user data, peek checks for lightuserdata or userdata
---
---  * See "A note about integer functions" for integer functions.
-class StackValue a where
-    -- | Pushes a value onto Lua stack, casting it into meaningfully nearest Lua type.
-    push :: a -> Lua ()
-    -- | Check if at index @n@ there is a convertible Lua value and if so return it
-    -- wrapped in @Just@. Return @Nothing@ otherwise.
-    peek :: StackIndex -> Lua (Maybe a)
-    -- | Lua type id code of the vaule expected. Parameter is unused.
-    valuetype :: a -> LTYPE
+instance ToLuaStack LuaNumber where
+  push = pushnumber
 
-maybepeek :: n -> (n -> Lua Bool) -> (n -> Lua r) -> Lua (Maybe r)
-maybepeek n test peekfn = do
-    v <- test n
-    if v
-      then Just <$> (peekfn n)
-      else return Nothing
+instance ToLuaStack Int where
+  push = pushinteger . fromIntegral
 
-instance StackValue LuaInteger where
-    push x = pushinteger x
-    peek n = maybepeek n isnumber tointeger
-    valuetype _ = TNUMBER
+instance ToLuaStack ByteString where
+  push = pushstring
 
-instance StackValue LuaNumber where
-    push x = pushnumber x
-    peek n = maybepeek n isnumber tonumber
-    valuetype _ = TNUMBER
+instance ToLuaStack Bool where
+  push = pushboolean
 
-instance StackValue Int where
-    push x = pushinteger (fromIntegral x)
-    peek n = maybepeek n isnumber (fmap fromIntegral . tointeger)
-    valuetype _ = TNUMBER
+instance ToLuaStack (FunPtr LuaCFunction) where
+  push = pushcfunction
 
-instance StackValue B.ByteString where
-    push x = pushstring x
-    peek n = maybepeek n isstring tostring
-    valuetype _ = TSTRING
+instance ToLuaStack (Ptr a) where
+  push = pushlightuserdata
 
-instance StackValue a => StackValue [a] where
-    push x = pushlist x
-    peek n = tolist n
-    valuetype _ = TTABLE
+instance ToLuaStack () where
+  push _ = pushnil
 
-instance StackValue Bool where
-    push x = pushboolean x
-    peek n = maybepeek n isboolean toboolean
-    valuetype _ = TBOOLEAN
+instance ToLuaStack a => ToLuaStack [a] where
+  push xs = do
+    let setField i x = push x *> rawseti (-2) i
+    newtable
+    zipWithM_ setField [1..] xs
 
-instance StackValue (FunPtr LuaCFunction) where
-    push x = pushcfunction x
-    peek n = maybepeek n iscfunction tocfunction
-    valuetype _ = TFUNCTION
+-- | A value that can be read from the Lua stack.
+class FromLuaStack a where
+  -- | Check if at index @n@ there is a convertible Lua value and if so return
+  -- it wrapped in @Just@. Return @Nothing@ otherwise.
+  peek :: StackIndex -> Lua (Maybe a)
 
--- watch out for the asymetry here
-instance StackValue (Ptr a) where
-    push x = pushlightuserdata x
-    peek n = maybepeek n isuserdata touserdata
-    valuetype _ = TUSERDATA
+instance FromLuaStack LuaInteger where
+  peek = maybePeek isnumber tointeger
 
--- watch out for push here
-instance StackValue LuaState where
-    push _ = pushthread >> return ()
-    peek n = maybepeek n isthread tothread
-    valuetype _ = TTHREAD
+instance FromLuaStack LuaNumber where
+  peek = maybePeek isnumber tonumber
 
-instance StackValue () where
-    push _ = pushnil
-    peek n = maybepeek n isnil . const $ return ()
-    valuetype _ = TNIL
+instance FromLuaStack Int where
+  peek = maybePeek isnumber (fmap fromIntegral . tointeger)
+
+instance FromLuaStack ByteString where
+  peek = maybePeek isstring tostring
+
+instance FromLuaStack Bool where
+  peek = maybePeek isboolean toboolean
+
+instance FromLuaStack (FunPtr LuaCFunction) where
+  peek = maybePeek iscfunction tocfunction
+
+instance FromLuaStack (Ptr a) where
+  peek = maybePeek isuserdata touserdata
+
+instance FromLuaStack LuaState where
+  peek = maybePeek isthread tothread
+
+instance FromLuaStack a => FromLuaStack [a] where
+  peek n = go . enumFromTo 1 =<< rawlen n
+   where
+    go [] = return $ Just []
+    go (i : is) = do
+      ret <- rawgeti n i *> peek (-1) <* pop 1
+      case ret of
+        Nothing  -> return Nothing
+        Just val -> fmap (val:) <$> go is
+
+-- | Use @test@ to check whether the value at stack index @n@ as the correct
+-- type and use @peekfn@ to convert it to a haskell value if possible, or
+-- returns @Nothing@ otherwise.
+maybePeek :: (n -> Lua Bool) -> (n -> Lua r) -> n -> Lua (Maybe r)
+maybePeek test peekfn n = do
+  v <- test n
+  if v
+    then Just <$> peekfn n
+    else return Nothing
 
 class LuaImport a where
   luaimport' :: StackIndex -> a -> Lua CInt
   luaimportargerror :: StackIndex -> String -> a -> Lua CInt
 
-instance (StackValue a) => LuaImport (IO a) where
+instance (FromLuaStack a, ToLuaStack a) => LuaImport (IO a) where
   luaimportargerror n msg x = luaimportargerror n msg (liftIO x :: Lua a)
   luaimport' narg x = luaimport' narg (liftIO x :: Lua a)
 
-instance (StackValue a) => LuaImport (LuaState -> IO a) where
+instance (FromLuaStack a, ToLuaStack a) => LuaImport (LuaState -> IO a) where
   luaimportargerror n msg = luaimportargerror n msg . liftLua
   luaimport' narg = luaimport' narg . liftLua
 
-instance (StackValue a) => LuaImport (Lua a) where
+instance (FromLuaStack a, ToLuaStack a) => LuaImport (Lua a) where
   luaimportargerror _n msg _x = do
     -- TODO: maybe improve the error message
-    pushstring (BC.pack msg)
+    pushstring $ BC.pack msg
     fromIntegral <$> lerror
   luaimport' _narg x = (x >>= push) *> return 1
 
-instance (StackValue a, LuaImport b) => LuaImport (a -> b) where
+instance (FromLuaStack a, LuaImport b) => LuaImport (a -> b) where
   luaimportargerror n msg x = luaimportargerror n msg (x undefined)
   luaimport' narg x = do
     arg <- peek narg
     case arg of
-      Just v -> luaimport' (narg+1) (x v)
+      Just v -> luaimport' (narg + 1) (x v)
       Nothing -> do
         t <- ltype narg
-        expected <- typename $ valuetype (fromJust arg)
         got <- typename t
         luaimportargerror narg
-          (Prelude.concat [ "argument ", show (fromStackIndex narg)
-                          , " of Haskell function: ", expected
-                          , " expected, got ", got])
+          (mconcat [ "argument ", show (fromStackIndex narg)
+                   , " of Haskell function: "
+                   , " got ", got, ", which was not expected"
+                   ])
           (x undefined)
 
 -- | Create new foreign Lua function. Function created can be called
@@ -240,12 +229,11 @@ instance LuaCallProc (Lua t) where
     z <- pcall k 0 0
     if z /= 0
       then do
-        Just msg <- peek (-1)
-        pop 1
+        Just msg <- peek (-1) <* pop 1
         fail (BC.unpack msg)
       else return undefined
 
-instance (StackValue t) => LuaCallFunc (Lua t) where
+instance (FromLuaStack t) => LuaCallFunc (Lua t) where
   callfunc' f a k = do
     getglobal2 f
     a
@@ -261,16 +249,13 @@ instance (StackValue t) => LuaCallFunc (Lua t) where
         case r of
           Just x -> return x
           Nothing -> do
-            expected <- typename (valuetype (fromJust r))
-            t <- ltype (-1)
-            got <- typename t
-            fail $ Prelude.concat
-              [ "Incorrect result type (", expected, " expected, got ", got, ")" ]
+            got <- typename =<< ltype (-1)
+            fail $ "Incorrect result type (got " <> got <> ")"
 
-instance (StackValue t, LuaCallProc b) => LuaCallProc (t -> b) where
+instance (ToLuaStack t, LuaCallProc b) => LuaCallProc (t -> b) where
     callproc' f a k x = callproc' f (a *> push x) (k+1)
 
-instance (StackValue t, LuaCallFunc b) => LuaCallFunc (t -> b) where
+instance (ToLuaStack t, LuaCallFunc b) => LuaCallFunc (t -> b) where
     callfunc' f a k x = callfunc' f (a *> push x) (k+1)
 
 
