@@ -198,17 +198,3 @@ testOpenBase = TestLabel "openbase" . TestCase . assert . runLua $ do
 #else
     liftM2 (&&) (istable (-1)) (istable (-2))
 #endif
-
-loadInspect :: LuaState -> Assertion
-loadInspect l = runLuaWith l $ do
-  loadRet <- loadfile "test/inspect.lua"
-  liftIO $ assertEqual "load failed" 0 loadRet
-  pcallRet <- pcall 0 multret 0
-
-  when (pcallRet /= 0) $ do
-    msg <- tostring 1
-    liftIO $ close l
-    liftIO $ assertFailure ("pcall failed with " ++ show pcallRet ++ "\n" ++
-                            "error message was: " ++ B.unpack msg)
-
-  setglobal "inspect"
