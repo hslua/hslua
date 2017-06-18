@@ -743,6 +743,3 @@ getglobal2 n = do
     (x : xs)  = splitdot n
     splitdot  = filter (/= ".") . L.groupBy (\a b -> a /= '.' && b /= '.')
     dotable a = getfield (-1) a *> gettop >>= \i -> remove (i - 1)
-
-typenameindex :: StackIndex -> Lua String
-typenameindex n = ltype n >>= typename
