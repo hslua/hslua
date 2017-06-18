@@ -62,6 +62,8 @@ library
   exposed-modules:      Foreign.Lua
                       , Foreign.Lua.Bindings
                       , Foreign.Lua.Constants
+                      , Foreign.Lua.Functions
+                      , Foreign.Lua.Interop
                       , Foreign.Lua.Types
   hs-source-dirs:       src
   if impl(ghc < 7.10)
