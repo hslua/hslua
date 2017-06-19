@@ -12,7 +12,7 @@ import Test.Hspec
 import Test.Hspec.Contrib.HUnit
 import Test.HUnit
 
-import Test.QuickCheck
+import Test.QuickCheck hiding (Success)
 import Test.QuickCheck.Instances ()
 import qualified Test.QuickCheck.Monadic as QM
 
@@ -39,11 +39,11 @@ spec = do
         it "identifies strictly smaller values" . property $ compareWith (<) OpLT
         it "identifies smaller or equal values" . property $ compareWith (<=) OpLE
         it "identifies equal values" . property $ compareWith (==) OpEQ
-    describe "luaopen_* functions" $ mapM_ fromHUnitTest $ map (uncurry testOpen) $
+    describe "luaopen_* functions" $ mapM_ (fromHUnitTest . uncurry testOpen)
       [ ("table", opentable), ("io", openio), ("os", openos),
         ("string", openstring), ("math", openmath), ("debug", opendebug),
         ("package", openpackage) ]
-    describe "luaopen_base returns two tables" $ fromHUnitTest $ testOpenBase
+    describe "luaopen_base returns two tables" . fromHUnitTest $ testOpenBase
 
 bytestring :: Test
 bytestring = TestLabel "ByteString -- unicode stuff" $ TestCase $ do
@@ -80,7 +80,7 @@ listInstance = TestLabel "Push/pop StackValue lists" $ TestCase $ do
       lst' <- peek 1
       size2 <- gettop
       liftIO $ assertEqual "`tolist` left stuff on the stack" size1 size2
-      liftIO $ assertEqual "Popped a different list or pop failed" (Just lst) lst'
+      liftIO $ assertEqual "Popped a different list or pop failed" (Success lst) lst'
 
 nulString :: Test
 nulString =
@@ -172,7 +172,7 @@ testStackValueInstance t = QM.monadicIO $ do
   newStackSize <- QM.run $ fromIntegral `fmap` runLuaWith l gettop
   QM.assert $ stackSize == newStackSize
   -- Check that we were able to peek at all pushed elements
-  forM_ vals $ QM.assert . (== Just t)
+  forM_ vals $ QM.assert . (== Success t)
 
   -- DEBUGGING -----------------------------------------------
   -- QM.run $ putStrLn $ "Testing value -------- " ++ show t

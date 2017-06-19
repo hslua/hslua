@@ -101,51 +101,58 @@ instance ToLuaStack a => ToLuaStack [a] where
 class FromLuaStack a where
   -- | Check if at index @n@ there is a convertible Lua value and if so return
   -- it wrapped in @Just@. Return @Nothing@ otherwise.
-  peek :: StackIndex -> Lua (Maybe a)
+  peek :: StackIndex -> Lua (Result a)
 
 instance FromLuaStack LuaInteger where
-  peek = maybePeek isnumber tointeger
+  peek = tryPeek "number" isnumber tointeger
 
 instance FromLuaStack LuaNumber where
-  peek = maybePeek isnumber tonumber
+  peek = tryPeek "number" isnumber tonumber
 
 instance FromLuaStack Int where
-  peek = maybePeek isnumber (fmap fromIntegral . tointeger)
+  peek = tryPeek "number" isnumber (fmap fromIntegral . tointeger)
 
 instance FromLuaStack ByteString where
-  peek = maybePeek isstring tostring
+  peek = tryPeek "string" isstring tostring
 
 instance FromLuaStack Bool where
-  peek = maybePeek isboolean toboolean
+  peek = tryPeek "boolean" isboolean toboolean
 
 instance FromLuaStack (FunPtr LuaCFunction) where
-  peek = maybePeek iscfunction tocfunction
+  peek = tryPeek "C function" iscfunction tocfunction
 
 instance FromLuaStack (Ptr a) where
-  peek = maybePeek isuserdata touserdata
+  peek = tryPeek "user data" isuserdata touserdata
 
 instance FromLuaStack LuaState where
-  peek = maybePeek isthread tothread
+  peek = tryPeek "LuaState (i.e., a thread)" isthread tothread
 
 instance FromLuaStack a => FromLuaStack [a] where
   peek n = go . enumFromTo 1 =<< rawlen n
    where
-    go [] = return $ Just []
+    go [] = return $ Success []
     go (i : is) = do
       ret <- rawgeti n i *> peek (-1) <* pop 1
       case ret of
-        Nothing  -> return Nothing
-        Just val -> fmap (val:) <$> go is
+        Error err   -> return . Error $ "Could not read list: " <> err
+        Success val -> fmap (val:) <$> go is
 
--- | Use @test@ to check whether the value at stack index @n@ as the correct
--- type and use @peekfn@ to convert it to a haskell value if possible, or
--- returns @Nothing@ otherwise.
-maybePeek :: (n -> Lua Bool) -> (n -> Lua r) -> n -> Lua (Maybe r)
-maybePeek test peekfn n = do
+-- | Use @test@ to check whether the value at stack index @n@ has the correct
+-- type and use @peekfn@ to convert it to a haskell value if possible. A
+-- successfully received value is wrapped using the @'Success'@ constructor,
+-- while a type mismatch results in an @Error@ with the given error message.
+tryPeek :: String
+        -> (StackIndex -> Lua Bool)
+        -> (StackIndex -> Lua a)
+        -> StackIndex
+        -> Lua (Result a)
+tryPeek expectedType test peekfn n = do
   v <- test n
   if v
-    then Just <$> peekfn n
-    else return Nothing
+    then Success <$> peekfn n
+    else do
+      actual <- ltype n >>= typename
+      return . Error $ "Expected a " <> expectedType <> " but got a " <> actual
 
 class LuaImport a where
   luaimport' :: StackIndex -> a -> Lua CInt
@@ -171,8 +178,8 @@ instance (FromLuaStack a, LuaImport b) => LuaImport (a -> b) where
   luaimport' narg x = do
     arg <- peek narg
     case arg of
-      Just v -> luaimport' (narg + 1) (x v)
-      Nothing -> do
+      Success v -> luaimport' (narg + 1) (x v)
+      Error _ -> do
         t <- ltype narg
         got <- typename t
         luaimportargerror narg
@@ -230,7 +237,7 @@ instance LuaCallProc (Lua t) where
     z <- pcall k 0 0
     if z /= 0
       then do
-        Just msg <- peek (-1) <* pop 1
+        Success msg <- peek (-1) <* pop 1
         fail (BC.unpack msg)
       else return undefined
 
@@ -241,17 +248,17 @@ instance (FromLuaStack t) => LuaCallFunc (Lua t) where
     z <- pcall k 1 0
     if z /= 0
       then do
-        Just msg <- peek (-1)
+        Success msg <- peek (-1)
         pop 1
         fail (BC.unpack msg)
       else do
         r <- peek (-1)
         pop 1
         case r of
-          Just x -> return x
-          Nothing -> do
+          Success x -> return x
+          Error err -> do
             got <- typename =<< ltype (-1)
-            fail $ "Incorrect result type (got " <> got <> ")"
+            fail $ err <> " Incorrect result type (got " <> got <> ")"
 
 instance (ToLuaStack t, LuaCallProc b) => LuaCallProc (t -> b) where
     callproc' f a k x = callproc' f (a *> push x) (k+1)
@@ -268,14 +275,14 @@ foreign import ccall "&hsmethod__call" hsmethod__call_addr :: FunPtr LuaCFunctio
 
 hsmethod__gc :: LuaState -> IO CInt
 hsmethod__gc l = do
-  Just ptr <- runLuaWith l $ peek (-1)
+  Success ptr <- runLuaWith l $ peek (-1)
   stableptr <- F.peek (castPtr ptr)
   freeStablePtr stableptr
   return 0
 
 hsmethod__call :: LuaState -> IO CInt
 hsmethod__call l = do
-  Just ptr <- runLuaWith l $ peek 1 <* remove 1
+  Success ptr <- runLuaWith l $ peek 1 <* remove 1
   stableptr <- F.peek (castPtr ptr)
   f <- deRefStablePtr stableptr
   f l
