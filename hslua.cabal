@@ -198,13 +198,6 @@ test-suite test-hslua
   main-is:              test-hslua.hs
   hs-source-dirs:       test
   ghc-options:          -Wall -threaded
-  if flag(lua501) || flag(luajit)
-    cpp-options:        -DLUA_VERSION_NUMBER=501 -DLUA_VERSION_MAJORMINOR=5.1
-  else
-    if flag(lua502)
-      cpp-options:      -DLUA_VERSION_NUMBER=502 -DLUA_VERSION_MAJORMINOR=5.2
-    else
-      cpp-options:      -DLUA_VERSION_NUMBER=503 -DLUA_VERSION_MAJORMINOR=5.3
   other-modules:        HsLuaSpec
                       , Foreign.Lua.FunctionsSpec
                       , Foreign.Lua.InteropSpec

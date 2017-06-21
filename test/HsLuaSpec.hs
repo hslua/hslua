@@ -4,9 +4,7 @@ module HsLuaSpec (tests) where
 
 import Control.Monad
 import Data.ByteString (ByteString)
-import qualified Data.ByteString.Char8 as B
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as T
+import Foreign.Lua
 import System.Mem (performMajorGC)
 
 import Test.Tasty (TestTree, testGroup)
@@ -14,10 +12,12 @@ import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
 import Test.Tasty.QuickCheck (testProperty)
 import Test.QuickCheck hiding (Success)
 import Test.QuickCheck.Instances ()
-import qualified Test.QuickCheck.Monadic as QM
 
-import Foreign.Lua
+import qualified Data.ByteString.Char8 as B
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 import qualified Foreign.Lua as Lua
+import qualified Test.QuickCheck.Monadic as QM
 
 tests :: [TestTree]
 tests =
@@ -204,11 +204,10 @@ testOpenBase = (:[]) .
   testCase "openbase" $
   assertBool "loading base didn't push the expected number of tables" =<<
   (runLua $ do
-    openbase
     -- openbase returns one table in lua 5.2 and later, but two in 5.1
-#if LUA_VERSION_NUMBER >= 502
-    istable (-1)
-#else
-    (&&) <$> istable (-1) <*> istable (-2)
-#endif
-  )
+    openbase
+    Lua.getglobal "_VERSION"
+    Success version <- peek (-1) <* pop 1
+    if version == ("Lua 5.1" :: ByteString)
+      then liftM2 (&&) (istable (-1)) (istable (-2))
+      else istable (-1))
