@@ -207,6 +207,7 @@ test-suite test
       cpp-options:      -DLUA_VERSION_NUMBER=503 -DLUA_VERSION_MAJORMINOR=5.3
   other-modules:        HsLuaSpec
                       , Foreign.Lua.FunctionsSpec
+                      , Foreign.Lua.InteropSpec
   build-depends:
     base,
     bytestring,
