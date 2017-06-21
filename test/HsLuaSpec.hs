@@ -1,5 +1,6 @@
 {-# LANGUAGE CPP #-}
-module HsLuaSpec where
+{-# LANGUAGE OverloadedStrings #-}
+module HsLuaSpec (tests) where
 
 import Control.Monad
 import Data.ByteString (ByteString)
@@ -8,10 +9,9 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import System.Mem (performMajorGC)
 
-import Test.Hspec
-import Test.Hspec.Contrib.HUnit
-import Test.HUnit
-
+import Test.Tasty (TestTree, testGroup)
+import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
+import Test.Tasty.QuickCheck (testProperty)
 import Test.QuickCheck hiding (Success)
 import Test.QuickCheck.Instances ()
 import qualified Test.QuickCheck.Monadic as QM
@@ -19,42 +19,52 @@ import qualified Test.QuickCheck.Monadic as QM
 import Foreign.Lua
 import qualified Foreign.Lua as Lua
 
-main :: IO ()
-main = hspec spec
+tests :: [TestTree]
+tests =
+  [ testGroup "StackValue"
+    [ bytestring
+    , bsShouldLive
+    , listInstance
+    , nulString
+    ]
+  , testGroup "Random StackValues"
+    [ testProperty "can push/pop booleans" prop_bool
+    , testProperty "can push/pop ints" prop_int
+    , testProperty "can push/pop doubles" prop_double
+    , testProperty "can push/pop bytestrings" prop_bytestring
+    , testProperty "can push/pop lists of booleans" prop_lists_bool
+    , testProperty "can push/pop lists of ints" prop_lists_int
+    , testProperty "can push/pop lists of bytestrings" prop_lists_bytestring
+    ]
+  , testGroup "Operations"
+    [ testGroup "compare"
+      [ testProperty "identifies strictly smaller values" $ compareWith (<) OpLT
+      , testProperty "identifies smaller or equal values" $ compareWith (<=) OpLE
+      , testProperty "identifies equal values" $ compareWith (==) OpEQ
+      ]
+    ]
+  , testGroup "luaopen_* functions" $ map (uncurry testOpen)
+    [ ("debug", opendebug)
+    , ("io", openio)
+    , ("math", openmath)
+    , ("os", openos)
+    , ("package", openpackage)
+    , ("string", openstring)
+    , ("table", opentable)
+    ]
+  , testGroup "luaopen_base returns the right number of tables" testOpenBase
+  ]
 
-spec :: Spec
-spec = do
-    describe "StackValue" $ mapM_ fromHUnitTest
-      [bytestring, bsShouldLive, listInstance, nulString]
-    describe "Random StackValues" $ do
-      it "can push/pop booleans" $ property prop_bool
-      it "can push/pop ints" $ property prop_int
-      it "can push/pop doubles" $ property prop_double
-      it "can push/pop bytestrings" $ property prop_bytestring
-      it "can push/pop lists of booleans" $ property prop_lists_bool
-      it "can push/pop lists of ints" $ property prop_lists_int
-      it "can push/pop lists of bytestrings" $ property prop_lists_bytestring
-    describe "Operations" $
-      describe "compare" $ do
-        it "identifies strictly smaller values" . property $ compareWith (<) OpLT
-        it "identifies smaller or equal values" . property $ compareWith (<=) OpLE
-        it "identifies equal values" . property $ compareWith (==) OpEQ
-    describe "luaopen_* functions" $ mapM_ (fromHUnitTest . uncurry testOpen)
-      [ ("table", opentable), ("io", openio), ("os", openos),
-        ("string", openstring), ("math", openmath), ("debug", opendebug),
-        ("package", openpackage) ]
-    describe "luaopen_base returns two tables" . fromHUnitTest $ testOpenBase
-
-bytestring :: Test
-bytestring = TestLabel "ByteString -- unicode stuff" $ TestCase $ do
+bytestring :: TestTree
+bytestring = testCase "ByteString -- unicode stuff" $ do
   let val = T.pack "öçşiğüİĞı"
   val' <- runLua $ do
     pushstring (T.encodeUtf8 val)
     T.decodeUtf8 `fmap` tostring 1
   assertEqual "Popped a different value or pop failed" val val'
 
-bsShouldLive :: Test
-bsShouldLive = TestLabel "ByteString should survive after GC/Lua destroyed" $ TestCase $ do
+bsShouldLive :: TestTree
+bsShouldLive = testCase "ByteString should survive after GC/Lua destroyed" $ do
   (val, val') <- runLua $ do
     let val = B.pack "ByteString should survive"
     pushstring val
@@ -64,27 +74,27 @@ bsShouldLive = TestLabel "ByteString should survive after GC/Lua destroyed" $ Te
   performMajorGC
   assertEqual "Popped a different value or pop failed" val val'
 
-listInstance :: Test
-listInstance = TestLabel "Push/pop StackValue lists" $ TestCase $ do
-    let lst = [B.pack "first", B.pack "second"]
-    runLua $ do
-      push lst
-      setglobal "mylist"
-      size0 <- gettop
-      liftIO $ assertEqual
-        "After pushing the list and assigning to a variable, stack is not empty"
-        0 size0
-      getglobal "mylist"
-      size1 <- gettop
-      liftIO $ assertEqual "`getglobal` pushed more than one value to the stack" 1 size1
-      lst' <- peek 1
-      size2 <- gettop
-      liftIO $ assertEqual "`tolist` left stuff on the stack" size1 size2
-      liftIO $ assertEqual "Popped a different list or pop failed" (Success lst) lst'
+listInstance :: TestTree
+listInstance = testCase "Push/pop StackValue lists" $ do
+  let lst = [B.pack "first", B.pack "second"]
+  runLua $ do
+    push lst
+    setglobal "mylist"
+    size0 <- gettop
+    liftIO $ assertEqual
+      "After pushing the list and assigning to a variable, stack is not empty"
+      0 size0
+    getglobal "mylist"
+    size1 <- gettop
+    liftIO $ assertEqual "`getglobal` pushed more than one value to the stack" 1 size1
+    lst' <- peek 1
+    size2 <- gettop
+    liftIO $ assertEqual "`tolist` left stuff on the stack" size1 size2
+    liftIO $ assertEqual "Popped a different list or pop failed" (Success lst) lst'
 
-nulString :: Test
+nulString :: TestTree
 nulString =
-  TestLabel "String with NUL byte should be pushed/popped correctly" $ TestCase $ do
+  testCase "String with NUL byte should be pushed/popped correctly" $ do
   let str = "A\NULB"
   str' <- runLua $ do
     pushstring (B.pack str)
@@ -184,17 +194,21 @@ testStackValueInstance t = QM.monadicIO $ do
 --------------------------------------------------------------------------------
 -- luaopen_* functions
 
-testOpen :: String -> Lua () -> Test
-testOpen lib openfn = TestLabel ("open" ++ lib) . TestCase . assert . runLua $ do
-  openfn
-  istable (-1)
+testOpen :: String -> Lua () -> TestTree
+testOpen lib openfn = testCase ("open" ++ lib) $
+  assertBool "opening the library failed" =<<
+  runLua (openfn *> istable (-1))
 
-testOpenBase :: Test
-testOpenBase = TestLabel "openbase" . TestCase . assert . runLua $ do
+testOpenBase :: [TestTree]
+testOpenBase = (:[]) .
+  testCase "openbase" $
+  assertBool "loading base didn't push the expected number of tables" =<<
+  (runLua $ do
     openbase
-    -- openbase returns one table in lua 5.2 and later
+    -- openbase returns one table in lua 5.2 and later, but two in 5.1
 #if LUA_VERSION_NUMBER >= 502
     istable (-1)
 #else
-    liftM2 (&&) (istable (-1)) (istable (-2))
+    (&&) <$> istable (-1) <*> istable (-2)
 #endif
+  )

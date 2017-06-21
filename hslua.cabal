@@ -193,9 +193,9 @@ test-suite err_prop
      hs-source-dirs:    prelude
      other-modules:     Prelude
 
-test-suite test
+test-suite test-hslua
   type:                 exitcode-stdio-1.0
-  main-is:              Spec.hs
+  main-is:              test-hslua.hs
   hs-source-dirs:       test
   ghc-options:          -Wall -threaded
   if flag(lua501) || flag(luajit)
@@ -208,17 +208,17 @@ test-suite test
   other-modules:        HsLuaSpec
                       , Foreign.Lua.FunctionsSpec
                       , Foreign.Lua.InteropSpec
-  build-depends:
-    base,
-    bytestring,
-    hslua,
-    mtl,
-    hspec,
-    hspec-contrib,
-    HUnit,
-    text,
-    QuickCheck >= 2.7,
-    quickcheck-instances
+  build-depends:        base
+                      , QuickCheck >= 2.7
+                      , bytestring
+                      , hslua
+                      , hspec
+                      , quickcheck-instances
+                      , tasty
+                      , tasty-hspec
+                      , tasty-hunit
+                      , tasty-quickcheck
+                      , text
   if impl(ghc < 7.10)
      hs-source-dirs:    prelude
      other-modules:     Prelude
