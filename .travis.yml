@@ -56,7 +56,11 @@ install:
 
 script:
   - CABAL_CONFIG_ARGS=""
-  - if [ -n "${COVERAGE}" ]; then CABAL_CONFIG_ARGS="--enable-library-coverage"; fi
+  - |
+    # Enable coverage testing for the main repo only as it will fail otherwise.
+    if [ -n "${COVERAGE}" ] && [ "${TRAVIS_REPO_SLUG}" = "osa1/hslua" ]; then
+        CABAL_CONFIG_ARGS="--enable-library-coverage";
+    fi
   - |
     case "$LUAVER" in
       (lua-5*):
@@ -110,7 +114,7 @@ script:
 after_success:
   - set -e
   - set -x
-  - if [ -n "${COVERAGE}" ]; then
+  - if [ -n "${COVERAGE}" ] && [ "${TRAVIS_REPO_SLUG}" = "osa1/hslua" ]; then
       cabal install --disable-optimization hpc-coveralls;
       hpc-coveralls simple-test callbacks haskellfun err_prop test;
     fi
