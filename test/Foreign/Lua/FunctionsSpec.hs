@@ -30,33 +30,28 @@ Portability :  portable
 
 Tests for lua C API-like functions
 -}
-module Foreign.Lua.FunctionsSpec
-  ( main
-  , spec
-  ) where
+module Foreign.Lua.FunctionsSpec (tests) where
 
 import Control.Monad (forM_)
 import Foreign.Lua.Functions
 import Foreign.Lua.Interop (push)
+import Test.Tasty (TestTree, testGroup)
+import Test.Tasty.HUnit (assertBool, testCase)
 
-import Test.Hspec
-
--- | Run this spec.
-main :: IO ()
-main = hspec spec
 
 -- | Specifications for Attributes parsing functions.
-spec :: Spec
-spec =
-  describe "copy" $
-    it "copies a stack element to another input" $ do
-      flip shouldBe True =<<
+tests :: TestTree
+tests = testGroup "copy"
+  [ testCase "copies stack elements using positive indices" $
+      assertBool "copied element should be equal to original" =<<
         runLua (do
           forM_ [1..5::Int] $ \n -> push n
           copy 4 3
           rawequal 4 3)
-      flip shouldBe True =<<
+  , testCase "copies stack elements using negative indices" $
+      assertBool "copied element should be equal to original" =<<
         runLua (do
           forM_ [1..5::Int] $ \n -> push n
           copy (-1) (-3)
           rawequal (-1) (-3))
+  ]

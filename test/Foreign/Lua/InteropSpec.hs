@@ -30,34 +30,28 @@ Portability :  portable
 
 Test for the interoperability between haskell and lua.
 -}
-module Foreign.Lua.InteropSpec
-  ( main
-  , spec
-  ) where
+module Foreign.Lua.InteropSpec (tests) where
 
 import Foreign.Lua.Functions
 import Foreign.Lua.Interop (peek)
 
-import Test.Hspec
-
--- | Run this spec.
-main :: IO ()
-main = hspec spec
+import Test.Tasty (TestTree, testGroup)
+import Test.Tasty.HUnit (assertEqual, testCase)
 
 -- | Specifications for Attributes parsing functions.
-spec :: Spec
-spec =
-  describe "FromLuaStack" $ do
-    it "receives basic values from the stack" $ do
-      flip shouldBe (Success True) =<< runLua
+tests :: TestTree
+tests = testGroup "FromLuaStack"
+  [ testCase "receives basic values from the stack" $ do
+      assertEqual "true was not read" (Success True) =<< runLua
         (loadstring "return true" *> call 0 1 *> peek (-1))
-      flip shouldBe (Success (5 :: LuaInteger)) =<< runLua
+      assertEqual "5 was not read" (Success (5 :: LuaInteger)) =<< runLua
         (loadstring "return 5" *> call 0 1 *> peek (-1))
 
-    it "returns an error if the types don't match" $ do
+  , testCase "returns an error if the types don't match" $ do
       let boolNum = "Expected a boolean but got a number"
-      flip shouldBe (Error boolNum) =<< runLua
+      assertEqual "error messsage mismatched" (Error boolNum) =<< runLua
         (loadstring "return 5" *> call 0 1 *> peek (-1) :: Lua (Result Bool))
       let numBool = "Expected a number but got a boolean"
-      flip shouldBe (Error numBool) =<< runLua
+      assertEqual "error message mismatched" (Error numBool) =<< runLua
         (loadstring "return true" *> call 0 1 *> peek (-1) :: Lua (Result Int))
+  ]

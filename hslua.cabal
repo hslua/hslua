@@ -205,10 +205,8 @@ test-suite test-hslua
                       , QuickCheck >= 2.7
                       , bytestring
                       , hslua
-                      , hspec
                       , quickcheck-instances
                       , tasty
-                      , tasty-hspec
                       , tasty-hunit
                       , tasty-quickcheck
                       , text

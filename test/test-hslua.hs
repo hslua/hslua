@@ -20,18 +20,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
 import Test.Tasty (TestTree, defaultMain, testGroup)
-import Test.Tasty.Hspec (testSpec)
 
 import qualified Foreign.Lua.FunctionsSpec
 import qualified Foreign.Lua.InteropSpec
 import qualified HsLuaSpec
 
 main :: IO ()
-main = defaultMain . testGroup "hslua" . (HsLuaSpec.tests ++) =<< specs
+main = defaultMain $ testGroup "hslua" tests
 
 -- | HSpec tests
-specs :: IO [TestTree]
-specs = mapM (uncurry testSpec)
-  [ ("Monadic functions", Foreign.Lua.FunctionsSpec.spec)
-  , ("Interoperability", Foreign.Lua.InteropSpec.spec)
+tests :: [TestTree]
+tests =
+  [ testGroup "Base tests" HsLuaSpec.tests
+  , testGroup "Monadic functions" [Foreign.Lua.FunctionsSpec.tests]
+  , testGroup "Interoperability" [Foreign.Lua.InteropSpec.tests]
   ]
