@@ -224,4 +224,3 @@ instance Alternative Result where
   empty = fail "empty was called"
   a@(Success _) <|> _ = a
   _             <|> b = b
-

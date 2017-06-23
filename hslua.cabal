@@ -199,8 +199,8 @@ test-suite test-hslua
   hs-source-dirs:       test
   ghc-options:          -Wall -threaded
   other-modules:        HsLuaSpec
-                      , Foreign.Lua.FunctionsSpec
-                      , Foreign.Lua.InteropSpec
+                      , Foreign.Lua.FunctionsTest
+                      , Foreign.Lua.InteropTest
   build-depends:        base
                       , QuickCheck >= 2.7
                       , bytestring

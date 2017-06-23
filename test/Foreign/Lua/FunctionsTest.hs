@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
 {-|
-Module      :  Foreign.Lua.InteropSpec
+Module      :  Foreign.Lua.FunctionsTest
 Copyright   :  © 2017 Albert Krewinkel
 License     :  MIT
 
@@ -28,30 +28,30 @@ Maintainer  :  Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   :  stable
 Portability :  portable
 
-Test for the interoperability between haskell and lua.
+Tests for lua C API-like functions
 -}
-module Foreign.Lua.InteropSpec (tests) where
+module Foreign.Lua.FunctionsTest (tests) where
 
+import Control.Monad (forM_)
 import Foreign.Lua.Functions
-import Foreign.Lua.Interop (peek)
-
+import Foreign.Lua.Interop (push)
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit (assertEqual, testCase)
+import Test.Tasty.HUnit (assertBool, testCase)
+
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
-tests = testGroup "FromLuaStack"
-  [ testCase "receives basic values from the stack" $ do
-      assertEqual "true was not read" (Success True) =<< runLua
-        (loadstring "return true" *> call 0 1 *> peek (-1))
-      assertEqual "5 was not read" (Success (5 :: LuaInteger)) =<< runLua
-        (loadstring "return 5" *> call 0 1 *> peek (-1))
-
-  , testCase "returns an error if the types don't match" $ do
-      let boolNum = "Expected a boolean but got a number"
-      assertEqual "error messsage mismatched" (Error boolNum) =<< runLua
-        (loadstring "return 5" *> call 0 1 *> peek (-1) :: Lua (Result Bool))
-      let numBool = "Expected a number but got a boolean"
-      assertEqual "error message mismatched" (Error numBool) =<< runLua
-        (loadstring "return true" *> call 0 1 *> peek (-1) :: Lua (Result Int))
+tests = testGroup "copy"
+  [ testCase "copies stack elements using positive indices" $
+      assertBool "copied element should be equal to original" =<<
+        runLua (do
+          forM_ [1..5::Int] $ \n -> push n
+          copy 4 3
+          rawequal 4 3)
+  , testCase "copies stack elements using negative indices" $
+      assertBool "copied element should be equal to original" =<<
+        runLua (do
+          forM_ [1..5::Int] $ \n -> push n
+          copy (-1) (-3)
+          rawequal (-1) (-3))
   ]

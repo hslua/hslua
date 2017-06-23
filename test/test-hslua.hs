@@ -21,8 +21,8 @@ THE SOFTWARE.
 -}
 import Test.Tasty (TestTree, defaultMain, testGroup)
 
-import qualified Foreign.Lua.FunctionsSpec
-import qualified Foreign.Lua.InteropSpec
+import qualified Foreign.Lua.FunctionsTest
+import qualified Foreign.Lua.InteropTest
 import qualified HsLuaSpec
 
 main :: IO ()
@@ -32,6 +32,6 @@ main = defaultMain $ testGroup "hslua" tests
 tests :: [TestTree]
 tests =
   [ testGroup "Base tests" HsLuaSpec.tests
-  , testGroup "Monadic functions" [Foreign.Lua.FunctionsSpec.tests]
-  , testGroup "Interoperability" [Foreign.Lua.InteropSpec.tests]
+  , testGroup "Monadic functions" [Foreign.Lua.FunctionsTest.tests]
+  , testGroup "Interoperability" [Foreign.Lua.InteropTest.tests]
   ]
