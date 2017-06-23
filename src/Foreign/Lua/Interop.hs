@@ -66,15 +66,15 @@ class LuaImport a where
   luaimport' :: StackIndex -> a -> Lua CInt
   luaimportargerror :: StackIndex -> String -> a -> Lua CInt
 
-instance (FromLuaStack a, ToLuaStack a) => LuaImport (IO a) where
+instance ToLuaStack a => LuaImport (IO a) where
   luaimportargerror n msg x = luaimportargerror n msg (liftIO x :: Lua a)
   luaimport' narg x = luaimport' narg (liftIO x :: Lua a)
 
-instance (FromLuaStack a, ToLuaStack a) => LuaImport (LuaState -> IO a) where
+instance ToLuaStack a => LuaImport (LuaState -> IO a) where
   luaimportargerror n msg = luaimportargerror n msg . liftLua
   luaimport' narg = luaimport' narg . liftLua
 
-instance (FromLuaStack a, ToLuaStack a) => LuaImport (Lua a) where
+instance ToLuaStack a => LuaImport (Lua a) where
   luaimportargerror _n msg _x = do
     -- TODO: maybe improve the error message
     pushstring $ BC.pack msg
