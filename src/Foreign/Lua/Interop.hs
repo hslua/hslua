@@ -50,109 +50,17 @@ module Foreign.Lua.Interop
   , registerrawhsfunction
   ) where
 
-import Control.Monad (when, zipWithM_)
-import Data.ByteString (ByteString)
+import Control.Monad (when)
 import Data.Monoid ((<>))
 import Foreign.C (CInt (..))
 import Foreign.Lua.Functions
-import Foreign.Ptr (FunPtr, Ptr, castPtr, freeHaskellFunPtr)
+import Foreign.Lua.Types.FromLuaStack
+import Foreign.Lua.Types.ToLuaStack
+import Foreign.Ptr (FunPtr, castPtr, freeHaskellFunPtr)
 import Foreign.StablePtr (deRefStablePtr, freeStablePtr, newStablePtr)
 
 import qualified Data.ByteString.Char8 as BC
 import qualified Foreign.Storable as F
-
--- | A value that can be pushed to the Lua stack.
-class ToLuaStack a where
-  -- | Pushes a value onto Lua stack, casting it into meaningfully nearest Lua
-  -- type.
-  push :: a -> Lua ()
-
-instance ToLuaStack LuaInteger where
-  push = pushinteger
-
-instance ToLuaStack LuaNumber where
-  push = pushnumber
-
-instance ToLuaStack Int where
-  push = pushinteger . fromIntegral
-
-instance ToLuaStack ByteString where
-  push = pushstring
-
-instance ToLuaStack Bool where
-  push = pushboolean
-
-instance ToLuaStack (FunPtr LuaCFunction) where
-  push = pushcfunction
-
-instance ToLuaStack (Ptr a) where
-  push = pushlightuserdata
-
-instance ToLuaStack () where
-  push _ = pushnil
-
-instance ToLuaStack a => ToLuaStack [a] where
-  push xs = do
-    let setField i x = push x *> rawseti (-2) i
-    newtable
-    zipWithM_ setField [1..] xs
-
--- | A value that can be read from the Lua stack.
-class FromLuaStack a where
-  -- | Check if at index @n@ there is a convertible Lua value and if so return
-  -- it wrapped in @Just@. Return @Nothing@ otherwise.
-  peek :: StackIndex -> Lua (Result a)
-
-instance FromLuaStack LuaInteger where
-  peek = tryPeek "number" isnumber tointeger
-
-instance FromLuaStack LuaNumber where
-  peek = tryPeek "number" isnumber tonumber
-
-instance FromLuaStack Int where
-  peek = tryPeek "number" isnumber (fmap fromIntegral . tointeger)
-
-instance FromLuaStack ByteString where
-  peek = tryPeek "string" isstring tostring
-
-instance FromLuaStack Bool where
-  peek = tryPeek "boolean" isboolean toboolean
-
-instance FromLuaStack (FunPtr LuaCFunction) where
-  peek = tryPeek "C function" iscfunction tocfunction
-
-instance FromLuaStack (Ptr a) where
-  peek = tryPeek "user data" isuserdata touserdata
-
-instance FromLuaStack LuaState where
-  peek = tryPeek "LuaState (i.e., a thread)" isthread tothread
-
-instance FromLuaStack a => FromLuaStack [a] where
-  peek n = go . enumFromTo 1 =<< rawlen n
-   where
-    go [] = return $ Success []
-    go (i : is) = do
-      ret <- rawgeti n i *> peek (-1) <* pop 1
-      case ret of
-        Error err   -> return . Error $ "Could not read list: " <> err
-        Success val -> fmap (val:) <$> go is
-
--- | Use @test@ to check whether the value at stack index @n@ has the correct
--- type and use @peekfn@ to convert it to a haskell value if possible. A
--- successfully received value is wrapped using the @'Success'@ constructor,
--- while a type mismatch results in an @Error@ with the given error message.
-tryPeek :: String
-        -> (StackIndex -> Lua Bool)
-        -> (StackIndex -> Lua a)
-        -> StackIndex
-        -> Lua (Result a)
-tryPeek expectedType test peekfn n = do
-  v <- test n
-  if v
-    then Success <$> peekfn n
-    else do
-      actual <- ltype n >>= typename
-      return . Error $ "Expected a " <> expectedType <> " but got a " <> actual
 
 class LuaImport a where
   luaimport' :: StackIndex -> a -> Lua CInt
