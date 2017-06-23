@@ -116,5 +116,5 @@ after_success:
   - set -x
   - if [ -n "${COVERAGE}" ] && [ "${TRAVIS_REPO_SLUG}" = "osa1/hslua" ]; then
       cabal install --disable-optimization hpc-coveralls;
-      hpc-coveralls simple-test callbacks haskellfun err_prop test;
+      hpc-coveralls simple-test callbacks haskellfun err_prop test-hslua;
     fi
