@@ -203,7 +203,7 @@ test-suite test-hslua
   ghc-options:          -Wall -threaded
   other-modules:        HsLuaSpec
                       , Foreign.Lua.FunctionsTest
-                      , Foreign.Lua.InteropTest
+                      , Foreign.Lua.Types.FromLuaStackTest
                       , Foreign.Lua.Types.ToLuaStackTest
   build-depends:        base
                       , QuickCheck >= 2.7

@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
 {-|
-Module      :  Foreign.Lua.InteropTest
+Module      :  Foreign.Lua.Types.FromLuaStackTest
 Copyright   :  © 2017 Albert Krewinkel
 License     :  MIT
 
@@ -28,12 +28,13 @@ Maintainer  :  Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   :  stable
 Portability :  portable
 
-Test for the interoperability between haskell and lua.
+Test for the conversion of lua values to haskell values.
 -}
-module Foreign.Lua.InteropTest (tests) where
+module Foreign.Lua.Types.FromLuaStackTest (tests) where
 
-import Foreign.Lua.Types.FromLuaStack (Result (..), peek)
-import Foreign.Lua.Functions
+import Foreign.Lua.Types.Core (Lua, LuaInteger)
+import Foreign.Lua.Types.FromLuaStack
+import Foreign.Lua.Functions (call, loadstring, runLua)
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
