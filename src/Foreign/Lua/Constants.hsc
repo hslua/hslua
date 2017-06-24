@@ -44,7 +44,7 @@ module Foreign.Lua.Constants
 #endif
   ) where
 
-import Foreign.Lua.Types
+import Foreign.Lua.Types.Core
 
 #include "lua.h"
 

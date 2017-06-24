@@ -40,10 +40,14 @@ module Foreign.Lua.Types.FromLuaStack
   , Result (..)
   ) where
 
+import Control.Applicative (Alternative (..))
+import Control.Monad (MonadPlus (..), ap)
 import Data.ByteString (ByteString)
 import Data.Monoid ((<>))
 import Foreign.Lua.Functions
 import Foreign.Ptr (FunPtr, Ptr)
+
+import qualified Control.Monad.Fail as Fail
 
 -- | Result returned when trying to get a value from the lua stack.
 data Result a

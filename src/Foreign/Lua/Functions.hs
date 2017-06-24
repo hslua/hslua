@@ -37,7 +37,7 @@ Monadic functions which operate within the Lua type.
 -}
 module Foreign.Lua.Functions
   ( module Foreign.Lua.Constants
-  , module Foreign.Lua.Types
+  , module Foreign.Lua.Types.Core
   , liftLua
   , argerror
   , atpanic
@@ -143,7 +143,7 @@ import Data.IORef
 import Foreign.C
 import Foreign.Lua.Constants
 import Foreign.Lua.RawBindings
-import Foreign.Lua.Types
+import Foreign.Lua.Types.Core
 import Foreign.Marshal.Alloc
 import Foreign.Ptr
 

@@ -32,8 +32,8 @@ Test for the interoperability between haskell and lua.
 -}
 module Foreign.Lua.InteropTest (tests) where
 
+import Foreign.Lua.Types.FromLuaStack (Result (..), peek)
 import Foreign.Lua.Functions
-import Foreign.Lua.Interop (peek)
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)

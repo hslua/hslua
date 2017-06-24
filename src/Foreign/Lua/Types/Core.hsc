@@ -26,7 +26,7 @@ THE SOFTWARE.
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE StandaloneDeriving         #-}
 {-|
-Module      : Foreign.Lua.Types
+Module      : Foreign.Lua.Types.Core
 Copyright   : © 2007–2012 Gracjan Polak,
                 2012–2016 Ömer Sinan Ağacan,
                 2017 Albert Krewinkel
@@ -35,9 +35,9 @@ Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta
 Portability : ForeignFunctionInterface, GeneralizedNewtypeDeriving
 
-Mapping of Lua types to Haskell.
+The core Lua types, including mappings of Lua types to Haskell.
 -}
-module Foreign.Lua.Types (
+module Foreign.Lua.Types.Core (
     GCCONTROL
   , LTYPE (..)
   , LuaState (..)
@@ -61,13 +61,10 @@ module Foreign.Lua.Types (
   , LuaComparerOp (..)
   ) where
 
-import Control.Applicative (Alternative (..))
-import Control.Monad (MonadPlus (..), ap)
 import Control.Monad.Reader (ReaderT (..), MonadReader, MonadIO, ask, liftIO)
 import Data.Int
 import Foreign.C
 import Foreign.Ptr
-import qualified Control.Monad.Fail as Fail
 
 #include "lua.h"
 

@@ -66,6 +66,7 @@ library
                       , Foreign.Lua.Interop
                       , Foreign.Lua.RawBindings
                       , Foreign.Lua.Types
+                      , Foreign.Lua.Types.Core
                       , Foreign.Lua.Types.FromLuaStack
                       , Foreign.Lua.Types.ToLuaStack
   hs-source-dirs:       src
