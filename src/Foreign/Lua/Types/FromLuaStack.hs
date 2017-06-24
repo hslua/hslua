@@ -37,12 +37,47 @@ Sending haskell objects to the lua stack.
 -}
 module Foreign.Lua.Types.FromLuaStack
   ( FromLuaStack (..)
+  , Result (..)
   ) where
 
 import Data.ByteString (ByteString)
 import Data.Monoid ((<>))
 import Foreign.Lua.Functions
 import Foreign.Ptr (FunPtr, Ptr)
+
+-- | Result returned when trying to get a value from the lua stack.
+data Result a
+  = Error String
+  | Success a
+  deriving (Eq, Ord, Show)
+
+instance Functor Result where
+  fmap f (Success a) = Success (f a)
+  fmap _ (Error err) = Error err
+
+instance Applicative Result where
+  pure  = Success
+  (<*>) = ap
+
+instance Monad Result where
+  fail = Fail.fail
+  return = pure
+
+  Success x >>= k = k x
+  Error err >>= _ = Error err
+
+instance Fail.MonadFail Result where
+  fail = Error
+
+instance MonadPlus Result where
+  mzero = empty
+  mplus = (<|>)
+
+instance Alternative Result where
+  empty = fail "empty was called"
+  a@(Success _) <|> _ = a
+  _             <|> b = b
+
 
 -- | A value that can be read from the Lua stack.
 class FromLuaStack a where

@@ -45,7 +45,6 @@ module Foreign.Lua.Types (
   , runLuaWith
   , luaState
   , liftIO
-  , Result (..)
   -- Function type synonymes
   , LuaAlloc
   , LuaCFunction
@@ -190,37 +189,3 @@ newtype NumArgs = NumArgs { fromNumArgs :: CInt }
 -- | The number of results returned by a function call.
 newtype NumResults = NumResults { fromNumResults :: CInt }
   deriving (Enum, Eq, Integral, Num, Ord, Real, Show)
-
--- | Result of a lua operation.
-data Result a
-  = Error String
-  | Success a
-  deriving (Eq, Ord, Show)
-
-instance Functor Result where
-  fmap f (Success a) = Success (f a)
-  fmap _ (Error err) = Error err
-
-instance Applicative Result where
-  pure  = Success
-  (<*>) = ap
-
-instance Monad Result where
-  fail = Fail.fail
-  return = pure
-
-  Success x >>= k = k x
-  Error err >>= _ = Error err
-
-
-instance Fail.MonadFail Result where
-  fail = Error
-
-instance MonadPlus Result where
-  mzero = empty
-  mplus = (<|>)
-
-instance Alternative Result where
-  empty = fail "empty was called"
-  a@(Success _) <|> _ = a
-  _             <|> b = b
