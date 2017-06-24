@@ -22,6 +22,7 @@ THE SOFTWARE.
 import Test.Tasty (TestTree, defaultMain, testGroup)
 
 import qualified Foreign.Lua.FunctionsTest
+import qualified Foreign.Lua.TypesTest
 import qualified Foreign.Lua.Types.FromLuaStackTest
 import qualified Foreign.Lua.Types.ToLuaStackTest
 import qualified HsLuaSpec
@@ -34,6 +35,9 @@ tests :: [TestTree]
 tests =
   [ testGroup "Base tests" HsLuaSpec.tests
   , testGroup "Monadic functions" [Foreign.Lua.FunctionsTest.tests]
-  , Foreign.Lua.Types.FromLuaStackTest.tests
-  , Foreign.Lua.Types.ToLuaStackTest.tests
+  , testGroup "Sendings and receiving values from the stack"
+    [ Foreign.Lua.TypesTest.tests
+    , Foreign.Lua.Types.FromLuaStackTest.tests
+    , Foreign.Lua.Types.ToLuaStackTest.tests
+    ]
   ]
