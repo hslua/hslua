@@ -41,7 +41,7 @@ import Test.QuickCheck hiding (Result (..))
 import Test.QuickCheck.Function (Fun (..))
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
-import Test.Tasty.QuickCheck (testProperty, (.&&.))
+import Test.Tasty.QuickCheck (testProperty)
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
