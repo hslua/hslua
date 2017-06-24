@@ -32,12 +32,16 @@ Test for the conversion of lua values to haskell values.
 -}
 module Foreign.Lua.Types.FromLuaStackTest (tests) where
 
+import Control.Applicative (empty, (<|>))
 import Foreign.Lua.Types.Core (Lua, LuaInteger)
 import Foreign.Lua.Types.FromLuaStack
 import Foreign.Lua.Functions (call, loadstring, runLua)
 
+import Test.QuickCheck hiding (Result (..))
+import Test.QuickCheck.Function (Fun (..))
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
+import Test.Tasty.QuickCheck (testProperty, (.&&.))
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
@@ -55,4 +59,32 @@ tests = testGroup "FromLuaStack"
       let numBool = "Expected a number but got a boolean"
       assertEqual "error message mismatched" (Error numBool) =<< runLua
         (loadstring "return true" *> call 0 1 *> peek (-1) :: Lua (Result Int))
+
+  , testGroup "Result instances"
+    [ testProperty "Result instance follows the functor laws" $
+        prop_functorId . (Success :: Int -> Result Int)
+        .&&. prop_functorId . (Error :: String -> Result Int)
+        .&&. (prop_functorComposition . Success
+              :: Int -> Fun Int Double -> Fun Double Char -> Property)
+        .&&. (prop_functorComposition . Error
+              :: String -> Fun Int Double -> Fun Double Char -> Property)
+
+    , testGroup "Alternative"
+      [ testProperty "Second arg is not evaluated if the first succeeded" $
+        property (\x -> Success (x::Int) == (Success x <|> error "This is wrong"))
+
+      , testProperty "Alternative is the second value if first is empty" $
+        property (\x -> Success (x::Int) == (empty <|> Success x))
+      ]
+    ]
   ]
+
+-- | Test that a functor maps id to id.
+prop_functorId :: (Functor f, Eq (f a)) => f a -> Property
+prop_functorId x = property $ (fmap id x) == x
+
+-- | Test that the functor composition law holds.
+prop_functorComposition :: (Functor f, Eq (f c))
+                        => f a -> Fun a b -> Fun b c -> Property
+prop_functorComposition x (Fun _ f) (Fun _ g) = property $
+  (fmap (g . f) x) == (fmap g . fmap f $ x)
