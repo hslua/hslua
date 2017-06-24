@@ -203,6 +203,7 @@ test-suite test-hslua
   other-modules:        HsLuaSpec
                       , Foreign.Lua.FunctionsTest
                       , Foreign.Lua.InteropTest
+                      , Foreign.Lua.Types.ToLuaStackTest
   build-depends:        base
                       , QuickCheck >= 2.7
                       , bytestring
