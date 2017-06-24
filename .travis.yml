@@ -53,6 +53,9 @@ install:
   - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
   - echo "$(cabal --version)"
   - cabal install --only-dependencies --enable-tests --disable-optimization
+  - if [ -n "${COVERAGE}" ] && [ "${TRAVIS_REPO_SLUG}" = "osa1/hslua" ]; then
+      cabal install --disable-optimization hpc-coveralls;
+    fi
 
 script:
   - CABAL_CONFIG_ARGS=""
@@ -115,6 +118,5 @@ after_success:
   - set -e
   - set -x
   - if [ -n "${COVERAGE}" ] && [ "${TRAVIS_REPO_SLUG}" = "osa1/hslua" ]; then
-      cabal install --disable-optimization hpc-coveralls;
       hpc-coveralls simple-test callbacks haskellfun err_prop test-hslua;
     fi
