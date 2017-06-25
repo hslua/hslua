@@ -34,7 +34,7 @@ main = defaultMain $ testGroup "hslua" tests
 tests :: [TestTree]
 tests =
   [ testGroup "Base tests" HsLuaSpec.tests
-  , testGroup "Monadic functions" [Foreign.Lua.FunctionsTest.tests]
+  , Foreign.Lua.FunctionsTest.tests
   , testGroup "Sendings and receiving values from the stack"
     [ Foreign.Lua.TypesTest.tests
     , Foreign.Lua.Types.FromLuaStackTest.tests
