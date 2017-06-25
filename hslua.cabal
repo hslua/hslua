@@ -23,9 +23,6 @@ extra-source-files:     lua-5.3.4/*.h
                         README.md
                         CHANGELOG.md
                         COPYRIGHT
-                        examples/callbacks/callbacks.lua
-                        examples/haskellfun/haskellfun.lua
-                        examples/err_prop/err_prop.lua
 
 source-repository head
   type:                 git
@@ -165,33 +162,6 @@ test-suite simple-test
   main-is:              simple-test.hs
   hs-source-dirs:       test
   build-depends:        base, hslua
-  if impl(ghc < 7.10)
-     hs-source-dirs:    prelude
-     other-modules:     Prelude
-
-test-suite callbacks
-  type:                 exitcode-stdio-1.0
-  main-is:              callbacks.hs
-  hs-source-dirs:       examples/callbacks
-  build-depends:        base, bytestring, hslua, mtl
-  if impl(ghc < 7.10)
-     hs-source-dirs:    prelude
-     other-modules:     Prelude
-
-test-suite haskellfun
-  type:                 exitcode-stdio-1.0
-  main-is:              haskellfun.hs
-  hs-source-dirs:       examples/haskellfun
-  build-depends:        base, bytestring, hslua
-  if impl(ghc < 7.10)
-     hs-source-dirs:    prelude
-     other-modules:     Prelude
-
-test-suite err_prop
-  type:                 exitcode-stdio-1.0
-  main-is:              err_prop.hs
-  hs-source-dirs:       examples/err_prop
-  build-depends:        base, bytestring, hslua, mtl
   if impl(ghc < 7.10)
      hs-source-dirs:    prelude
      other-modules:     Prelude
