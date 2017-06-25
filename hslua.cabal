@@ -182,6 +182,7 @@ test-suite test-hslua
                       , hslua
                       , quickcheck-instances
                       , tasty
+                      , tasty-expected-failure >= 0.11 && < 0.12
                       , tasty-hunit
                       , tasty-quickcheck
                       , text
