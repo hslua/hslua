@@ -118,5 +118,5 @@ after_success:
   - set -e
   - set -x
   - if [ -n "${COVERAGE}" ] && [ "${TRAVIS_REPO_SLUG}" = "osa1/hslua" ]; then
-      hpc-coveralls simple-test test-hslua;
+      hpc-coveralls --exclude-dir=test --exclude-dir=dist simple-test test-hslua;
     fi
