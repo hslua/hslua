@@ -59,6 +59,12 @@ tests = testGroup "FromLuaStack"
       assertEqual "error message mismatched" (Error numBool) =<< runLua
         (loadstring "return true" *> call 0 1 *> peek (-1) :: Lua (Result Int))
 
+  , testCase "list cannot be read if a list element fails" $ do
+      let err = "Could not read list: Expected a number but got a boolean"
+      assertEqual "error message mismatched" (Error err) =<< runLua
+        (loadstring "return {1, 5, 23, true, 42}" *> call 0 1
+         *> peek (-1) :: Lua (Result [Int]))
+
   , testGroup "Result instances"
     [ testProperty "Result instance follows the functor laws" $
         prop_functorId . (Success :: Int -> Result Int)
