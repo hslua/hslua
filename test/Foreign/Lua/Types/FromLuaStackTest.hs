@@ -33,6 +33,7 @@ Test for the conversion of lua values to haskell values.
 module Foreign.Lua.Types.FromLuaStackTest (tests) where
 
 import Control.Applicative (empty, (<|>))
+import Control.Monad (mplus, mzero)
 import Foreign.Lua.Types.Core (Lua, LuaInteger)
 import Foreign.Lua.Types.FromLuaStack
 import Foreign.Lua.Functions (call, loadstring, runLua)
@@ -80,6 +81,14 @@ tests = testGroup "FromLuaStack"
 
       , testProperty "Alternative is the second value if first is empty" $
         property (\x -> Success (x::Int) == (empty <|> Success x))
+      ]
+
+    , testGroup "MonadPlus"
+      [ testProperty "Second arg is not evaluated if the first succeeded" $
+        property (\x -> Success (x::Int) == (Success x `mplus` error "This is wrong"))
+
+      , testProperty "Alternative is the second value if first is mzero" $
+        property (\x -> Success (x::Int) == (mzero <|> Success x))
       ]
     ]
   ]
