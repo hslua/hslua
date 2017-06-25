@@ -35,8 +35,7 @@ module Foreign.Lua.Types.ToLuaStackTest (tests) where
 
 import Data.ByteString (ByteString)
 import Data.Monoid ((<>))
-import Foreign.Lua.Functions
-import Foreign.Lua.Types.ToLuaStack (ToLuaStack(..))
+import Foreign.Lua
 import Foreign.StablePtr (castStablePtrToPtr, freeStablePtr, newStablePtr)
 
 import Test.Tasty (TestTree, testGroup)

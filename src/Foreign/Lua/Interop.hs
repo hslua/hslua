@@ -54,8 +54,7 @@ import Control.Monad (when)
 import Data.Monoid ((<>))
 import Foreign.C (CInt (..))
 import Foreign.Lua.Functions
-import Foreign.Lua.Types.FromLuaStack
-import Foreign.Lua.Types.ToLuaStack
+import Foreign.Lua.Types
 import Foreign.Ptr (FunPtr, castPtr, freeHaskellFunPtr)
 import Foreign.StablePtr (deRefStablePtr, freeStablePtr, newStablePtr)
 

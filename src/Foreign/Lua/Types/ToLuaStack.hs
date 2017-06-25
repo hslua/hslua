@@ -42,6 +42,7 @@ module Foreign.Lua.Types.ToLuaStack
 import Control.Monad (zipWithM_)
 import Data.ByteString (ByteString)
 import Foreign.Lua.Functions
+import Foreign.Lua.Types.Core
 import Foreign.Ptr (FunPtr, Ptr)
 
 -- | A value that can be pushed to the Lua stack.

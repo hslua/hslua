@@ -36,9 +36,7 @@ Portability : CPP, ForeignFunctionInterface
 Monadic functions which operate within the Lua type.
 -}
 module Foreign.Lua.Functions
-  ( module Foreign.Lua.Constants
-  , module Foreign.Lua.Types.Core
-  , liftLua
+  ( liftLua
   , argerror
   , atpanic
   , call

@@ -44,6 +44,7 @@ import Control.Applicative (Alternative (..))
 import Control.Monad (MonadPlus (..), ap)
 import Data.ByteString (ByteString)
 import Data.Monoid ((<>))
+import Foreign.Lua.Types.Core
 import Foreign.Lua.Functions
 import Foreign.Ptr (FunPtr, Ptr)
 
