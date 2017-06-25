@@ -33,6 +33,8 @@ import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.ExpectedFailure (ignoreTest)
 import Test.Tasty.QuickCheck (testProperty)
 
+import qualified Data.Text as T
+
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
 tests = testGroup "Peek can act as left inverse of push"
@@ -58,6 +60,9 @@ tests = testGroup "Peek can act as left inverse of push"
 
   , testProperty "lists of bytestrings remain equal under push/peek"
     (prop_roundtripEqual :: [ByteString] -> Property)
+
+  , testProperty "text"
+    (prop_roundtripEqual :: T.Text -> Property)
   ]
 
 prop_roundtripEqual :: (Eq a, FromLuaStack a, ToLuaStack a) => a -> Property

@@ -45,6 +45,9 @@ import Foreign.Lua.Functions
 import Foreign.Lua.Types.Core
 import Foreign.Ptr (FunPtr, Ptr)
 
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
+
 -- | A value that can be pushed to the Lua stack.
 class ToLuaStack a where
   -- | Pushes a value onto Lua stack, casting it into meaningfully nearest Lua
@@ -80,3 +83,6 @@ instance ToLuaStack a => ToLuaStack [a] where
     let setField i x = push x *> rawseti (-2) i
     newtable
     zipWithM_ setField [1..] xs
+
+instance ToLuaStack T.Text where
+  push = push . T.encodeUtf8

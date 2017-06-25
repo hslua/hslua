@@ -49,6 +49,8 @@ import Foreign.Lua.Functions
 import Foreign.Ptr (FunPtr, Ptr)
 
 import qualified Control.Monad.Fail as Fail
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 
 -- | Result returned when trying to get a value from the lua stack.
 data Result a
@@ -114,6 +116,9 @@ instance FromLuaStack (Ptr a) where
 instance FromLuaStack LuaState where
   peek = tryPeek "LuaState (i.e., a thread)" isthread tothread
 
+instance FromLuaStack T.Text where
+  peek = fmapLuaResult T.decodeUtf8 . peek
+
 instance FromLuaStack a => FromLuaStack [a] where
   peek n = go . enumFromTo 1 =<< rawlen n
    where
@@ -140,3 +145,6 @@ tryPeek expectedType test peekfn n = do
     else do
       actual <- ltype n >>= typename
       return . Error $ "Expected a " <> expectedType <> " but got a " <> actual
+
+fmapLuaResult :: (a -> b) -> Lua (Result a) -> Lua (Result b)
+fmapLuaResult = fmap . fmap
