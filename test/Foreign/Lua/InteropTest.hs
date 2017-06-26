@@ -19,27 +19,33 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
-import Test.Tasty (TestTree, defaultMain, testGroup)
+-- | Tests that lua functions can be called from haskell and vice versa.
+module Foreign.Lua.InteropTest (tests) where
 
-import qualified Foreign.Lua.FunctionsTest
-import qualified Foreign.Lua.InteropTest
-import qualified Foreign.Lua.TypesTest
-import qualified Foreign.Lua.Types.FromLuaStackTest
-import qualified Foreign.Lua.Types.ToLuaStackTest
-import qualified HsLuaSpec
+import Foreign.Lua.Functions
+import Foreign.Lua.Interop (peek, registerhsfunction)
+import Foreign.Lua.Types (Result (..))
+import Test.Tasty (TestTree, testGroup)
+import Test.Tasty.HUnit (assertBool, testCase)
 
-main :: IO ()
-main = defaultMain $ testGroup "hslua" tests
 
--- | HSpec tests
-tests :: [TestTree]
-tests =
-  [ testGroup "Base tests" HsLuaSpec.tests
-  , Foreign.Lua.FunctionsTest.tests
-  , Foreign.Lua.InteropTest.tests
-  , testGroup "Sendings and receiving values from the stack"
-    [ Foreign.Lua.TypesTest.tests
-    , Foreign.Lua.Types.FromLuaStackTest.tests
-    , Foreign.Lua.Types.ToLuaStackTest.tests
+-- | Specifications for Attributes parsing functions.
+tests :: TestTree
+tests = testGroup "Interoperability"
+  [ testGroup "call haskell functions from lua"
+    [ testCase "push haskell function to lua" $
+      let add = do
+            i1 <- peek (-1)
+            i2 <- peek (-2)
+            -- res <- fmap (+) <$> peek (-1) <*> peek (-2)
+            case (+) <$> i1 <*> i2 of
+              Success x -> return x
+              Error _ -> lerror
+          luaOp = do
+            registerhsfunction "add" add
+            loadstring "return add(23, 5) == 28" *> call 0 1
+            res <- peek (-1)
+            return $ res == Success True
+      in assertBool "Operation was successful" =<< runLua luaOp
     ]
   ]
