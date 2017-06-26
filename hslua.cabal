@@ -155,24 +155,13 @@ library
   if flag(apicheck)
     cc-options:         "-DLUA_USE_APICHECK"
 
--- This is not necessary because we have a test suite now. Still keeping here as
--- a very simple test. Originally added with 799a4c2 to test if linking with
--- system-wide Lua is really working.
-test-suite simple-test
-  type:                 exitcode-stdio-1.0
-  main-is:              simple-test.hs
-  hs-source-dirs:       test
-  build-depends:        base, hslua
-  if impl(ghc < 7.10)
-     hs-source-dirs:    prelude
-     other-modules:     Prelude
-
 test-suite test-hslua
   type:                 exitcode-stdio-1.0
   main-is:              test-hslua.hs
   hs-source-dirs:       test
   ghc-options:          -Wall -threaded
   other-modules:        HsLuaSpec
+                      , Foreign.LuaTest
                       , Foreign.Lua.FunctionsTest
                       , Foreign.Lua.InteropTest
                       , Foreign.Lua.TypesTest

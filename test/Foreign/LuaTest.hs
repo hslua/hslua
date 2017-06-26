@@ -19,29 +19,28 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
-import Test.Tasty (TestTree, defaultMain, testGroup)
+{-# LANGUAGE OverloadedStrings #-}
+{-| Tests for lua -}
+module Foreign.LuaTest (tests) where
 
-import qualified Foreign.LuaTest
-import qualified Foreign.Lua.FunctionsTest
-import qualified Foreign.Lua.InteropTest
-import qualified Foreign.Lua.TypesTest
-import qualified Foreign.Lua.Types.FromLuaStackTest
-import qualified Foreign.Lua.Types.ToLuaStackTest
-import qualified HsLuaSpec
+import Prelude hiding (concat)
 
-main :: IO ()
-main = defaultMain $ testGroup "hslua" tests
+import Data.ByteString (ByteString)
+import Foreign.Lua.Functions
+import Foreign.Lua.Interop (push)
+import Test.Tasty (TestTree, testGroup)
+import Test.Tasty.HUnit (testCase)
 
--- | HSpec tests
-tests :: [TestTree]
-tests =
-  [ testGroup "Base tests" HsLuaSpec.tests
-  , Foreign.Lua.FunctionsTest.tests
-  , Foreign.Lua.InteropTest.tests
-  , testGroup "Sendings and receiving values from the stack"
-    [ Foreign.Lua.TypesTest.tests
-    , Foreign.Lua.Types.FromLuaStackTest.tests
-    , Foreign.Lua.Types.ToLuaStackTest.tests
-    ]
-  , Foreign.LuaTest.tests
+
+-- | Specifications for Attributes parsing functions.
+tests :: TestTree
+tests = testGroup "lua integration tests"
+  [ testCase "print version" .
+    runLua $ do
+      openlibs
+      getglobal "assert"
+      push ("Hello from " :: ByteString)
+      getglobal "_VERSION"
+      concat 2
+      call 1 0
   ]
