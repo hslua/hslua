@@ -23,8 +23,8 @@ THE SOFTWARE.
 module Foreign.Lua.InteropTest (tests) where
 
 import Foreign.Lua.Functions
-import Foreign.Lua.Interop (peek, registerhsfunction)
-import Foreign.Lua.Types (Result (..))
+import Foreign.Lua.Interop (callfunc, peek, registerhsfunction)
+import Foreign.Lua.Types (LuaNumber, Result (..))
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertBool, testCase)
 
@@ -47,5 +47,11 @@ tests = testGroup "Interoperability"
             res <- peek (-1)
             return $ res == Success True
       in assertBool "Operation was successful" =<< runLua luaOp
+    ]
+
+  , testGroup "call lua function from haskell"
+    [ testCase "test equality within lua" $
+      assertBool "raw equality test failed" =<<
+      runLua (openlibs *> callfunc "rawequal" (5 :: Int) (5.0 :: LuaNumber))
     ]
   ]
