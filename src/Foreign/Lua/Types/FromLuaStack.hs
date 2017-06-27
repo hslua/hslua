@@ -23,6 +23,9 @@ THE SOFTWARE.
 -}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+#if !MIN_VERSION_base(4,8,0)
+{-# LANGUAGE OverlappingInstances #-}
+#endif
 {-|
 Module      : Foreign.Lua.Types.FromLuaStack
 Copyright   : © 2007–2012 Gracjan Polak,
