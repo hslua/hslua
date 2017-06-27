@@ -51,6 +51,9 @@ tests = testGroup "Peek can act as left inverse of push"
   , testProperty "bytestring remain equal under push/peek"
     (prop_roundtripEqual :: ByteString -> Property)
 
+  , testProperty "round-tripping strings"
+    (prop_roundtripEqual :: String -> Property)
+
   , testProperty "lists of boolean remain equal under push/peeks"
     (prop_roundtripEqual :: [Bool] -> Property)
 

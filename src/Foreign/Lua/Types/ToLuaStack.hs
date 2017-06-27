@@ -21,8 +21,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+#if !MIN_VERSION_base(4,8,0)
+{-# LANGUAGE OverlappingInstances #-}
+#endif
 {-|
 Module      : Foreign.Lua.Types.ToLuaStack
 Copyright   : © 2007–2012 Gracjan Polak,
@@ -54,6 +58,9 @@ class ToLuaStack a where
   -- type.
   push :: a -> Lua ()
 
+instance ToLuaStack () where
+  push = const pushnil
+
 instance ToLuaStack LuaInteger where
   push = pushinteger
 
@@ -75,8 +82,15 @@ instance ToLuaStack (FunPtr LuaCFunction) where
 instance ToLuaStack (Ptr a) where
   push = pushlightuserdata
 
-instance ToLuaStack () where
-  push _ = pushnil
+instance ToLuaStack T.Text where
+  push = push . T.encodeUtf8
+
+#if MIN_VERSION_base(4,8,0)
+instance {-# OVERLAPS #-} ToLuaStack [Char] where
+#else
+instance ToLuaStack [Char] where
+#endif
+  push = push . (T.pack)
 
 instance ToLuaStack a => ToLuaStack [a] where
   push xs = do
@@ -84,5 +98,3 @@ instance ToLuaStack a => ToLuaStack [a] where
     newtable
     zipWithM_ setField [1..] xs
 
-instance ToLuaStack T.Text where
-  push = push . T.encodeUtf8

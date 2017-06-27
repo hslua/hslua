@@ -119,6 +119,13 @@ instance FromLuaStack LuaState where
 instance FromLuaStack T.Text where
   peek = fmapLuaResult T.decodeUtf8 . peek
 
+#if MIN_VERSION_base(4,8,0)
+instance {-# OVERLAPS #-} FromLuaStack [Char] where
+#else
+instance FromLuaStack String where
+#endif
+  peek = fmap (T.unpack <$>) . peek
+
 instance FromLuaStack a => FromLuaStack [a] where
   peek n = go . enumFromTo 1 =<< rawlen n
    where
