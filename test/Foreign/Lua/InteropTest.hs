@@ -22,11 +22,12 @@ THE SOFTWARE.
 -- | Tests that lua functions can be called from haskell and vice versa.
 module Foreign.Lua.InteropTest (tests) where
 
+import Data.ByteString.Char8 (pack)
 import Foreign.Lua.Functions
 import Foreign.Lua.Interop (callfunc, peek, registerhsfunction)
 import Foreign.Lua.Types (LuaNumber, Result (..))
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit (assertBool, testCase)
+import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
 
 
 -- | Specifications for Attributes parsing functions.
@@ -37,7 +38,6 @@ tests = testGroup "Interoperability"
       let add = do
             i1 <- peek (-1)
             i2 <- peek (-2)
-            -- res <- fmap (+) <$> peek (-1) <*> peek (-2)
             case (+) <$> i1 <*> i2 of
               Success x -> return x
               Error _ -> lerror
@@ -51,7 +51,11 @@ tests = testGroup "Interoperability"
 
   , testGroup "call lua function from haskell"
     [ testCase "test equality within lua" $
-      assertBool "raw equality test failed" =<<
+      assertEqual "raw equality test failed" (Success True) =<<
       runLua (openlibs *> callfunc "rawequal" (5 :: Int) (5.0 :: LuaNumber))
+
+    , testCase "failing lua function call" $
+      assertEqual "unexpected result" (Error "foo" :: Result Int) =<<
+      runLua (openlibs *> callfunc "assert" False (pack "foo"))
     ]
   ]

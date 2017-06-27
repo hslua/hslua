@@ -67,6 +67,7 @@ library
                       , Foreign.Lua.Types.Core
                       , Foreign.Lua.Types.FromLuaStack
                       , Foreign.Lua.Types.ToLuaStack
+                      , Foreign.Lua.Util
   hs-source-dirs:       src
   if impl(ghc < 7.10)
      hs-source-dirs:    prelude

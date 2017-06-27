@@ -51,10 +51,10 @@ module Foreign.Lua.Interop
   ) where
 
 import Control.Monad (when)
-import Data.Monoid ((<>))
 import Foreign.C (CInt (..))
 import Foreign.Lua.Functions
 import Foreign.Lua.Types
+import Foreign.Lua.Util (returnError)
 import Foreign.Ptr (FunPtr, castPtr, freeHaskellFunPtr)
 import Foreign.StablePtr (deRefStablePtr, freeStablePtr, newStablePtr)
 
@@ -118,24 +118,10 @@ luaimport a = luaimport' 1 a
 freecfunction :: FunPtr LuaCFunction -> IO ()
 freecfunction = freeHaskellFunPtr
 
+-- | Helper class to make lua procedures (i.e., functions whose results are
+-- discarded) useable from within haskell.
 class LuaCallProc a where
   callproc' :: String -> Lua () -> NumArgs -> a
-
--- | Call a Lua procedure. Use as:
---
--- > callproc "proc" "abc" (1::Int) (5.0::Double)
---
-callproc :: (LuaCallProc a) => String -> a
-callproc f = callproc' f (return ()) 0
-
-class LuaCallFunc a where
-    callfunc' :: String -> Lua () -> NumArgs -> a
-
--- | Call a Lua function. Use as:
---
--- > Just v <- callfunc l "proc" "abc" (1::Int) (5.0::Double)
-callfunc :: (LuaCallFunc a) => String -> a
-callfunc f = callfunc' f (return ()) 0
 
 instance LuaCallProc (Lua t) where
   callproc' f a k = do
@@ -148,30 +134,40 @@ instance LuaCallProc (Lua t) where
         fail (BC.unpack msg)
       else return undefined
 
-instance (FromLuaStack t) => LuaCallFunc (Lua t) where
-  callfunc' f a k = do
-    getglobal2 f
-    a
-    z <- pcall k 1 0
+instance (ToLuaStack a, LuaCallProc b) => LuaCallProc (a -> b) where
+  callproc' fnName pushArgs nargs x =
+    callproc' fnName (pushArgs *> push x) (nargs + 1)
+
+-- | Call a Lua procedure. Use as:
+--
+-- > callproc "proc" "abc" (1::Int) (5.0::Double)
+--
+callproc :: (LuaCallProc a) => String -> a
+callproc f = callproc' f (return ()) 0
+
+
+-- | Helper class used to make lua functions useable from haskell
+class LuaCallFunc a where
+  callfunc' :: String -> Lua () -> NumArgs -> a
+
+instance (FromLuaStack a) => LuaCallFunc (Lua (Result a)) where
+  callfunc' fnName x nargs = do
+    getglobal2 fnName
+    x
+    z <- pcall nargs 1 0
     if z /= 0
-      then do
-        Success msg <- peek (-1)
-        pop 1
-        fail (BC.unpack msg)
-      else do
-        r <- peek (-1)
-        pop 1
-        case r of
-          Success x -> return x
-          Error err -> do
-            got <- typename =<< ltype (-1)
-            fail $ err <> " Incorrect result type (got " <> got <> ")"
+      then returnError
+      else peek (-1) <* pop 1
 
-instance (ToLuaStack t, LuaCallProc b) => LuaCallProc (t -> b) where
-    callproc' f a k x = callproc' f (a *> push x) (k+1)
+instance (ToLuaStack a, LuaCallFunc b) => LuaCallFunc (a -> b) where
+  callfunc' fnName pushArgs nargs x =
+    callfunc' fnName (pushArgs *> push x) (nargs + 1)
 
-instance (ToLuaStack t, LuaCallFunc b) => LuaCallFunc (t -> b) where
-    callfunc' f a k x = callfunc' f (a *> push x) (k+1)
+-- | Call a Lua function. Use as:
+--
+-- > Just v <- callfunc l "proc" "abc" (1::Int) (5.0::Double)
+callfunc :: (LuaCallFunc a) => String -> a
+callfunc f = callfunc' f (return ()) 0
 
 
 foreign export ccall hsmethod__gc :: LuaState -> IO CInt
