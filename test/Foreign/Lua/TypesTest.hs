@@ -38,7 +38,10 @@ import qualified Data.Text as T
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
 tests = testGroup "Peek can act as left inverse of push"
-  [ testProperty "booleans remain equal under push/peek"
+  [ testProperty "round-tripping unit"
+    (prop_roundtripEqual :: () -> Property)
+
+  , testProperty "booleans remain equal under push/peek"
     (prop_roundtripEqual :: Bool -> Property)
 
   , testProperty "lua numbers (i.e., doubles) remain equal under push/peek"

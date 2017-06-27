@@ -92,6 +92,9 @@ class FromLuaStack a where
   -- it wrapped in @Just@. Return @Nothing@ otherwise.
   peek :: StackIndex -> Lua (Result a)
 
+instance FromLuaStack () where
+  peek = tryPeek "nil" isnil (const $ return ())
+
 instance FromLuaStack LuaInteger where
   peek = tryPeek "number" isnumber tointeger
 
