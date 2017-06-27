@@ -44,7 +44,6 @@ module Foreign.Lua.Interop
   , freecfunction
   , luaimport
   , callfunc
-  , callproc
   , newcfunction
   , registerhsfunction
   , registerrawhsfunction
@@ -117,34 +116,6 @@ luaimport a = luaimport' 1 a
 -- | Free function pointer created with @newcfunction@.
 freecfunction :: FunPtr LuaCFunction -> IO ()
 freecfunction = freeHaskellFunPtr
-
--- | Helper class to make lua procedures (i.e., functions whose results are
--- discarded) useable from within haskell.
-class LuaCallProc a where
-  callproc' :: String -> Lua () -> NumArgs -> a
-
-instance LuaCallProc (Lua t) where
-  callproc' f a k = do
-    getglobal2 f
-    a
-    z <- pcall k 0 0
-    if z /= 0
-      then do
-        Success msg <- peek (-1) <* pop 1
-        fail (BC.unpack msg)
-      else return undefined
-
-instance (ToLuaStack a, LuaCallProc b) => LuaCallProc (a -> b) where
-  callproc' fnName pushArgs nargs x =
-    callproc' fnName (pushArgs *> push x) (nargs + 1)
-
--- | Call a Lua procedure. Use as:
---
--- > callproc "proc" "abc" (1::Int) (5.0::Double)
---
-callproc :: (LuaCallProc a) => String -> a
-callproc f = callproc' f (return ()) 0
-
 
 -- | Helper class used to make lua functions useable from haskell
 class LuaCallFunc a where

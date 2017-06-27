@@ -57,5 +57,13 @@ tests = testGroup "Interoperability"
     , testCase "failing lua function call" $
       assertEqual "unexpected result" (Error "foo" :: Result Int) =<<
       runLua (openlibs *> callfunc "assert" False (pack "foo"))
+
+    , testCase "print the empty string via lua procedure" $
+      assertEqual "raw equality test failed" (Success ()) =<<
+      runLua (openlibs *> callfunc "print" (pack ""))
+
+    , testCase "failing lua procedure call" $
+      assertEqual "unexpected result" (Error "foo" :: Result ()) =<<
+      runLua (openlibs *> callfunc "error" (pack "foo"))
     ]
   ]
