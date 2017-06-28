@@ -25,7 +25,7 @@ module Foreign.Lua.InteropTest (tests) where
 import Data.ByteString.Char8 (pack)
 import Foreign.Lua.Functions
 import Foreign.Lua.Interop (callfunc, peek, registerhsfunction)
-import Foreign.Lua.Types (LuaNumber, Result (..))
+import Foreign.Lua.Types (Lua, LuaNumber, Result (..))
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
 
@@ -46,6 +46,19 @@ tests = testGroup "Interoperability"
             loadstring "return add(23, 5) == 28" *> call 0 1
             res <- peek (-1)
             return $ res == Success True
+      in assertBool "Operation was successful" =<< runLua luaOp
+
+    , testCase "push multi-argument haskell function to lua" $
+      let
+        integerOperation :: Int -> Int -> Lua Int
+        integerOperation i1 i2 =
+          let (j1, j2) = (fromIntegral i1, fromIntegral i2)
+          in return $ fromIntegral (product [1..j1] `mod` j2 :: Integer)
+        luaOp = do
+          registerhsfunction "integerOp" integerOperation
+          loadstring "return integerOp(23, 42) == 0" *> call 0 1
+          res <- peek (-1)
+          return $ res == Success True
       in assertBool "Operation was successful" =<< runLua luaOp
     ]
 
