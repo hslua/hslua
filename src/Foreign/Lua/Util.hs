@@ -35,16 +35,13 @@ module Foreign.Lua.Util
   ( returnError
   ) where
 
+import Data.ByteString.Char8 (unpack)
 import Foreign.Lua.Functions
 import Foreign.Lua.Types
 
 -- | Return an error, reading and removing the error message from the stack.
 returnError :: Lua (Result a)
 returnError = do
-  err <- peek (-1) <* pop 1
-  return $
-    case err of
-      Success msg  -> Error msg
-      Error secErr -> Error ("failed; additionally, the error " ++
-                             "message could not be read: " ++ secErr)
+  err <- tostring (-1)
+  return $ Error (unpack err)
 
