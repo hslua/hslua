@@ -26,40 +26,53 @@ import Data.ByteString.Char8 (pack)
 import Foreign.Lua.Functions
 import Foreign.Lua.Interop (callfunc, peek, registerhsfunction)
 import Foreign.Lua.Types (Lua, LuaNumber, Result (..))
+import Foreign.Lua.Util (returnError)
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
+import Test.Tasty.HUnit (assertEqual, testCase)
 
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
 tests = testGroup "Interoperability"
-  [ testGroup "call haskell functions from lua"
-    [ testCase "push haskell function to lua" $
-      let add = do
-            i1 <- peek (-1)
-            i2 <- peek (-2)
-            case (+) <$> i1 <*> i2 of
-              Success x -> return x
-              Error _ -> lerror
-          luaOp = do
-            registerhsfunction "add" add
-            loadstring "return add(23, 5) == 28" *> call 0 1
-            res <- peek (-1)
-            return $ res == Success True
-      in assertBool "Operation was successful" =<< runLua luaOp
-
-    , testCase "push multi-argument haskell function to lua" $
-      let
-        integerOperation :: Int -> Int -> Lua Int
+  [ testGroup "call haskell functions from lua" $
+    let integerOperation :: Int -> Int -> Lua (Result Int)
         integerOperation i1 i2 =
           let (j1, j2) = (fromIntegral i1, fromIntegral i2)
-          in return $ fromIntegral (product [1..j1] `mod` j2 :: Integer)
-        luaOp = do
-          registerhsfunction "integerOp" integerOperation
-          loadstring "return integerOp(23, 42) == 0" *> call 0 1
-          res <- peek (-1)
-          return $ res == Success True
-      in assertBool "Operation was successful" =<< runLua luaOp
+          in return . return $ fromIntegral (product [1..j1] `mod` j2 :: Integer)
+    in
+    [ testCase "push haskell function to lua" $
+      let add :: Lua (Result Int)
+          add = do
+            i1 <- peek (-1)
+            i2 <- peek (-2)
+            return $ (+) <$> i1 <*> i2
+
+          luaOp :: Lua (Result Int)
+          luaOp = do
+            registerhsfunction "add" add
+            loadstring "return add(23, 5)" *> call 0 1
+            peek (-1) <* pop 1
+
+      in assertEqual "Unexpected result" (Success 28) =<< runLua luaOp
+
+    , testCase "push multi-argument haskell function to lua" $
+      let luaOp :: Lua (Result Int)
+          luaOp = do
+            registerhsfunction "integerOp" integerOperation
+            loadstring "return integerOp(23, 42)" *> call 0 1
+            peek (-1) <* pop 1
+      in assertEqual "Unexpected result" (Success 0) =<< runLua luaOp
+
+    , testCase "argument type errors are propagated" $
+      let luaOp :: Lua (Result String)
+          luaOp = do
+            registerhsfunction "integerOp" integerOperation
+            loadstring "return integerOp(23, true)" *> call 0 2
+            returnError <* pop 1 -- pop _HASKELLERROR
+
+          errMsg = "Error while calling haskell function: could not read "
+                   ++ "argument 2: Expected a number but got a boolean"
+      in assertEqual "Unexpected result" (Error errMsg) =<< runLua luaOp
     ]
 
   , testGroup "call lua function from haskell"

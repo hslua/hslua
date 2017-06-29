@@ -57,61 +57,52 @@ import Foreign.Lua.Util (returnError)
 import Foreign.Ptr (FunPtr, castPtr, freeHaskellFunPtr)
 import Foreign.StablePtr (deRefStablePtr, freeStablePtr, newStablePtr)
 
-import qualified Data.ByteString.Char8 as BC
 import qualified Foreign.Storable as F
 
 class LuaImport a where
-  luaimport' :: StackIndex -> a -> Lua CInt
-  luaimportargerror :: StackIndex -> String -> a -> Lua CInt
+  luaimport' :: StackIndex -> a -> Lua (Result ())
 
-instance ToLuaStack a => LuaImport (IO a) where
-  luaimportargerror n msg x = luaimportargerror n msg (liftIO x :: Lua a)
-  luaimport' narg x = luaimport' narg (liftIO x :: Lua a)
-
-instance ToLuaStack a => LuaImport (LuaState -> IO a) where
-  luaimportargerror n msg = luaimportargerror n msg . liftLua
-  luaimport' narg = luaimport' narg . liftLua
-
-instance ToLuaStack a => LuaImport (Lua a) where
-  luaimportargerror _n msg _x = do
-    -- TODO: maybe improve the error message
-    pushstring $ BC.pack msg
-    fromIntegral <$> lerror
-  luaimport' _narg x = (x >>= push) *> return 1
+instance ToLuaStack a => LuaImport (Lua (Result a)) where
+  luaimport' _narg x = do
+    x' <- x
+    case x' of
+      Success res -> push res *> return (Success ())
+      Error err -> return (Error err)
 
 instance (FromLuaStack a, LuaImport b) => LuaImport (a -> b) where
-  luaimportargerror n msg x = luaimportargerror n msg (x undefined)
-  luaimport' narg x = do
+  luaimport' narg f = do
     arg <- peek narg
     case arg of
-      Success v -> luaimport' (narg + 1) (x v)
-      Error _ -> do
-        t <- ltype narg
-        got <- typename t
-        luaimportargerror narg
-          (mconcat [ "argument ", show (fromStackIndex narg)
-                   , " of Haskell function: "
-                   , " got ", got, ", which was not expected"
-                   ])
-          (x undefined)
+      Success x -> luaimport' (narg + 1) (f x)
+      Error err ->
+        let msg = "could not read argument " ++ (show (fromStackIndex narg))
+                  ++ ": " ++ err
+        in return (Error msg)
 
-foreign import ccall "wrapper" mkWrapper :: LuaCFunction -> IO (FunPtr LuaCFunction)
+-- | Convert a Haskell function to Lua function. Any Haskell function
+-- can be converted provided that:
+--
+--   * all arguments are instances of @'FromLuaStack'@
+--   * return type is @Lua (Result a)@, where @a@ is an instance of
+--     @'ToLuaStack'@
+--
+-- Any Haskell exception will be converted to a string and returned
+-- as Lua error.
+luaimport :: LuaImport a => a -> Lua CInt
+luaimport a = do
+  res <- luaimport' 1 a
+  case res of
+    Success _ -> return 1
+    Error err -> do
+      push ("Error while calling haskell function: " ++ err)
+      fromIntegral <$> lerror
 
 -- | Create new foreign Lua function. Function created can be called
 -- by Lua engine. Remeber to free the pointer with @freecfunction@.
 newcfunction :: LuaImport a => a -> IO (FunPtr LuaCFunction)
 newcfunction = mkWrapper . flip runLuaWith . luaimport
 
--- | Convert a Haskell function to Lua function. Any Haskell function
--- can be converted provided that:
---
---   * all arguments are instances of StackValue
---   * return type is IO t, where t is an instance of StackValue
---
--- Any Haskell exception will be converted to a string and returned
--- as Lua error.
-luaimport :: LuaImport a => a -> Lua CInt
-luaimport a = luaimport' 1 a
+foreign import ccall "wrapper" mkWrapper :: LuaCFunction -> IO (FunPtr LuaCFunction)
 
 -- | Free function pointer created with @newcfunction@.
 freecfunction :: FunPtr LuaCFunction -> IO ()
