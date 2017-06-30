@@ -33,12 +33,17 @@ Tests for lua C API-like functions
 -}
 module Foreign.Lua.FunctionsTest (tests) where
 
+import Prelude hiding (compare)
+
 import Control.Monad (forM_)
 import Foreign.Lua.Functions
 import Foreign.Lua.Interop (push)
-import Foreign.Lua.Types (Lua)
+import Foreign.Lua.Types (Lua, LuaComparerOp (..))
+import Test.QuickCheck (Property, (.&&.))
+import Test.QuickCheck.Monadic (assert, monadicIO, run)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertBool, testCase, (@?))
+import Test.Tasty.QuickCheck (testProperty)
 
 
 -- | Specifications for Attributes parsing functions.
@@ -75,6 +80,12 @@ tests = testGroup "Monadic functions"
   , luaTestCase "isnoneornil" $ do
       pushLuaExpr "nil"
       (&&) <$> isnoneornil 500 <*> isnoneornil (-1)
+
+  , testGroup "compare"
+    [ testProperty "identifies strictly smaller values" $ compareWith (<) OpLT
+    , testProperty "identifies smaller or equal values" $ compareWith (<=) OpLE
+    , testProperty "identifies equal values" $ compareWith (==) OpEQ
+    ]
   ]
 
 luaTestCase :: String -> Lua Bool -> TestTree
@@ -83,3 +94,30 @@ luaTestCase msg luaOp =
 
 pushLuaExpr :: String -> Lua ()
 pushLuaExpr expr = loadstring ("return " ++ expr) *> call 0 1
+
+compareWith :: (Int -> Int -> Bool) -> LuaComparerOp -> Int -> Property
+compareWith op luaOp n = compareLT .&&. compareEQ .&&. compareGT
+ where
+  compareLT :: Property
+  compareLT = monadicIO  $ do
+    luaCmp <- run . runLua $ do
+      push $ n - 1
+      push n
+      compare (-2) (-1) luaOp
+    assert $ luaCmp == op (n - 1) n
+
+  compareEQ :: Property
+  compareEQ = monadicIO  $ do
+    luaCmp <- run . runLua $ do
+      push n
+      push n
+      compare (-2) (-1) luaOp
+    assert $ luaCmp == op n n
+
+  compareGT :: Property
+  compareGT = monadicIO $ do
+    luaRes <- run . runLua $ do
+      push $ n + 1
+      push n
+      compare (-2) (-1) luaOp
+    assert $ luaRes == op (n + 1) n
