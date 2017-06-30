@@ -26,10 +26,9 @@ module Foreign.LuaTest (tests) where
 import Prelude hiding (concat)
 
 import Data.ByteString (ByteString)
-import Foreign.Lua.Functions
-import Foreign.Lua.Interop (push)
+import Foreign.Lua
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit (testCase)
+import Test.Tasty.HUnit (testCase, assert)
 
 
 -- | Specifications for Attributes parsing functions.
@@ -43,4 +42,28 @@ tests = testGroup "lua integration tests"
       getglobal "_VERSION"
       concat 2
       call 1 0
+
+  , testCase "functions stored in / retrieved from registry" .
+    runLua $ do
+      _ <- loadstring "return function() return 2 end, function() return 1 end"
+      call 0 2
+      idx1 <- ref registryindex
+      idx2 <- ref registryindex
+      -- functions are removed from stack
+      liftIO . assert =<< fmap (TFUNCTION /=) (ltype (-1))
+
+      -- get functions from registry
+      rawgeti registryindex idx1
+      call 0 1
+      r1 <- peek (-1) :: Lua (Result LuaInteger)
+      liftIO (assert (r1 == Success 1))
+
+      rawgeti registryindex idx2
+      call 0 1
+      r2 <- peek (-1) :: Lua (Result LuaInteger)
+      liftIO (assert (r2 == Success 2))
+
+      -- delete references
+      unref registryindex idx1
+      unref registryindex idx2
   ]
