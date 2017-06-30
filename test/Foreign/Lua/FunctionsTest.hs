@@ -36,9 +36,10 @@ module Foreign.Lua.FunctionsTest (tests) where
 import Prelude hiding (compare)
 
 import Control.Monad (forM_)
+import Foreign.Lua.Constants
 import Foreign.Lua.Functions
-import Foreign.Lua.Interop (push)
-import Foreign.Lua.Types (Lua, LuaComparerOp (..))
+import Foreign.Lua.Interop (peek, push)
+import Foreign.Lua.Types
 import Test.QuickCheck (Property, (.&&.))
 import Test.QuickCheck.Monadic (assert, monadicIO, run)
 import Test.Tasty (TestTree, testGroup)
@@ -64,6 +65,21 @@ tests = testGroup "Monadic functions"
           rawequal (-1) (-3))
     ]
 
+  , testGroup "insert" $
+    [ luaTestCase "inserts stack elements using negative indices" $ do
+        pushLuaExpr "1, 2, 3, 4, 5, 6, 7, 8, 9"
+        insert (-6)
+        movedEl <- peek (-6) :: Lua (Result LuaInteger)
+        newTop <- peek (-1) :: Lua (Result LuaInteger)
+        return (movedEl == Success 9 && newTop == Success 8)
+    , luaTestCase "inserts stack elements using negative indices" $ do
+        pushLuaExpr "1, 2, 3, 4, 5, 6, 7, 8, 9"
+        insert (4)
+        movedEl <- peek 4 :: Lua (Result LuaInteger)
+        newTop <- peek (-1) :: Lua (Result LuaInteger)
+        return (movedEl == Success 9 && newTop == Success 8)
+    ]
+
   , luaTestCase "strlen, objlen, and rawlen all behave the same" $ do
       pushLuaExpr "{1, 1, 2, 3, 5, 8}"
       rlen <- rawlen (-1)
@@ -86,6 +102,13 @@ tests = testGroup "Monadic functions"
     , testProperty "identifies smaller or equal values" $ compareWith (<=) OpLE
     , testProperty "identifies equal values" $ compareWith (==) OpEQ
     ]
+
+  , testProperty "lessthan works" $ \n1 n2 -> monadicIO $ do
+      luaCmp <- run . runLua $ do
+        push (n2 :: LuaNumber)
+        push (n1 :: LuaNumber)
+        lessthan (-1) (-2) <* pop 2
+      assert $ luaCmp == (n1 < n2)
   ]
 
 luaTestCase :: String -> Lua Bool -> TestTree
@@ -93,7 +116,7 @@ luaTestCase msg luaOp =
   testCase msg $ runLua luaOp @? "lua operation returned false"
 
 pushLuaExpr :: String -> Lua ()
-pushLuaExpr expr = loadstring ("return " ++ expr) *> call 0 1
+pushLuaExpr expr = loadstring ("return " ++ expr) *> call 0 multret
 
 compareWith :: (Int -> Int -> Bool) -> LuaComparerOp -> Int -> Property
 compareWith op luaOp n = compareLT .&&. compareEQ .&&. compareGT

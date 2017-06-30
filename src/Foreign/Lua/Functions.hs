@@ -56,6 +56,7 @@ module Foreign.Lua.Functions
   , gettable
   , gettop
   , gc
+  , insert
   , isboolean
   , iscfunction
   , isfunction
