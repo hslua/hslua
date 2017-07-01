@@ -625,7 +625,11 @@ replace n = liftLua $ \l ->  c_lua_replace l (fromIntegral n)
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_resume lua_resume>.
 resume :: Int -> Lua Int
+#if LUA_VERSION_NUMBER >= 503
+resume n = liftLua $ \l -> fromIntegral <$> c_lua_resume l 0 (fromIntegral n)
+#else
 resume n = liftLua $ \l -> fromIntegral <$> c_lua_resume l (fromIntegral n)
+#endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_setmetatable lua_setmetatable>.
 setmetatable :: Int -> Lua ()

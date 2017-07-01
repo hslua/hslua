@@ -325,8 +325,13 @@ foreign import ccall "lua.h lua_yield"
   c_lua_yield :: LuaState -> CInt -> IO CInt
 #endif
 
+#if LUA_VERSION_NUMBER >= 502
+foreign import ccall "lua.h lua_resume"
+  c_lua_resume :: LuaState -> CInt -> CInt -> IO CInt
+#else
 foreign import ccall "lua.h lua_resume"
   c_lua_resume :: LuaState -> CInt -> IO CInt
+#endif
 
 foreign import ccall "lua.h lua_status"
   c_lua_status :: LuaState -> IO CInt
