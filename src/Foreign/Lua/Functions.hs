@@ -76,7 +76,6 @@ module Foreign.Lua.Functions
   , newmetatable
   , newstate
   , newtable
-  , newthread
   , newuserdata
   , next
   , objlen
@@ -98,7 +97,6 @@ module Foreign.Lua.Functions
   , pushnil
   , pushnumber
   , pushstring
-  , pushthread
   , pushvalue
   , rawequal
   , rawget
@@ -110,7 +108,6 @@ module Foreign.Lua.Functions
   , register
   , remove
   , replace
-  , resume
   , runLua
   , setfield
   , setglobal
@@ -130,8 +127,6 @@ module Foreign.Lua.Functions
   , typename
   , upvalueindex
   , unref
-  , xmove
-  , yield
   ) where
 
 import Prelude hiding (compare, concat)
@@ -278,18 +273,6 @@ touserdata n = liftLua $ \l -> c_lua_touserdata l (fromIntegral n)
 typename :: LTYPE -> Lua String
 typename n = liftLua $ \l ->
   c_lua_typename l (fromIntegral (fromEnum n)) >>= peekCString
-
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_xmove lua_xmove>.
-xmove :: LuaState -> Int -> Lua ()
-xmove l2 n = liftLua $ \l1 -> c_lua_xmove l1 l2 (fromIntegral n)
-
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_yield lua_yield>.
-yield :: Int -> Lua Int
-#if LUA_VERSION_NUMBER >= 502
-yield n = liftLua $ \l -> fromIntegral <$> c_lua_yieldk l (fromIntegral n) 0 nullPtr
-#else
-yield n = liftLua $ \l -> fromIntegral <$> (c_lua_yield l (fromIntegral n))
-#endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_checkstack lua_checkstack>.
 checkstack :: Int -> Lua Bool
@@ -541,10 +524,6 @@ loadstring str = liftLua $ \l ->
   withCString str $ \strPtr ->
   fromIntegral <$> c_luaL_loadstring l strPtr
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_newthread lua_newthread>.
-newthread :: Lua LuaState
-newthread = liftLua c_lua_newthread
-
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_newuserdata lua_newuserdata>.
 newuserdata :: Int -> Lua (Ptr ())
 newuserdata = liftLua1 c_lua_newuserdata . fromIntegral
@@ -577,10 +556,6 @@ pushnumber = liftLua1 c_lua_pushnumber
 pushstring :: B.ByteString -> Lua ()
 pushstring s = liftLua $ \l ->
   B.unsafeUseAsCStringLen s $ \(sPtr, z) -> c_lua_pushlstring l sPtr (fromIntegral z)
-
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushthread lua_pushthread>.
-pushthread :: Lua Bool
-pushthread = (/= 0) <$> liftLua c_lua_pushthread
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushvalue lua_pushvalue>.
 pushvalue :: StackIndex -> Lua ()
@@ -621,14 +596,6 @@ replace :: StackIndex -> Lua ()
 replace n = liftLua (\l -> c_lua_copy l (-1) (fromIntegral n)) *> pop 1
 #else
 replace n = liftLua $ \l ->  c_lua_replace l (fromIntegral n)
-#endif
-
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_resume lua_resume>.
-resume :: Int -> Lua Int
-#if LUA_VERSION_NUMBER >= 503
-resume n = liftLua $ \l -> fromIntegral <$> c_lua_resume l 0 (fromIntegral n)
-#else
-resume n = liftLua $ \l -> fromIntegral <$> c_lua_resume l (fromIntegral n)
 #endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_setmetatable lua_setmetatable>.
