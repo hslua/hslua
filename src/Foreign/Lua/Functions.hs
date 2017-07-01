@@ -47,7 +47,6 @@ module Foreign.Lua.Functions
   , copy
   , cpcall
   , createtable
-  , dump
   , equal
   , getfield
   , getglobal
@@ -138,7 +137,6 @@ module Foreign.Lua.Functions
 import Prelude hiding (compare, concat)
 
 import Control.Monad
-import Data.IORef
 import Foreign.C
 import Foreign.Lua.Constants
 import Foreign.Lua.RawBindings
@@ -428,24 +426,6 @@ opendebug = pushcfunction c_lua_open_debug_ptr *> call 0 multret
 openpackage :: Lua ()
 openpackage = pushcfunction c_lua_open_package_ptr *> call 0 multret
 
-foreign import ccall "wrapper" mkStringWriter :: LuaWriter -> IO (FunPtr LuaWriter)
-
-foreign import ccall "wrapper" mkWrapper :: LuaCFunction -> IO (FunPtr LuaCFunction)
-
--- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_dump lua_dump>.
-dump :: Lua String
-dump = liftLua $ \l -> do
-    r <- newIORef ""
-    let wr :: LuaWriter
-        wr _l p s _d = do
-          k <- peekCStringLen (p, fromIntegral s)
-          modifyIORef r (++ k)
-          return 0
-    writer <- mkStringWriter wr
-    c_lua_dump l writer nullPtr
-    freeHaskellFunPtr writer
-    readIORef r
-
 compare :: StackIndex -> StackIndex -> LuaComparerOp -> Lua Bool
 #if LUA_VERSION_NUMBER >= 502
 compare idx1 idx2 op = liftLua $ \l -> (/= 0) <$>
@@ -545,6 +525,7 @@ isstring n = liftLua $ \l -> (/= 0) <$> c_lua_isstring l (fromIntegral n)
 isuserdata :: StackIndex -> Lua Bool
 isuserdata n = liftLua $ \l -> (/= 0) <$> c_lua_isuserdata l (fromIntegral n)
 
+-- TODO: implement dump
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#luaL_loadfile luaL_loadfile>.
 loadfile :: String -> Lua Int
@@ -707,6 +688,9 @@ register n f = do
 newmetatable :: String -> Lua Int
 newmetatable s = liftLua $ \l ->
   withCString s $ \sPtr -> fromIntegral <$> c_luaL_newmetatable l sPtr
+
+
+foreign import ccall "wrapper" mkWrapper :: LuaCFunction -> IO (FunPtr LuaCFunction)
 
 -- | See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#luaL_argerror luaL_argerror>. Contrary to the
 -- manual, Haskell function does return with value less than zero.
