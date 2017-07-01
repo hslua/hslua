@@ -37,7 +37,6 @@ Monadic functions which operate within the Lua type.
 -}
 module Foreign.Lua.Functions
   ( liftLua
-  , argerror
   , atpanic
   , call
   , checkstack
@@ -655,21 +654,6 @@ register n f = do
 newmetatable :: String -> Lua Int
 newmetatable s = liftLua $ \l ->
   withCString s $ \sPtr -> fromIntegral <$> c_luaL_newmetatable l sPtr
-
-
-foreign import ccall "wrapper" mkWrapper :: LuaCFunction -> IO (FunPtr LuaCFunction)
-
--- | See <https://www.lua.org/manual/5.3/manual.html#luaL_argerror luaL_argerror>. Contrary to the
--- manual, Haskell function does return with value less than zero.
-argerror :: Int -> String -> Lua CInt
-argerror n msg = do
-  f <- liftIO $ withCString msg $ \msgPtr -> do
-    let doit l' = c_luaL_argerror l' (fromIntegral n) msgPtr
-    mkWrapper doit
-  _ <- cpcall f nullPtr
-  liftIO $ freeHaskellFunPtr f
-  -- here we should have error message string on top of the stack
-  return (-1)
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_ref luaL_ref>.
 ref :: StackIndex -> Lua Int
