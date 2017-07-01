@@ -32,10 +32,12 @@ Portability : FlexibleInstances, ScopedTypeVariables
 HsLua utility functions.
 -}
 module Foreign.Lua.Util
-  ( returnError
+  ( getglobal'
+  , returnError
   ) where
 
 import Data.ByteString.Char8 (unpack)
+import Data.List (groupBy)
 import Foreign.Lua.Functions
 import Foreign.Lua.Types
 
@@ -45,3 +47,16 @@ returnError = do
   err <- tostring (-1)
   return $ Error (unpack err)
 
+-- | Like @getglobal@, but knows about packages. e. g.
+--
+-- > getglobal' l "math.sin"
+--
+-- returns correct result
+getglobal' :: String -> Lua ()
+getglobal' n = do
+    getglobal x
+    mapM_ dotable xs
+  where
+    (x : xs)  = splitdot n
+    splitdot  = filter (/= ".") . groupBy (\a b -> a /= '.' && b /= '.')
+    dotable a = getfield (-1) a *> gettop >>= \i -> remove (i - 1)

@@ -55,7 +55,7 @@ import Control.Monad (when)
 import Foreign.C (CInt (..))
 import Foreign.Lua.Functions
 import Foreign.Lua.Types
-import Foreign.Lua.Util (returnError)
+import Foreign.Lua.Util (getglobal', returnError)
 import Foreign.Ptr (FunPtr, castPtr, freeHaskellFunPtr)
 import Foreign.StablePtr (deRefStablePtr, freeStablePtr, newStablePtr)
 
@@ -116,7 +116,7 @@ class LuaCallFunc a where
 
 instance (FromLuaStack a) => LuaCallFunc (Lua (Result a)) where
   callfunc' fnName x nargs = do
-    getglobal2 fnName
+    getglobal' fnName
     x
     z <- pcall nargs 1 0
     if z /= 0

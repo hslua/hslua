@@ -49,7 +49,6 @@ module Foreign.Lua.Functions
   , equal
   , getfield
   , getglobal
-  , getglobal2
   , getmetatable
   , gettable
   , gettop
@@ -140,7 +139,6 @@ import Foreign.Ptr
 
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Unsafe as B
-import qualified Data.List as L
 import qualified Foreign.Storable as F
 
 -- | Turn a function of typ @LuaState -> IO a@ into a monadic lua operation.
@@ -663,17 +661,3 @@ ref t = liftLua $ \l -> fromIntegral <$> c_luaL_ref l (fromStackIndex t)
 unref :: StackIndex -> Int -> Lua ()
 unref idx r = liftLua $ \l ->
   c_luaL_unref l (fromStackIndex idx) (fromIntegral r)
-
--- | Like @getglobal@, but knows about packages. e. g.
---
--- > getglobal l "math.sin"
---
--- returns correct result
-getglobal2 :: String -> Lua ()
-getglobal2 n = do
-    getglobal x
-    mapM_ dotable xs
-  where
-    (x : xs)  = splitdot n
-    splitdot  = filter (/= ".") . L.groupBy (\a b -> a /= '.' && b /= '.')
-    dotable a = getfield (-1) a *> gettop >>= \i -> remove (i - 1)
