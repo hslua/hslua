@@ -34,12 +34,21 @@ HsLua utility functions.
 module Foreign.Lua.Util
   ( getglobal'
   , returnError
+  , runLua
   ) where
 
 import Data.ByteString.Char8 (unpack)
 import Data.List (groupBy)
 import Foreign.Lua.Functions
 import Foreign.Lua.Types
+
+-- | Run lua computation using the default HsLua state as starting point.
+runLua :: Lua a -> IO a
+runLua lua = do
+  st <- newstate
+  res <- runLuaWith st lua
+  liftIO (close st)
+  return res
 
 -- | Return an error, reading and removing the error message from the stack.
 returnError :: Lua (Result a)

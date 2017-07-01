@@ -35,9 +35,7 @@ module Foreign.Lua.FunctionsTest (tests) where
 
 import Prelude hiding (compare)
 
-import Foreign.Lua.Functions
-import Foreign.Lua.Types (Lua, LuaComparerOp (..), LuaInteger, LuaNumber,
-                          Result (..), peek, push)
+import Foreign.Lua
 import Test.HsLua.Util (luaTestCase, pushLuaExpr)
 import Test.QuickCheck (Property, (.&&.))
 import Test.QuickCheck.Monadic (assert, monadicIO, run)

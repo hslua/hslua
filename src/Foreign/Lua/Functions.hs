@@ -106,7 +106,6 @@ module Foreign.Lua.Functions
   , register
   , remove
   , replace
-  , runLua
   , setfield
   , setglobal
   , setmetatable
@@ -283,14 +282,6 @@ newstate = do
       createtable 0 0
       setglobal "_HASKELLERR"
       return l
-
--- | Run lua computation using the default HsLua state as starting point.
-runLua :: Lua a -> IO a
-runLua lua = do
-  st <- newstate
-  res <- runLuaWith st lua
-  liftIO (close st)
-  return res
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_close lua_close>.
 close :: LuaState -> IO ()

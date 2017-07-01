@@ -26,7 +26,7 @@ import Data.ByteString.Char8 (pack)
 import Foreign.Lua.Functions
 import Foreign.Lua.Interop (callfunc, peek, registerhsfunction)
 import Foreign.Lua.Types (Lua, LuaNumber, Result (..))
-import Foreign.Lua.Util (returnError)
+import Foreign.Lua.Util (returnError, runLua)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
 

@@ -24,8 +24,7 @@ THE SOFTWARE.
 module Foreign.Lua.TypesTest (tests) where
 
 import Data.ByteString (ByteString)
-import Foreign.Lua.Types
-import Foreign.Lua.Functions
+import Foreign.Lua
 import Test.QuickCheck hiding (Success)
 import Test.QuickCheck.Instances ()
 import Test.QuickCheck.Monadic

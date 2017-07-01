@@ -34,9 +34,8 @@ module Foreign.Lua.Types.FromLuaStackTest (tests) where
 
 import Control.Applicative (empty, (<|>))
 import Control.Monad (mplus, mzero)
-import Foreign.Lua.Types.Core (Lua, LuaInteger)
+import Foreign.Lua (Lua, LuaInteger, call, loadstring, runLua)
 import Foreign.Lua.Types.FromLuaStack
-import Foreign.Lua.Functions (call, loadstring, runLua)
 
 import Test.QuickCheck.Function (Fun (..))
 import Test.Tasty (TestTree, testGroup)

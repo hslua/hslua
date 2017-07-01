@@ -39,9 +39,11 @@ module Foreign.Lua
   , module Foreign.Lua.Functions
   , module Foreign.Lua.Interop
   , module Foreign.Lua.Types
+  , module Foreign.Lua.Util
   ) where
 
 import Foreign.Lua.Constants
 import Foreign.Lua.Functions
 import Foreign.Lua.Interop
 import Foreign.Lua.Types
+import Foreign.Lua.Util
