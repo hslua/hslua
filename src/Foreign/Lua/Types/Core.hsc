@@ -68,7 +68,7 @@ import Foreign.Ptr
 
 #include "lua.h"
 
--- | Synonym for @lua_State *@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_State lua_State>.
+-- | Synonym for @lua_State *@. See <https://www.lua.org/manual/5.3/#lua_State lua_State>.
 newtype LuaState = LuaState (Ptr ())
 
 -- | Lua computation
@@ -82,25 +82,25 @@ luaState = ask
 runLuaWith :: LuaState -> Lua a -> IO a
 runLuaWith = flip $ runReaderT . unLua
 
--- | Synonym for @lua_Alloc@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_Alloc lua_Alloc>.
+-- | Synonym for @lua_Alloc@. See <https://www.lua.org/manual/5.3/#lua_Alloc lua_Alloc>.
 type LuaAlloc = Ptr () -> Ptr () -> CSize -> CSize -> IO (Ptr ())
 
--- | Synonym for @lua_Reader@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_Reader lua_Reader>.
+-- | Synonym for @lua_Reader@. See <https://www.lua.org/manual/5.3/#lua_Reader lua_Reader>.
 type LuaReader = Ptr () -> Ptr () -> Ptr CSize -> IO (Ptr CChar)
 
--- | Synonym for @lua_Writer@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_Writer lua_Writer>.
+-- | Synonym for @lua_Writer@. See <https://www.lua.org/manual/5.3/#lua_Writer lua_Writer>.
 type LuaWriter = LuaState -> Ptr CChar -> CSize -> Ptr () -> IO CInt
 
--- | Synonym for @lua_CFunction@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_CFunction lua_CFunction>.
+-- | Synonym for @lua_CFunction@. See <https://www.lua.org/manual/5.3/#lua_CFunction lua_CFunction>.
 type LuaCFunction = LuaState -> IO CInt
 
--- | Synonym for @lua_Integer@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_Integer lua_Integer>.
+-- | Synonym for @lua_Integer@. See <https://www.lua.org/manual/5.3/#lua_Integer lua_Integer>.
 type LuaInteger = #{type LUA_INTEGER}
 
--- | Synonym for @lua_Number@. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_Number lua_Number>.
+-- | Synonym for @lua_Number@. See <https://www.lua.org/manual/5.3/#lua_Number lua_Number>.
 type LuaNumber = #{type LUA_NUMBER}
 
--- | Enumeration used as type tag. See <https://www.lua.org/manual/LUA_VERSION_MAJORMINOR/manual.html#lua_type lua_type>.
+-- | Enumeration used as type tag. See <https://www.lua.org/manual/5.3/#lua_type lua_type>.
 data LTYPE
   = TNONE
   | TNIL

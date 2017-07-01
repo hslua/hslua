@@ -132,12 +132,12 @@ library
     include-dirs:       lua-5.3.4
 
   if flag(lua501) || flag(luajit)
-    cpp-options:        -DLUA_VERSION_NUMBER=501 -DLUA_VERSION_MAJORMINOR=5.1
+    cpp-options:        -DLUA_VERSION_NUMBER=501
   else
     if flag(lua502)
-      cpp-options:      -DLUA_VERSION_NUMBER=502 -DLUA_VERSION_MAJORMINOR=5.2
+      cpp-options:      -DLUA_VERSION_NUMBER=502
     else
-      cpp-options:      -DLUA_VERSION_NUMBER=503 -DLUA_VERSION_MAJORMINOR=5.3
+      cpp-options:      -DLUA_VERSION_NUMBER=503
 
   if os(linux)
     cc-options:         "-DLUA_USE_LINUX"
