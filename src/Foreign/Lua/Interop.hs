@@ -45,6 +45,8 @@ module Foreign.Lua.Interop
   , luaimport
   , callfunc
   , newcfunction
+  , pushhsfunction
+  , pushrawhsfunction
   , registerhsfunction
   , registerrawhsfunction
   ) where
