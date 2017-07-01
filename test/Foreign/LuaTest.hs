@@ -27,6 +27,7 @@ import Prelude hiding (concat)
 
 import Data.ByteString (ByteString)
 import Foreign.Lua
+import Test.HsLua.Util (pushLuaExpr)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (testCase, assert)
 
@@ -45,8 +46,7 @@ tests = testGroup "lua integration tests"
 
   , testCase "functions stored in / retrieved from registry" .
     runLua $ do
-      _ <- loadstring "return function() return 2 end, function() return 1 end"
-      call 0 2
+      pushLuaExpr "function() return 2 end, function() return 1 end"
       idx1 <- ref registryindex
       idx2 <- ref registryindex
       -- functions are removed from stack

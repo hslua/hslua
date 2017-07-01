@@ -35,15 +35,13 @@ module Foreign.Lua.FunctionsTest (tests) where
 
 import Prelude hiding (compare)
 
-import Control.Monad (forM_)
-import Foreign.Lua.Constants
 import Foreign.Lua.Functions
-import Foreign.Lua.Interop (peek, push)
-import Foreign.Lua.Types
+import Foreign.Lua.Types (Lua, LuaComparerOp (..), LuaInteger, LuaNumber,
+                          Result (..), peek, push)
+import Test.HsLua.Util (luaTestCase, pushLuaExpr)
 import Test.QuickCheck (Property, (.&&.))
 import Test.QuickCheck.Monadic (assert, monadicIO, run)
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit (assertBool, testCase, (@?))
 import Test.Tasty.QuickCheck (testProperty)
 
 
@@ -51,18 +49,14 @@ import Test.Tasty.QuickCheck (testProperty)
 tests :: TestTree
 tests = testGroup "Monadic functions"
   [ testGroup "copy"
-    [ testCase "copies stack elements using positive indices" $
-      assertBool "copied element should be equal to original" =<<
-        runLua (do
-          forM_ [1..5::Int] $ \n -> push n
-          copy 4 3
-          rawequal 4 3)
-    , testCase "copies stack elements using negative indices" $
-      assertBool "copied element should be equal to original" =<<
-        runLua (do
-          forM_ [1..5::Int] $ \n -> push n
-          copy (-1) (-3)
-          rawequal (-1) (-3))
+    [ luaTestCase "copies stack elements using positive indices" $ do
+        pushLuaExpr "5, 4, 3, 2, 1"
+        copy 4 3
+        rawequal 4 3
+    , luaTestCase "copies stack elements using negative indices" $ do
+        pushLuaExpr "5, 4, 3, 2, 1"
+        copy (-1) (-3)
+        rawequal (-1) (-3)
     ]
 
   , testGroup "insert" $
@@ -110,13 +104,6 @@ tests = testGroup "Monadic functions"
         lessthan (-1) (-2) <* pop 2
       assert $ luaCmp == (n1 < n2)
   ]
-
-luaTestCase :: String -> Lua Bool -> TestTree
-luaTestCase msg luaOp =
-  testCase msg $ runLua luaOp @? "lua operation returned false"
-
-pushLuaExpr :: String -> Lua ()
-pushLuaExpr expr = loadstring ("return " ++ expr) *> call 0 multret
 
 compareWith :: (Int -> Int -> Bool) -> LuaComparerOp -> Int -> Property
 compareWith op luaOp n = compareLT .&&. compareEQ .&&. compareGT
