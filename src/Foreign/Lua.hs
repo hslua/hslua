@@ -39,7 +39,7 @@ module Foreign.Lua
   , module Foreign.Lua.Interop
   , module Foreign.Lua.Types
   , module Foreign.Lua.Util
-  , liftLua
+  -- * Lua API functions
   , atpanic
   , call
   , checkstack

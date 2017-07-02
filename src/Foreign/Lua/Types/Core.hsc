@@ -45,6 +45,8 @@ module Foreign.Lua.Types.Core (
   , runLuaWith
   , luaState
   , liftIO
+  , liftLua
+  , liftLua1
   -- Function type synonymes
   , LuaAlloc
   , LuaCFunction
@@ -74,6 +76,14 @@ newtype LuaState = LuaState (Ptr ())
 -- | Lua computation
 newtype Lua a = Lua { unLua :: ReaderT LuaState IO a }
   deriving (Functor, Applicative, Monad, MonadReader LuaState, MonadIO)
+
+-- | Turn a function of typ @LuaState -> IO a@ into a monadic lua operation.
+liftLua :: (LuaState -> IO a) -> Lua a
+liftLua f = luaState >>= liftIO . f
+
+-- | Turn a function of typ @LuaState -> a -> IO b@ into a monadic lua operation.
+liftLua1 :: (LuaState -> a -> IO b) -> a -> Lua b
+liftLua1 f x = liftLua $ \l -> f l x
 
 -- | Get the lua state of this lua computation.
 luaState :: Lua LuaState

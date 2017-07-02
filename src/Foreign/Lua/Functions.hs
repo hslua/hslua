@@ -51,14 +51,6 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Unsafe as B
 import qualified Foreign.Storable as F
 
--- | Turn a function of typ @LuaState -> IO a@ into a monadic lua operation.
-liftLua :: (LuaState -> IO a) -> Lua a
-liftLua f = luaState >>= liftIO . f
-
--- | Turn a function of typ @LuaState -> a -> IO b@ into a monadic lua operation.
-liftLua1 :: (LuaState -> a -> IO b) -> a -> Lua b
-liftLua1 f x = liftLua $ \l -> f l x
-
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_atpanic lua_atpanic>.
 atpanic :: FunPtr LuaCFunction -> Lua (FunPtr LuaCFunction)
 atpanic = liftLua1 lua_atpanic
