@@ -281,9 +281,7 @@ gettable :: StackIndex -> Lua LTYPE
 gettable n = liftLua $ \l ->
   toEnum . fromIntegral <$> lua_gettable l (fromStackIndex n)
 #else
-gettable n = liftLua $ \l -> do
-  lua_gettable l (fromStackIndex n)
-  ltype (-1)
+gettable n = (liftLua $ \l -> lua_gettable l (fromStackIndex n)) *> ltype (-1)
 #endif
 
 -- | Returns the index of the top element in the stack. Because indices start at
