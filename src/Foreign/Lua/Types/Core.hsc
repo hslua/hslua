@@ -151,9 +151,9 @@ instance Enum LTYPE where
 
 -- | Lua comparison operations
 data LuaComparerOp
-  = OpEQ
-  | OpLT
-  | OpLE
+  = OpEQ -- ^ Correponds to lua's equality (==) operator
+  | OpLT -- ^ Correponds to lua's strictly-lesser-than (<) operator
+  | OpLE -- ^ Correponds to lua's lesser-or-equal (<=) operator
   deriving (Eq, Ord, Show)
 
 #if LUA_VERSION_NUMBER >= 502

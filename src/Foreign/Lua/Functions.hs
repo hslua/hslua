@@ -51,7 +51,10 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Unsafe as B
 import qualified Foreign.Storable as F
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_atpanic lua_atpanic>.
+-- | Sets a new panic function and returns the old one (see
+-- <https://www.lua.org/manual/5.3/manual.html#4.6 §4.6> and
+-- <https://www.lua.org/manual/5.3/manual.html#lua_atpanic lua_atpanic> in the
+-- lua manual).
 atpanic :: FunPtr LuaCFunction -> Lua (FunPtr LuaCFunction)
 atpanic = liftLua1 lua_atpanic
 
@@ -65,11 +68,29 @@ call a nresults = liftLua $ \l ->
   lua_call l (fromNumArgs a) (fromNumResults nresults)
 #endif
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_checkstack lua_checkstack>.
+-- | Ensures that the stack has space for at least @n@ extra slots (that is,
+-- that you can safely push up to n values into it). It returns false if it
+-- cannot fulfill the request, either because it would cause the stack to be
+-- larger than a fixed maximum size (typically at least several thousand
+-- elements) or because it cannot allocate memory for the extra space. This
+-- function never shrinks the stack; if the stack already has space for the
+-- extra slots, it is left unchanged.
+--
+-- This is a wrapper function of
+-- <https://www.lua.org/manual/5.3/manual.html#lua_checkstack lua_checkstack>.
 checkstack :: Int -> Lua Bool
 checkstack n = liftLua $ \l -> liftM (/= 0) (lua_checkstack l (fromIntegral n))
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_close lua_close>.
+-- | Destroys all objects in the given Lua state (calling the corresponding
+-- garbage-collection metamethods, if any) and frees all dynamic memory used by
+-- this state. On several platforms, you may not need to call this function,
+-- because all resources are naturally released when the host program ends. On
+-- the other hand, long-running programs that create multiple states, such as
+-- daemons or web servers, will probably need to close states as soon as they
+-- are not needed.
+--
+-- This is a wrapper function of
+-- <https://www.lua.org/manual/5.3/manual.html#lua_close lua_close>.
 close :: LuaState -> IO ()
 close = lua_close
 
@@ -85,7 +106,8 @@ close = lua_close
 --    OpLT: compares for less than (<)
 --    OpLE: compares for less or equal (<=)
 --
--- See <https://www.lua.org/manual/5.3/manual.html#lua_compare lua_compare>.
+-- This is a wrapper function of
+-- <https://www.lua.org/manual/5.3/manual.html#lua_compare lua_compare>.
 compare :: StackIndex -> StackIndex -> LuaComparerOp -> Lua Bool
 #if LUA_VERSION_NUMBER >= 502
 compare idx1 idx2 op = liftLua $ \l -> (/= 0) <$>
@@ -103,7 +125,15 @@ compare idx1 idx2 op = liftLua $ \l ->
                 <*> lua_lessthan l (fromStackIndex idx1) (fromStackIndex idx2)
 #endif
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_concat lua_concat>.
+-- | Concatenates the @n@ values at the top of the stack, pops them, and leaves
+-- the result at the top. If @n@ is 1, the result is the single value on the
+-- stack (that is, the function does nothing); if @n@ is 0, the result is the
+-- empty string. Concatenation is performed following the usual semantics of Lua
+-- (see <https://www.lua.org/manual/5.3/manual.html#3.4.6 §3.4.6> of the lua
+-- manual).
+--
+-- This is a wrapper function of
+-- <https://www.lua.org/manual/5.3/manual.html#lua_concat lua_concat>.
 concat :: Int -> Lua ()
 concat n = liftLua $ \l -> lua_concat l (fromIntegral n)
 
@@ -124,7 +154,15 @@ copy fromidx toidx = do
   insert toidx
 #endif
 
--- | See <https://www.lua.org/manual/5.2/manual.html#lua_cpcall lua_cpcall>.
+{-# DEPRECATED cpcall "You can simply push the function with lua_pushcfunction\
+                       and call it with pcall." #-}
+-- | Calls the C function func in protected mode. func starts with only one
+-- element in its stack, a light userdata containing ud. In case of errors,
+-- lua_cpcall returns the same error codes as lua_pcall, plus the error object
+-- on the top of the stack; otherwise, it returns zero, and does not change the
+-- stack. All values returned by func are discarded.
+--
+-- See <https://www.lua.org/manual/5.1/manual.html#lua_cpcall lua_cpcall>.
 cpcall :: FunPtr LuaCFunction -> Ptr a -> Lua Int
 #if LUA_VERSION_NUMBER >= 502
 cpcall a c = do
@@ -135,10 +173,18 @@ cpcall a c = do
 cpcall a c = liftLua $ \l -> fmap fromIntegral (lua_cpcall l a c)
 #endif
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_createtable lua_createtable>.
+-- | Creates a new empty table and pushes it onto the stack. Parameter narr is a
+-- hint for how many elements the table will have as a sequence; parameter nrec
+-- is a hint for how many other elements the table will have. Lua may use these
+-- hints to preallocate memory for the new table. This preallocation is useful
+-- for performance when you know in advance how many elements the table will
+-- have. Otherwise you can use the function lua_newtable.
+--
+-- This is a wrapper for function
+-- <https://www.lua.org/manual/5.3/manual.html#lua_createtable lua_createtable>.
 createtable :: Int -> Int -> Lua ()
-createtable s z = liftLua $ \l ->
-  lua_createtable l (fromIntegral s) (fromIntegral z)
+createtable narr nrec = liftLua $ \l ->
+  lua_createtable l (fromIntegral narr) (fromIntegral nrec)
 
 -- TODO: implement dump
 
