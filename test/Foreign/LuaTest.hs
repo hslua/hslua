@@ -26,6 +26,7 @@ module Foreign.LuaTest (tests) where
 import Prelude hiding (concat)
 
 import Data.ByteString (ByteString)
+import Data.Monoid ((<>))
 import Foreign.Lua
 import Test.HsLua.Util (pushLuaExpr)
 import Test.Tasty (TestTree, testGroup)
@@ -66,4 +67,24 @@ tests = testGroup "lua integration tests"
       -- delete references
       unref registryindex idx1
       unref registryindex idx2
+
+  , testCase "table reading" .
+    runLua $ do
+      openbase
+      let tableStr = "{firstname = 'Jane', surname = 'Doe'}"
+      pushLuaExpr $ "setmetatable(" <> tableStr <> ", {'yup'})"
+      getfield (-1) "firstname"
+      firstname <- peek (-1) <* pop 1
+      liftIO (assert (firstname == Success ("Jane" :: ByteString)))
+
+      push ("surname" :: ByteString)
+      rawget (-2)
+      surname <- peek (-1) <* pop 1
+      liftIO (assert (surname == Success ("Doe" :: ByteString)))
+
+      hasMetaTable <- getmetatable (-1)
+      liftIO (assert hasMetaTable)
+      rawgeti (-1) 1
+      mt1 <- peek (-1) <* pop 1
+      liftIO (assert (mt1 == Success ("yup" :: ByteString)))
   ]
