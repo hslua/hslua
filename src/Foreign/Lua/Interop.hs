@@ -39,8 +39,9 @@ haskell.
 -}
 module Foreign.Lua.Interop
   ( FromLuaStack (..)
+  , LuaCallFunc (..)
+  , LuaImport (..)
   , ToLuaStack (..)
-  , LuaImport
   , freecfunction
   , luaimport
   , callfunc
@@ -61,7 +62,11 @@ import Foreign.StablePtr (deRefStablePtr, freeStablePtr, newStablePtr)
 
 import qualified Foreign.Storable as F
 
+-- | Operations and functions that can be pushed to the lua stack. This is a
+-- helper function not intended to be used directly. Use the @'luaimport'@
+-- wrapper instead.
 class LuaImport a where
+  -- | Helper function, called by @'luaimport'@
   luaimport' :: StackIndex -> a -> Lua (Result ())
 
 instance ToLuaStack a => LuaImport (Lua (Result a)) where

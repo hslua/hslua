@@ -75,6 +75,7 @@ newtype LuaState = LuaState (Ptr ())
 newtype Lua a = Lua { unLua :: ReaderT LuaState IO a }
   deriving (Functor, Applicative, Monad, MonadReader LuaState, MonadIO)
 
+-- | Get the lua state of this lua computation.
 luaState :: Lua LuaState
 luaState = ask
 

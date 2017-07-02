@@ -395,6 +395,19 @@ opendebug = pushcfunction lua_open_debug_ptr *> call 0 multret
 openpackage :: Lua ()
 openpackage = pushcfunction lua_open_package_ptr *> call 0 multret
 
+-- | Compares two Lua values. Returns @True@ if the value at index @idx1@
+-- satisfies @op@ when compared with the value at index @idx2@, following the
+-- semantics of the corresponding Lua operator (that is, it may call
+-- metamethods). Otherwise returns @False@. Also returns @False@ if any of the
+-- indices is not valid.
+--
+-- The value of op must be of type @'LuaComparerOp'@:
+--
+--    OpEQ: compares for equality (==)
+--    OpLT: compares for less than (<)
+--    OpLE: compares for less or equal (<=)
+--
+-- See <https://www.lua.org/manual/5.3/manual.html#lua_compare lua_compare>.
 compare :: StackIndex -> StackIndex -> LuaComparerOp -> Lua Bool
 #if LUA_VERSION_NUMBER >= 502
 compare idx1 idx2 op = liftLua $ \l -> (/= 0) <$>
