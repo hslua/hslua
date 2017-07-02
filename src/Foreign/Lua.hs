@@ -36,11 +36,100 @@ into a haskell project.
 -}
 module Foreign.Lua
   ( module Foreign.Lua.Constants
-  , module Foreign.Lua.Functions
   , module Foreign.Lua.Interop
   , module Foreign.Lua.Types
   , module Foreign.Lua.Util
+  , liftLua
+  , atpanic
+  , call
+  , checkstack
+  , close
+  , compare
+  , concat
+  , copy
+  , cpcall
+  , createtable
+  , equal
+  , getfield
+  , getglobal
+  , getmetatable
+  , gettable
+  , gettop
+  , gc
+  , insert
+  , isboolean
+  , iscfunction
+  , isfunction
+  , islightuserdata
+  , isnil
+  , isnone
+  , isnoneornil
+  , isnumber
+  , isstring
+  , istable
+  , isthread
+  , isuserdata
+  , lerror
+  , lessthan
+  , loadfile
+  , loadstring
+  , ltype
+  , newmetatable
+  , newstate
+  , newtable
+  , newuserdata
+  , next
+  , objlen
+  , openbase
+  , opendebug
+  , openio
+  , openlibs
+  , openmath
+  , openpackage
+  , openos
+  , openstring
+  , opentable
+  , pcall
+  , pop
+  , pushboolean
+  , pushcfunction
+  , pushinteger
+  , pushlightuserdata
+  , pushnil
+  , pushnumber
+  , pushstring
+  , pushvalue
+  , rawequal
+  , rawget
+  , rawgeti
+  , rawlen
+  , rawset
+  , rawseti
+  , ref
+  , register
+  , remove
+  , replace
+  , setfield
+  , setglobal
+  , setmetatable
+  , settable
+  , settop
+  , status
+  , strlen
+  , toboolean
+  , tocfunction
+  , tointeger
+  , tonumber
+  , topointer
+  , tostring
+  , tothread
+  , touserdata
+  , typename
+  , upvalueindex
+  , unref
   ) where
+
+import Prelude hiding (compare, concat)
 
 import Foreign.Lua.Constants
 import Foreign.Lua.Functions
