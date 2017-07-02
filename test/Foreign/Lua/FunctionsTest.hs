@@ -19,6 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
+{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
 {-|
 Module      :  Foreign.Lua.FunctionsTest
@@ -71,6 +72,14 @@ tests = testGroup "Monadic functions"
         newTop <- peek (-1) :: Lua (Result LuaInteger)
         return (movedEl == Success 9 && newTop == Success 8)
     ]
+
+  , luaTestCase "gettable gets a table value and returns its type" $ do
+      pushLuaExpr "{sum = 13.37}"
+      pushnumber 13.37
+      pushstring "sum"
+      retType <- gettable (-3)
+      res <- equal (-1) (-2)
+      return (res && retType == TNUMBER)
 
   , luaTestCase "strlen, objlen, and rawlen all behave the same" $ do
       pushLuaExpr "{1, 1, 2, 3, 5, 8}"

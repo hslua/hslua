@@ -224,8 +224,13 @@ foreign import ccall "lua.h lua_pushthread"
 --------------------------------------------------------------------------------
 -- * Get functions
 
+#if LUA_VERSION_NUMBER >= 503
+foreign import ccall "lua.h lua_gettable"
+  lua_gettable :: LuaState -> CInt -> IO CInt
+#else
 foreign import ccall "lua.h lua_gettable"
   lua_gettable :: LuaState -> CInt -> IO ()
+#endif
 
 foreign import ccall "lua.h lua_getfield"
   lua_getfield :: LuaState -> CInt -> Ptr CChar -> IO ()

@@ -276,8 +276,15 @@ getmetatable n = liftLua $ \l ->
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_gettable lua_gettable>.
-gettable :: StackIndex -> Lua ()
-gettable n = liftLua $ \l -> lua_gettable l (fromStackIndex n)
+gettable :: StackIndex -> Lua LTYPE
+#if LUA_VERSION_NUMBER >= 503
+gettable n = liftLua $ \l ->
+  toEnum . fromIntegral <$> lua_gettable l (fromStackIndex n)
+#else
+gettable n = liftLua $ \l -> do
+  lua_gettable l (fromStackIndex n)
+  ltype (-1)
+#endif
 
 -- | Returns the index of the top element in the stack. Because indices start at
 -- 1, this result is equal to the number of elements in the stack (and so 0
