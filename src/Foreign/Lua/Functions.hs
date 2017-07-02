@@ -188,40 +188,102 @@ createtable narr nrec = liftLua $ \l ->
 
 -- TODO: implement dump
 
--- | Tests whether the objects under the given indices are equal. See
--- <https://www.lua.org/manual/5.3/manual.html#lua_equal lua_equal>.
+-- | Returns @True@ if the two values in acceptable indices index1 and index2
+-- are equal, following the semantics of the Lua @==@ operator (that is, may
+-- call metamethods). Otherwise returns False. Also returns False if any of the
+-- indices is non valid. Uses @'compare'@ internally.
 equal :: StackIndex -> StackIndex -> Lua Bool
 equal index1 index2 = compare index1 index2 OpEQ
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_gc lua_gc>.
+-- |  Controls the garbage collector.
+--
+-- This function performs several tasks, according to the value of the parameter what:
+--
+--   * @'GCSTOP'@: stops the garbage collector.
+--
+--   * @'GCRESTART'@: restarts the garbage collector.
+--
+--   * @'GCCOLLECT'@: performs a full garbage-collection cycle.
+--
+--   * @'GCCOUNT'@: returns the current amount of memory (in Kbytes) in use by Lua.
+--
+--   * @'GCCOUNTB'@: returns the remainder of dividing the current amount of bytes
+--     of memory in use by Lua by 1024.
+--
+--   * @'GCSTEP'@: performs an incremental step of garbage collection. The step
+--     "size" is controlled by data (larger values mean more steps) in a
+--     non-specified way. If you want to control the step size you must
+--     experimentally tune the value of data. The function returns 1 if the step
+--     finished a garbage-collection cycle.
+--
+--   * @'GCSETPAUSE@': sets data as the new value for the pause of the collector
+--     (see §2.10). The function returns the previous value of the pause.
+--
+--   * @'GCSETSTEPMUL'@: sets data as the new value for the step multiplier of the
+--     collector (see §2.10). The function returns the previous value of the
+--     step multiplier.
+--
+-- See <https://www.lua.org/manual/5.3/manual.html#lua_gc lua_gc>.
 gc :: GCCONTROL -> Int -> Lua Int
-gc i j= liftLua $ \l ->
-  fromIntegral <$> lua_gc l (fromIntegral (fromEnum i)) (fromIntegral j)
+gc what data' = liftLua $ \l ->
+  fromIntegral <$> lua_gc l (fromIntegral (fromEnum what)) (fromIntegral data')
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_getfield lua_getfield>.
+-- | Pushes onto the stack the value @t[k]@, where @t@ is the value at the given
+-- stack index. As in Lua, this function may trigger a metamethod for the
+-- "index" event (see <https://www.lua.org/manual/5.3/manual.html#2.4 §2.4> of
+-- lua's manual).
+--
+-- Returns the type of the pushed value.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_getfield lua_getfield>.
 getfield :: StackIndex -> String -> Lua ()
 getfield i s = liftLua $ \l ->
   withCString s $ \sPtr -> lua_getfield l (fromIntegral i) sPtr
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_getglobal lua_getglobal>.
+-- | Pushes onto the stack the value of the global @name@. Returns the type of
+-- that value.
+--
+-- Wrapper of
+-- <https://www.lua.org/manual/5.3/manual.html#lua_getglobal lua_getglobal>.
 getglobal :: String -> Lua ()
 #if LUA_VERSION_NUMBER >= 502
-getglobal s = liftLua $ \l ->
-  withCString s $ \sPtr -> lua_getglobal l sPtr
+getglobal name = liftLua $ \l ->
+  withCString name $ \namePtr -> lua_getglobal l namePtr
 #else
-getglobal s = getfield globalsindex s
+getglobal name = getfield globalsindex name
 #endif
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_getmetatable lua_getmetatable>.
+-- | If the value at the given index has a metatable, the function pushes that
+-- metatable onto the stack and returns @True@. Otherwise, the function returns
+-- @False@ and pushes nothing on the stack.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_getmetatable lua_getmetatable>.
 getmetatable :: StackIndex -> Lua Bool
 getmetatable n = liftLua $ \l ->
   fmap (/= 0) (lua_getmetatable l (fromStackIndex n))
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_gettable lua_gettable>.
+-- | Pushes onto the stack the value @t[k]@, where @t@ is the value at the given
+-- index and @k@ is the value at the top of the stack.
+--
+-- This function pops the key from the stack, pushing the resulting value in its
+-- place. As in Lua, this function may trigger a metamethod for the "index"
+-- event (see <https://www.lua.org/manual/5.3/manual.html#2.4 §2.4> of lua's
+-- manual).
+--
+-- Returns the type of the pushed value.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_gettable lua_gettable>.
 gettable :: StackIndex -> Lua ()
 gettable n = liftLua $ \l -> lua_gettable l (fromStackIndex n)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_gettop lua_gettop>.
+-- | Returns the index of the top element in the stack. Because indices start at
+-- 1, this result is equal to the number of elements in the stack (and so 0
+-- means an empty stack).
+--
+-- See also: <https://www.lua.org/manual/5.3/manual.html#lua_gettop lua_gettop>.
 gettop :: Lua StackIndex
 gettop = liftLua $ fmap fromIntegral . lua_gettop
 
