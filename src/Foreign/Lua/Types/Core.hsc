@@ -96,13 +96,35 @@ runLuaWith = flip $ runReaderT . unLua
 -- | Synonym for @lua_Alloc@. See <https://www.lua.org/manual/5.3/#lua_Alloc lua_Alloc>.
 type LuaAlloc = Ptr () -> Ptr () -> CSize -> CSize -> IO (Ptr ())
 
--- | Synonym for @lua_Reader@. See <https://www.lua.org/manual/5.3/#lua_Reader lua_Reader>.
+-- | The reader function used by @'lua_load'@. Every time it needs another piece
+-- of the chunk, @'lua_load'@ calls the reader, passing along its data
+-- parameter. The reader must return a pointer to a block of memory with a new
+-- piece of the chunk and set size to the block size. The block must exist until
+-- the reader function is called again. To signal the end of the chunk, the
+-- reader must return NULL or set size to zero. The reader function may return
+-- pieces of any size greater than zero.
+--
+-- See <https://www.lua.org/manual/5.3/#lua_Reader lua_Reader>.
 type LuaReader = Ptr () -> Ptr () -> Ptr CSize -> IO (Ptr CChar)
 
 -- | Synonym for @lua_Writer@. See <https://www.lua.org/manual/5.3/#lua_Writer lua_Writer>.
 type LuaWriter = LuaState -> Ptr CChar -> CSize -> Ptr () -> IO CInt
 
--- | Synonym for @lua_CFunction@. See <https://www.lua.org/manual/5.3/#lua_CFunction lua_CFunction>.
+-- |  Type for C functions.
+--
+-- In order to communicate properly with Lua, a C function must use the
+-- following protocol, which defines the way parameters and results are passed:
+-- a C function receives its arguments from Lua in its stack in direct order
+-- (the first argument is pushed first). So, when the function starts,
+-- @'gettop'@ returns the number of arguments received by the function. The
+-- first argument (if any) is at index 1 and its last argument is at index
+-- @gettop@. To return values to Lua, a C function just pushes them onto the
+-- stack, in direct order (the first result is pushed first), and returns the
+-- number of results. Any other value in the stack below the results will be
+-- properly discarded by Lua. Like a Lua function, a C function called by Lua
+-- can also return many results.
+--
+-- See <https://www.lua.org/manual/5.3/#lua_CFunction lua_CFunction>.
 type LuaCFunction = LuaState -> IO CInt
 
 -- | Synonym for @lua_Integer@. See <https://www.lua.org/manual/5.3/#lua_Integer lua_Integer>.

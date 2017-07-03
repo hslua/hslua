@@ -387,72 +387,129 @@ ltype :: StackIndex -> Lua LTYPE
 ltype idx = toEnum . fromIntegral <$>
   liftLua (flip lua_type $ fromStackIndex idx)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#luaL_newmetatable luaL_newmetatable>.
-newmetatable :: String -> Lua Int
-newmetatable s = liftLua $ \l ->
-  withCString s $ \sPtr -> fromIntegral <$> luaL_newmetatable l sPtr
+-- | If the registry already has the key tname, returns @False@. Otherwise,
+-- creates a new table to be used as a metatable for userdata, adds to this new
+-- table the pair @__name = tname@, adds to the registry the pair @[tname] = new
+-- table@, and returns @True@. (The entry @__name@ is used by some
+-- error-reporting functions.)
+--
+-- In both cases pushes onto the stack the final value associated with @tname@ in
+-- the registry.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#luaL_newmetatable luaL_newmetatable>.
+newmetatable :: String -> Lua Bool
+newmetatable tname = liftLua $ \l ->
+  (/= 0) <$> withCString tname (\sPtr -> luaL_newmetatable l sPtr)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#luaL_newstate luaL_newstate>.
+-- | Creates a new Lua state. It calls @'lua_newstate'@ with an allocator based
+-- on the standard C @realloc@ function and then sets a panic function (see
+-- <https://www.lua.org/manual/5.3/manual.html#4.6 §4.6> of the Lua 5.3
+-- Reference Manual) that prints an error message to the standard error output
+-- in case of fatal errors.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#luaL_newstate luaL_newstate>.
 newstate :: IO LuaState
 newstate = do
-    l <- luaL_newstate
-    runLuaWith l $ do
-      createtable 0 0
-      setglobal "_HASKELLERR"
-      return l
+  l <- luaL_newstate
+  runLuaWith l $ do
+    createtable 0 0
+    setglobal "_HASKELLERR"
+    return l
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_newtable lua_newtable>.
+-- | Creates a new empty table and pushes it onto the stack. It is equivalent to
+-- @createtable 0 0@.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_newtable lua_newtable>.
 newtable :: Lua ()
 newtable = createtable 0 0
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_newuserdata lua_newuserdata>.
+-- | This function allocates a new block of memory with the given size, pushes
+-- onto the stack a new full userdata with the block address, and returns this
+-- address. The host program can freely use this memory.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_newuserdata lua_newuserdata>.
 newuserdata :: Int -> Lua (Ptr ())
 newuserdata = liftLua1 lua_newuserdata . fromIntegral
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_next lua_next>.
-next :: Int -> Lua Bool
-next i = liftLua $ \l -> (/= 0) <$> lua_next l (fromIntegral i)
+-- | Pops a key from the stack, and pushes a key–value pair from the table at
+-- the given index (the "next" pair after the given key). If there are no more
+-- elements in the table, then @next@ returns @False@ (and pushes nothing).
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_next lua_next>.
+next :: StackIndex -> Lua Bool
+next idx = liftLua $ \l -> (/= 0) <$> lua_next l (fromIntegral idx)
 
 {-# DEPRECATED objlen "Use rawlen instead." #-}
 -- | Obsolete alias for @'rawlen'@.
 objlen :: StackIndex -> Lua Int
 objlen = rawlen
 
--- | See <https://www.lua.org/manual/5.3/manual.html#luaL_openlibs luaL_openlibs>.
+-- | Opens all standard Lua libraries into the current state.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#luaL_openlibs luaL_openlibs>.
 openlibs :: Lua ()
 openlibs = liftLua luaL_openlibs
 
+-- | Opens all standard Lua libraries into the current state.
+--
 -- | See <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_base luaopen_base>.
 openbase :: Lua ()
 openbase = pushcfunction lua_open_base_ptr *> call 0 multret
 
--- | See <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_table luaopen_table>.
-opentable :: Lua ()
-opentable = pushcfunction lua_open_table_ptr *> call 0 multret
-
--- | See <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_io luaopen_io>.
-openio :: Lua ()
-openio = pushcfunction lua_open_io_ptr *> call 0 multret
-
--- | See <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_os luaopen_os>.
-openos :: Lua ()
-openos = pushcfunction lua_open_os_ptr *> call 0 multret
-
--- | See <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_string luaopen_string>.
-openstring :: Lua ()
-openstring = pushcfunction lua_open_string_ptr *> call 0 multret
-
--- | See <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_math luaopen_math>.
-openmath :: Lua ()
-openmath = pushcfunction lua_open_math_ptr *> call 0 multret
-
--- | See <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_debug luaopen_debug>.
+-- | Opens Lua's /debug/ library into the current state.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_debug luaopen_debug>.
 opendebug :: Lua ()
 opendebug = pushcfunction lua_open_debug_ptr *> call 0 multret
 
--- | See <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_package luaopen_package>.
+-- | Opens Lua's /io/ library into the current state.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_io luaopen_io>.
+openio :: Lua ()
+openio = pushcfunction lua_open_io_ptr *> call 0 multret
+
+-- | Opens Lua's /math/ library into the current state.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_math luaopen_math>.
+openmath :: Lua ()
+openmath = pushcfunction lua_open_math_ptr *> call 0 multret
+
+-- | Opens Lua's /os/ library into the current state.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_os luaopen_os>.
+openos :: Lua ()
+openos = pushcfunction lua_open_os_ptr *> call 0 multret
+
+-- | Opens Lua's /package/ library into the current state.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_package luaopen_package>.
 openpackage :: Lua ()
 openpackage = pushcfunction lua_open_package_ptr *> call 0 multret
+
+-- | Opens Lua's /string/ library into the current state.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_string luaopen_string>.
+openstring :: Lua ()
+openstring = pushcfunction lua_open_string_ptr *> call 0 multret
+
+-- | Opens Lua's /table/ library into the current state.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_table luaopen_table>.
+opentable :: Lua ()
+opentable = pushcfunction lua_open_table_ptr *> call 0 multret
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pcall lua_pcall>.
 pcall :: NumArgs -> NumResults -> Int -> Lua Int
@@ -474,69 +531,131 @@ pcall nargs nresults errfunc = liftLua $ \l ->
     (fromIntegral errfunc)
 #endif
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_pop lua_pop>.
+-- | Pops @n@ elements from the stack.
+--
+-- See also: <https://www.lua.org/manual/5.3/manual.html#lua_pop lua_pop>.
 pop :: StackIndex -> Lua ()
-pop idx = settop (-idx - 1)
+pop n = settop (-n - 1)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushboolean lua_pushboolean>.
+-- | Pushes a boolean value with the given value onto the stack.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_pushboolean lua_pushboolean>.
 pushboolean :: Bool -> Lua ()
-pushboolean v = liftLua $ \l -> lua_pushboolean l (fromIntegral (fromEnum v))
+pushboolean b = liftLua $ \l -> lua_pushboolean l (fromIntegral (fromEnum b))
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushcclosure lua_pushcclosure>.
+-- | Pushes a new C closure onto the stack.
+--
+-- When a C function is created, it is possible to associate some values with
+-- it, thus creating a C closure (see
+-- <https://www.lua.org/manual/5.1/manual.html#3.4 §3.4>); these values are then
+-- accessible to the function whenever it is called. To associate values with a
+-- C function, first these values should be pushed onto the stack (when there
+-- are multiple values, the first value is pushed first). Then lua_pushcclosure
+-- is called to create and push the C function onto the stack, with the argument
+-- @n@ telling how many values should be associated with the function.
+-- lua_pushcclosure also pops these values from the stack.
+--
+-- The maximum value for @n@ is 255.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_pushcclosure lua_pushcclosure>.
 pushcclosure :: FunPtr LuaCFunction -> Int -> Lua ()
 pushcclosure f n = liftLua $ \l -> lua_pushcclosure l f (fromIntegral n)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushcfunction lua_pushcfunction>.
+-- | Pushes a C function onto the stack. This function receives a pointer to a C
+-- function and pushes onto the stack a Lua value of type function that, when
+-- called, invokes the corresponding C function.
+--
+-- Any function to be callable by Lua must follow the correct protocol to
+-- receive its parameters and return its results (see @'LuaCFunction'@)
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_pushcfunction lua_pushcfunction>.
 pushcfunction :: FunPtr LuaCFunction -> Lua ()
 pushcfunction f = pushcclosure f 0
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushinteger lua_pushinteger>.
+-- | Pushes an integer with with the given value onto the stack.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_pushinteger lua_pushinteger>.
 pushinteger :: LuaInteger -> Lua ()
 pushinteger = liftLua1 lua_pushinteger
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushlightuserdata lua_pushlightuserdata>.
+-- |  Pushes a light userdata onto the stack.
+--
+-- Userdata represent C values in Lua. A light userdata represents a pointer, a
+-- @Ptr ()@ (i.e., @void*@ in C lingo). It is a value (like a number): you do
+-- not create it, it has no individual metatable, and it is not collected (as it
+-- was never created). A light userdata is equal to "any" light userdata with
+-- the same C address.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_pushlightuserdata lua_pushlightuserdata>.
 pushlightuserdata :: Ptr a -> Lua ()
 pushlightuserdata = liftLua1 lua_pushlightuserdata
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushnil lua_pushnil>.
+-- | Pushes a nil value onto the stack.
+--
+-- See <https://www.lua.org/manual/5.3/manual.html#lua_pushnil lua_pushnil>.
 pushnil :: Lua ()
 pushnil = liftLua lua_pushnil
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushnumber lua_pushnumber>.
+-- | Pushes a float with the given value onto the stack.
+--
+-- See <https://www.lua.org/manual/5.3/manual.html#lua_pushnumber lua_pushnumber>.
 pushnumber :: LuaNumber -> Lua ()
 pushnumber = liftLua1 lua_pushnumber
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushstring lua_pushstring>.
+-- | Pushes the zero-terminated string pointed to by s onto the stack. Lua makes
+-- (or reuses) an internal copy of the given string, so the memory at s can be
+-- freed or reused immediately after the function returns.
+--
+-- See also: <https://www.lua.org/manual/5.3/manual.html#lua_pushstring \
+-- lua_pushstring>.
 pushstring :: B.ByteString -> Lua ()
 pushstring s = liftLua $ \l ->
   B.unsafeUseAsCStringLen s $ \(sPtr, z) -> lua_pushlstring l sPtr (fromIntegral z)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushvalue lua_pushvalue>.
+-- | Pushes a copy of the element at the given index onto the stack.
+--
+-- See <https://www.lua.org/manual/5.3/manual.html#lua_pushvalue lua_pushvalue>.
 pushvalue :: StackIndex -> Lua ()
 pushvalue n = liftLua $ \l -> lua_pushvalue l (fromIntegral n)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawequal lua_rawequal>.
+-- | Returns @True@ if the two values in indices @idx1@ and @idx2@ are
+-- primitively equal (that is, without calling the @__eq@ metamethod). Otherwise
+-- returns @False@. Also returns @False@ if any of the indices are not valid.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_rawequal lua_rawequal>.
 rawequal :: StackIndex -> StackIndex -> Lua Bool
-rawequal n m = liftLua $ \l ->
-  (/= 0) <$> lua_rawequal l (fromIntegral n) (fromIntegral m)
+rawequal idx1 idx2 = liftLua $ \l ->
+  (/= 0) <$> lua_rawequal l (fromIntegral idx1) (fromIntegral idx2)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawget lua_rawget>.
+-- | Similar to @'gettable'@, but does a raw access (i.e., without metamethods).
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_rawget lua_rawget>.
 rawget :: StackIndex -> Lua ()
 rawget n = liftLua $ \l -> lua_rawget l (fromIntegral n)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawgeti lua_rawgeti>.
+-- | Pushes onto the stack the value @t[n]@, where @t@ is the table at the given
+-- index. The access is raw, that is, it does not invoke the @__index@
+-- metamethod.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_rawgeti lua_rawgeti>.
 rawgeti :: StackIndex -> Int -> Lua ()
 rawgeti k m = liftLua $ \l -> lua_rawgeti l (fromIntegral k) (fromIntegral m)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawset lua_rawset>.
-rawset :: StackIndex -> Lua ()
-rawset n = liftLua $ \l -> lua_rawset l (fromIntegral n)
-
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawseti lua_rawseti>.
-rawseti :: StackIndex -> Int -> Lua ()
-rawseti k m = liftLua $ \l -> lua_rawseti l (fromIntegral k) (fromIntegral m)
-
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawlen lua_rawlen>.
+-- | Returns the raw "length" of the value at the given index: for strings, this
+-- is the string length; for tables, this is the result of the length operator
+-- ('#') with no metamethods; for userdata, this is the size of the block of
+-- memory allocated for the userdata; for other values, it is 0.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_rawlen lua_rawlen>.
 rawlen :: StackIndex -> Lua Int
 #if LUA_VERSION_NUMBER >= 502
 rawlen idx = liftLua $ \l -> fromIntegral <$> lua_rawlen l (fromIntegral idx)
@@ -544,17 +663,42 @@ rawlen idx = liftLua $ \l -> fromIntegral <$> lua_rawlen l (fromIntegral idx)
 rawlen idx = liftLua $ \l -> fromIntegral <$> lua_objlen l (fromIntegral idx)
 #endif
 
+-- | Similar to @'settable'@, but does a raw assignment (i.e., without
+-- metamethods).
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_rawset lua_rawset>.
+rawset :: StackIndex -> Lua ()
+rawset n = liftLua $ \l -> lua_rawset l (fromIntegral n)
+
+-- | Does the equivalent of @t[i] = v@, where @t@ is the table at the given
+-- index and @v@ is the value at the top of the stack.
+--
+-- This function pops the value from the stack. The assignment is raw, that is,
+-- it does not invoke the @__newindex@ metamethod.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_rawseti lua_rawseti>.
+rawseti :: StackIndex -> Int -> Lua ()
+rawseti k m = liftLua $ \l -> lua_rawseti l (fromIntegral k) (fromIntegral m)
+
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_ref luaL_ref>.
 ref :: StackIndex -> Lua Int
 ref t = liftLua $ \l -> fromIntegral <$> luaL_ref l (fromStackIndex t)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_register lua_register>.
+-- | Sets the C function @f@ as the new value of global @name@.
+--
+-- See <https://www.lua.org/manual/5.3/manual.html#lua_register lua_register>.
 register :: String -> FunPtr LuaCFunction -> Lua ()
-register n f = do
+register name f = do
     pushcclosure f 0
-    setglobal n
+    setglobal name
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_remove lua_remove>.
+-- | Removes the element at the given valid index, shifting down the elements
+-- above this index to fill the gap. This function cannot be called with a
+-- pseudo-index, because a pseudo-index is not an actual stack position.
+--
+-- See <https://www.lua.org/manual/5.3/manual.html#lua_remove lua_remove>.
 remove :: StackIndex -> Lua ()
 #if LUA_VERSION_NUMBER >= 503
 remove n = liftLua (\l -> lua_rotate l (fromIntegral n) (-1)) *> pop 1
@@ -562,7 +706,11 @@ remove n = liftLua (\l -> lua_rotate l (fromIntegral n) (-1)) *> pop 1
 remove n = liftLua $ \l -> lua_remove l (fromIntegral n)
 #endif
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_replace lua_replace>.
+-- | Moves the top element into the given valid index without shifting any
+-- element (therefore replacing the value at that given index), and then pops
+-- the top element.
+--
+-- See <https://www.lua.org/manual/5.3/manual.html#lua_replace lua_replace>.
 replace :: StackIndex -> Lua ()
 #if LUA_VERSION_NUMBER >= 503
 replace n = liftLua (\l -> lua_copy l (-1) (fromIntegral n)) *> pop 1

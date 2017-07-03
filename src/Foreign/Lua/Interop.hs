@@ -181,7 +181,7 @@ pushrawhsfunction f = do
   p <- newuserdata (F.sizeOf stableptr)
   liftIO $ F.poke (castPtr p) stableptr
   v <- newmetatable "HaskellImportedFunction"
-  when (v /= 0) $ do
+  when v $ do
     -- create new metatable, fill it with two entries __gc and __call
     push hsmethod__gc_addr
     setfield (-2) "__gc"
