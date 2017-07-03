@@ -24,6 +24,7 @@ THE SOFTWARE.
 module Foreign.Lua.TypesTest (tests) where
 
 import Data.ByteString (ByteString)
+import Data.Map (Map)
 import Foreign.Lua
 import Test.QuickCheck hiding (Success)
 import Test.QuickCheck.Instances ()
@@ -68,6 +69,9 @@ tests = testGroup "Peek can act as left inverse of push"
 
   , testProperty "text"
     (prop_roundtripEqual :: T.Text -> Property)
+
+  , testProperty "map of strings to LuaNumber"
+    (prop_roundtripEqual :: Map String LuaNumber -> Property)
   ]
 
 prop_roundtripEqual :: (Eq a, FromLuaStack a, ToLuaStack a) => a -> Property

@@ -55,6 +55,7 @@ flag use-pkgconfig
 library
   build-depends:        base       >= 4.7    && < 5
                       , bytestring >= 0.10.2 && < 0.11
+                      , containers >= 0.5    && < 0.6
                       , fail       >= 4.9    && < 5
                       , mtl        >= 2.2    && < 2.3
                       , text
@@ -172,6 +173,7 @@ test-suite test-hslua
   build-depends:        base
                       , QuickCheck >= 2.7
                       , bytestring
+                      , containers
                       , hslua
                       , quickcheck-instances
                       , tasty

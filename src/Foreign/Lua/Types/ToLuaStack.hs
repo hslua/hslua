@@ -45,6 +45,7 @@ module Foreign.Lua.Types.ToLuaStack
 
 import Control.Monad (zipWithM_)
 import Data.ByteString (ByteString)
+import Data.Map (Map, toList)
 import Foreign.Lua.Functions
 import Foreign.Lua.Types.Core
 import Foreign.Ptr (FunPtr, Ptr)
@@ -98,3 +99,8 @@ instance ToLuaStack a => ToLuaStack [a] where
     newtable
     zipWithM_ setField [1..] xs
 
+instance (ToLuaStack a, ToLuaStack b) => ToLuaStack (Map a b) where
+  push m = do
+    let addValue (k, v) = push k *> push v *> settable (-3)
+    newtable
+    mapM_ addValue (toList m)

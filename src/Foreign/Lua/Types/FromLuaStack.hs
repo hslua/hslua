@@ -46,6 +46,7 @@ module Foreign.Lua.Types.FromLuaStack
 import Control.Applicative (Alternative (..))
 import Control.Monad (MonadPlus (..), ap)
 import Data.ByteString (ByteString)
+import Data.Map (Map, fromList)
 import Data.Monoid ((<>))
 import Foreign.Lua.Types.Core
 import Foreign.Lua.Functions
@@ -141,6 +142,41 @@ instance FromLuaStack a => FromLuaStack [a] where
       case ret of
         Error err   -> return . Error $ "Could not read list: " <> err
         Success val -> fmap (val:) <$> go is
+
+instance (Ord a, FromLuaStack a, FromLuaStack b) => FromLuaStack (Map a b) where
+  peek idx = fmap fromList <$> do
+    pushnil
+    sequence <$> remainingPairs
+      where
+        remainingPairs = do
+          res <- nextPair (if idx < 0 then idx - 1 else idx)
+          case res of
+            Nothing -> return []
+            Just a  -> (a:) <$> remainingPairs
+
+-- | Get the next key-value pair from a table.
+--
+-- TODO: This function shows that there's a problem with the way we handle
+-- errors.
+nextPair :: (FromLuaStack a, FromLuaStack b)
+         => StackIndex -> Lua (Maybe (Result (a, b)))
+nextPair idx = do
+  hasNext <- next idx
+  if hasNext
+    then do
+      v <- peek (-1)
+      case v of
+        Error err -> return (Just (Error err))
+        Success value -> do
+          k <- peek (-2)
+          case k of
+            Error err -> return (Just (Error err))
+            Success key -> do
+              pop 1 -- removes the value, keeps the key
+              return $ Just (Success (key, value))
+    else return Nothing
+
+-- runOnSuccess :: Lua (Result a) -> Lua (Result b) -> Lua (Result )
 
 -- | Use @test@ to check whether the value at stack index @n@ has the correct
 -- type and use @peekfn@ to convert it to a haskell value if possible. A
