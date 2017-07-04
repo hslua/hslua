@@ -53,10 +53,11 @@ module Foreign.Lua.Interop
   ) where
 
 import Control.Monad (when)
+import Data.ByteString.Char8 (unpack)
 import Foreign.C (CInt (..))
 import Foreign.Lua.Functions
 import Foreign.Lua.Types
-import Foreign.Lua.Util (getglobal', returnError)
+import Foreign.Lua.Util (getglobal')
 import Foreign.Ptr (FunPtr, castPtr, freeHaskellFunPtr)
 import Foreign.StablePtr (deRefStablePtr, freeStablePtr, newStablePtr)
 
@@ -67,24 +68,18 @@ import qualified Foreign.Storable as F
 -- wrapper instead.
 class LuaImport a where
   -- | Helper function, called by @'luaimport'@
-  luaimport' :: StackIndex -> a -> Lua (Result ())
+  luaimport' :: StackIndex -> a -> Lua ()
 
-instance ToLuaStack a => LuaImport (Lua (Result a)) where
-  luaimport' _narg x = do
-    x' <- x
-    case x' of
-      Success res -> push res *> return (Success ())
-      Error err -> return (Error err)
+instance ToLuaStack a => LuaImport (Lua a) where
+  luaimport' _narg x = () <$ (x >>= push)
 
 instance (FromLuaStack a, LuaImport b) => LuaImport (a -> b) where
   luaimport' narg f = do
     arg <- peek narg
     case arg of
       Success x -> luaimport' (narg + 1) (f x)
-      Error err ->
-        let msg = "could not read argument " ++ (show (fromStackIndex narg))
-                  ++ ": " ++ err
-        in return (Error msg)
+      Error err -> throwError $
+        "could not read argument " ++ show (fromStackIndex narg) ++ ": " ++ err
 
 -- | Convert a Haskell function to Lua function. Any Haskell function
 -- can be converted provided that:
@@ -96,13 +91,9 @@ instance (FromLuaStack a, LuaImport b) => LuaImport (a -> b) where
 -- Any Haskell exception will be converted to a string and returned
 -- as Lua error.
 luaimport :: LuaImport a => a -> Lua CInt
-luaimport a = do
-  res <- luaimport' 1 a
-  case res of
-    Success _ -> return 1
-    Error err -> do
-      push ("Error while calling haskell function: " ++ err)
-      fromIntegral <$> lerror
+luaimport a = catchError (1 <$ luaimport' 1 a) $ \err -> do
+  push ("Error while calling haskell function: " ++ err)
+  fromIntegral <$> lerror
 
 -- | Create new foreign Lua function. Function created can be called
 -- by Lua engine. Remeber to free the pointer with @freecfunction@.
@@ -119,14 +110,18 @@ freecfunction = freeHaskellFunPtr
 class LuaCallFunc a where
   callfunc' :: String -> Lua () -> NumArgs -> a
 
-instance (FromLuaStack a) => LuaCallFunc (Lua (Result a)) where
+instance (FromLuaStack a) => LuaCallFunc (Lua a) where
   callfunc' fnName x nargs = do
     getglobal' fnName
     x
     z <- pcall nargs 1 0
     if z /= 0
-      then returnError
-      else peek (-1) <* pop 1
+      then tostring (-1) >>= throwError . unpack
+      else do
+        res <- peek (-1) <* pop 1
+        case res of
+          Success y -> return y
+          Error err -> throwError err
 
 instance (ToLuaStack a, LuaCallFunc b) => LuaCallFunc (a -> b) where
   callfunc' fnName pushArgs nargs x =

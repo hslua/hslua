@@ -22,11 +22,11 @@ THE SOFTWARE.
 -- | Tests that lua functions can be called from haskell and vice versa.
 module Foreign.Lua.InteropTest (tests) where
 
-import Data.ByteString.Char8 (pack)
+import Data.ByteString.Char8 (pack, unpack)
 import Foreign.Lua.Functions
 import Foreign.Lua.Interop (callfunc, peek, registerhsfunction)
-import Foreign.Lua.Types (Lua, LuaNumber, Result (..))
-import Foreign.Lua.Util (returnError, runLua)
+import Foreign.Lua.Types (Lua, LuaNumber, Result (..), catchError, throwError)
+import Foreign.Lua.Util (runLua)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
 
@@ -35,61 +35,70 @@ import Test.Tasty.HUnit (assertEqual, testCase)
 tests :: TestTree
 tests = testGroup "Interoperability"
   [ testGroup "call haskell functions from lua" $
-    let integerOperation :: Int -> Int -> Lua (Result Int)
+    let integerOperation :: Int -> Int -> Lua Int
         integerOperation i1 i2 =
           let (j1, j2) = (fromIntegral i1, fromIntegral i2)
-          in return . return $ fromIntegral (product [1..j1] `mod` j2 :: Integer)
+          in return $ fromIntegral (product [1..j1] `mod` j2 :: Integer)
     in
     [ testCase "push haskell function to lua" $
-      let add :: Lua (Result Int)
+      let add :: Lua Int
           add = do
             i1 <- peek (-1)
             i2 <- peek (-2)
-            return $ (+) <$> i1 <*> i2
+            case (+) <$> i1 <*> i2 of
+              Success x -> return x
+              Error err -> throwError err
 
-          luaOp :: Lua (Result Int)
+          luaOp :: Lua Int
           luaOp = do
             registerhsfunction "add" add
             loadstring "return add(23, 5)" *> call 0 1
-            peek (-1) <* pop 1
+            res <- peek (-1) <* pop 1
+            case res of
+              Success x -> return x
+              Error err -> throwError err
 
-      in assertEqual "Unexpected result" (Success 28) =<< runLua luaOp
+      in assertEqual "Unexpected result" 28 =<< runLua luaOp
 
     , testCase "push multi-argument haskell function to lua" $
-      let luaOp :: Lua (Result Int)
+      let luaOp :: Lua Int
           luaOp = do
             registerhsfunction "integerOp" integerOperation
             loadstring "return integerOp(23, 42)" *> call 0 1
-            peek (-1) <* pop 1
-      in assertEqual "Unexpected result" (Success 0) =<< runLua luaOp
+            res <- peek (-1) <* pop 1
+            case res of
+              Success x -> return x
+              Error err -> throwError err
+      in assertEqual "Unexpected result" 0 =<< runLua luaOp
 
     , testCase "argument type errors are propagated" $
-      let luaOp :: Lua (Result String)
+      let luaOp :: Lua String
           luaOp = do
             registerhsfunction "integerOp" integerOperation
             loadstring "return integerOp(23, true)" *> call 0 2
-            returnError <* pop 1 -- pop _HASKELLERROR
+            err <- tostring (-1) <* pop 2 -- pop _HASKELLERROR
+            return (unpack err)
 
           errMsg = "Error while calling haskell function: could not read "
                    ++ "argument 2: Expected a number but got a boolean"
-      in assertEqual "Unexpected result" (Error errMsg) =<< runLua luaOp
+      in assertEqual "Unexpected result" errMsg =<< runLua (catchError luaOp return)
     ]
 
   , testGroup "call lua function from haskell"
     [ testCase "test equality within lua" $
-      assertEqual "raw equality test failed" (Success True) =<<
+      assertEqual "raw equality test failed" True =<<
       runLua (openlibs *> callfunc "rawequal" (5 :: Int) (5.0 :: LuaNumber))
 
     , testCase "failing lua function call" $
-      assertEqual "unexpected result" (Error "foo" :: Result Int) =<<
-      runLua (openlibs *> callfunc "assert" False (pack "foo"))
+      assertEqual "unexpected result" "foo" =<<
+      runLua (catchError (openlibs *> callfunc "assert" False (pack "foo")) return)
 
     , testCase "print the empty string via lua procedure" $
-      assertEqual "raw equality test failed" (Success ()) =<<
+      assertEqual "raw equality test failed" () =<<
       runLua (openlibs *> callfunc "print" (pack ""))
 
     , testCase "failing lua procedure call" $
-      assertEqual "unexpected result" (Error "foo" :: Result ()) =<<
-      runLua (openlibs *> callfunc "error" (pack "foo"))
+      assertEqual "unexpected result" "foo" =<<
+      runLua (catchError (openlibs *> callfunc "error" (pack "foo")) return)
     ]
   ]

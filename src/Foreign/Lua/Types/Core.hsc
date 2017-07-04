@@ -47,6 +47,8 @@ module Foreign.Lua.Types.Core (
   , liftIO
   , liftLua
   , liftLua1
+  , catchError
+  , throwError
   -- Function type synonymes
   , LuaAlloc
   , LuaCFunction
@@ -64,7 +66,8 @@ module Foreign.Lua.Types.Core (
   ) where
 
 import Control.Monad.Reader (ReaderT (..), MonadReader, MonadIO, ask, liftIO)
-import Control.Monad.Except (ExceptT (..), runExceptT)
+import Control.Monad.Except (ExceptT (..), MonadError, runExceptT, catchError,
+                             throwError)
 import Data.Int
 import Foreign.C
 import Foreign.Ptr
@@ -76,7 +79,8 @@ newtype LuaState = LuaState (Ptr ())
 
 -- | Lua computation
 newtype Lua a = Lua { unLua :: ReaderT LuaState (ExceptT String IO) a }
-  deriving (Functor, Applicative, Monad, MonadReader LuaState, MonadIO)
+  deriving (Functor, Applicative, Monad, MonadReader LuaState,
+            MonadError String, MonadIO)
 
 -- | Turn a function of typ @LuaState -> IO a@ into a monadic lua operation.
 liftLua :: (LuaState -> IO a) -> Lua a
