@@ -33,11 +33,9 @@ HsLua utility functions.
 -}
 module Foreign.Lua.Util
   ( getglobal'
-  , returnError
   , runLua
   ) where
 
-import Data.ByteString.Char8 (unpack)
 import Data.List (groupBy)
 import Foreign.Lua.Functions
 import Foreign.Lua.Types
@@ -49,12 +47,6 @@ runLua lua = do
   res <- runLuaWith st lua
   liftIO (close st)
   return res
-
--- | Return an error, reading and removing the error message from the stack.
-returnError :: Lua (Result a)
-returnError = do
-  err <- tostring (-1)
-  return $ Error (unpack err)
 
 -- | Like @getglobal@, but knows about packages. e. g.
 --

@@ -82,7 +82,4 @@ prop_roundtripEqual x = monadicIO $ do
 roundtrip :: (FromLuaStack a, ToLuaStack a) => a -> IO a
 roundtrip x = runLua $ do
   push x
-  res <- peek (-1)
-  case res of
-    Error err -> fail err
-    Success y -> return y
+  peek (-1)

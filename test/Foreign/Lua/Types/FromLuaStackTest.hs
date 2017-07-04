@@ -46,24 +46,24 @@ import Test.Tasty.QuickCheck (Property, property, testProperty, (.&&.))
 tests :: TestTree
 tests = testGroup "FromLuaStack"
   [ testCase "receives basic values from the stack" $ do
-      assertEqual "true was not read" (Success True) =<< runLua
+      assertEqual "true was not read" True =<< runLua
         (loadstring "return true" *> call 0 1 *> peek (-1))
-      assertEqual "5 was not read" (Success (5 :: LuaInteger)) =<< runLua
+      assertEqual "5 was not read" (5 :: LuaInteger) =<< runLua
         (loadstring "return 5" *> call 0 1 *> peek (-1))
 
   , testCase "returns an error if the types don't match" $ do
       let boolNum = "Expected a boolean but got a number"
       assertEqual "error messsage mismatched" (Error boolNum) =<< runLua
-        (loadstring "return 5" *> call 0 1 *> peek (-1) :: Lua (Result Bool))
+        (loadstring "return 5" *> call 0 1 *> peekResult (-1) :: Lua (Result Bool))
       let numBool = "Expected a number but got a boolean"
       assertEqual "error message mismatched" (Error numBool) =<< runLua
-        (loadstring "return true" *> call 0 1 *> peek (-1) :: Lua (Result Int))
+        (loadstring "return true" *> call 0 1 *> peekResult (-1) :: Lua (Result Int))
 
   , testCase "list cannot be read if a list element fails" $ do
       let err = "Could not read list: Expected a number but got a boolean"
       assertEqual "error message mismatched" (Error err) =<< runLua
         (loadstring "return {1, 5, 23, true, 42}" *> call 0 1
-         *> peek (-1) :: Lua (Result [Int]))
+         *> peekResult (-1) :: Lua (Result [Int]))
 
   , testGroup "Result instances"
     [ testProperty "Result instance follows the functor laws" $

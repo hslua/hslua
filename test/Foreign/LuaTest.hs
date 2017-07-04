@@ -56,13 +56,13 @@ tests = testGroup "lua integration tests"
       -- get functions from registry
       rawgeti registryindex idx1
       call 0 1
-      r1 <- peek (-1) :: Lua (Result LuaInteger)
-      liftIO (assert (r1 == Success 1))
+      r1 <- peek (-1) :: Lua LuaInteger
+      liftIO (assert (r1 == 1))
 
       rawgeti registryindex idx2
       call 0 1
-      r2 <- peek (-1) :: Lua (Result LuaInteger)
-      liftIO (assert (r2 == Success 2))
+      r2 <- peek (-1) :: Lua LuaInteger
+      liftIO (assert (r2 == 2))
 
       -- delete references
       unref registryindex idx1
@@ -74,17 +74,17 @@ tests = testGroup "lua integration tests"
       let tableStr = "{firstname = 'Jane', surname = 'Doe'}"
       pushLuaExpr $ "setmetatable(" <> tableStr <> ", {'yup'})"
       getfield (-1) "firstname"
-      firstname <- peek (-1) <* pop 1
-      liftIO (assert (firstname == Success ("Jane" :: ByteString)))
+      firstname <- peek (-1) <* pop 1 :: Lua ByteString
+      liftIO (assert (firstname == "Jane"))
 
       push ("surname" :: ByteString)
       rawget (-2)
-      surname <- peek (-1) <* pop 1
-      liftIO (assert (surname == Success ("Doe" :: ByteString)))
+      surname <- peek (-1) <* pop 1 :: Lua ByteString
+      liftIO (assert (surname == "Doe"))
 
       hasMetaTable <- getmetatable (-1)
       liftIO (assert hasMetaTable)
       rawgeti (-1) 1
-      mt1 <- peek (-1) <* pop 1
-      liftIO (assert (mt1 == Success ("yup" :: ByteString)))
+      mt1 <- peek (-1) <* pop 1 :: Lua ByteString
+      liftIO (assert (mt1 == "yup"))
   ]

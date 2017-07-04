@@ -62,15 +62,15 @@ tests = testGroup "Monadic functions"
     [ luaTestCase "inserts stack elements using negative indices" $ do
         pushLuaExpr "1, 2, 3, 4, 5, 6, 7, 8, 9"
         insert (-6)
-        movedEl <- peek (-6) :: Lua (Result LuaInteger)
-        newTop <- peek (-1) :: Lua (Result LuaInteger)
-        return (movedEl == Success 9 && newTop == Success 8)
+        movedEl <- peek (-6) :: Lua LuaInteger
+        newTop <- peek (-1) :: Lua LuaInteger
+        return (movedEl == 9 && newTop == 8)
     , luaTestCase "inserts stack elements using negative indices" $ do
         pushLuaExpr "1, 2, 3, 4, 5, 6, 7, 8, 9"
         insert (4)
-        movedEl <- peek 4 :: Lua (Result LuaInteger)
-        newTop <- peek (-1) :: Lua (Result LuaInteger)
-        return (movedEl == Success 9 && newTop == Success 8)
+        movedEl <- peek 4 :: Lua LuaInteger
+        newTop <- peek (-1) :: Lua LuaInteger
+        return (movedEl == 9 && newTop == 8)
     ]
 
   , luaTestCase "gettable gets a table value and returns its type" $ do

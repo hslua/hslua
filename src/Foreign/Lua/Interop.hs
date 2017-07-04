@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -74,12 +75,11 @@ instance ToLuaStack a => LuaImport (Lua a) where
   luaimport' _narg x = () <$ (x >>= push)
 
 instance (FromLuaStack a, LuaImport b) => LuaImport (a -> b) where
-  luaimport' narg f = do
-    arg <- peek narg
-    case arg of
-      Success x -> luaimport' (narg + 1) (f x)
-      Error err -> throwError $
-        "could not read argument " ++ show (fromStackIndex narg) ++ ": " ++ err
+  luaimport' narg f = getArg >>= luaimport' (narg + 1) . f
+    where
+      getArg = catchError (peek narg) $ \err ->
+        throwError ("could not read argument "
+                     ++ show (fromStackIndex narg) ++ ": " ++ err)
 
 -- | Convert a Haskell function to Lua function. Any Haskell function
 -- can be converted provided that:
@@ -117,11 +117,7 @@ instance (FromLuaStack a) => LuaCallFunc (Lua a) where
     z <- pcall nargs 1 0
     if z /= 0
       then tostring (-1) >>= throwError . unpack
-      else do
-        res <- peek (-1) <* pop 1
-        case res of
-          Success y -> return y
-          Error err -> throwError err
+      else peek (-1) <* pop 1
 
 instance (ToLuaStack a, LuaCallFunc b) => LuaCallFunc (a -> b) where
   callfunc' fnName pushArgs nargs x =
@@ -142,14 +138,14 @@ foreign import ccall "&hsmethod__call" hsmethod__call_addr :: FunPtr LuaCFunctio
 
 hsmethod__gc :: LuaState -> IO CInt
 hsmethod__gc l = do
-  Success ptr <- runLuaWith l $ peek (-1)
+  ptr <- runLuaWith l $ peek (-1)
   stableptr <- F.peek (castPtr ptr)
   freeStablePtr stableptr
   return 0
 
 hsmethod__call :: LuaState -> IO CInt
 hsmethod__call l = do
-  Success ptr <- runLuaWith l $ peek 1 <* remove 1
+  ptr <- runLuaWith l $ peek 1 <* remove 1
   stableptr <- F.peek (castPtr ptr)
   f <- deRefStablePtr stableptr
   f l

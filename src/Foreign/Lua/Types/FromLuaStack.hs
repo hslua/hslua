@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 #if !MIN_VERSION_base(4,8,0)
@@ -41,6 +42,7 @@ Sending haskell objects to the lua stack.
 module Foreign.Lua.Types.FromLuaStack
   ( FromLuaStack (..)
   , Result (..)
+  , peekResult
   ) where
 
 import Control.Applicative (Alternative (..))
@@ -94,59 +96,58 @@ instance Alternative Result where
 class FromLuaStack a where
   -- | Check if at index @n@ there is a convertible Lua value and if so return
   -- it wrapped in @Just@. Return @Nothing@ otherwise.
-  peek :: StackIndex -> Lua (Result a)
+  peek :: StackIndex -> Lua a
 
 instance FromLuaStack () where
-  peek = tryPeek "nil" isnil (const $ return ())
+  peek = typeChecked "nil" isnil (const $ return ())
 
 instance FromLuaStack LuaInteger where
-  peek = tryPeek "number" isnumber tointeger
+  peek = typeChecked "number" isnumber tointeger
 
 instance FromLuaStack LuaNumber where
-  peek = tryPeek "number" isnumber tonumber
+  peek = typeChecked "number" isnumber tonumber
 
 instance FromLuaStack Int where
-  peek = tryPeek "number" isnumber (fmap fromIntegral . tointeger)
+  peek = typeChecked "number" isnumber (fmap fromIntegral . tointeger)
 
 instance FromLuaStack ByteString where
-  peek = tryPeek "string" isstring tostring
+  peek = typeChecked "string" isstring tostring
 
 instance FromLuaStack Bool where
-  peek = tryPeek "boolean" isboolean toboolean
+  peek = typeChecked "boolean" isboolean toboolean
 
 instance FromLuaStack (FunPtr LuaCFunction) where
-  peek = tryPeek "C function" iscfunction tocfunction
+  peek = typeChecked "C function" iscfunction tocfunction
 
 instance FromLuaStack (Ptr a) where
-  peek = tryPeek "user data" isuserdata touserdata
+  peek = typeChecked "user data" isuserdata touserdata
 
 instance FromLuaStack LuaState where
-  peek = tryPeek "LuaState (i.e., a thread)" isthread tothread
+  peek = typeChecked "LuaState (i.e., a thread)" isthread tothread
 
 instance FromLuaStack T.Text where
-  peek = fmapLuaResult T.decodeUtf8 . peek
+  peek = fmap T.decodeUtf8 . peek
 
 #if MIN_VERSION_base(4,8,0)
 instance {-# OVERLAPS #-} FromLuaStack [Char] where
 #else
 instance FromLuaStack String where
 #endif
-  peek = fmap (T.unpack <$>) . peek
+  peek = fmap T.unpack . peek
 
 instance FromLuaStack a => FromLuaStack [a] where
-  peek n = go . enumFromTo 1 =<< rawlen n
+  peek n = catchError (go . enumFromTo 1 =<< rawlen n) amendError
    where
-    go [] = return $ Success []
+    go [] = return []
     go (i : is) = do
       ret <- rawgeti n i *> peek (-1) <* pop 1
-      case ret of
-        Error err   -> return . Error $ "Could not read list: " <> err
-        Success val -> fmap (val:) <$> go is
+      (ret:) <$> go is
+    amendError err = throwError ("Could not read list: " ++ err)
 
 instance (Ord a, FromLuaStack a, FromLuaStack b) => FromLuaStack (Map a b) where
-  peek idx = fmap fromList <$> do
+  peek idx = fromList <$> do
     pushnil
-    sequence <$> remainingPairs
+    remainingPairs
       where
         remainingPairs = do
           res <- nextPair (if idx < 0 then idx - 1 else idx)
@@ -159,41 +160,33 @@ instance (Ord a, FromLuaStack a, FromLuaStack b) => FromLuaStack (Map a b) where
 -- TODO: This function shows that there's a problem with the way we handle
 -- errors.
 nextPair :: (FromLuaStack a, FromLuaStack b)
-         => StackIndex -> Lua (Maybe (Result (a, b)))
+         => StackIndex -> Lua (Maybe (a, b))
 nextPair idx = do
   hasNext <- next idx
   if hasNext
     then do
       v <- peek (-1)
-      case v of
-        Error err -> return (Just (Error err))
-        Success value -> do
-          k <- peek (-2)
-          case k of
-            Error err -> return (Just (Error err))
-            Success key -> do
-              pop 1 -- removes the value, keeps the key
-              return $ Just (Success (key, value))
+      k <- peek (-2)
+      pop 1 -- removes the value, keeps the key
+      return (Just (k, v))
     else return Nothing
-
--- runOnSuccess :: Lua (Result a) -> Lua (Result b) -> Lua (Result )
 
 -- | Use @test@ to check whether the value at stack index @n@ has the correct
 -- type and use @peekfn@ to convert it to a haskell value if possible. A
 -- successfully received value is wrapped using the @'Success'@ constructor,
 -- while a type mismatch results in an @Error@ with the given error message.
-tryPeek :: String
-        -> (StackIndex -> Lua Bool)
-        -> (StackIndex -> Lua a)
-        -> StackIndex
-        -> Lua (Result a)
-tryPeek expectedType test peekfn n = do
+typeChecked :: String
+            -> (StackIndex -> Lua Bool)
+            -> (StackIndex -> Lua a)
+            -> StackIndex
+            -> Lua a
+typeChecked expectedType test peekfn n = do
   v <- test n
   if v
-    then Success <$> peekfn n
+    then peekfn n
     else do
       actual <- ltype n >>= typename
-      return . Error $ "Expected a " <> expectedType <> " but got a " <> actual
+      throwError $ "Expected a " <> expectedType <> " but got a " <> actual
 
-fmapLuaResult :: (a -> b) -> Lua (Result a) -> Lua (Result b)
-fmapLuaResult = fmap . fmap
+peekResult :: FromLuaStack a => StackIndex -> Lua (Result a)
+peekResult idx = catchError (Success <$> peek idx) (return . Error)

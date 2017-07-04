@@ -79,8 +79,13 @@ newtype LuaState = LuaState (Ptr ())
 
 -- | Lua computation
 newtype Lua a = Lua { unLua :: ReaderT LuaState (ExceptT String IO) a }
-  deriving (Functor, Applicative, Monad, MonadReader LuaState,
-            MonadError String, MonadIO)
+  deriving
+    ( Applicative
+    , Functor
+    , Monad
+    , MonadError String
+    , MonadIO
+    , MonadReader LuaState)
 
 -- | Turn a function of typ @LuaState -> IO a@ into a monadic lua operation.
 liftLua :: (LuaState -> IO a) -> Lua a

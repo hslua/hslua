@@ -25,7 +25,7 @@ module Foreign.Lua.InteropTest (tests) where
 import Data.ByteString.Char8 (pack, unpack)
 import Foreign.Lua.Functions
 import Foreign.Lua.Interop (callfunc, peek, registerhsfunction)
-import Foreign.Lua.Types (Lua, LuaNumber, Result (..), catchError, throwError)
+import Foreign.Lua.Types (Lua, LuaNumber, catchError)
 import Foreign.Lua.Util (runLua)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
@@ -45,18 +45,13 @@ tests = testGroup "Interoperability"
           add = do
             i1 <- peek (-1)
             i2 <- peek (-2)
-            case (+) <$> i1 <*> i2 of
-              Success x -> return x
-              Error err -> throwError err
+            return (i1 + i2)
 
           luaOp :: Lua Int
           luaOp = do
             registerhsfunction "add" add
             loadstring "return add(23, 5)" *> call 0 1
-            res <- peek (-1) <* pop 1
-            case res of
-              Success x -> return x
-              Error err -> throwError err
+            peek (-1) <* pop 1
 
       in assertEqual "Unexpected result" 28 =<< runLua luaOp
 
@@ -65,10 +60,7 @@ tests = testGroup "Interoperability"
           luaOp = do
             registerhsfunction "integerOp" integerOperation
             loadstring "return integerOp(23, 42)" *> call 0 1
-            res <- peek (-1) <* pop 1
-            case res of
-              Success x -> return x
-              Error err -> throwError err
+            peek (-1) <* pop 1
       in assertEqual "Unexpected result" 0 =<< runLua luaOp
 
     , testCase "argument type errors are propagated" $

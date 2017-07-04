@@ -83,7 +83,7 @@ listInstance = testCase "Push/pop StackValue lists" $ do
     lst' <- peek 1
     size2 <- gettop
     liftIO $ assertEqual "`tolist` left stuff on the stack" size1 size2
-    liftIO $ assertEqual "Popped a different list or pop failed" (Success lst) lst'
+    liftIO $ assertEqual "Popped a different list or pop failed" lst lst'
 
 nulString :: TestTree
 nulString =
@@ -148,7 +148,7 @@ testStackValueInstance t = QM.monadicIO $ do
   newStackSize <- QM.run $ fromIntegral `fmap` runLuaWith l gettop
   QM.assert $ stackSize == newStackSize
   -- Check that we were able to peek at all pushed elements
-  forM_ vals $ QM.assert . (== Success t)
+  forM_ vals $ QM.assert . (== t)
 
   -- DEBUGGING -----------------------------------------------
   -- QM.run $ putStrLn $ "Testing value -------- " ++ show t
@@ -173,7 +173,7 @@ testOpenBase = (:[]) .
     -- openbase returns one table in lua 5.2 and later, but two in 5.1
     openbase
     Lua.getglobal "_VERSION"
-    Success version <- peek (-1) <* pop 1
+    version <- peek (-1) <* pop 1
     if version == ("Lua 5.1" :: ByteString)
       then liftM2 (&&) (istable (-1)) (istable (-2))
       else istable (-1))
