@@ -64,6 +64,7 @@ module Foreign.Lua.Types.Core (
   ) where
 
 import Control.Monad.Reader (ReaderT (..), MonadReader, MonadIO, ask, liftIO)
+import Control.Monad.Except (ExceptT (..), runExceptT)
 import Data.Int
 import Foreign.C
 import Foreign.Ptr
@@ -74,7 +75,7 @@ import Foreign.Ptr
 newtype LuaState = LuaState (Ptr ())
 
 -- | Lua computation
-newtype Lua a = Lua { unLua :: ReaderT LuaState IO a }
+newtype Lua a = Lua { unLua :: ReaderT LuaState (ExceptT String IO) a }
   deriving (Functor, Applicative, Monad, MonadReader LuaState, MonadIO)
 
 -- | Turn a function of typ @LuaState -> IO a@ into a monadic lua operation.
@@ -91,7 +92,7 @@ luaState = ask
 
 -- | Run lua computation with custom lua state.
 runLuaWith :: LuaState -> Lua a -> IO a
-runLuaWith = flip $ runReaderT . unLua
+runLuaWith l s = either fail return =<< runExceptT (runReaderT (unLua s) l)
 
 -- | Synonym for @lua_Alloc@. See <https://www.lua.org/manual/5.3/#lua_Alloc lua_Alloc>.
 type LuaAlloc = Ptr () -> Ptr () -> CSize -> CSize -> IO (Ptr ())
