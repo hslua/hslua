@@ -292,7 +292,12 @@ gettable n = (liftLua $ \l -> lua_gettable l (fromStackIndex n)) *> ltype (-1)
 gettop :: Lua StackIndex
 gettop = liftLua $ fmap fromIntegral . lua_gettop
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_insert lua_insert>.
+-- | Moves the top element into the given valid index, shifting up the elements
+-- above this index to open space. This function cannot be called with a
+-- pseudo-index, because a pseudo-index is not an actual stack position.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_insert lua_insert>.
 insert :: StackIndex -> Lua ()
 #if LUA_VERSION_NUMBER >= 503
 insert index = liftLua $ \l -> lua_rotate l (fromIntegral index) 1
@@ -300,51 +305,99 @@ insert index = liftLua $ \l -> lua_rotate l (fromIntegral index) 1
 insert index = liftLua $ \l -> lua_insert l (fromIntegral index)
 #endif
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_isboolean lua_isboolean>.
+-- | Returns @True@ if the value at the given index is a boolean, and @False@
+-- otherwise.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_isboolean lua_isboolean>.
 isboolean :: StackIndex -> Lua Bool
 isboolean n = (== TBOOLEAN) <$> ltype n
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_iscfunction lua_iscfunction>.
+-- | Returns @True@ if the value at the given index is a C function, and @False@
+-- otherwise.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_iscfunction lua_iscfunction>.
 iscfunction :: StackIndex -> Lua Bool
 iscfunction n = liftLua $ \l -> (/= 0) <$> lua_iscfunction l (fromIntegral n)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_isfunction lua_isfunction>.
+-- | Returns @True@ if the value at the given index is a function (either C or
+-- Lua), and @False@ otherwise.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_isfunction lua_isfunction>.
 isfunction :: StackIndex -> Lua Bool
 isfunction n = liftM (== TFUNCTION) (ltype n)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_islightuserdata lua_islightuserdata>.
+-- | Returns @True@ if the value at the given index is a light userdata, and
+-- @False@ otherwise.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_islightuserdata \
+-- lua_islightuserdata>.
 islightuserdata :: StackIndex -> Lua Bool
 islightuserdata n = (== TLIGHTUSERDATA) <$> ltype n
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_isnil lua_isnil>.
+-- | Returns @True@ if the value at the given index is @nil@, and @False@
+-- otherwise.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_isnil lua_isnil>.
 isnil :: StackIndex -> Lua Bool
 isnil n = (== TNIL) <$> ltype n
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_isnone lua_isnone>.
+-- | Returns @True@ if the given index is not valid, and @False@ otherwise.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_isnone lua_isnone>.
 isnone :: StackIndex -> Lua Bool
 isnone n = (== TNONE) <$> ltype n
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_isnoneornil lua_isnoneornil>.
+-- | Returns @True@ if the given index is not valid or if the value at the given
+-- index is @nil@, and @False@ otherwise.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_isnoneornil lua_isnoneornil>.
 isnoneornil :: StackIndex -> Lua Bool
 isnoneornil idx = (<= TNIL) <$> (ltype idx)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_isnumber lua_isnumber>.
+-- | Returns @True@ if the value at the given index is a number or a string
+-- convertible to a number, and @False@ otherwise.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_isnumber lua_isnumber>.
 isnumber :: StackIndex -> Lua Bool
 isnumber n = liftLua $ \l -> (/= 0) <$> lua_isnumber l (fromIntegral n)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_isstring lua_isstring>.
+-- | Returns @True@ if the value at the given index is a string or a number
+-- (which is always convertible to a string), and @False@ otherwise.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_isstring lua_isstring>.
 isstring :: StackIndex -> Lua Bool
 isstring n = liftLua $ \l -> (/= 0) <$> lua_isstring l (fromIntegral n)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_istable lua_istable>.
+-- | Returns @True@ if the value at the given index is a table, and @False@
+-- otherwise.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_istable lua_istable>.
 istable :: StackIndex -> Lua Bool
 istable n = (== TTABLE) <$> ltype n
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_isthread lua_isthread>.
+-- | Returns @True@ if the value at the given index is a thread, and @False@
+-- otherwise.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_isthread lua_isthread>.
 isthread :: StackIndex -> Lua Bool
 isthread n = (== TTHREAD) <$> ltype n
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_isuserdata lua_isuserdata>.
+-- | Returns @True@ if the value at the given index is a userdata (either full
+-- or light), and @False@ otherwise.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_isuserdata lua_isuserdata>.
 isuserdata :: StackIndex -> Lua Bool
 isuserdata n = liftLua $ \l -> (/= 0) <$> lua_isuserdata l (fromIntegral n)
 
@@ -359,8 +412,7 @@ lerror = do
   return 2
 
 -- | Tests whether the object under the first index is smaller than that under
--- the second. See
--- <https://www.lua.org/manual/5.3/manual.html#lua_lessthan lua_lessthan>.
+-- the second. Uses @'compare'@ internally.
 lessthan :: StackIndex -> StackIndex -> Lua Bool
 lessthan index1 index2 = compare index1 index2 OpLT
 
@@ -718,12 +770,24 @@ replace n = liftLua (\l -> lua_copy l (-1) (fromIntegral n)) *> pop 1
 replace n = liftLua $ \l ->  lua_replace l (fromIntegral n)
 #endif
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_setfield lua_setfield>.
+-- | Does the equivalent to @t[k] = v@, where @t@ is the value at the given
+-- index and @v@ is the value at the top of the stack.
+--
+-- This function pops the value from the stack. As in Lua, this function may
+-- trigger a metamethod for the "newindex" event (see
+-- <https://www.lua.org/manual/5.3/manual.html#2.4 §2.4> of the Lua 5.3
+-- Reference Manual).
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_setfield lua_setfield>.
 setfield :: StackIndex -> String -> Lua ()
 setfield i s = liftLua $ \l ->
   withCString s $ \sPtr -> lua_setfield l (fromIntegral i) sPtr
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_setglobal lua_setglobal>.
+-- | Pops a value from the stack and sets it as the new value of global @name@.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_setglobal lua_setglobal>.
 setglobal :: String -> Lua ()
 #if LUA_VERSION_NUMBER >= 502
 setglobal s = liftLua $ \l -> withCString s $ \sPtr -> lua_setglobal l sPtr
@@ -731,19 +795,49 @@ setglobal s = liftLua $ \l -> withCString s $ \sPtr -> lua_setglobal l sPtr
 setglobal n = setfield globalsindex n
 #endif
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_setmetatable lua_setmetatable>.
-setmetatable :: Int -> Lua ()
-setmetatable n = liftLua $ \l -> lua_setmetatable l (fromIntegral n)
+-- | Pops a table from the stack and sets it as the new metatable for the value
+-- at the given index.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_setmetatable \
+-- lua_setmetatable>.
+setmetatable :: StackIndex -> Lua ()
+setmetatable idx = liftLua $ \l -> lua_setmetatable l (fromStackIndex idx)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_settable lua_settable>.
+-- | Does the equivalent to @t[k] = v@, where @t@ is the value at the given
+-- index, @v@ is the value at the top of the stack, and @k@ is the value just
+-- below the top.
+--
+-- This function pops both the key and the value from the stack. As in Lua, this
+-- function may trigger a metamethod for the "newindex" event (see
+-- <https://www.lua.org/manual/5.3/manual.html#2.4 §2.4> of the Lua 5.3
+-- Reference Manual).
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_settable lua_settable>.
 settable :: Int -> Lua ()
 settable index = liftLua $ \l -> lua_settable l (fromIntegral index)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_settop lua_settop>.
+-- | Accepts any index, or 0, and sets the stack top to this index. If the new
+-- top is larger than the old one, then the new elements are filled with nil. If
+-- index is 0, then all stack elements are removed.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_settop lua_settop>.
 settop :: StackIndex -> Lua ()
 settop = liftLua1 lua_settop . fromStackIndex
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_status lua_status>.
+-- |  Returns the status of the thread L.
+--
+-- The status can be 0 (LUA_OK) for a normal thread, an error code if the thread
+-- finished the execution of a lua_resume with an error, or LUA_YIELD if the
+-- thread is suspended.
+--
+-- You can only call functions in threads with status LUA_OK. You can resume
+-- threads with status LUA_OK (to start a new coroutine) or LUA_YIELD (to resume
+-- a coroutine).
+--
+-- See also: <https://www.lua.org/manual/5.3/manual.html#lua_status lua_status>.
 status :: Lua Int
 status = liftLua $ fmap fromIntegral . lua_status
 
@@ -752,15 +846,34 @@ status = liftLua $ fmap fromIntegral . lua_status
 strlen :: StackIndex -> Lua Int
 strlen = rawlen
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_toboolean lua_toboolean>.
+-- | Converts the Lua value at the given index to a haskell boolean value. Like
+-- all tests in Lua, @toboolean@ returns @True@ for any Lua value different from
+-- @false@ and @nil@; otherwise it returns @False@. (If you want to accept only
+-- actual boolean values, use @'isboolean'@ to test the value's type.)
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_toboolean lua_toboolean>.
 toboolean :: StackIndex -> Lua Bool
 toboolean n = liftLua $ \l -> (/= 0) <$> lua_toboolean l (fromIntegral n)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_tocfunction lua_tocfunction>.
+-- | Converts a value at the given index to a C function. That value must be a C
+-- function; otherwise, returns NULL.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_tocfunction lua_tocfunction>.
 tocfunction :: StackIndex -> Lua (FunPtr LuaCFunction)
 tocfunction n = liftLua $ \l -> lua_tocfunction l (fromIntegral n)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_tointeger lua_tointeger>.
+-- | Converts the Lua value at the given acceptable index to the signed integral
+-- type @'lua_Integer'@. The Lua value must be an integer, a number or a string
+-- convertible to an integer (see
+-- <https://www.lua.org/manual/5.3/manual.html#3.4.3 §3.4.3> of the Lua 5.3
+-- Reference Manual); otherwise, @tointeger@ returns 0.
+--
+-- If the number is not an integer, it is truncated in some non-specified way.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_tointeger lua_tointeger>.
 tointeger :: StackIndex -> Lua LuaInteger
 #if LUA_VERSION_NUMBER >= 502
 tointeger n = liftLua $ \l -> lua_tointegerx l (fromIntegral n) 0
@@ -768,7 +881,11 @@ tointeger n = liftLua $ \l -> lua_tointegerx l (fromIntegral n) 0
 tointeger n = liftLua $ \l -> lua_tointeger l (fromIntegral n)
 #endif
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_tonumber lua_tonumber>.
+-- | Converts the Lua value at the given index to the C type lua_Number. The Lua
+-- value must be a number or a string convertible to a number; otherwise,
+-- @tonumber@ returns 0.
+--
+-- See <https://www.lua.org/manual/5.3/manual.html#lua_tonumber lua_tonumber>.
 tonumber :: StackIndex -> Lua LuaNumber
 #if LUA_VERSION_NUMBER >= 502
 tonumber n = liftLua $ \l -> lua_tonumberx l (fromIntegral n) 0
@@ -776,7 +893,15 @@ tonumber n = liftLua $ \l -> lua_tonumberx l (fromIntegral n) 0
 tonumber n = liftLua $ \l -> lua_tonumber l (fromIntegral n)
 #endif
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_topointer lua_topointer>.
+-- | Converts the value at the given index to a generic C pointer (void*). The
+-- value can be a userdata, a table, a thread, or a function; otherwise,
+-- lua_topointer returns NULL. Different objects will give different pointers.
+-- There is no way to convert the pointer back to its original value.
+--
+-- Typically this function is used only for hashing and debug information.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_topointer lua_topointer>.
 topointer :: StackIndex -> Lua (Ptr ())
 topointer n = liftLua $ \l -> lua_topointer l (fromIntegral n)
 
@@ -787,25 +912,49 @@ tostring n = liftLua $ \l -> alloca $ \lenPtr -> do
     cstrLen <- F.peek lenPtr
     B.packCStringLen (cstr, fromIntegral cstrLen)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_tothread lua_tothread>.
+-- | Converts the value at the given index to a Lua thread (represented as
+-- lua_State*). This value must be a thread; otherwise, the function returns
+-- NULL.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_tothread lua_tothread>.
 tothread :: StackIndex -> Lua LuaState
 tothread n = liftLua $ \l -> lua_tothread l (fromIntegral n)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_touserdata lua_touserdata>.
+-- | If the value at the given index is a full userdata, returns its block
+-- address. If the value is a light userdata, returns its pointer. Otherwise,
+-- returns NULL.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_touserdata lua_touserdata>.
 touserdata :: StackIndex -> Lua (Ptr a)
 touserdata n = liftLua $ \l -> lua_touserdata l (fromIntegral n)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_typename lua_typename>.
+-- | Returns the name of the type encoded by the value @tp@, which must be one
+-- the values returned by @'ltype'@.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_typename lua_typename>.
 typename :: LTYPE -> Lua String
-typename n = liftLua $ \l ->
-  lua_typename l (fromIntegral (fromEnum n)) >>= peekCString
+typename tp = liftLua $ \l ->
+  lua_typename l (fromIntegral (fromEnum tp)) >>= peekCString
 
--- | See <https://www.lua.org/manual/5.3/manual.html#luaL_unref luaL_unref>.
+-- | Releases reference @'ref'@ from the table at index @idx@ (see @'ref'@). The
+-- entry is removed from the table, so that the referred object can be
+-- collected. The reference @'ref'@ is also freed to be used again.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#luaL_unref luaL_unref>.
 unref :: StackIndex -> Int -> Lua ()
 unref idx r = liftLua $ \l ->
   luaL_unref l (fromStackIndex idx) (fromIntegral r)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_upvalueindex lua_upvalueindex>.
+-- | Returns the pseudo-index that represents the @i@-th upvalue of the running
+-- function (see <https://www.lua.org/manual/5.3/manual.html#4.4 §4.4> of the
+-- Lua 5.3 reference manual).
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_upvalueindex lua_upvalueindex>.
 upvalueindex :: StackIndex -> StackIndex
 #if LUA_VERSION_NUMBER >= 502
 upvalueindex i = registryindex - i
