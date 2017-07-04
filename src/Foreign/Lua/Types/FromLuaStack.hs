@@ -41,12 +41,10 @@ Sending haskell objects to the lua stack.
 -}
 module Foreign.Lua.Types.FromLuaStack
   ( FromLuaStack (..)
-  , Result (..)
-  , peekResult
+  , Result
+  , peekEither
   ) where
 
-import Control.Applicative (Alternative (..))
-import Control.Monad (MonadPlus (..), ap)
 import Data.ByteString (ByteString)
 import Data.Map (Map, fromList)
 import Data.Monoid ((<>))
@@ -54,43 +52,11 @@ import Foreign.Lua.Types.Core
 import Foreign.Lua.Functions
 import Foreign.Ptr (FunPtr, Ptr)
 
-import qualified Control.Monad.Fail as Fail
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 
 -- | Result returned when trying to get a value from the lua stack.
-data Result a
-  = Error String
-  | Success a
-  deriving (Eq, Ord, Show)
-
-instance Functor Result where
-  fmap f (Success a) = Success (f a)
-  fmap _ (Error err) = Error err
-
-instance Applicative Result where
-  pure  = Success
-  (<*>) = ap
-
-instance Monad Result where
-  fail = Fail.fail
-  return = pure
-
-  Success x >>= k = k x
-  Error err >>= _ = Error err
-
-instance Fail.MonadFail Result where
-  fail = Error
-
-instance MonadPlus Result where
-  mzero = empty
-  mplus = (<|>)
-
-instance Alternative Result where
-  empty = fail "empty was called"
-  a@(Success _) <|> _ = a
-  _             <|> b = b
-
+type Result a = Either String a
 
 -- | A value that can be read from the Lua stack.
 class FromLuaStack a where
@@ -188,5 +154,5 @@ typeChecked expectedType test peekfn n = do
       actual <- ltype n >>= typename
       throwError $ "Expected a " <> expectedType <> " but got a " <> actual
 
-peekResult :: FromLuaStack a => StackIndex -> Lua (Result a)
-peekResult idx = catchError (Success <$> peek idx) (return . Error)
+peekEither :: FromLuaStack a => StackIndex -> Lua (Either String a)
+peekEither idx = catchError (return <$> peek idx) (return . Left)

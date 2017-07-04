@@ -32,15 +32,11 @@ Test for the conversion of lua values to haskell values.
 -}
 module Foreign.Lua.Types.FromLuaStackTest (tests) where
 
-import Control.Applicative (empty, (<|>))
-import Control.Monad (mplus, mzero)
 import Foreign.Lua (Lua, LuaInteger, call, loadstring, runLua)
 import Foreign.Lua.Types.FromLuaStack
 
-import Test.QuickCheck.Function (Fun (..))
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
-import Test.Tasty.QuickCheck (Property, property, testProperty, (.&&.))
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
@@ -53,51 +49,15 @@ tests = testGroup "FromLuaStack"
 
   , testCase "returns an error if the types don't match" $ do
       let boolNum = "Expected a boolean but got a number"
-      assertEqual "error messsage mismatched" (Error boolNum) =<< runLua
-        (loadstring "return 5" *> call 0 1 *> peekResult (-1) :: Lua (Result Bool))
+      assertEqual "error messsage mismatched" (Left boolNum) =<< runLua
+        (loadstring "return 5" *> call 0 1 *> peekEither (-1) :: Lua (Result Bool))
       let numBool = "Expected a number but got a boolean"
-      assertEqual "error message mismatched" (Error numBool) =<< runLua
-        (loadstring "return true" *> call 0 1 *> peekResult (-1) :: Lua (Result Int))
+      assertEqual "error message mismatched" (Left numBool) =<< runLua
+        (loadstring "return true" *> call 0 1 *> peekEither (-1) :: Lua (Result Int))
 
   , testCase "list cannot be read if a list element fails" $ do
       let err = "Could not read list: Expected a number but got a boolean"
-      assertEqual "error message mismatched" (Error err) =<< runLua
+      assertEqual "error message mismatched" (Left err) =<< runLua
         (loadstring "return {1, 5, 23, true, 42}" *> call 0 1
-         *> peekResult (-1) :: Lua (Result [Int]))
-
-  , testGroup "Result instances"
-    [ testProperty "Result instance follows the functor laws" $
-        prop_functorId . (Success :: Int -> Result Int)
-        .&&. prop_functorId . (Error :: String -> Result Int)
-        .&&. (prop_functorComposition . Success
-              :: Int -> Fun Int Double -> Fun Double Char -> Property)
-        .&&. (prop_functorComposition . Error
-              :: String -> Fun Int Double -> Fun Double Char -> Property)
-
-    , testGroup "Alternative"
-      [ testProperty "Second arg is not evaluated if the first succeeded" $
-        property (\x -> Success (x::Int) == (Success x <|> error "This is wrong"))
-
-      , testProperty "Alternative is the second value if first is empty" $
-        property (\x -> Success (x::Int) == (empty <|> Success x))
-      ]
-
-    , testGroup "MonadPlus"
-      [ testProperty "Second arg is not evaluated if the first succeeded" $
-        property (\x -> Success (x::Int) == (Success x `mplus` error "This is wrong"))
-
-      , testProperty "Alternative is the second value if first is mzero" $
-        property (\x -> Success (x::Int) == (mzero <|> Success x))
-      ]
-    ]
+         *> peekEither (-1) :: Lua (Result [Int]))
   ]
-
--- | Test that a functor maps id to id.
-prop_functorId :: (Functor f, Eq (f a)) => f a -> Property
-prop_functorId x = property $ (fmap id x) == x
-
--- | Test that the functor composition law holds.
-prop_functorComposition :: (Functor f, Eq (f c))
-                        => f a -> Fun a b -> Fun b c -> Property
-prop_functorComposition x (Fun _ f) (Fun _ g) = property $
-  (fmap (g . f) x) == (fmap g . fmap f $ x)

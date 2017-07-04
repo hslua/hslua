@@ -85,7 +85,7 @@ instance (FromLuaStack a, LuaImport b) => LuaImport (a -> b) where
 -- can be converted provided that:
 --
 --   * all arguments are instances of @'FromLuaStack'@
---   * return type is @Lua (Result a)@, where @a@ is an instance of
+--   * return type is @Lua a@, where @a@ is an instance of
 --     @'ToLuaStack'@
 --
 -- Any Haskell exception will be converted to a string and returned
