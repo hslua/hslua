@@ -25,7 +25,7 @@ module Foreign.Lua.InteropTest (tests) where
 import Data.ByteString.Char8 (pack, unpack)
 import Foreign.Lua.Api
 import Foreign.Lua.Interop (callfunc, peek, registerhsfunction)
-import Foreign.Lua.Types (Lua, LuaNumber, catchLuaError)
+import Foreign.Lua.Types (Lua, catchLuaError)
 import Foreign.Lua.Util (runLua)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)

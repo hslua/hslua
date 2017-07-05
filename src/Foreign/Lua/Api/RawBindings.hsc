@@ -38,7 +38,7 @@ Haskell bindings to lua C API functions.
 module Foreign.Lua.Api.RawBindings where
 
 import Foreign.C
-import Foreign.Lua.Types.Core
+import Foreign.Lua.Api.Types
 import Foreign.Ptr
 
 #include "lua.h"

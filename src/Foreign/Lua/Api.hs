@@ -35,7 +35,11 @@ Portability : CPP, ForeignFunctionInterface
 
 Monadic functions which operate within the Lua type.
 -}
-module Foreign.Lua.Api where
+module Foreign.Lua.Api
+  ( module Foreign.Lua.Api
+  , module Foreign.Lua.Api.Constants
+  , module Foreign.Lua.Api.Types
+  ) where
 
 import Prelude hiding (compare, concat)
 
@@ -43,6 +47,7 @@ import Control.Monad
 import Foreign.C
 import Foreign.Lua.Api.Constants
 import Foreign.Lua.Api.RawBindings
+import Foreign.Lua.Api.Types
 import Foreign.Lua.Types.Core
 import Foreign.Marshal.Alloc
 import Foreign.Ptr

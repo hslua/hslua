@@ -36,6 +36,7 @@ into a haskell project.
 -}
 module Foreign.Lua
   ( module Foreign.Lua.Api.Constants
+  , module Foreign.Lua.Api.Types
   , module Foreign.Lua.Interop
   , module Foreign.Lua.Types
   , module Foreign.Lua.Util
@@ -133,6 +134,7 @@ import Prelude hiding (compare, concat)
 
 import Foreign.Lua.Api
 import Foreign.Lua.Api.Constants
+import Foreign.Lua.Api.Types
 import Foreign.Lua.Interop
 import Foreign.Lua.Types
 import Foreign.Lua.Util

@@ -64,6 +64,7 @@ library
                       , Foreign.Lua.Api
                       , Foreign.Lua.Api.Constants
                       , Foreign.Lua.Api.RawBindings
+                      , Foreign.Lua.Api.Types
                       , Foreign.Lua.Interop
                       , Foreign.Lua.Types
                       , Foreign.Lua.Types.Core
