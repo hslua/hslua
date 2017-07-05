@@ -56,7 +56,7 @@ module Foreign.Lua.Interop
 import Control.Monad (when)
 import Data.ByteString.Char8 (unpack)
 import Foreign.C (CInt (..))
-import Foreign.Lua.Functions
+import Foreign.Lua.Api
 import Foreign.Lua.Types
 import Foreign.Lua.Util (getglobal')
 import Foreign.Ptr (FunPtr, castPtr, freeHaskellFunPtr)

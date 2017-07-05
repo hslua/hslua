@@ -37,7 +37,7 @@ module Foreign.Lua.Util
   ) where
 
 import Data.List (groupBy)
-import Foreign.Lua.Functions
+import Foreign.Lua.Api
 import Foreign.Lua.Types
 
 -- | Run lua computation using the default HsLua state as starting point.

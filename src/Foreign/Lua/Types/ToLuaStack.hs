@@ -46,7 +46,7 @@ module Foreign.Lua.Types.ToLuaStack
 import Control.Monad (zipWithM_)
 import Data.ByteString (ByteString)
 import Data.Map (Map, toList)
-import Foreign.Lua.Functions
+import Foreign.Lua.Api
 import Foreign.Lua.Types.Core
 import Foreign.Ptr (FunPtr, Ptr)
 

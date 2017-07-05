@@ -23,7 +23,7 @@ THE SOFTWARE.
 module Foreign.Lua.InteropTest (tests) where
 
 import Data.ByteString.Char8 (pack, unpack)
-import Foreign.Lua.Functions
+import Foreign.Lua.Api
 import Foreign.Lua.Interop (callfunc, peek, registerhsfunction)
 import Foreign.Lua.Types (Lua, LuaNumber, catchLuaError)
 import Foreign.Lua.Util (runLua)

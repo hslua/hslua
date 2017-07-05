@@ -61,9 +61,9 @@ library
                       , mtl        >= 2.2    && < 2.3
                       , text
   exposed-modules:      Foreign.Lua
+                      , Foreign.Lua.Api
                       , Foreign.Lua.Api.Constants
                       , Foreign.Lua.Api.RawBindings
-                      , Foreign.Lua.Functions
                       , Foreign.Lua.Interop
                       , Foreign.Lua.Types
                       , Foreign.Lua.Types.Core
@@ -165,7 +165,7 @@ test-suite test-hslua
   ghc-options:          -Wall -threaded
   other-modules:        HsLuaSpec
                       , Foreign.LuaTest
-                      , Foreign.Lua.FunctionsTest
+                      , Foreign.Lua.ApiTest
                       , Foreign.Lua.InteropTest
                       , Foreign.Lua.TypesTest
                       , Foreign.Lua.Types.FromLuaStackTest

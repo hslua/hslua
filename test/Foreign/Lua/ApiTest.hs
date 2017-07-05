@@ -22,7 +22,7 @@ THE SOFTWARE.
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
 {-|
-Module      :  Foreign.Lua.FunctionsTest
+Module      :  Foreign.Lua.ApiTest
 Copyright   :  © 2017 Albert Krewinkel
 License     :  MIT
 
@@ -32,7 +32,7 @@ Portability :  portable
 
 Tests for lua C API-like functions
 -}
-module Foreign.Lua.FunctionsTest (tests) where
+module Foreign.Lua.ApiTest (tests) where
 
 import Prelude hiding (compare)
 
@@ -46,7 +46,7 @@ import Test.Tasty.QuickCheck (testProperty)
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
-tests = testGroup "Monadic functions"
+tests = testGroup "Haskell version of the C API"
   [ testGroup "copy"
     [ luaTestCase "copies stack elements using positive indices" $ do
         pushLuaExpr "5, 4, 3, 2, 1"

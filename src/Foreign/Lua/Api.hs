@@ -24,7 +24,7 @@ THE SOFTWARE.
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-|
-Module      : Foreign.Lua.Functions
+Module      : Foreign.Lua.Api
 Copyright   : © 2007–2012 Gracjan Polak,
                 2012–2016 Ömer Sinan Ağacan,
                 2017 Albert Krewinkel
@@ -35,7 +35,7 @@ Portability : CPP, ForeignFunctionInterface
 
 Monadic functions which operate within the Lua type.
 -}
-module Foreign.Lua.Functions where
+module Foreign.Lua.Api where
 
 import Prelude hiding (compare, concat)
 

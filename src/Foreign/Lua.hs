@@ -131,8 +131,8 @@ module Foreign.Lua
 
 import Prelude hiding (compare, concat)
 
+import Foreign.Lua.Api
 import Foreign.Lua.Api.Constants
-import Foreign.Lua.Functions
 import Foreign.Lua.Interop
 import Foreign.Lua.Types
 import Foreign.Lua.Util
