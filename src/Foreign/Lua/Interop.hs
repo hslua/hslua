@@ -77,9 +77,9 @@ instance ToLuaStack a => LuaImport (Lua a) where
 instance (FromLuaStack a, LuaImport b) => LuaImport (a -> b) where
   luaimport' narg f = getArg >>= luaimport' (narg + 1) . f
     where
-      getArg = catchError (peek narg) $ \err ->
-        throwError ("could not read argument "
-                     ++ show (fromStackIndex narg) ++ ": " ++ err)
+      getArg = catchLuaError (peek narg) $ \err ->
+        throwLuaError ("could not read argument "
+                     ++ show (fromStackIndex narg) ++ ": " ++ show err)
 
 -- | Convert a Haskell function to Lua function. Any Haskell function
 -- can be converted provided that:
@@ -91,8 +91,8 @@ instance (FromLuaStack a, LuaImport b) => LuaImport (a -> b) where
 -- Any Haskell exception will be converted to a string and returned
 -- as Lua error.
 luaimport :: LuaImport a => a -> Lua CInt
-luaimport a = catchError (1 <$ luaimport' 1 a) $ \err -> do
-  push ("Error while calling haskell function: " ++ err)
+luaimport a = (1 <$ luaimport' 1 a) `catchLuaError` \err -> do
+  push ("Error while calling haskell function: " ++ show err)
   fromIntegral <$> lerror
 
 -- | Create new foreign Lua function. Function created can be called
@@ -116,7 +116,7 @@ instance (FromLuaStack a) => LuaCallFunc (Lua a) where
     x
     z <- pcall nargs 1 0
     if z /= 0
-      then tostring (-1) >>= throwError . unpack
+      then tostring (-1) >>= throwLuaError . unpack
       else peek (-1) <* pop 1
 
 instance (ToLuaStack a, LuaCallFunc b) => LuaCallFunc (a -> b) where

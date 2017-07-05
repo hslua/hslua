@@ -25,7 +25,7 @@ module Foreign.Lua.InteropTest (tests) where
 import Data.ByteString.Char8 (pack, unpack)
 import Foreign.Lua.Functions
 import Foreign.Lua.Interop (callfunc, peek, registerhsfunction)
-import Foreign.Lua.Types (Lua, LuaNumber, catchError)
+import Foreign.Lua.Types (Lua, LuaNumber, catchLuaError)
 import Foreign.Lua.Util (runLua)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
@@ -73,7 +73,7 @@ tests = testGroup "Interoperability"
 
           errMsg = "Error while calling haskell function: could not read "
                    ++ "argument 2: Expected a number but got a boolean"
-      in assertEqual "Unexpected result" errMsg =<< runLua (catchError luaOp return)
+      in assertEqual "Unexpected result" errMsg =<< runLua (catchLuaError luaOp (return . show))
     ]
 
   , testGroup "call lua function from haskell"
@@ -83,7 +83,7 @@ tests = testGroup "Interoperability"
 
     , testCase "failing lua function call" $
       assertEqual "unexpected result" "foo" =<<
-      runLua (catchError (openlibs *> callfunc "assert" False (pack "foo")) return)
+      runLua (catchLuaError (openlibs *> callfunc "assert" False (pack "foo")) (return . show))
 
     , testCase "print the empty string via lua procedure" $
       assertEqual "raw equality test failed" () =<<
@@ -91,6 +91,6 @@ tests = testGroup "Interoperability"
 
     , testCase "failing lua procedure call" $
       assertEqual "unexpected result" "foo" =<<
-      runLua (catchError (openlibs *> callfunc "error" (pack "foo")) return)
+      runLua (catchLuaError (openlibs *> callfunc "error" (pack "foo")) (return . show))
     ]
   ]

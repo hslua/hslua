@@ -102,13 +102,13 @@ instance FromLuaStack String where
   peek = fmap T.unpack . peek
 
 instance FromLuaStack a => FromLuaStack [a] where
-  peek n = catchError (go . enumFromTo 1 =<< rawlen n) amendError
+  peek n = catchLuaError (go . enumFromTo 1 =<< rawlen n) amendError
    where
     go [] = return []
     go (i : is) = do
       ret <- rawgeti n i *> peek (-1) <* pop 1
       (ret:) <$> go is
-    amendError err = throwError ("Could not read list: " ++ err)
+    amendError err = throwLuaError ("Could not read list: " ++ show err)
 
 instance (Ord a, FromLuaStack a, FromLuaStack b) => FromLuaStack (Map a b) where
   peek idx = fromList <$> do
@@ -152,7 +152,7 @@ typeChecked expectedType test peekfn n = do
     then peekfn n
     else do
       actual <- ltype n >>= typename
-      throwError $ "Expected a " <> expectedType <> " but got a " <> actual
+      throwLuaError $ "Expected a " <> expectedType <> " but got a " <> actual
 
 peekEither :: FromLuaStack a => StackIndex -> Lua (Either String a)
-peekEither idx = catchError (return <$> peek idx) (return . Left)
+peekEither idx = catchLuaError (return <$> peek idx) (return . Left . show)

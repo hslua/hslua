@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
 {-# LANGUAGE CPP                        #-}
+{-# LANGUAGE DeriveDataTypeable         #-}
 {-# LANGUAGE ForeignFunctionInterface   #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE StandaloneDeriving         #-}
@@ -42,13 +43,14 @@ module Foreign.Lua.Types.Core (
   , LTYPE (..)
   , LuaState (..)
   , Lua (..)
+  , LuaException (..)
   , runLuaWith
   , luaState
   , liftIO
   , liftLua
   , liftLua1
-  , catchError
-  , throwError
+  , catchLuaError
+  , throwLuaError
   -- Function type synonymes
   , LuaAlloc
   , LuaCFunction
@@ -65,10 +67,11 @@ module Foreign.Lua.Types.Core (
   , LuaComparerOp (..)
   ) where
 
+import Control.Exception (Exception)
+import Control.Monad.Catch (MonadCatch, MonadThrow, throwM, catch)
 import Control.Monad.Reader (ReaderT (..), MonadReader, MonadIO, ask, liftIO)
-import Control.Monad.Except (ExceptT (..), MonadError, runExceptT, catchError,
-                             throwError)
 import Data.Int
+import Data.Typeable (Typeable)
 import Foreign.C
 import Foreign.Ptr
 
@@ -78,14 +81,30 @@ import Foreign.Ptr
 newtype LuaState = LuaState (Ptr ())
 
 -- | Lua computation
-newtype Lua a = Lua { unLua :: ReaderT LuaState (ExceptT String IO) a }
+newtype Lua a = Lua { unLua :: ReaderT LuaState IO a }
   deriving
     ( Applicative
     , Functor
     , Monad
-    , MonadError String
+    , MonadCatch
     , MonadIO
-    , MonadReader LuaState)
+    , MonadReader LuaState
+    , MonadThrow
+    )
+
+data LuaException = LuaException String
+  deriving (Typeable)
+
+instance Show LuaException where
+  show (LuaException err) = err
+
+instance Exception LuaException
+
+throwLuaError :: String -> Lua a
+throwLuaError = throwM . LuaException
+
+catchLuaError :: Lua a -> (LuaException -> Lua a) -> Lua a
+catchLuaError = catch
 
 -- | Turn a function of typ @LuaState -> IO a@ into a monadic lua operation.
 liftLua :: (LuaState -> IO a) -> Lua a
@@ -101,7 +120,8 @@ luaState = ask
 
 -- | Run lua computation with custom lua state.
 runLuaWith :: LuaState -> Lua a -> IO a
-runLuaWith l s = either fail return =<< runExceptT (runReaderT (unLua s) l)
+runLuaWith l s = runReaderT (unLua s) l
+  `catch` \ (LuaException err) -> error err
 
 -- | Synonym for @lua_Alloc@. See <https://www.lua.org/manual/5.3/#lua_Alloc lua_Alloc>.
 type LuaAlloc = Ptr () -> Ptr () -> CSize -> CSize -> IO (Ptr ())
