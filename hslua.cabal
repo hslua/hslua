@@ -61,10 +61,10 @@ library
                       , mtl        >= 2.2    && < 2.3
                       , text
   exposed-modules:      Foreign.Lua
-                      , Foreign.Lua.Constants
+                      , Foreign.Lua.Api.Constants
+                      , Foreign.Lua.Api.RawBindings
                       , Foreign.Lua.Functions
                       , Foreign.Lua.Interop
-                      , Foreign.Lua.RawBindings
                       , Foreign.Lua.Types
                       , Foreign.Lua.Types.Core
                       , Foreign.Lua.Types.FromLuaStack

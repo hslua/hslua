@@ -35,7 +35,7 @@ Bindings, functions, and utilities enabling the integration of a lua interpreter
 into a haskell project.
 -}
 module Foreign.Lua
-  ( module Foreign.Lua.Constants
+  ( module Foreign.Lua.Api.Constants
   , module Foreign.Lua.Interop
   , module Foreign.Lua.Types
   , module Foreign.Lua.Util
@@ -131,7 +131,7 @@ module Foreign.Lua
 
 import Prelude hiding (compare, concat)
 
-import Foreign.Lua.Constants
+import Foreign.Lua.Api.Constants
 import Foreign.Lua.Functions
 import Foreign.Lua.Interop
 import Foreign.Lua.Types

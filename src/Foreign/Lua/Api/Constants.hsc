@@ -24,7 +24,7 @@ THE SOFTWARE.
 {-# LANGUAGE CPP                        #-}
 {-# LANGUAGE ForeignFunctionInterface   #-}
 {-|
-Module      : Foreign.Lua.Constants
+Module      : Foreign.Lua.Api.Constants
 Copyright   : © 2007–2012 Gracjan Polak,
                 2012–2016 Ömer Sinan Ağacan,
                 2017 Albert Krewinkel
@@ -35,7 +35,7 @@ Portability : ForeignFunctionInterface
 
 Lua constants
 -}
-module Foreign.Lua.Constants
+module Foreign.Lua.Api.Constants
   ( multret
   , registryindex
 #if LUA_VERSION_NUMBER < 502
