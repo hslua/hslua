@@ -1,6 +1,4 @@
 {-
-Copyright © 2007-2012 Gracjan Polak
-Copyright © 2012-2016 Ömer Sinan Ağacan
 Copyright © 2017 Albert Krewinkel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,9 +26,7 @@ THE SOFTWARE.
 {-# LANGUAGE StandaloneDeriving         #-}
 {-|
 Module      : Foreign.Lua.Types.Core
-Copyright   : © 2007–2012 Gracjan Polak,
-                2012–2016 Ömer Sinan Ağacan,
-                2017 Albert Krewinkel
+Copyright   : © 2017 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta
@@ -40,20 +36,14 @@ The core Lua types, including mappings of Lua types to Haskell.
 -}
 module Foreign.Lua.Types.Core
   ( Lua (..)
-  , LuaException (..)
   , runLuaWith
-  , luaState
   , liftIO
   , liftLua
   , liftLua1
-  , catchLuaError
-  , throwLuaError
   ) where
 
-import Control.Exception (Exception)
-import Control.Monad.Catch (MonadCatch, MonadThrow, throwM, catch)
+import Control.Monad.Catch (MonadCatch, MonadThrow)
 import Control.Monad.Reader (ReaderT (..), MonadReader, MonadIO, ask, liftIO)
-import Data.Typeable (Typeable)
 import Foreign.Lua.Api.Types (LuaState)
 
 -- | Lua computation
@@ -67,20 +57,6 @@ newtype Lua a = Lua { unLua :: ReaderT LuaState IO a }
     , MonadReader LuaState
     , MonadThrow
     )
-
-data LuaException = LuaException String
-  deriving (Typeable)
-
-instance Show LuaException where
-  show (LuaException err) = err
-
-instance Exception LuaException
-
-throwLuaError :: String -> Lua a
-throwLuaError = throwM . LuaException
-
-catchLuaError :: Lua a -> (LuaException -> Lua a) -> Lua a
-catchLuaError = catch
 
 -- | Turn a function of typ @LuaState -> IO a@ into a monadic lua operation.
 liftLua :: (LuaState -> IO a) -> Lua a
@@ -97,4 +73,3 @@ luaState = ask
 -- | Run lua computation with custom lua state.
 runLuaWith :: LuaState -> Lua a -> IO a
 runLuaWith l s = runReaderT (unLua s) l
-  `catch` \ (LuaException err) -> error err

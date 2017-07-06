@@ -50,6 +50,7 @@ import Data.Map (Map, fromList)
 import Data.Monoid ((<>))
 import Foreign.Lua.Api
 import Foreign.Lua.Types.Core
+import Foreign.Lua.Types.Error
 import Foreign.Ptr (FunPtr, Ptr)
 
 import qualified Data.Text as T

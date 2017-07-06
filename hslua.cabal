@@ -68,6 +68,7 @@ library
                       , Foreign.Lua.Interop
                       , Foreign.Lua.Types
                       , Foreign.Lua.Types.Core
+                      , Foreign.Lua.Types.Error
                       , Foreign.Lua.Types.FromLuaStack
                       , Foreign.Lua.Types.ToLuaStack
                       , Foreign.Lua.Util

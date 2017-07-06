@@ -19,25 +19,38 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
+{-# LANGUAGE DeriveDataTypeable         #-}
 {-|
-Module      : Foreign.Lua.Types
+Module      : Foreign.Lua.Types.Error
 Copyright   : © 2017 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta
-Portability : ForeignFunctionInterface, GeneralizedNewtypeDeriving,
-              StandaloneDeriving
+Portability : DeriveDataTypeable
 
-Types for working with Lua.
+Lua exceptions and exception handling.
 -}
-module Foreign.Lua.Types (
-    module Foreign.Lua.Types.Core
-  , module Foreign.Lua.Types.Error
-  , module Foreign.Lua.Types.FromLuaStack
-  , module Foreign.Lua.Types.ToLuaStack
+module Foreign.Lua.Types.Error
+  ( LuaException (..)
+  , catchLuaError
+  , throwLuaError
   ) where
 
-import Foreign.Lua.Types.Core
-import Foreign.Lua.Types.Error
-import Foreign.Lua.Types.FromLuaStack
-import Foreign.Lua.Types.ToLuaStack
+import Control.Exception (Exception)
+import Control.Monad.Catch (throwM, catch)
+import Data.Typeable (Typeable)
+import Foreign.Lua.Types.Core (Lua)
+
+data LuaException = LuaException String
+  deriving (Typeable)
+
+instance Show LuaException where
+  show (LuaException err) = err
+
+instance Exception LuaException
+
+throwLuaError :: String -> Lua a
+throwLuaError = throwM . LuaException
+
+catchLuaError :: Lua a -> (LuaException -> Lua a) -> Lua a
+catchLuaError = catch
