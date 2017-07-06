@@ -38,8 +38,12 @@ import Data.Monoid ((<>))
 import Foreign.Lua
 import Foreign.StablePtr (castStablePtrToPtr, freeStablePtr, newStablePtr)
 
+import Test.QuickCheck (Property)
+import Test.QuickCheck.Instances ()
+import Test.QuickCheck.Monadic (monadicIO, run, assert)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (Assertion, assertBool, testCase)
+import Test.Tasty.QuickCheck (testProperty)
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
@@ -79,6 +83,19 @@ tests = testGroup "ToLuaStack"
             return res
       in assertBool "pointers must become light userdata" =<< runLua luaOp
     ]
+
+  , testGroup "pushing a value increases stack size by one"
+    [ testProperty "LuaInteger"
+      (prop_pushIncrStackSizeByOne :: LuaInteger -> Property)
+    , testProperty "LuaNumber"
+      (prop_pushIncrStackSizeByOne :: LuaNumber -> Property)
+    , testProperty "ByteString"
+      (prop_pushIncrStackSizeByOne :: ByteString -> Property)
+    , testProperty "String"
+      (prop_pushIncrStackSizeByOne :: String -> Property)
+    , testProperty "list of booleans"
+      (prop_pushIncrStackSizeByOne :: [Bool] -> Property)
+    ]
   ]
 
 -- | Takes a message, haskell value, and a representation of that value as lua
@@ -88,3 +105,8 @@ assertLuaEqual msg x lit = assertBool msg =<< runLua
   (loadstring ("return " <> lit) *> call 0 1
    *> push x
    *> equal (-1) (-2))
+
+prop_pushIncrStackSizeByOne :: ToLuaStack a => a -> Property
+prop_pushIncrStackSizeByOne x = monadicIO $ do
+  (oldSize, newSize) <- run $ runLua ((,) <$> gettop <*> (push x *> gettop))
+  assert (newSize == succ oldSize)

@@ -23,10 +23,11 @@ THE SOFTWARE.
 -}
 module Foreign.Lua.TypesTest (tests) where
 
+import Control.Monad (forM, forM_)
 import Data.ByteString (ByteString)
 import Data.Map (Map)
 import Foreign.Lua
-import Test.QuickCheck hiding (Success)
+import Test.QuickCheck
 import Test.QuickCheck.Instances ()
 import Test.QuickCheck.Monadic
 import Test.Tasty (TestTree, testGroup)
@@ -37,41 +38,60 @@ import qualified Data.Text as T
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
-tests = testGroup "Peek can act as left inverse of push"
-  [ testProperty "round-tripping unit"
-    (prop_roundtripEqual :: () -> Property)
+tests = testGroup "peek and push are well behaved"
+  [ testGroup "Peek can act as left inverse of push"
+    [ testProperty "round-tripping unit"
+      (prop_roundtripEqual :: () -> Property)
 
-  , testProperty "booleans remain equal under push/peek"
-    (prop_roundtripEqual :: Bool -> Property)
+    , testProperty "booleans remain equal under push/peek"
+      (prop_roundtripEqual :: Bool -> Property)
 
-  , testProperty "lua numbers (i.e., doubles) remain equal under push/peek"
-    (prop_roundtripEqual :: LuaNumber -> Property)
+    , testProperty "lua numbers (i.e., doubles) remain equal under push/peek"
+      (prop_roundtripEqual :: LuaNumber -> Property)
 
-  , ignoreTest $
-    testProperty "lua integers remain equal under push/peek"
-    (prop_roundtripEqual :: LuaInteger -> Property)
+    , ignoreTest $
+      testProperty "lua integers remain equal under push/peek"
+      (prop_roundtripEqual :: LuaInteger -> Property)
 
-  , testProperty "bytestring remain equal under push/peek"
-    (prop_roundtripEqual :: ByteString -> Property)
+    , testProperty "bytestring remain equal under push/peek"
+      (prop_roundtripEqual :: ByteString -> Property)
 
-  , testProperty "round-tripping strings"
-    (prop_roundtripEqual :: String -> Property)
+    , testProperty "round-tripping strings"
+      (prop_roundtripEqual :: String -> Property)
 
-  , testProperty "lists of boolean remain equal under push/peeks"
-    (prop_roundtripEqual :: [Bool] -> Property)
+    , testProperty "lists of boolean remain equal under push/peeks"
+      (prop_roundtripEqual :: [Bool] -> Property)
 
-  , ignoreTest $
-    testProperty "lists of lua integers remain equal under push/peek"
-    (prop_roundtripEqual :: [LuaInteger] -> Property)
+    , ignoreTest $
+      testProperty "lists of lua integers remain equal under push/peek"
+      (prop_roundtripEqual :: [LuaInteger] -> Property)
 
-  , testProperty "lists of bytestrings remain equal under push/peek"
-    (prop_roundtripEqual :: [ByteString] -> Property)
+    , testProperty "lists of bytestrings remain equal under push/peek"
+      (prop_roundtripEqual :: [ByteString] -> Property)
 
-  , testProperty "text"
-    (prop_roundtripEqual :: T.Text -> Property)
+    , testProperty "text"
+      (prop_roundtripEqual :: T.Text -> Property)
 
-  , testProperty "map of strings to LuaNumber"
-    (prop_roundtripEqual :: Map String LuaNumber -> Property)
+    , testProperty "map of strings to LuaNumber"
+      (prop_roundtripEqual :: Map String LuaNumber -> Property)
+    ]
+
+  , testGroup "Random stack values"
+    [ testProperty "can push/pop booleans"
+      (prop_stackPushingPulling :: Bool       -> Property)
+    , testProperty "can push/pop ints"
+      (prop_stackPushingPulling :: Int        -> Property)
+    , testProperty "can push/pop lua numbers"
+      (prop_stackPushingPulling :: LuaNumber  -> Property)
+    , testProperty "can push/pop bytestrings"
+      (prop_stackPushingPulling :: ByteString -> Property)
+    , testProperty "can push/pop lists of booleans"
+      (prop_stackPushingPulling :: [Bool]     -> Property)
+    , testProperty "can push/pop lists of ints"
+      (prop_stackPushingPulling :: [Int]      -> Property)
+    , testProperty "can push/pop lists of bytestrings"
+      (prop_stackPushingPulling :: [ByteString] -> Property)
+    ]
   ]
 
 prop_roundtripEqual :: (Eq a, FromLuaStack a, ToLuaStack a) => a -> Property
@@ -83,3 +103,34 @@ roundtrip :: (FromLuaStack a, ToLuaStack a) => a -> IO a
 roundtrip x = runLua $ do
   push x
   peek (-1)
+
+-- | More involved check that the FromLuaStack and ToLuaStack instances of a
+-- datatype work
+prop_stackPushingPulling :: (Show t, Eq t, ToLuaStack t, FromLuaStack t) => t -> Property
+prop_stackPushingPulling t = monadicIO $ do
+  -- Init Lua state
+  l <- run newstate
+  -- Get an ascending list of small (1-100) positive integers
+  -- These are the indices at which we will push the value to be tested
+  -- Note that duplicate values don't matter so we don't need to guard against that
+  Ordered indices' <- pick arbitrary
+  let indices = map getPositive indices'
+  let nItems = if null indices then 0 else last indices
+  -- Make sure there's enough room in the stack
+  assert =<< run (runLuaWith l $ checkstack nItems)
+  -- Push elements
+  run $ forM_ [1..nItems] $ \n ->
+    runLuaWith l $
+    if n `elem` indices
+      then push t
+      else push n
+  -- Check that the stack size is the same as the total number of pushed items
+  stackSize <- run $ runLuaWith l gettop
+  assert $ fromStackIndex stackSize == fromIntegral nItems
+  -- Peek all items
+  vals <- run $ forM indices $ runLuaWith l . peek . StackIndex . fromIntegral
+  -- Check that the stack size did not change after peeking
+  newStackSize <- run $ runLuaWith l gettop
+  assert $ stackSize == newStackSize
+  -- Check that we were able to peek at all pushed elements
+  forM_ vals $ assert . (== t)

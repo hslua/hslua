@@ -165,8 +165,7 @@ test-suite test-hslua
   main-is:              test-hslua.hs
   hs-source-dirs:       test
   ghc-options:          -Wall -threaded
-  other-modules:        HsLuaSpec
-                      , Foreign.LuaTest
+  other-modules:        Foreign.LuaTest
                       , Foreign.Lua.ApiTest
                       , Foreign.Lua.InteropTest
                       , Foreign.Lua.TypesTest

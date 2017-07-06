@@ -27,7 +27,6 @@ import qualified Foreign.Lua.InteropTest
 import qualified Foreign.Lua.TypesTest
 import qualified Foreign.Lua.Types.FromLuaStackTest
 import qualified Foreign.Lua.Types.ToLuaStackTest
-import qualified HsLuaSpec
 
 main :: IO ()
 main = defaultMain $ testGroup "hslua" tests
@@ -35,8 +34,7 @@ main = defaultMain $ testGroup "hslua" tests
 -- | HSpec tests
 tests :: [TestTree]
 tests =
-  [ testGroup "Base tests" HsLuaSpec.tests
-  , Foreign.Lua.ApiTest.tests
+  [ Foreign.Lua.ApiTest.tests
   , Foreign.Lua.InteropTest.tests
   , testGroup "Sendings and receiving values from the stack"
     [ Foreign.Lua.TypesTest.tests

@@ -98,6 +98,16 @@ tests = testGroup "Haskell version of the C API"
       pushLuaExpr "nil"
       (&&) <$> isnoneornil 500 <*> isnoneornil (-1)
 
+  , luaTestCase "setting and getting a global works" $ do
+      pushLuaExpr "{'Moin', Hello = 'World'}"
+      setglobal "hamburg"
+
+      -- get first field
+      getglobal "hamburg"
+      rawgeti (-1) 1 -- first field
+      pushLuaExpr "'Moin'"
+      equal (-1) (-2)
+
   , testGroup "compare"
     [ testProperty "identifies strictly smaller values" $ compareWith (<) OpLT
     , testProperty "identifies smaller or equal values" $ compareWith (<=) OpLE
