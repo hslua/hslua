@@ -21,6 +21,7 @@ THE SOFTWARE.
 -}
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-|
 Module      :  Foreign.Lua.ApiTest
 Copyright   :  © 2017 Albert Krewinkel
@@ -39,9 +40,12 @@ import Prelude hiding (compare)
 import Foreign.Lua
 import Test.HsLua.Util (luaTestCase, pushLuaExpr)
 import Test.QuickCheck (Property, (.&&.))
+import Test.QuickCheck.Arbitrary (Arbitrary (..), arbitraryBoundedEnum)
 import Test.QuickCheck.Monadic (assert, monadicIO, run)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck (testProperty)
+
+import qualified Prelude
 
 
 -- | Specifications for Attributes parsing functions.
@@ -120,6 +124,11 @@ tests = testGroup "Haskell version of the C API"
         push (n1 :: LuaNumber)
         lessthan (-1) (-2) <* pop 2
       assert $ luaCmp == (n1 < n2)
+
+  , testProperty "order of Lua types is consistent" $ \ lt1 lt2 ->
+      let n1 = fromLuaType (lt1 :: LTYPE)
+          n2 = fromLuaType lt2
+      in Prelude.compare n1 n2 == Prelude.compare lt1 lt2
   ]
 
 compareWith :: (Int -> Int -> Bool) -> LuaComparerOp -> Int -> Property
@@ -148,3 +157,6 @@ compareWith op luaOp n = compareLT .&&. compareEQ .&&. compareGT
       push n
       compare (-2) (-1) luaOp
     assert $ luaRes == op (n + 1) n
+
+instance Arbitrary LTYPE where
+  arbitrary = arbitraryBoundedEnum

@@ -40,6 +40,8 @@ The core Lua types, including mappings of Lua types to Haskell.
 module Foreign.Lua.Api.Types
   ( GCCONTROL
   , LTYPE (..)
+  , fromLuaType
+  , toLuaType
   , LuaState (..)
   -- Function type synonymes
   , LuaAlloc
@@ -116,7 +118,7 @@ data LTYPE
   | TFUNCTION
   | TUSERDATA
   | TTHREAD
-  deriving (Eq,Show,Ord)
+  deriving (Bounded, Eq, Ord, Show)
 
 instance Enum LTYPE where
   fromEnum TNONE          = #{const LUA_TNONE}
@@ -141,6 +143,12 @@ instance Enum LTYPE where
   toEnum (#{const LUA_TUSERDATA})      = TUSERDATA
   toEnum (#{const LUA_TTHREAD})        = TTHREAD
   toEnum n                             = error $ "Cannot convert (" ++ show n ++ ") to LTYPE"
+
+toLuaType :: CInt -> LTYPE
+toLuaType = toEnum . fromIntegral
+
+fromLuaType :: LTYPE -> CInt
+fromLuaType = fromIntegral . fromEnum
 
 -- | Lua comparison operations
 data LuaComparerOp

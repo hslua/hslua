@@ -284,7 +284,7 @@ getmetatable n = liftLua $ \l ->
 gettable :: StackIndex -> Lua LTYPE
 #if LUA_VERSION_NUMBER >= 503
 gettable n = liftLua $ \l ->
-  toEnum . fromIntegral <$> lua_gettable l (fromStackIndex n)
+  toLuaType <$> lua_gettable l (fromStackIndex n)
 #else
 gettable n = (liftLua $ \l -> lua_gettable l (fromStackIndex n)) *> ltype (-1)
 #endif
@@ -441,7 +441,7 @@ loadstring str = liftLua $ \l ->
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>.
 ltype :: StackIndex -> Lua LTYPE
-ltype idx = toEnum . fromIntegral <$>
+ltype idx = toLuaType <$>
   liftLua (flip lua_type $ fromStackIndex idx)
 
 -- | If the registry already has the key tname, returns @False@. Otherwise,
@@ -942,7 +942,7 @@ touserdata n = liftLua $ \l -> lua_touserdata l (fromStackIndex n)
 -- <https://www.lua.org/manual/5.3/manual.html#lua_typename lua_typename>.
 typename :: LTYPE -> Lua String
 typename tp = liftLua $ \l ->
-  lua_typename l (fromIntegral (fromEnum tp)) >>= peekCString
+  lua_typename l (fromLuaType tp) >>= peekCString
 
 -- | Releases reference @'ref'@ from the table at index @idx@ (see @'ref'@). The
 -- entry is removed from the table, so that the referred object can be
