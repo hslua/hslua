@@ -177,7 +177,7 @@ data GCCONTROL
 
 -- | A stack index
 newtype StackIndex = StackIndex { fromStackIndex :: CInt }
-  deriving (Enum, Eq, Integral, Num, Ord, Real, Show)
+  deriving (Enum, Eq, Num, Ord, Show)
 
 --
 -- Number of arguments and return values
