@@ -185,8 +185,8 @@ newtype StackIndex = StackIndex { fromStackIndex :: CInt }
 
 -- | The number of arguments expected a function.
 newtype NumArgs = NumArgs { fromNumArgs :: CInt }
-  deriving (Enum, Eq, Integral, Num, Ord, Real, Show)
+  deriving (Eq, Num, Ord, Show)
 
 -- | The number of results returned by a function call.
 newtype NumResults = NumResults { fromNumResults :: CInt }
-  deriving (Enum, Eq, Integral, Num, Ord, Real, Show)
+  deriving (Eq, Num, Ord, Show)
