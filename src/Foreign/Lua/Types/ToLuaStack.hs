@@ -47,7 +47,7 @@ import Control.Monad (zipWithM_)
 import Data.ByteString (ByteString)
 import Data.Map (Map, toList)
 import Foreign.Lua.Api
-import Foreign.Lua.Types.Core
+import Foreign.Lua.Types.Lua
 import Foreign.Ptr (FunPtr, Ptr)
 
 import qualified Data.Text as T

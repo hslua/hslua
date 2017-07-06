@@ -39,7 +39,7 @@ module Foreign.Lua.Types.Error
 import Control.Exception (Exception)
 import Control.Monad.Catch (throwM, catch)
 import Data.Typeable (Typeable)
-import Foreign.Lua.Types.Core (Lua)
+import Foreign.Lua.Types.Lua (Lua)
 
 data LuaException = LuaException String
   deriving (Typeable)

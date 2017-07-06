@@ -48,7 +48,7 @@ import Foreign.C
 import Foreign.Lua.Api.Constants
 import Foreign.Lua.Api.RawBindings
 import Foreign.Lua.Api.Types
-import Foreign.Lua.Types.Core
+import Foreign.Lua.Types.Lua
 import Foreign.Marshal.Alloc
 import Foreign.Ptr
 

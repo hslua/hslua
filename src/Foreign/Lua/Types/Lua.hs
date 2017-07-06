@@ -19,13 +19,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
-{-# LANGUAGE CPP                        #-}
-{-# LANGUAGE DeriveDataTypeable         #-}
-{-# LANGUAGE ForeignFunctionInterface   #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE StandaloneDeriving         #-}
 {-|
-Module      : Foreign.Lua.Types.Core
+Module      : Foreign.Lua.Types.Lua
 Copyright   : © 2017 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
@@ -34,7 +30,7 @@ Portability : GeneralizedNewtypeDeriving
 
 The core Lua types, including mappings of Lua types to Haskell.
 -}
-module Foreign.Lua.Types.Core
+module Foreign.Lua.Types.Lua
   ( Lua (..)
   , runLuaWith
   , liftIO
