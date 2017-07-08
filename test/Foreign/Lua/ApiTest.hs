@@ -37,6 +37,7 @@ module Foreign.Lua.ApiTest (tests) where
 
 import Prelude hiding (compare)
 
+import Control.Monad (forM_)
 import Foreign.Lua
 import Test.HsLua.Util (luaTestCase, pushLuaExpr)
 import Test.QuickCheck (Property, (.&&.))
@@ -150,6 +151,10 @@ tests = testGroup "Haskell version of the C API"
         LuaErrErr =<< do
           pushLuaExpr "function () error 'error in error handler' end"
           loadstring "error 'this fails'" *> pcall 0 0 (Just (-2))
+
+  , testCase "garbage collection" . runLua $ do
+      -- test that gc can be called with all constructors of type GCCONTROL.
+      forM_ [GCSTOP .. GCSETSTEPMUL] $ \what -> (gc what 23)
 
   , testGroup "compare"
     [ testProperty "identifies strictly smaller values" $ compareWith (<) OpLT

@@ -38,7 +38,7 @@ Portability : ForeignFunctionInterface, GeneralizedNewtypeDeriving
 The core Lua types, including mappings of Lua types to Haskell.
 -}
 module Foreign.Lua.Api.Types
-  ( GCCONTROL
+  ( GCCONTROL (..)
   , LTYPE (..)
   , fromLuaType
   , toLuaType
