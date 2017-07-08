@@ -26,6 +26,7 @@ module Foreign.LuaTest (tests) where
 import Prelude hiding (concat)
 
 import Data.ByteString (ByteString)
+import Data.Either (isLeft, isRight)
 import Data.Monoid ((<>))
 import Foreign.Lua
 import System.Mem (performMajorGC)
@@ -134,6 +135,16 @@ tests = testGroup "lua integration tests"
     , ("table", opentable)
     ]
   , testGroup "luaopen_base returns the right number of tables" testOpenBase
+
+  , testGroup "error handling"
+    [ testCase "lua errors are caught" $
+      assertBool "error was not intercepted" . isLeft =<<
+      runLuaEither (push True *> peek (-1) :: Lua String)
+
+    , testCase "error-less code gives in 'Right' result" $
+      assertBool "error was not intercepted" . isRight =<<
+      runLuaEither (push True *> peek (-1) :: Lua Bool)
+    ]
   ]
 
 --------------------------------------------------------------------------------

@@ -34,9 +34,10 @@ HsLua utility functions.
 module Foreign.Lua.Util
   ( getglobal'
   , runLua
+  , runLuaEither
   ) where
 
-import Control.Exception (bracket)
+import Control.Exception (bracket, try)
 import Data.List (groupBy)
 import Foreign.Lua.Api
 import Foreign.Lua.Types
@@ -46,6 +47,12 @@ import Foreign.Lua.Types
 -- caller.
 runLua :: Lua a -> IO a
 runLua = bracket newstate close . flip runLuaWith
+
+-- | Run the given Lua computation; exceptions raised in haskell code are
+-- caught, but other exceptions (user exceptions raised in haskell, unchecked
+-- type errors, etc.) are passed through.
+runLuaEither :: Lua a -> IO (Either LuaException a)
+runLuaEither = try . runLua
 
 -- | Like @getglobal@, but knows about packages. e. g.
 --
