@@ -64,7 +64,7 @@ import Foreign.Ptr
 #include "lua.h"
 
 -- | Synonym for @lua_State *@. See <https://www.lua.org/manual/5.3/#lua_State lua_State>.
-newtype LuaState = LuaState (Ptr ())
+newtype LuaState = LuaState (Ptr ()) deriving (Eq)
 
 -- | Synonym for @lua_Alloc@. See <https://www.lua.org/manual/5.3/#lua_Alloc lua_Alloc>.
 type LuaAlloc = Ptr () -> Ptr () -> CSize -> CSize -> IO (Ptr ())

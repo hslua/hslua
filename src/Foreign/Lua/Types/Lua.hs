@@ -32,6 +32,7 @@ The core Lua types, including mappings of Lua types to Haskell.
 -}
 module Foreign.Lua.Types.Lua
   ( Lua (..)
+  , luaState
   , runLuaWith
   , liftIO
   , liftLua

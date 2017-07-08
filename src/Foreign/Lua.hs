@@ -99,6 +99,7 @@ module Foreign.Lua
   , pushnil
   , pushnumber
   , pushstring
+  , pushthread
   , pushvalue
   , rawequal
   , rawget

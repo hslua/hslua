@@ -43,6 +43,7 @@ import Test.QuickCheck (Property, (.&&.))
 import Test.QuickCheck.Arbitrary (Arbitrary (..), arbitraryBoundedEnum)
 import Test.QuickCheck.Monadic (assert, monadicIO, run)
 import Test.Tasty (TestTree, testGroup)
+import Test.Tasty.HUnit (assertBool, testCase)
 import Test.Tasty.QuickCheck (testProperty)
 
 import qualified Prelude
@@ -71,7 +72,7 @@ tests = testGroup "Haskell version of the C API"
         return (movedEl == 9 && newTop == 8)
     , luaTestCase "inserts stack elements using negative indices" $ do
         pushLuaExpr "1, 2, 3, 4, 5, 6, 7, 8, 9"
-        insert (4)
+        insert 4
         movedEl <- peek 4 :: Lua LuaInteger
         newTop <- peek (-1) :: Lua LuaInteger
         return (movedEl == 9 && newTop == 8)
@@ -111,6 +112,18 @@ tests = testGroup "Haskell version of the C API"
       rawgeti (-1) 1 -- first field
       pushLuaExpr "'Moin'"
       equal (-1) (-2)
+
+  , luaTestCase "can push and receive a thread" $ do
+      luaSt <- luaState
+      isMain <- pushthread
+      liftIO (assertBool "pushing the main thread should return True" isMain)
+      luaSt' <- peek (-1)
+      return (luaSt == luaSt')
+
+  , testCase "different threads are not equal" $ do
+      luaSt1 <- newstate
+      luaSt2 <- newstate
+      assertBool "different lua threads are equal in haskell" (luaSt1 /= luaSt2)
 
   , testGroup "compare"
     [ testProperty "identifies strictly smaller values" $ compareWith (<) OpLT

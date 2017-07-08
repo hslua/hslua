@@ -674,6 +674,14 @@ pushstring :: B.ByteString -> Lua ()
 pushstring s = liftLua $ \l ->
   B.unsafeUseAsCStringLen s $ \(sPtr, z) -> lua_pushlstring l sPtr (fromIntegral z)
 
+-- | Pushes the current thread onto the stack. Returns @True@ if this thread is
+-- the main thread of its state, @False@ otherwise.
+--
+-- See also:
+-- <https://www.lua.org/manual/5.3/manual.html#lua_pushthread lua_pushthread>.
+pushthread :: Lua Bool
+pushthread = (1 ==)  <$> liftLua lua_pushthread
+
 -- | Pushes a copy of the element at the given index onto the stack.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_pushvalue lua_pushvalue>.
