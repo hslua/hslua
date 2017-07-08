@@ -51,7 +51,8 @@ module Foreign.Lua.Api.Types
   -- Numbers
   , LuaInteger
   , LuaNumber
-  , LuaComparerOp (..)
+  , LuaRelation (..)
+  , fromLuaRelation
   , LuaStatus (..)
   , toLuaStatus
   , StackIndex (..)
@@ -152,25 +153,22 @@ toLuaType = toEnum . fromIntegral
 fromLuaType :: LTYPE -> CInt
 fromLuaType = fromIntegral . fromEnum
 
--- | Lua comparison operations
-data LuaComparerOp
-  = OpEQ -- ^ Correponds to lua's equality (==) operator
-  | OpLT -- ^ Correponds to lua's strictly-lesser-than (<) operator
-  | OpLE -- ^ Correponds to lua's lesser-or-equal (<=) operator
+-- | Lua comparison operations.
+data LuaRelation
+  = LuaEQ -- ^ Correponds to lua's equality (==) operator.
+  | LuaLT -- ^ Correponds to lua's strictly-lesser-than (<) operator
+  | LuaLE -- ^ Correponds to lua's lesser-or-equal (<=) operator
   deriving (Eq, Ord, Show)
 
+fromLuaRelation :: LuaRelation -> CInt
 #if LUA_VERSION_NUMBER >= 502
-instance Enum LuaComparerOp where
-  fromEnum OpEQ = #{const LUA_OPEQ}
-  fromEnum OpLT = #{const LUA_OPLT}
-  fromEnum OpLE = #{const LUA_OPLE}
-
-  toEnum (#{const LUA_OPEQ}) = OpEQ
-  toEnum (#{const LUA_OPLT}) = OpLT
-  toEnum (#{const LUA_OPLE}) = OpLE
-  toEnum n = error $ "Cannot convert (" ++ show n ++ ") to LuaComparerOp"
+fromLuaRelation LuaEQ = #{const LUA_OPEQ}
+fromLuaRelation LuaLT = #{const LUA_OPLT}
+fromLuaRelation LuaLE = #{const LUA_OPLE}
 #else
-deriving instance Enum LuaComparerOp
+fromLuaRelation LuaEQ = 0
+fromLuaRelation LuaLT = 1
+fromLuaRelation LuaLE = 2
 #endif
 
 -- | Lua status values.

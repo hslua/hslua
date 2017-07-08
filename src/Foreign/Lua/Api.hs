@@ -113,21 +113,21 @@ close = lua_close
 --
 -- This is a wrapper function of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_compare lua_compare>.
-compare :: StackIndex -> StackIndex -> LuaComparerOp -> Lua Bool
+compare :: StackIndex -> StackIndex -> LuaRelation -> Lua Bool
 #if LUA_VERSION_NUMBER >= 502
-compare idx1 idx2 op = liftLua $ \l -> (/= 0) <$>
+compare idx1 idx2 relOp = liftLua $ \l -> (/= 0) <$>
   lua_compare l
     (fromStackIndex idx1)
     (fromStackIndex idx2)
-    (fromIntegral (fromEnum op))
+    (fromLuaRelation relOp)
 #else
 compare idx1 idx2 op = liftLua $ \l ->
   (/= 0) <$>
   case op of
-    OpEQ -> lua_equal l (fromStackIndex idx1) (fromStackIndex idx2)
-    OpLT -> lua_lessthan l (fromStackIndex idx1) (fromStackIndex idx2)
-    OpLE -> (+) <$> lua_equal l (fromStackIndex idx1) (fromStackIndex idx2)
-                <*> lua_lessthan l (fromStackIndex idx1) (fromStackIndex idx2)
+    LuaEQ -> lua_equal l (fromStackIndex idx1) (fromStackIndex idx2)
+    LuaLT -> lua_lessthan l (fromStackIndex idx1) (fromStackIndex idx2)
+    LuaLE -> (+) <$> lua_equal l (fromStackIndex idx1) (fromStackIndex idx2)
+                 <*> lua_lessthan l (fromStackIndex idx1) (fromStackIndex idx2)
 #endif
 
 -- | Concatenates the @n@ values at the top of the stack, pops them, and leaves
@@ -198,7 +198,7 @@ createtable narr nrec = liftLua $ \l ->
 -- call metamethods). Otherwise returns False. Also returns False if any of the
 -- indices is non valid. Uses @'compare'@ internally.
 equal :: StackIndex -> StackIndex -> Lua Bool
-equal index1 index2 = compare index1 index2 OpEQ
+equal index1 index2 = compare index1 index2 LuaEQ
 
 -- |  Controls the garbage collector.
 --
@@ -419,7 +419,7 @@ lerror = do
 -- | Tests whether the object under the first index is smaller than that under
 -- the second. Uses @'compare'@ internally.
 lessthan :: StackIndex -> StackIndex -> Lua Bool
-lessthan index1 index2 = compare index1 index2 OpLT
+lessthan index1 index2 = compare index1 index2 LuaLT
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadfile luaL_loadfile>.
 loadfile :: String -> Lua Int

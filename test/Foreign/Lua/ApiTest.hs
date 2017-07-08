@@ -157,9 +157,9 @@ tests = testGroup "Haskell version of the C API"
       forM_ [GCSTOP .. GCSETSTEPMUL] $ \what -> (gc what 23)
 
   , testGroup "compare"
-    [ testProperty "identifies strictly smaller values" $ compareWith (<) OpLT
-    , testProperty "identifies smaller or equal values" $ compareWith (<=) OpLE
-    , testProperty "identifies equal values" $ compareWith (==) OpEQ
+    [ testProperty "identifies strictly smaller values" $ compareWith (<) LuaLT
+    , testProperty "identifies smaller or equal values" $ compareWith (<=) LuaLE
+    , testProperty "identifies equal values" $ compareWith (==) LuaEQ
     ]
 
   , testProperty "lessthan works" $ \n1 n2 -> monadicIO $ do
@@ -175,7 +175,7 @@ tests = testGroup "Haskell version of the C API"
       in Prelude.compare n1 n2 == Prelude.compare lt1 lt2
   ]
 
-compareWith :: (Int -> Int -> Bool) -> LuaComparerOp -> Int -> Property
+compareWith :: (Int -> Int -> Bool) -> LuaRelation -> Int -> Property
 compareWith op luaOp n = compareLT .&&. compareEQ .&&. compareGT
  where
   compareLT :: Property
