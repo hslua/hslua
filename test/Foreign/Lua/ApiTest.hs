@@ -43,7 +43,7 @@ import Test.QuickCheck (Property, (.&&.))
 import Test.QuickCheck.Arbitrary (Arbitrary (..), arbitraryBoundedEnum)
 import Test.QuickCheck.Monadic (assert, monadicIO, run)
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit (assertBool, testCase)
+import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
 import Test.Tasty.QuickCheck (testProperty)
 
 import qualified Prelude
@@ -124,6 +124,32 @@ tests = testGroup "Haskell version of the C API"
       luaSt1 <- newstate
       luaSt2 <- newstate
       assertBool "different lua threads are equal in haskell" (luaSt1 /= luaSt2)
+
+  , testCase "thread status" . runLua $ do
+      status >>= liftIO . assertEqual "base status should be OK" LuaOK
+      openlibs
+      getglobal' "coroutine.resume"
+      pushLuaExpr "coroutine.create(function() coroutine.yield(9) end)"
+      co <- tothread (-1)
+      call 1 0
+      liftIO . runLuaWith co $ do
+        liftIO . assertEqual "yielding will put thread status to Yield" LuaYield
+          =<< status
+      liftIO . print =<< ltype (-1)
+
+  , testCase "loadstring status" . runLua $ do
+      liftIO . assertEqual "loading a valid string doesn't return LuaOK"
+        LuaOK =<< loadstring "return 1"
+      liftIO . assertEqual "loading an invalid string doesn't return LuaErrSyntax"
+        LuaErrSyntax =<< loadstring "marzipan"
+
+  , testCase "pcall status" . runLua $ do
+      liftIO . assertEqual "calling error did not lead to an error status"
+        LuaErrRun =<< (loadstring "error \"this fails\"" *> pcall 0 0 Nothing)
+      liftIO . assertEqual "calling error did not lead to an error status"
+        LuaErrErr =<< do
+          pushLuaExpr "function () error 'error in error handler' end"
+          loadstring "error 'this fails'" *> pcall 0 0 (Just (-2))
 
   , testGroup "compare"
     [ testProperty "identifies strictly smaller values" $ compareWith (<) OpLT

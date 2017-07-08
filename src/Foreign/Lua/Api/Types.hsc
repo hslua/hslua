@@ -52,6 +52,8 @@ module Foreign.Lua.Api.Types
   , LuaInteger
   , LuaNumber
   , LuaComparerOp (..)
+  , LuaStatus (..)
+  , toLuaStatus
   , StackIndex (..)
   , NumArgs (..)
   , NumResults (..)
@@ -170,6 +172,34 @@ instance Enum LuaComparerOp where
 #else
 deriving instance Enum LuaComparerOp
 #endif
+
+-- | Lua status values.
+data LuaStatus
+  = LuaOK        -- ^ success
+  | LuaYield     -- ^ yielding / suspended coroutine
+  | LuaErrRun    -- ^ a runtime rror
+  | LuaErrSyntax -- ^ syntax error during precompilation
+  | LuaErrMem    -- ^ memory allocation (out-of-memory) error.
+  | LuaErrErr    -- ^ error while running the message handler.
+  | LuaErrGcmm   -- ^ error while running a @__gc@ metamethod.
+  deriving (Eq, Show)
+
+toLuaStatus :: CInt -> LuaStatus
+-- LUA_OK is not defined in Lua 5.1
+toLuaStatus 0                        = LuaOK
+toLuaStatus (#{const LUA_YIELD})     = LuaYield
+toLuaStatus (#{const LUA_ERRRUN})    = LuaErrRun
+toLuaStatus (#{const LUA_ERRSYNTAX}) = LuaErrSyntax
+toLuaStatus (#{const LUA_ERRMEM})    = LuaErrMem
+-- LUA_ERRGCMM did not exist in Lua 5.1; comes before LUA_ERRERR when defined
+#if LUA_VERSION_NUMBER >= 502
+toLuaStatus (#{const LUA_ERRGCMM})   = LuaErrGcmm
+toLuaStatus (#{const LUA_ERRERR})    = LuaErrErr
+#else
+toLuaStatus (#{const LUA_ERRERR})    = LuaErrErr
+toLuaStatus 6                        = LuaErrGcmm
+#endif
+toLuaStatus n = error $ "Cannot convert (" ++ show n ++ ") to LuaStatus"
 
 -- | Enumeration used by @gc@ function.
 data GCCONTROL

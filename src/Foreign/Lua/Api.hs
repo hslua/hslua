@@ -168,14 +168,14 @@ copy fromidx toidx = do
 -- stack. All values returned by func are discarded.
 --
 -- See <https://www.lua.org/manual/5.1/manual.html#lua_cpcall lua_cpcall>.
-cpcall :: FunPtr LuaCFunction -> Ptr a -> Lua Int
+cpcall :: FunPtr LuaCFunction -> Ptr a -> Lua LuaStatus
 #if LUA_VERSION_NUMBER >= 502
 cpcall a c = do
   pushcfunction a
   pushlightuserdata c
-  pcall 1 0 0
+  pcall 1 0 Nothing
 #else
-cpcall a c = liftLua $ \l -> fmap fromIntegral (lua_cpcall l a c)
+cpcall a c = liftLua $ \l -> fmap toLuaStatus (lua_cpcall l a c)
 #endif
 
 -- | Creates a new empty table and pushes it onto the stack. Parameter narr is a
@@ -434,10 +434,10 @@ loadfile f = liftLua $ \l ->
 #endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadstring>.
-loadstring :: String -> Lua Int
+loadstring :: String -> Lua LuaStatus
 loadstring str = liftLua $ \l ->
   withCString str $ \strPtr ->
-  fromIntegral <$> luaL_loadstring l strPtr
+  toLuaStatus <$> luaL_loadstring l strPtr
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>.
 ltype :: StackIndex -> Lua LTYPE
@@ -568,24 +568,43 @@ openstring = pushcfunction lua_open_string_ptr *> call 0 multret
 opentable :: Lua ()
 opentable = pushcfunction lua_open_table_ptr *> call 0 multret
 
+-- | Calls a function in protected mode.
+--
+-- Both @nargs@ and @nresults@ have the same meaning as in @'call'@. If there are
+-- no errors during the call, @pcall@ behaves exactly like @'call'@. However, if
+-- there is any error, @'pcall'@ catches it, pushes a single value on the stack
+-- (the error object), and returns an error code. Like @'call'@, @'pcall'@
+-- always removes the function and its arguments from the stack.
+--
+-- If @msgh@ is @Nothing@, then the error object returned on the stack is
+-- exactly the original error object. Otherwise, when @msgh@ is @Just idx@, the
+-- stack index @idx@ is the location of a message handler. (This index cannot be
+-- a pseudo-index.) In case of runtime errors, this function will be called with
+-- the error object and its return value will be the object returned on the
+-- stack by @'pcall'@.
+--
+-- Typically, the message handler is used to add more debug information to the
+-- error object, such as a stack traceback. Such information cannot be gathered
+-- after the return of @'pcall'@, since by then the stack has unwound.
+--
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pcall lua_pcall>.
-pcall :: NumArgs -> NumResults -> Int -> Lua Int
+pcall :: NumArgs -> NumResults -> Maybe StackIndex -> Lua LuaStatus
 #if LUA_VERSION_NUMBER >= 502
-pcall nargs nresults errfunc = liftLua $ \l ->
-  fromIntegral <$>
+pcall nargs nresults msgh = liftLua $ \l ->
+  toLuaStatus <$>
   lua_pcallk l
     (fromNumArgs nargs)
     (fromNumResults nresults)
-    (fromIntegral errfunc)
+    (maybe 0 fromStackIndex msgh)
     0
     nullPtr
 #else
-pcall nargs nresults errfunc = liftLua $ \l ->
-  fromIntegral <$>
+pcall nargs nresults msgh = liftLua $ \l ->
+  toLuaStatus <$>
   lua_pcall l
     (fromNumArgs nargs)
     (fromNumResults nresults)
-    (fromIntegral errfunc)
+    (maybe 0 fromStackIndex msgh)
 #endif
 
 -- | Pops @n@ elements from the stack.
@@ -840,19 +859,19 @@ settable index = liftLua $ \l -> lua_settable l (fromIntegral index)
 settop :: StackIndex -> Lua ()
 settop = liftLua1 lua_settop . fromStackIndex
 
--- |  Returns the status of the thread L.
+-- |  Returns the status of this Lua thread.
 --
--- The status can be 0 (LUA_OK) for a normal thread, an error code if the thread
--- finished the execution of a lua_resume with an error, or LUA_YIELD if the
--- thread is suspended.
+-- The status can be @'LuaOK'@ for a normal thread, an error value if the thread
+-- finished the execution of a @'lua_resume'@ with an error, or @'LuaYield'@ if
+-- the thread is suspended.
 --
--- You can only call functions in threads with status LUA_OK. You can resume
--- threads with status LUA_OK (to start a new coroutine) or LUA_YIELD (to resume
--- a coroutine).
+-- You can only call functions in threads with status @'LuaOK'@. You can resume
+-- threads with status @'LuaOK'@ (to start a new coroutine) or @'LuaYield'@ (to
+-- resume a coroutine).
 --
 -- See also: <https://www.lua.org/manual/5.3/manual.html#lua_status lua_status>.
-status :: Lua Int
-status = liftLua $ fmap fromIntegral . lua_status
+status :: Lua LuaStatus
+status = liftLua $ fmap toLuaStatus . lua_status
 
 {-# DEPRECATED strlen "Use rawlen instead." #-}
 -- | Compatibility alias for rawlen
