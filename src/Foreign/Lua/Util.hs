@@ -27,7 +27,7 @@ Copyright   : © 2007–2012 Gracjan Polak,
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta
-Portability : FlexibleInstances, ScopedTypeVariables
+Portability : portable
 
 HsLua utility functions.
 -}
@@ -36,17 +36,16 @@ module Foreign.Lua.Util
   , runLua
   ) where
 
+import Control.Exception (bracket)
 import Data.List (groupBy)
 import Foreign.Lua.Api
 import Foreign.Lua.Types
 
--- | Run lua computation using the default HsLua state as starting point.
+-- | Run lua computation using the default HsLua state as starting point. Raised
+-- exceptions are passed through; error handling is the responsibility of the
+-- caller.
 runLua :: Lua a -> IO a
-runLua lua = do
-  st <- newstate
-  res <- runLuaWith st lua
-  liftIO (close st)
-  return res
+runLua = bracket newstate close . flip runLuaWith
 
 -- | Like @getglobal@, but knows about packages. e. g.
 --

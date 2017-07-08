@@ -67,6 +67,7 @@ liftLua1 f x = liftLua $ \l -> f l x
 luaState :: Lua LuaState
 luaState = ask
 
--- | Run lua computation with custom lua state.
+-- | Run lua computation with custom lua state. Errors are left unhandled, the
+-- caller of this function is responsible to catch lua errors.
 runLuaWith :: LuaState -> Lua a -> IO a
 runLuaWith l s = runReaderT (unLua s) l
