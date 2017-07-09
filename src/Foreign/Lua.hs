@@ -41,7 +41,6 @@ module Foreign.Lua
   , module Foreign.Lua.Types
   , module Foreign.Lua.Util
   -- * Lua API functions
-  , atpanic
   , call
   , checkstack
   , close

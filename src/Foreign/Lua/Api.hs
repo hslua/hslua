@@ -56,13 +56,6 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Unsafe as B
 import qualified Foreign.Storable as F
 
--- | Sets a new panic function and returns the old one (see
--- <https://www.lua.org/manual/5.3/manual.html#4.6 §4.6> and
--- <https://www.lua.org/manual/5.3/manual.html#lua_atpanic lua_atpanic> in the
--- lua manual).
-atpanic :: FunPtr LuaCFunction -> Lua (FunPtr LuaCFunction)
-atpanic = liftLua1 lua_atpanic
-
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_call lua_call>.
 call :: NumArgs -> NumResults -> Lua ()
 #if LUA_VERSION_NUMBER >= 502
