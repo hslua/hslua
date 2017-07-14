@@ -20,11 +20,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
 -- | Tests that lua functions can be called from haskell and vice versa.
-module Foreign.Lua.InteropTest (tests) where
+module Foreign.Lua.FunctionCallingTest (tests) where
 
 import Data.ByteString.Char8 (pack, unpack)
 import Foreign.Lua.Api
-import Foreign.Lua.Interop (callfunc, peek, registerhsfunction)
+import Foreign.Lua.FunctionCalling (callfunc, peek, registerhsfunction)
 import Foreign.Lua.Types (Lua, catchLuaError)
 import Foreign.Lua.Util (runLua)
 import Test.Tasty (TestTree, testGroup)

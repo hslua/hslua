@@ -65,7 +65,7 @@ library
                       , Foreign.Lua.Api.Constants
                       , Foreign.Lua.Api.RawBindings
                       , Foreign.Lua.Api.Types
-                      , Foreign.Lua.Interop
+                      , Foreign.Lua.FunctionCalling
                       , Foreign.Lua.Types
                       , Foreign.Lua.Types.Error
                       , Foreign.Lua.Types.FromLuaStack
@@ -167,7 +167,7 @@ test-suite test-hslua
   ghc-options:          -Wall -threaded
   other-modules:        Foreign.LuaTest
                       , Foreign.Lua.ApiTest
-                      , Foreign.Lua.InteropTest
+                      , Foreign.Lua.FunctionCallingTest
                       , Foreign.Lua.TypesTest
                       , Foreign.Lua.Types.FromLuaStackTest
                       , Foreign.Lua.Types.ToLuaStackTest

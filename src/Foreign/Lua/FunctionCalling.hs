@@ -26,7 +26,7 @@ THE SOFTWARE.
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
-Module      : Foreign.Lua.Interop
+Module      : Foreign.Lua.FunctionCalling
 Copyright   : © 2007–2012 Gracjan Polak,
                 2012–2016 Ömer Sinan Ağacan,
                 2017 Albert Krewinkel
@@ -35,10 +35,9 @@ Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta
 Portability : FlexibleInstances, ForeignFunctionInterface, ScopedTypeVariables
 
-Classes and functions enabling straight-forward interoperability between lua and
-haskell.
+Call haskell functions from Lua, and vice versa.
 -}
-module Foreign.Lua.Interop
+module Foreign.Lua.FunctionCalling
   ( FromLuaStack (..)
   , LuaCallFunc (..)
   , LuaImport (..)
