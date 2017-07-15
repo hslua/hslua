@@ -35,28 +35,31 @@ Bindings, functions, and utilities enabling the integration of a lua interpreter
 into a haskell project.
 -}
 module Foreign.Lua
-  ( module Foreign.Lua.Api.Constants
-  , module Foreign.Lua.Api.Types
+  ( module Foreign.Lua.Api.Types
   , module Foreign.Lua.FunctionCalling
   , module Foreign.Lua.Types
   , module Foreign.Lua.Util
   -- * Lua API functions
-  , call
-  , checkstack
+  -- ** Constants and pseudo-indices
+  , multret
+  , registryindex
+  , upvalueindex
+  -- ** State manipulation
+  , newstate
   , close
-  , compare
-  , concat
-  , copy
-  , cpcall
-  , createtable
-  , equal
-  , getfield
-  , getglobal
-  , getmetatable
-  , gettable
+  -- ** Basic stack manipulation
   , gettop
-  , gc
+  , settop
+  , pushvalue
+  , copy
   , insert
+  , pop
+  , remove
+  , replace
+  , checkstack
+  -- ** types and type checks
+  , ltype
+  , typename
   , isboolean
   , iscfunction
   , isfunction
@@ -69,17 +72,65 @@ module Foreign.Lua
   , istable
   , isthread
   , isuserdata
-  , lerror
+  -- ** access functions (stack → Haskell)
+  , toboolean
+  , tocfunction
+  , tointeger
+  , tonumber
+  , topointer
+  , tostring
+  , tothread
+  , touserdata
+  , objlen
+  , rawlen
+  , strlen
+  -- ** Comparison and arithmetic functions
+  , compare
+  , equal
   , lessthan
-  , loadfile
-  , loadstring
-  , ltype
-  , newmetatable
-  , newstate
+  , rawequal
+  -- ** push functions (Haskell → stack)
+  , pushboolean
+  , pushcfunction
+  , pushinteger
+  , pushlightuserdata
+  , pushnil
+  , pushnumber
+  , pushstring
+  , pushthread
+  -- ** get functions (Lua → stack)
+  , getglobal
+  , gettable
+  , getfield
+  , rawget
+  , rawgeti
+  , createtable
   , newtable
   , newuserdata
+  , getmetatable
+  -- ** set functions (stack → Lua)
+  , setglobal
+  , settable
+  , setfield
+  , rawset
+  , rawseti
+  , setmetatable
+  -- ** load and call functions (load and run Lua code)
+  , call
+  , cpcall
+  , pcall
+  , loadfile
+  , loadstring
+  -- ** Coroutine functions
+  , status
+  -- ** garbage-collection function and options
+  , gc
+  -- ** miscellaneous and helper functions
   , next
-  , objlen
+  , lerror
+  , concat
+  , register
+  -- * loading libraries
   , openbase
   , opendebug
   , openio
@@ -89,51 +140,15 @@ module Foreign.Lua
   , openos
   , openstring
   , opentable
-  , pcall
-  , pop
-  , pushboolean
-  , pushcfunction
-  , pushinteger
-  , pushlightuserdata
-  , pushnil
-  , pushnumber
-  , pushstring
-  , pushthread
-  , pushvalue
-  , rawequal
-  , rawget
-  , rawgeti
-  , rawlen
-  , rawset
-  , rawseti
+  -- * Auxiliary library
+  , newmetatable
   , ref
-  , register
-  , remove
-  , replace
-  , setfield
-  , setglobal
-  , setmetatable
-  , settable
-  , settop
-  , status
-  , strlen
-  , toboolean
-  , tocfunction
-  , tointeger
-  , tonumber
-  , topointer
-  , tostring
-  , tothread
-  , touserdata
-  , typename
-  , upvalueindex
   , unref
   ) where
 
 import Prelude hiding (compare, concat)
 
 import Foreign.Lua.Api
-import Foreign.Lua.Api.Constants
 import Foreign.Lua.Api.Types
 import Foreign.Lua.FunctionCalling
 import Foreign.Lua.Types
