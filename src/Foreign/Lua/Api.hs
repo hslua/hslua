@@ -56,7 +56,11 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Unsafe as B
 import qualified Foreign.Storable as F
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_call lua_call>.
+-- | Call a function on the lua stack. Using this function is strongly
+-- discouraged, as errors are non-recoverable and will lead to program
+-- termination. Use @'pcall'@ instead.
+--
+-- See <https://www.lua.org/manual/5.3/manual.html#lua_call lua_call>.
 call :: NumArgs -> NumResults -> Lua ()
 #if LUA_VERSION_NUMBER >= 502
 call a nresults = liftLua $ \l ->
@@ -563,11 +567,21 @@ opentable = pushcfunction lua_open_table_ptr *> call 0 multret
 
 -- | Calls a function in protected mode.
 --
--- Both @nargs@ and @nresults@ have the same meaning as in @'call'@. If there are
--- no errors during the call, @pcall@ behaves exactly like @'call'@. However, if
--- there is any error, @'pcall'@ catches it, pushes a single value on the stack
--- (the error object), and returns an error code. Like @'call'@, @'pcall'@
--- always removes the function and its arguments from the stack.
+-- To call a function you must use the following protocol: first, the function
+-- to be called is pushed onto the stack; then, the arguments to the function
+-- are pushed in direct order; that is, the first argument is pushed first.
+-- Finally you call @pcall@; @nargs@ is the number of arguments that you pushed
+-- onto the stack. All arguments and the function value are popped from the
+-- stack when the function is called. The function results are pushed onto the
+-- stack when the function returns. The number of results is adjusted to
+-- nresults, unless @nresults@ is @'multret'@. In this case, all results from
+-- the function are pushed. Lua takes care that the returned values fit into the
+-- stack space. The function results are pushed onto the stack in direct order
+-- (the first result is pushed first), so that after the call the last result is
+-- on the top of the stack.
+--
+-- If there is any error, @'pcall'@ catches it, pushes a single value on the
+-- stack (the error object), and returns an error code.
 --
 -- If @msgh@ is @Nothing@, then the error object returned on the stack is
 -- exactly the original error object. Otherwise, when @msgh@ is @Just idx@, the
