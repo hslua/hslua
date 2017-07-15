@@ -63,7 +63,7 @@ type Result a = Either String a
 -- | A value that can be read from the Lua stack.
 class FromLuaStack a where
   -- | Check if at index @n@ there is a convertible Lua value and if so return
-  -- it wrapped in @Just@. Return @Nothing@ otherwise.
+  -- it.  Throws a @'LuaException'@ otherwise.
   peek :: StackIndex -> Lua a
 
 instance FromLuaStack () where
@@ -157,5 +157,7 @@ typeChecked expectedType test peekfn n = do
       actual <- ltype n >>= typename
       throwLuaError $ "Expected a " <> expectedType <> " but got a " <> actual
 
+-- | Try to convert the value at the given stack index to a haskell value.
+-- Returns @Left@ with an error message on failure.
 peekEither :: FromLuaStack a => StackIndex -> Lua (Either String a)
 peekEither idx = catchLuaError (return <$> peek idx) (return . Left . show)

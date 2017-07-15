@@ -41,6 +41,7 @@ import Control.Monad.Catch (throwM, catch)
 import Data.Typeable (Typeable)
 import Foreign.Lua.Types.Lua (Lua)
 
+-- | Exceptions raised by Lua-related operations.
 data LuaException = LuaException String
   deriving (Typeable)
 
@@ -49,8 +50,10 @@ instance Show LuaException where
 
 instance Exception LuaException
 
+-- | Raise a @'LuaException'@ containing the given error message.
 throwLuaError :: String -> Lua a
 throwLuaError = throwM . LuaException
 
+-- | Catch a @'LuaException'@.
 catchLuaError :: Lua a -> (LuaException -> Lua a) -> Lua a
 catchLuaError = catch

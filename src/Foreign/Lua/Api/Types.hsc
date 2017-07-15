@@ -45,7 +45,12 @@ import Foreign.Ptr
 
 #include "lua.h"
 
--- | Synonym for @lua_State *@. See <https://www.lua.org/manual/5.3/#lua_State lua_State>.
+-- | An opaque structure that points to a thread and indirectly (through the
+-- thread) to the whole state of a Lua interpreter. The Lua library is fully
+-- reentrant: it has no global variables. All information about a state is
+-- accessible through this structure.
+--
+-- Synonym for @lua_State *@. See <https://www.lua.org/manual/5.3/#lua_State lua_State>.
 newtype LuaState = LuaState (Ptr ()) deriving (Eq)
 
 -- | Synonym for @lua_Alloc@. See <https://www.lua.org/manual/5.3/#lua_Alloc lua_Alloc>.
@@ -82,24 +87,35 @@ type LuaWriter = LuaState -> Ptr CChar -> CSize -> Ptr () -> IO CInt
 -- See <https://www.lua.org/manual/5.3/#lua_CFunction lua_CFunction>.
 type LuaCFunction = LuaState -> IO CInt
 
--- | Synonym for @lua_Integer@. See <https://www.lua.org/manual/5.3/#lua_Integer lua_Integer>.
+-- |  The type of integers in Lua.
+--
+-- By default this type is @'Int64'@, but that can be changed to different
+-- values in lua. (See @LUA_INT_TYPE@ in @luaconf.h@.)
+--
+-- See <https://www.lua.org/manual/5.3/#lua_Integer lua_Integer>.
 type LuaInteger = #{type LUA_INTEGER}
 
--- | Synonym for @lua_Number@. See <https://www.lua.org/manual/5.3/#lua_Number lua_Number>.
+-- |  The type of floats in Lua.
+--
+-- By default this type is @'Double'@, but that can be changed in Lua to a
+-- single float or a long double. (See @LUA_FLOAT_TYPE@ in @luaconf.h@.)
+--
+-- See <https://www.lua.org/manual/5.3/#lua_Number lua_Number>.
 type LuaNumber = #{type LUA_NUMBER}
 
--- | Enumeration used as type tag. See <https://www.lua.org/manual/5.3/#lua_type lua_type>.
+-- | Enumeration used as type tag.
+-- See <https://www.lua.org/manual/5.3/#lua_type lua_type>.
 data LTYPE
-  = TNONE
-  | TNIL
-  | TBOOLEAN
-  | TLIGHTUSERDATA
-  | TNUMBER
-  | TSTRING
-  | TTABLE
-  | TFUNCTION
-  | TUSERDATA
-  | TTHREAD
+  = TNONE           -- ^ non-valid stack index
+  | TNIL            -- ^ type of lua's @nil@ value
+  | TBOOLEAN        -- ^ type of lua booleans
+  | TLIGHTUSERDATA  -- ^ type of light userdata
+  | TNUMBER         -- ^ type of lua numbers. See @'LuaNumber'@
+  | TSTRING         -- ^ type of lua string values
+  | TTABLE          -- ^ type of lua tables
+  | TFUNCTION       -- ^ type of functions, either normal or @'LuaCFunction'@
+  | TUSERDATA       -- ^ type of full user data
+  | TTHREAD         -- ^ type of lua threads
   deriving (Bounded, Eq, Ord, Show)
 
 instance Enum LTYPE where
@@ -126,9 +142,11 @@ instance Enum LTYPE where
   toEnum (#{const LUA_TTHREAD})        = TTHREAD
   toEnum n                             = error $ "Cannot convert (" ++ show n ++ ") to LTYPE"
 
+-- | Convert number to lua type.
 toLuaType :: CInt -> LTYPE
 toLuaType = toEnum . fromIntegral
 
+-- | Convert Lua type to its C representation.
 fromLuaType :: LTYPE -> CInt
 fromLuaType = fromIntegral . fromEnum
 
@@ -139,6 +157,7 @@ data LuaRelation
   | LuaLE -- ^ Correponds to lua's lesser-or-equal (<=) operator
   deriving (Eq, Ord, Show)
 
+-- | Convert relation operator to its C representation.
 fromLuaRelation :: LuaRelation -> CInt
 #if LUA_VERSION_NUMBER >= 502
 fromLuaRelation LuaEQ = #{const LUA_OPEQ}
@@ -161,6 +180,7 @@ data LuaStatus
   | LuaErrGcmm   -- ^ error while running a @__gc@ metamethod.
   deriving (Eq, Show)
 
+-- | Convert C integer constant to @'LuaStatus'@.
 toLuaStatus :: CInt -> LuaStatus
 -- LUA_OK is not defined in Lua 5.1
 toLuaStatus 0                        = LuaOK
@@ -174,7 +194,6 @@ toLuaStatus (#{const LUA_ERRGCMM})   = LuaErrGcmm
 toLuaStatus (#{const LUA_ERRERR})    = LuaErrErr
 #else
 toLuaStatus (#{const LUA_ERRERR})    = LuaErrErr
-toLuaStatus 6                        = LuaErrGcmm
 #endif
 toLuaStatus n = error $ "Cannot convert (" ++ show n ++ ") to LuaStatus"
 
