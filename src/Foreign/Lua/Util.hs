@@ -61,9 +61,9 @@ runLuaEither = try . runLua
 -- returns correct result
 getglobal' :: String -> Lua ()
 getglobal' n = do
+    let (x : xs) = splitdot n
     getglobal x
     mapM_ dotable xs
   where
-    (x : xs)  = splitdot n
     splitdot  = filter (/= ".") . groupBy (\a b -> a /= '.' && b /= '.')
-    dotable a = getfield (-1) a *> gettop >>= \i -> remove (i - 1)
+    dotable a = getfield (-1) a *> remove (-2)
