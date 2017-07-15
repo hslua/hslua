@@ -43,6 +43,7 @@ module Foreign.Lua.Types.FromLuaStack
   ( FromLuaStack (..)
   , Result
   , peekEither
+  , pairsFromTable
   ) where
 
 import Data.ByteString (ByteString)
@@ -112,20 +113,21 @@ instance FromLuaStack a => FromLuaStack [a] where
     amendError err = throwLuaError ("Could not read list: " ++ show err)
 
 instance (Ord a, FromLuaStack a, FromLuaStack b) => FromLuaStack (Map a b) where
-  peek idx = fromList <$> do
-    pushnil
-    remainingPairs
-      where
-        remainingPairs = do
-          res <- nextPair (if idx < 0 then idx - 1 else idx)
-          case res of
-            Nothing -> return []
-            Just a  -> (a:) <$> remainingPairs
+  peek idx = fromList <$> pairsFromTable idx
+
+-- | Read a table into a list of pairs.
+pairsFromTable :: (FromLuaStack a, FromLuaStack b) => StackIndex -> Lua [(a, b)]
+pairsFromTable idx = do
+  pushnil
+  remainingPairs
+ where
+  remainingPairs = do
+    res <- nextPair (if idx < 0 then idx - 1 else idx)
+    case res of
+      Nothing -> return []
+      Just a  -> (a:) <$> remainingPairs
 
 -- | Get the next key-value pair from a table.
---
--- TODO: This function shows that there's a problem with the way we handle
--- errors.
 nextPair :: (FromLuaStack a, FromLuaStack b)
          => StackIndex -> Lua (Maybe (a, b))
 nextPair idx = do
