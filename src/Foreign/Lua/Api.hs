@@ -35,10 +35,128 @@ Portability : CPP, ForeignFunctionInterface
 
 Monadic functions which operate within the Lua type.
 -}
-module Foreign.Lua.Api
-  ( module Foreign.Lua.Api
-  , module Foreign.Lua.Api.Constants
-  , module Foreign.Lua.Api.Types
+module Foreign.Lua.Api (
+  -- * Lua API types
+    LuaCFunction
+  , LuaInteger
+  , LuaNumber
+  , StackIndex (..)
+  , NumArgs (..)
+  , NumResults (..)
+  -- * Lua API
+  -- ** Constants and pseudo-indices
+  , multret
+  , registryindex
+  , upvalueindex
+  -- ** State manipulation
+  , LuaState (..)
+  , newstate
+  , close
+  -- ** Basic stack manipulation
+  , gettop
+  , settop
+  , pushvalue
+  , copy
+  , insert
+  , pop
+  , remove
+  , replace
+  , checkstack
+  -- ** types and type checks
+  , LTYPE (..)
+  , fromLuaType
+  , toLuaType
+  , ltype
+  , typename
+  , isboolean
+  , iscfunction
+  , isfunction
+  , islightuserdata
+  , isnil
+  , isnone
+  , isnoneornil
+  , isnumber
+  , isstring
+  , istable
+  , isthread
+  , isuserdata
+  -- ** access functions (stack → Haskell)
+  , toboolean
+  , tocfunction
+  , tointeger
+  , tonumber
+  , topointer
+  , tostring
+  , tothread
+  , touserdata
+  , objlen
+  , rawlen
+  , strlen
+  -- ** Comparison and arithmetic functions
+  , LuaRelation (..)
+  , fromLuaRelation
+  , compare
+  , equal
+  , lessthan
+  , rawequal
+  -- ** push functions (Haskell → stack)
+  , pushboolean
+  , pushcfunction
+  , pushinteger
+  , pushlightuserdata
+  , pushnil
+  , pushnumber
+  , pushstring
+  , pushthread
+  -- ** get functions (Lua → stack)
+  , getglobal
+  , gettable
+  , getfield
+  , rawget
+  , rawgeti
+  , createtable
+  , newtable
+  , newuserdata
+  , getmetatable
+  -- ** set functions (stack → Lua)
+  , setglobal
+  , settable
+  , setfield
+  , rawset
+  , rawseti
+  , setmetatable
+  -- ** load and call functions (load and run Lua code)
+  , call
+  , cpcall
+  , pcall
+  , loadfile
+  , loadstring
+  -- ** Coroutine functions
+  , LuaStatus (..)
+  , toLuaStatus
+  , status
+  -- ** garbage-collection function and options
+  , GCCONTROL (..)
+  , gc
+  -- ** miscellaneous and helper functions
+  , next
+  , lerror
+  , concat
+  , register
+  -- * loading libraries
+  , openbase
+  , opendebug
+  , openio
+  , openlibs
+  , openmath
+  , openpackage
+  , openos
+  , openstring
+  , opentable
+  -- * Auxiliary library
+  , newmetatable
+  , ref
+  , unref
   ) where
 
 import Prelude hiding (compare, concat)
