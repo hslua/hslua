@@ -972,8 +972,8 @@ setmetatable idx = liftLua $ \l -> lua_setmetatable l (fromStackIndex idx)
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_settable lua_settable>.
-settable :: Int -> Lua ()
-settable index = liftLua $ \l -> lua_settable l (fromIntegral index)
+settable :: StackIndex -> Lua ()
+settable index = liftLua $ \l -> lua_settable l (fromStackIndex index)
 
 -- | Accepts any index, or 0, and sets the stack top to this index. If the new
 -- top is larger than the old one, then the new elements are filled with nil. If
