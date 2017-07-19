@@ -25,6 +25,7 @@ module Foreign.LuaTest (tests) where
 
 import Prelude hiding (concat)
 
+import Control.Applicative ((<|>))
 import Data.ByteString (ByteString)
 import Data.Either (isLeft, isRight)
 import Data.Monoid ((<>))
@@ -144,6 +145,13 @@ tests = testGroup "lua integration tests"
     , testCase "error-less code gives in 'Right' result" $
       assertBool "error was not intercepted" . isRight =<<
       runLuaEither (push True *> peek (-1) :: Lua Bool)
+
+    , testCase "catching lua errors within the lua type" $
+      assert . isLeft =<< (runLua $ tryLua (throwLuaError "test"))
+
+    , testCase "second alternative is used when first fails" $
+      assertEqual "alternative failed" (Right True) =<<
+      runLuaEither (throwLuaError "test" <|> return True)
     ]
   ]
 

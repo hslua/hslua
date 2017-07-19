@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
 {-# LANGUAGE DeriveDataTypeable         #-}
+{-# OPTIONS_GHC -fno-warn-orphans       #-}
 {-|
 Module      : Foreign.Lua.Types.Error
 Copyright   : © 2017 Albert Krewinkel
@@ -34,16 +35,18 @@ module Foreign.Lua.Types.Error
   ( LuaException (..)
   , catchLuaError
   , throwLuaError
+  , tryLua
   ) where
 
+import Control.Applicative (Alternative (..))
 import Control.Exception (Exception)
-import Control.Monad.Catch (throwM, catch)
+import Control.Monad.Catch (catch, throwM, try)
 import Data.Typeable (Typeable)
 import Foreign.Lua.Types.Lua (Lua)
 
 -- | Exceptions raised by Lua-related operations.
 data LuaException = LuaException String
-  deriving (Typeable)
+  deriving (Eq, Typeable)
 
 instance Show LuaException where
   show (LuaException err) = err
@@ -57,3 +60,12 @@ throwLuaError = throwM . LuaException
 -- | Catch a @'LuaException'@.
 catchLuaError :: Lua a -> (LuaException -> Lua a) -> Lua a
 catchLuaError = catch
+
+-- | Return either the result of a Lua computation or, if an exception was
+-- thrown, the error.
+tryLua :: Lua a -> Lua (Either LuaException a)
+tryLua = try
+
+instance Alternative Lua where
+  empty = throwLuaError "empty"
+  x <|> y = either (const y) return =<< tryLua x

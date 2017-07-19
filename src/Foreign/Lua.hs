@@ -138,8 +138,9 @@ module Foreign.Lua
   -- Lua program, you need to define @_HASKELLERR = {}@ manually, after creating
   -- the Lua state.
   , LuaException (..)
-  , throwLuaError
   , catchLuaError
+  , throwLuaError
+  , tryLua
   ) where
 
 import Prelude hiding (compare, concat)
