@@ -158,7 +158,9 @@ tests = testGroup "lua integration tests"
       let msg = "error message"
           luaCode = "return error('" ++ msg ++ "')"
           err =  "[string \"" ++ luaCode ++ "\"]:1: " ++ msg
-      in assertEqual "problem in error" (Left (LuaException err)) =<<
+          errTest x = x == (Left (LuaException msg)) || -- LuaJIT
+                      x == (Left (LuaException err))    -- default Lua
+      in assertBool "problem in error" . errTest =<<
       (runLuaEither $ do
           openbase
           res <- loadstring luaCode
