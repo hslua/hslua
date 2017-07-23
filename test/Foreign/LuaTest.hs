@@ -26,6 +26,7 @@ module Foreign.LuaTest (tests) where
 import Prelude hiding (concat)
 
 import Control.Applicative ((<|>))
+import Control.Monad (when)
 import Data.ByteString (ByteString)
 import Data.Either (isLeft, isRight)
 import Data.Monoid ((<>))
@@ -152,6 +153,16 @@ tests = testGroup "lua integration tests"
     , testCase "second alternative is used when first fails" $
       assertEqual "alternative failed" (Right True) =<<
       runLuaEither (throwLuaError "test" <|> return True)
+
+    , testCase "calling a function that errors throws exception" $
+      let msg = "error message"
+          luaCode = "return error('" ++ msg ++ "')"
+          err =  "[string \"" ++ luaCode ++ "\"]:1: " ++ msg
+      in assertEqual "problem in error" (Left (LuaException err)) =<<
+      (runLuaEither $ do
+          openbase
+          res <- loadstring luaCode
+          when (res == LuaOK) $ call 0 0)
     ]
   ]
 
