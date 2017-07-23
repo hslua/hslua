@@ -132,7 +132,6 @@ module Foreign.Lua.Api (
   , setmetatable
   -- ** load and call functions (load and run Lua code)
   , call
-  , cpcall
   , pcall
   , loadfile
   , loadstring
@@ -299,25 +298,6 @@ copy fromidx toidx = do
   pushvalue fromidx
   remove toidx
   insert toidx
-#endif
-
-{-# DEPRECATED cpcall "You can simply push the function with lua_pushcfunction\
-                       and call it with pcall." #-}
--- | Calls the C function func in protected mode. func starts with only one
--- element in its stack, a light userdata containing ud. In case of errors,
--- lua_cpcall returns the same error codes as lua_pcall, plus the error object
--- on the top of the stack; otherwise, it returns zero, and does not change the
--- stack. All values returned by func are discarded.
---
--- See <https://www.lua.org/manual/5.1/manual.html#lua_cpcall lua_cpcall>.
-cpcall :: FunPtr LuaCFunction -> Ptr a -> Lua LuaStatus
-#if LUA_VERSION_NUMBER >= 502
-cpcall a c = do
-  pushcfunction a
-  pushlightuserdata c
-  pcall 1 0 Nothing
-#else
-cpcall a c = liftLua $ \l -> fmap toLuaStatus (lua_cpcall l a c)
 #endif
 
 -- | Creates a new empty table and pushes it onto the stack. Parameter narr is a
