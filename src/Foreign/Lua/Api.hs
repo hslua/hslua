@@ -202,9 +202,41 @@ throwTopMessageAsError = do
 -- API functions
 --
 
--- | Call a function on the lua stack. Using this function is strongly
--- discouraged, as errors are non-recoverable and will lead to program
--- termination. Use @'pcall'@ instead.
+-- |  Calls a function.
+--
+-- To call a function you must use the following protocol: first, the function
+-- to be called is pushed onto the stack; then, the arguments to the function
+-- are pushed in direct order; that is, the first argument is pushed first.
+-- Finally you call @call@; @nargs@ is the number of arguments that you pushed
+-- onto the stack. All arguments and the function value are popped from the
+-- stack when the function is called. The function results are pushed onto the
+-- stack when the function returns. The number of results is adjusted to
+-- @nresults@, unless @nresults@ is @multret@. In this case, all results from
+-- the function are pushed. Lua takes care that the returned values fit into the
+-- stack space. The function results are pushed onto the stack in direct order
+-- (the first result is pushed first), so that after the call the last result is
+-- on the top of the stack.
+--
+-- Any error inside the called function cause a @'LuaException'@ to be thrown.
+--
+-- The following example shows how the host program can do the equivalent to
+-- this Lua code:
+--
+-- > a = f("how", t.x, 14)
+--
+-- Here it is in Haskell (assuming the OverloadedStrings language extension):
+--
+-- > getglobal "f"         -- function to be called
+-- > pushstring  "how"     -- 1st argument
+-- > getglobal "t"         -- table to be indexed
+-- > getfield (-1) "x"     -- push result of t.x (2nd arg)
+-- > remove (-2)           -- remove 't' from the stack
+-- > pushinteger 14        -- 3rd argument
+-- > call 3 1              -- call 'f' with 3 arguments and 1 result
+-- > setglobal "a"         -- set global 'a'
+--
+-- Note that the code above is "balanced": at its end, the stack is back to its
+-- original configuration. This is considered good programming practice.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_call lua_call>.
 call :: NumArgs -> NumResults -> Lua ()
@@ -687,21 +719,11 @@ opentable = pushcfunction lua_open_table_ptr *> call 0 multret
 
 -- | Calls a function in protected mode.
 --
--- To call a function you must use the following protocol: first, the function
--- to be called is pushed onto the stack; then, the arguments to the function
--- are pushed in direct order; that is, the first argument is pushed first.
--- Finally you call @pcall@; @nargs@ is the number of arguments that you pushed
--- onto the stack. All arguments and the function value are popped from the
--- stack when the function is called. The function results are pushed onto the
--- stack when the function returns. The number of results is adjusted to
--- nresults, unless @nresults@ is @'multret'@. In this case, all results from
--- the function are pushed. Lua takes care that the returned values fit into the
--- stack space. The function results are pushed onto the stack in direct order
--- (the first result is pushed first), so that after the call the last result is
--- on the top of the stack.
---
--- If there is any error, @'pcall'@ catches it, pushes a single value on the
--- stack (the error object), and returns an error code.
+-- Both @nargs@ and @nresults@ have the same meaning as in @'call'@. If there are
+-- no errors during the call, @pcall@ behaves exactly like @'call'@. However,
+-- if there is any error, @pcall@ catches it, pushes a single value on the
+-- stack (the error message), and returns the error code. Like @'call'@,
+-- @pcall@ always removes the function and its arguments from the stack.
 --
 -- If @msgh@ is @Nothing@, then the error object returned on the stack is
 -- exactly the original error object. Otherwise, when @msgh@ is @Just idx@, the
@@ -714,7 +736,7 @@ opentable = pushcfunction lua_open_table_ptr *> call 0 multret
 -- error object, such as a stack traceback. Such information cannot be gathered
 -- after the return of @'pcall'@, since by then the stack has unwound.
 --
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_pcall lua_pcall>.
+-- See <https://www.lua.org/manual/5.3/manual.html#lua_pcall lua_pcall>.
 pcall :: NumArgs -> NumResults -> Maybe StackIndex -> Lua LuaStatus
 #if LUA_VERSION_NUMBER >= 502
 pcall nargs nresults msgh = liftLua $ \l ->
