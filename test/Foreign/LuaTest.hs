@@ -25,7 +25,7 @@ module Foreign.LuaTest (tests) where
 
 import Prelude hiding (concat)
 
-import Control.Applicative ((<|>))
+import Control.Applicative ((<|>), empty)
 import Control.Monad (when)
 import Data.ByteString (ByteString)
 import Data.Either (isLeft, isRight)
@@ -153,6 +153,9 @@ tests = testGroup "lua integration tests"
     , testCase "second alternative is used when first fails" $
       assertEqual "alternative failed" (Right True) =<<
       runLuaEither (throwLuaError "test" <|> return True)
+
+    , testCase "Control.Applicative.empty implementation throws an exception" $
+      assertBool "empty doesn't throw" . isLeft =<< runLuaEither empty
 
     , testCase "calling a function that errors throws exception" $
       let msg = "error message"
