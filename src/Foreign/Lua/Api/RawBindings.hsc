@@ -141,7 +141,7 @@ foreign import ccall unsafe "lua.h lua_type"
   lua_type :: LuaState -> CInt -> IO CInt
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_typename lua_typename>
-foreign import ccall "lua.h lua_typename"
+foreign import ccall unsafe "lua.h lua_typename"
   lua_typename :: LuaState -> CInt -> IO (Ptr CChar)
 
 #if LUA_VERSION_NUMBER >= 502
@@ -297,7 +297,7 @@ foreign import ccall unsafe "lua.h lua_newuserdata"
   lua_newuserdata :: LuaState -> CInt -> IO (Ptr ())
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_getmetatable lua_getmetatable>
-foreign import ccall "lua.h lua_getmetatable"
+foreign import ccall unsafe "lua.h lua_getmetatable"
   lua_getmetatable :: LuaState -> CInt -> IO CInt
 
 #if LUA_VERSION_NUMBER < 502
@@ -332,7 +332,7 @@ foreign import ccall unsafe "lua.h lua_rawseti"
   lua_rawseti :: LuaState -> CInt -> CInt -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_setmetatable lua_setmetatable>
-foreign import ccall "lua.h lua_setmetatable"
+foreign import ccall unsafe "lua.h lua_setmetatable"
   lua_setmetatable :: LuaState -> CInt -> IO ()
 
 #if LUA_VERSION_NUMBER < 502
