@@ -20,6 +20,7 @@ description:            The Foreign.Lua module is a wrapper of Lua language inte
                         [Example programs](https://github.com/osa1/hslua/tree/master/examples)
 category:               Foreign
 extra-source-files:     lua-5.3.4/*.h
+                        safer-api/safer-api.h
                         README.md
                         CHANGELOG.md
                         COPYRIGHT
@@ -65,6 +66,7 @@ library
                       , Foreign.Lua.Api.Constants
                       , Foreign.Lua.Api.RawBindings
                       , Foreign.Lua.Api.Types
+                      , Foreign.Lua.Api.SafeBindings
                       , Foreign.Lua.FunctionCalling
                       , Foreign.Lua.Types
                       , Foreign.Lua.Types.Error
@@ -79,6 +81,8 @@ library
   ghc-options:          -Wall -O2
   extensions:           CPP
   if flag(system-lua) || flag(luajit) || flag(lua501) || flag(lua502)
+    c-sources:          safer-api/safer-api.c
+    include-dirs:       safer-api
     if flag(luajit)
       if flag(use-pkgconfig)
         pkgconfig-depends: luajit
@@ -133,7 +137,9 @@ library
                       , lua-5.3.4/loadlib.c
                       , lua-5.3.4/linit.c
 
+                      , safer-api/safer-api.c
     include-dirs:       lua-5.3.4
+                      , safer-api
 
   if flag(lua501) || flag(luajit)
     cpp-options:        -DLUA_VERSION_NUMBER=501

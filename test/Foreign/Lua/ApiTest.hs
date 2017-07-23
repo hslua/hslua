@@ -79,13 +79,12 @@ tests = testGroup "Haskell version of the C API"
         return (movedEl == 9 && newTop == 8)
     ]
 
-  , luaTestCase "gettable gets a table value and returns its type" $ do
+  , luaTestCase "gettable gets a table value" $ do
       pushLuaExpr "{sum = 13.37}"
       pushnumber 13.37
       pushstring "sum"
-      retType <- gettable (-3)
-      res <- equal (-1) (-2)
-      return (res && retType == TNUMBER)
+      gettable (-3)
+      equal (-1) (-2)
 
   , luaTestCase "strlen, objlen, and rawlen all behave the same" $ do
       pushLuaExpr "{1, 1, 2, 3, 5, 8}"
@@ -136,7 +135,6 @@ tests = testGroup "Haskell version of the C API"
       liftIO . runLuaWith co $ do
         liftIO . assertEqual "yielding will put thread status to Yield" LuaYield
           =<< status
-      liftIO . print =<< ltype (-1)
 
   , testCase "loadstring status" . runLua $ do
       liftIO . assertEqual "loading a valid string doesn't return LuaOK"
