@@ -154,8 +154,15 @@ tests = testGroup "lua integration tests"
       assertEqual "alternative failed" (Right True) =<<
       runLuaEither (throwLuaError "test" <|> return True)
 
-    , testCase "Control.Applicative.empty implementation throws an exception" $
+    , testCase "Applicative.empty implementation throws an exception" $
       assertBool "empty doesn't throw" . isLeft =<< runLuaEither empty
+
+    , testCase "catching error of a failing meta method" $
+      assertBool "compuation was expected to fail" . isLeft =<<
+      let comp = do
+            pushLuaExpr "setmetatable({}, {__index = error})"
+            getfield (-1) "foo" :: Lua ()
+      in runLuaEither comp
 
     , testCase "calling a function that errors throws exception" $
       let msg = "error message"
