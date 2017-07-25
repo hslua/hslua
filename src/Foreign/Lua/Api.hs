@@ -107,6 +107,7 @@ module Foreign.Lua.Api (
   -- ** push functions (Haskell → stack)
   , pushboolean
   , pushcfunction
+  , pushcclosure
   , pushinteger
   , pushlightuserdata
   , pushnil

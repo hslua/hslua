@@ -31,6 +31,7 @@ import Data.ByteString (ByteString)
 import Data.Either (isLeft, isRight)
 import Data.Monoid ((<>))
 import Foreign.Lua
+import Foreign.Ptr (freeHaskellFunPtr)
 import System.Mem (performMajorGC)
 import Test.HsLua.Util (luaTestCase, pushLuaExpr)
 import Test.Tasty (TestTree, testGroup)
@@ -137,6 +138,27 @@ tests = testGroup "lua integration tests"
     , ("table", opentable)
     ]
   , testGroup "luaopen_base returns the right number of tables" testOpenBase
+
+  , testGroup "C functions"
+    [ testCase "pushing a C function to and calling it from Lua" $
+      -- Closures would usually be defined on the Haskell, unless the upvalues
+      -- cannot be read from the stack.
+      let greeter :: LuaCFunction
+          greeter l = runLuaWith l $ do
+            greeting <- peek (upvalueindex 1)
+            greetee <- peek (upvalueindex 2)
+            push (greeting ++ ", " ++ greetee ++ "!")
+            return 1
+      in assertEqual "greeting function failed" (Right "Hello, World!") =<<
+         (runLuaEither $ do
+             fn <- liftIO $ mkWrapper greeter
+             push ("Hello" :: String)
+             push ("World" :: String)
+             pushcclosure fn 2
+             call 0 multret
+             liftIO $ freeHaskellFunPtr fn
+             peek (-1) :: Lua String)
+    ]
 
   , testGroup "error handling"
     [ testCase "lua errors are caught" $

@@ -50,6 +50,7 @@ module Foreign.Lua.FunctionCalling
   , pushrawhsfunction
   , registerhsfunction
   , registerrawhsfunction
+  , mkWrapper
   ) where
 
 import Control.Monad (when)
@@ -99,6 +100,7 @@ luaimport a = (1 <$ luaimport' 1 a) `catchLuaError` \err -> do
 newcfunction :: LuaImport a => a -> IO (FunPtr LuaCFunction)
 newcfunction = mkWrapper . flip runLuaWith . luaimport
 
+-- | Wrap a @'LuaCFunction'@ in a function pointer.
 foreign import ccall "wrapper" mkWrapper :: LuaCFunction -> IO (FunPtr LuaCFunction)
 
 -- | Free function pointer created with @newcfunction@.

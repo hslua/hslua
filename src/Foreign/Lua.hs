@@ -53,6 +53,7 @@ module Foreign.Lua
   , pushrawhsfunction
   , registerhsfunction
   , registerrawhsfunction
+  , mkWrapper
   -- * Utility functions
   , runLua
   , runLuaEither
