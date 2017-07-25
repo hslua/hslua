@@ -147,7 +147,7 @@ tests = testGroup "lua integration tests"
           greeter l = runLuaWith l $ do
             greeting <- peek (upvalueindex 1)
             greetee <- peek (upvalueindex 2)
-            push (greeting ++ ", " ++ greetee ++ "!")
+            push (greeting ++ (", " :: String) ++ greetee ++ ("!" :: String))
             return 1
       in assertEqual "greeting function failed" (Right "Hello, World!") =<<
          (runLuaEither $ do
