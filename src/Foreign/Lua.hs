@@ -61,14 +61,13 @@ module Foreign.Lua
   , module Foreign.Lua.Api
   , module Foreign.Lua.Api.Types
   -- * Error handling in hslua
-  -- | Error handling in hslua is tricky, because we can call Haskell from Lua
-  -- which calls Lua again etc. (or the other way around, e.g. Lua loads Haskell
-  -- program compiled as a dynamic library, see
-  -- <http://osa1.net/posts/2015-01-16-haskell-so-lua.html this blog post> as an
-  -- example)
-  --
-  -- At each language boundary we should check for errors and propagate them properly
-  -- to the next level in stack.
+  -- | We are trying to keep error handling on the haskell side very simple and
+  -- intuitive. However, when combined with error handling on the Lua side, it
+  -- get's tricky: We can call Haskell from Lua which calls Lua again etc. At
+  -- each language boundary we should check for errors and propagate them
+  -- properly to the next level in stack. Hslua does this for you when returning
+  -- from Lua to Haskell, but care must be taken when passing errors back into
+  -- Lua.
   --
   -- Let's say we have this call stack: (stack grows upwards)
   --
@@ -76,11 +75,11 @@ module Foreign.Lua
   -- > Lua function
   -- > Haskell program
   --
-  -- and we want to report an error in top-most Haskell function. We can't use
-  -- @lua_error@ from Lua C API, because it uses @longjmp@, which means it skips
-  -- layers of abstractions, including Haskell RTS. There's no way to prevent this
-  -- @longjmp@. @lua_pcall@ sets the jump target, but even with @lua_pcall@ it's
-  -- not safe. Consider this call stack:
+  -- and we want to report an error in the top-most Haskell function. We can't
+  -- use @lua_error@ from the Lua C API, because it uses @longjmp@, which means
+  -- it skips layers of abstractions, including the Haskell RTS. There's no way
+  -- to prevent this @longjmp@. @lua_pcall@ sets the jump target, but even with
+  -- @lua_pcall@ it's not safe. Consider this call stack:
   --
   -- > Haskell function which calls lua_error
   -- > Lua function, uses pcall
@@ -110,8 +109,8 @@ module Foreign.Lua
   -- (`_HASKELLERR` is created by `newstate`)
   --
   -- (Type errors in Haskell functions are also handled using this convention.
-  -- E.g.  if you pass a Lua value with wrong type to a Haskell function, error
-  -- will be reported in this way)
+  -- E.g., if you pass a Lua value with the wrong type to a Haskell function,
+  -- the error will be reported in this way)
   --
   -- At this point our call stack is like this:
   --
@@ -120,23 +119,28 @@ module Foreign.Lua
   --
   -- If we further want to propagate the error message to Haskell program, we we
   -- can just use standard @error@ function and use @'pcall'@ in Haskell side.
-  -- Note that if we use @error@ in Lua side and forget to use `pcall` in
-  -- calling Haskell function, we start skipping layers of abstractions and we
-  -- get a segfault in the best case.
+  -- Note that if we use @error@ on the Lua side and forget to use `pcall` in
+  -- the calling Haskell function, we would be starting to skip layers of
+  -- abstractions and would get a segfault in the best case. That's why hslua
+  -- wraps all API functions that can potentially fail in custom C functions.
+  -- Those functions behave idential to the functions they wrap, but catch all
+  -- errors and return error codes instead. Using @error@ within Lua should
+  -- hence be safe.
   --
-  -- This use of @error@ in Lua side and @'pcall'@ in Haskell side is safe, as
-  -- long as there are no Haskell-Lua interactions going on between those two
-  -- calls. (e.g. we can only remove one layer from our stack, otherwise it's
-  -- unsafe)
+  -- However, the raw C API bindings in @'Foreign.Lua.RawBindings'@ don't
+  -- provide these guarantees. Even an apparently harmless operations like
+  -- accessing a field via @'lua_getfield'@ can call a meta method and trigger a
+  -- @longjmp@, causing the host program to crash.
   --
-  -- The reason it's safe is because @lua_pcall@ C function is calling the Lua
-  -- function using Lua C API, and when called Lua function calls @error@ it
-  -- @longjmp@s to @lua_pcall@ C function, without skipping any layers of
-  -- abstraction. @lua_pcall@ then returns to Haskell.
+  -- The @'pcall'@ function is not wrapped in additional C code but still safe.
+  -- The reason it's safe is because the @lua_pcall@ C function is calling the
+  -- Lua function using Lua C API, and when the called Lua function calls
+  -- @error@ it @longjmp@s to @lua_pcall@ C function, without skipping any
+  -- layers of abstraction. @lua_pcall@ then returns to Haskell.
   --
-  -- NOTE: If you're loading a hslua program compiled to a dynamic library from a
-  -- Lua program, you need to define @_HASKELLERR = {}@ manually, after creating
-  -- the Lua state.
+  -- NOTE: If you're loading a hslua program compiled to a dynamic library from
+  -- a Lua program, you need to define @_HASKELLERR = {}@ manually, after
+  -- creating the Lua state.
   , LuaException (..)
   , catchLuaError
   , throwLuaError
