@@ -11,13 +11,15 @@ copyright:              © 2007–2012 Gracjan Polak
 author:                 Gracjan Polak, Ömer Sinan Ağacan
 maintainer:             albert+hslua@zeitkraut.de
 synopsis:               A Lua language interpreter embedding in Haskell
-description:            The Foreign.Lua module is a wrapper of Lua language interpreter
-                        as described in [lua.org](http://www.lua.org/).
+description:            The Foreign.Lua module is a wrapper of Lua language
+                        interpreter as described in
+                        [lua.org](https://www.lua.org/).
                         .
-                        This package contains full Lua interpreter version 5.3.4.
-                        If you want to link it with system-wide Lua installation, use @system-lua@ flag.
+                        This package contains a full Lua interpreter version
+                        5.3.4. If you want to link it with a system-wide Lua
+                        installation, use the @system-lua@ flag.
                         .
-                        [Example programs](https://github.com/osa1/hslua/tree/master/examples)
+                        [Example programs](https://github.com/tarleb/hslua-examples)
 category:               Foreign
 extra-source-files:     lua-5.3.4/*.h
                         safer-api/safer-api.h
