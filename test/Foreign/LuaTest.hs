@@ -143,7 +143,7 @@ tests = testGroup "lua integration tests"
     [ testCase "pushing a C function to and calling it from Lua" $
       -- Closures would usually be defined on the Haskell, unless the upvalues
       -- cannot be read from the stack.
-      let greeter :: LuaCFunction
+      let greeter :: PreCFunction
           greeter l = runLuaWith l $ do
             greeting <- peek (upvalueindex 1)
             greetee <- peek (upvalueindex 2)

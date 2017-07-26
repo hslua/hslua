@@ -42,7 +42,7 @@ module Foreign.Lua.FunctionCalling
   , LuaCallFunc (..)
   , LuaImport (..)
   , ToLuaStack (..)
-  , LuaCFunction
+  , PreCFunction
   , freecfunction
   , luaimport
   , callfunc
@@ -60,14 +60,13 @@ import Foreign.C (CInt (..))
 import Foreign.Lua.Api
 import Foreign.Lua.Types
 import Foreign.Lua.Util (getglobal')
-import Foreign.Ptr (FunPtr, castPtr, freeHaskellFunPtr)
+import Foreign.Ptr (castPtr, freeHaskellFunPtr)
 import Foreign.StablePtr (deRefStablePtr, freeStablePtr, newStablePtr)
 
 import qualified Foreign.Storable as F
 
-
 -- | Type of raw haskell functions that can be made into 'CFunction's.
-type LuaCFunction = LuaState -> IO CInt
+type PreCFunction = LuaState -> IO CInt
 
 -- | Operations and functions that can be pushed to the lua stack. This is a
 -- helper function not intended to be used directly. Use the @'luaimport'@
@@ -82,7 +81,7 @@ instance ToLuaStack a => LuaImport (Lua a) where
 instance (FromLuaStack a, LuaImport b) => LuaImport (a -> b) where
   luaimport' narg f = getArg >>= luaimport' (narg + 1) . f
     where
-      getArg = catchLuaError (peek narg) $ \err ->
+      getArg = peek narg `catchLuaError` \err ->
         throwLuaError ("could not read argument "
                      ++ show (fromStackIndex narg) ++ ": " ++ show err)
 
@@ -102,15 +101,16 @@ luaimport a = (1 <$ luaimport' 1 a) `catchLuaError` \err -> do
 
 -- | Create new foreign Lua function. Function created can be called
 -- by Lua engine. Remeber to free the pointer with @freecfunction@.
-newcfunction :: LuaImport a => a -> IO (FunPtr LuaCFunction)
-newcfunction = mkWrapper . flip runLuaWith . luaimport
+newcfunction :: LuaImport a => a -> Lua CFunction
+newcfunction = liftIO . mkWrapper . flip runLuaWith . luaimport
 
--- | Wrap a @'LuaCFunction'@ in a function pointer.
-foreign import ccall "wrapper" mkWrapper :: LuaCFunction -> IO (FunPtr LuaCFunction)
+-- | Turn a @'PreCFunction'@ into an actual @'CFunction'@.
+foreign import ccall "wrapper"
+  mkWrapper :: PreCFunction -> IO CFunction
 
 -- | Free function pointer created with @newcfunction@.
-freecfunction :: FunPtr LuaCFunction -> IO ()
-freecfunction = freeHaskellFunPtr
+freecfunction :: CFunction -> Lua ()
+freecfunction = liftIO . freeHaskellFunPtr
 
 -- | Helper class used to make lua functions useable from haskell
 class LuaCallFunc a where
@@ -137,10 +137,10 @@ callfunc f = callfunc' f (return ()) 0
 
 
 foreign export ccall hsmethod__gc :: LuaState -> IO CInt
-foreign import ccall "&hsmethod__gc" hsmethod__gc_addr :: FunPtr LuaCFunction
+foreign import ccall "&hsmethod__gc" hsmethod__gc_addr :: CFunction
 
 foreign export ccall hsmethod__call :: LuaState -> IO CInt
-foreign import ccall "&hsmethod__call" hsmethod__call_addr :: FunPtr LuaCFunction
+foreign import ccall "&hsmethod__call" hsmethod__call_addr :: CFunction
 
 hsmethod__gc :: LuaState -> IO CInt
 hsmethod__gc l = do
@@ -172,7 +172,7 @@ pushhsfunction = pushrawhsfunction . flip runLuaWith . luaimport
 -- | Pushes _raw_ Haskell function converted to a Lua function.
 -- Raw Haskell functions collect parameters from the stack and return
 -- a `CInt` that represents number of return values left in the stack.
-pushrawhsfunction :: LuaCFunction -> Lua ()
+pushrawhsfunction :: PreCFunction -> Lua ()
 pushrawhsfunction f = do
   stableptr <- liftIO $ newStablePtr f
   p <- newuserdata (F.sizeOf stableptr)
@@ -192,7 +192,7 @@ registerhsfunction :: LuaImport a => String -> a -> Lua ()
 registerhsfunction n f = pushhsfunction f *> setglobal n
 
 -- | Imports a raw Haskell function and registers it at global name.
-registerrawhsfunction :: String -> LuaCFunction -> Lua ()
+registerrawhsfunction :: String -> PreCFunction -> Lua ()
 registerrawhsfunction n f = pushrawhsfunction f *> setglobal n
 
 
