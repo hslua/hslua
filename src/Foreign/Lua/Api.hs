@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE ForeignFunctionInterface #-}
 {-|
 Module      : Foreign.Lua.Api
 Copyright   : © 2007–2012 Gracjan Polak,
@@ -42,7 +41,7 @@ however, are not caught and will cause the host program to terminate.
 -}
 module Foreign.Lua.Api (
   -- * Lua API types
-    LuaCFunction
+    CFunction
   , LuaInteger
   , LuaNumber
   , StackIndex (..)
@@ -190,7 +189,7 @@ import qualified Foreign.Storable as F
 -- | Throw a lua error if the computation signaled a failure.
 throwOnError :: CInt -> Lua CInt
 throwOnError x =
-  if (x < 0)
+  if x < 0
   then throwTopMessageAsError
   else return x
 
@@ -256,7 +255,7 @@ call nargs nresults = do
 -- This is a wrapper function of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_checkstack lua_checkstack>.
 checkstack :: Int -> Lua Bool
-checkstack n = liftLua $ \l -> liftM (/= 0) (lua_checkstack l (fromIntegral n))
+checkstack n = liftLua $ \l -> (/= 0) <$> lua_checkstack l (fromIntegral n)
 
 -- | Destroys all objects in the given Lua state (calling the corresponding
 -- garbage-collection metamethods, if any) and frees all dynamic memory used by
@@ -313,8 +312,7 @@ compare idx1 idx2 op = liftLua $ \l ->
 -- This is a wrapper function of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_concat lua_concat>.
 concat :: Int -> Lua ()
-concat n = void . throwOnError =<< do
-  liftLua $ \l -> hslua_concat l (fromIntegral n)
+concat n = void . throwOnError =<< liftLua (`hslua_concat` fromIntegral n)
 
 -- | Copies the element at index @fromidx@ into the valid index @toidx@,
 -- replacing the value at that position. Values at other positions are not
@@ -398,10 +396,8 @@ gc what data' = liftLua $ \l ->
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getfield lua_getfield>.
 getfield :: StackIndex -> String -> Lua ()
-getfield i s = void . throwOnError =<< do
-  liftLua $ \l ->
-    withCString s $ \sPtr ->
-    hslua_getfield l (fromStackIndex i) sPtr
+getfield i s = void . throwOnError =<< liftLua
+  (\l -> withCString s (hslua_getfield l (fromStackIndex i)))
 
 -- | Pushes onto the stack the value of the global @name@. Returns the type of
 -- that value.
@@ -409,10 +405,8 @@ getfield i s = void . throwOnError =<< do
 -- Wrapper of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getglobal lua_getglobal>.
 getglobal :: String -> Lua ()
-getglobal name = void . throwOnError =<< do
-  liftLua $ \l ->
-    withCString name $ \namePtr ->
-    hslua_getglobal l namePtr
+getglobal name = void . throwOnError =<<
+  liftLua (withCString name . hslua_getglobal)
 
 -- | If the value at the given index has a metatable, the function pushes that
 -- metatable onto the stack and returns @True@. Otherwise, the function returns
@@ -435,8 +429,8 @@ getmetatable n = liftLua $ \l ->
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_gettable lua_gettable>.
 gettable :: StackIndex -> Lua ()
-gettable n = void . throwOnError =<< do
-  liftLua $ \l -> hslua_gettable l (fromStackIndex n)
+gettable n = void . throwOnError =<<
+  liftLua (\l -> hslua_gettable l (fromStackIndex n))
 
 -- | Returns the index of the top element in the stack. Because indices start at
 -- 1, this result is equal to the number of elements in the stack (and so 0
@@ -481,7 +475,7 @@ iscfunction n = liftLua $ \l -> (/= 0) <$> lua_iscfunction l (fromStackIndex n)
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isfunction lua_isfunction>.
 isfunction :: StackIndex -> Lua Bool
-isfunction n = liftM (== TFUNCTION) (ltype n)
+isfunction n = (== TFUNCTION) <$> ltype n
 
 -- | Returns @True@ if the value at the given index is a light userdata, and
 -- @False@ otherwise.
@@ -513,7 +507,7 @@ isnone n = (== TNONE) <$> ltype n
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isnoneornil lua_isnoneornil>.
 isnoneornil :: StackIndex -> Lua Bool
-isnoneornil idx = (<= TNIL) <$> (ltype idx)
+isnoneornil idx = (<= TNIL) <$> ltype idx
 
 -- | Returns @True@ if the value at the given index is a number or a string
 -- convertible to a number, and @False@ otherwise.
@@ -606,7 +600,7 @@ ltype idx = toLuaType <$>
 -- <https://www.lua.org/manual/5.3/manual.html#luaL_newmetatable luaL_newmetatable>.
 newmetatable :: String -> Lua Bool
 newmetatable tname = liftLua $ \l ->
-  (/= 0) <$> withCString tname (\sPtr -> luaL_newmetatable l sPtr)
+  (/= 0) <$> withCString tname (luaL_newmetatable l)
 
 -- | Creates a new Lua state. It calls @'lua_newstate'@ with an allocator based
 -- on the standard C @realloc@ function and then sets a panic function (see
@@ -648,8 +642,8 @@ newuserdata = liftLua1 lua_newuserdata . fromIntegral
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_next lua_next>.
 next :: StackIndex -> Lua Bool
-next idx = fmap (/= 0) . throwOnError =<< do
-  liftLua $ \l -> hslua_next l (fromStackIndex idx)
+next idx = fmap (/= 0) . throwOnError =<<
+  liftLua (\l -> hslua_next l (fromStackIndex idx))
 
 {-# DEPRECATED objlen "Use rawlen instead." #-}
 -- | Obsolete alias for @'rawlen'@.
@@ -963,17 +957,16 @@ replace n = liftLua $ \l ->  lua_replace l (fromStackIndex n)
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_setfield lua_setfield>.
 setfield :: StackIndex -> String -> Lua ()
-setfield i s = void . throwOnError =<< do
-  liftLua $ \l ->
-    withCString s $ \sPtr -> hslua_setfield l (fromStackIndex i) sPtr
+setfield i s = void . throwOnError =<<
+  liftLua (\l -> withCString s (hslua_setfield l (fromStackIndex i)))
 
 -- | Pops a value from the stack and sets it as the new value of global @name@.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_setglobal lua_setglobal>.
 setglobal :: String -> Lua ()
-setglobal s = void . throwOnError =<< do
-  liftLua $ \l -> withCString s (\sPtr -> hslua_setglobal l sPtr)
+setglobal s = void . throwOnError =<<
+  liftLua (withCString s . hslua_setglobal)
 
 -- | Pops a table from the stack and sets it as the new metatable for the value
 -- at the given index.
@@ -996,8 +989,8 @@ setmetatable idx = liftLua $ \l -> lua_setmetatable l (fromStackIndex idx)
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_settable lua_settable>.
 settable :: StackIndex -> Lua ()
-settable index = void . throwOnError =<< do
-  liftLua $ \l -> hslua_settable l (fromStackIndex index)
+settable index = void . throwOnError =<<
+  liftLua (\l -> hslua_settable l (fromStackIndex index))
 
 -- | Accepts any index, or 0, and sets the stack top to this index. If the new
 -- top is larger than the old one, then the new elements are filled with nil. If
