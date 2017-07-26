@@ -24,7 +24,8 @@ module Foreign.Lua.FunctionCallingTest (tests) where
 
 import Data.ByteString.Char8 (pack, unpack)
 import Foreign.Lua.Api
-import Foreign.Lua.FunctionCalling (callfunc, peek, registerhsfunction)
+import Foreign.Lua.FunctionCalling (HaskellFunction, callFunc, peek,
+                                    registerHaskellFunction, toHaskellFunction)
 import Foreign.Lua.Types (Lua, catchLuaError)
 import Foreign.Lua.Util (runLua)
 import Test.Tasty (TestTree, testGroup)
@@ -35,10 +36,13 @@ import Test.Tasty.HUnit (assertEqual, testCase)
 tests :: TestTree
 tests = testGroup "Interoperability"
   [ testGroup "call haskell functions from lua" $
-    let integerOperation :: Int -> Int -> Lua Int
-        integerOperation i1 i2 =
+    let integerOperation' :: Int -> Int -> Lua Int
+        integerOperation' i1 i2 =
           let (j1, j2) = (fromIntegral i1, fromIntegral i2)
           in return $ fromIntegral (product [1..j1] `mod` j2 :: Integer)
+
+        integerOperation :: HaskellFunction
+        integerOperation = toHaskellFunction integerOperation'
     in
     [ testCase "push haskell function to lua" $
       let add :: Lua Int
@@ -49,7 +53,7 @@ tests = testGroup "Interoperability"
 
           luaOp :: Lua Int
           luaOp = do
-            registerhsfunction "add" add
+            registerHaskellFunction "add" (toHaskellFunction add)
             loadstring "return add(23, 5)" *> call 0 1
             peek (-1) <* pop 1
 
@@ -58,7 +62,7 @@ tests = testGroup "Interoperability"
     , testCase "push multi-argument haskell function to lua" $
       let luaOp :: Lua Int
           luaOp = do
-            registerhsfunction "integerOp" integerOperation
+            registerHaskellFunction "integerOp" integerOperation
             loadstring "return integerOp(23, 42)" *> call 0 1
             peek (-1) <* pop 1
       in assertEqual "Unexpected result" 0 =<< runLua luaOp
@@ -66,7 +70,7 @@ tests = testGroup "Interoperability"
     , testCase "argument type errors are propagated" $
       let luaOp :: Lua String
           luaOp = do
-            registerhsfunction "integerOp" integerOperation
+            registerHaskellFunction "integerOp" integerOperation
             loadstring "return integerOp(23, true)" *> call 0 2
             err <- tostring (-1) <* pop 2 -- pop _HASKELLERROR
             return (unpack err)
@@ -79,18 +83,18 @@ tests = testGroup "Interoperability"
   , testGroup "call lua function from haskell"
     [ testCase "test equality within lua" $
       assertEqual "raw equality test failed" True =<<
-      runLua (openlibs *> callfunc "rawequal" (5 :: Int) (5.0 :: LuaNumber))
+      runLua (openlibs *> callFunc "rawequal" (5 :: Int) (5.0 :: LuaNumber))
 
     , testCase "failing lua function call" $
       assertEqual "unexpected result" "foo" =<<
-      runLua (catchLuaError (openlibs *> callfunc "assert" False (pack "foo")) (return . show))
+      runLua (catchLuaError (openlibs *> callFunc "assert" False (pack "foo")) (return . show))
 
     , testCase "print the empty string via lua procedure" $
       assertEqual "raw equality test failed" () =<<
-      runLua (openlibs *> callfunc "print" (pack ""))
+      runLua (openlibs *> callFunc "print" (pack ""))
 
     , testCase "failing lua procedure call" $
       assertEqual "unexpected result" "foo" =<<
-      runLua (catchLuaError (openlibs *> callfunc "error" (pack "foo")) (return . show))
+      runLua (catchLuaError (openlibs *> callFunc "error" (pack "foo")) (return . show))
     ]
   ]

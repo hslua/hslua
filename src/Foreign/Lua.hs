@@ -48,13 +48,11 @@ module Foreign.Lua
   -- * Calling Functions
   , PreCFunction
   , HaskellFunction (..)
-  , callfunc
-  , newcfunction
-  , freecfunction
-  , pushhsfunction
-  , pushrawhsfunction
-  , registerhsfunction
-  , registerrawhsfunction
+  , callFunc
+  , newCFunction
+  , freeCFunction
+  , pushHaskellFunction
+  , registerHaskellFunction
   -- * Utility functions
   , runLua
   , runLuaEither

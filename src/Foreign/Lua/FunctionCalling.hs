@@ -45,13 +45,11 @@ module Foreign.Lua.FunctionCalling
   , ToLuaStack (..)
   , PreCFunction
   , toHaskellFunction
-  , callfunc
-  , freecfunction
-  , newcfunction
-  , pushhsfunction
-  , pushrawhsfunction
-  , registerhsfunction
-  , registerrawhsfunction
+  , callFunc
+  , freeCFunction
+  , newCFunction
+  , pushHaskellFunction
+  , registerHaskellFunction
   ) where
 
 import Control.Monad (when)
@@ -76,17 +74,17 @@ newtype HaskellFunction = HaskellFunction { fromHaskellFunction :: Lua CInt }
 -- @'toHaskellFunction'@ wrapper instead.
 class ToHaskellFunction a where
   -- | Helper function, called by @'luaimport'@
-  luaimport' :: StackIndex -> a -> Lua CInt
+  toHsFun :: StackIndex -> a -> Lua CInt
 
 instance ToHaskellFunction HaskellFunction where
-  luaimport' _narg = fromHaskellFunction
+  toHsFun _narg = fromHaskellFunction
 
 instance ToLuaStack a => ToHaskellFunction (Lua a) where
-  luaimport' _narg x = 1 <$ (x >>= push)
+  toHsFun _narg x = 1 <$ (x >>= push)
 
 instance (FromLuaStack a, ToHaskellFunction b) =>
          ToHaskellFunction (a -> b) where
-  luaimport' narg f = getArg >>= luaimport' (narg + 1) . f
+  toHsFun narg f = getArg >>= toHsFun (narg + 1) . f
      where
       getArg = peek narg `catchLuaError` \err ->
         throwLuaError ("could not read argument "
@@ -103,14 +101,14 @@ instance (FromLuaStack a, ToHaskellFunction b) =>
 -- as Lua error.
 toHaskellFunction :: ToHaskellFunction a => a -> HaskellFunction
 toHaskellFunction a = HaskellFunction $
-  luaimport' 1 a `catchLuaError` \err -> do
+  toHsFun 1 a `catchLuaError` \err -> do
   push ("Error while calling haskell function: " ++ show err)
   fromIntegral <$> lerror
 
 -- | Create new foreign Lua function. Function created can be called
 -- by Lua engine. Remeber to free the pointer with @freecfunction@.
-newcfunction :: ToHaskellFunction a => a -> Lua CFunction
-newcfunction =
+newCFunction :: ToHaskellFunction a => a -> Lua CFunction
+newCFunction =
   liftIO . mkWrapper . flip runLuaWith . fromHaskellFunction . toHaskellFunction
 
 -- | Turn a @'PreCFunction'@ into an actual @'CFunction'@.
@@ -118,15 +116,15 @@ foreign import ccall "wrapper"
   mkWrapper :: PreCFunction -> IO CFunction
 
 -- | Free function pointer created with @newcfunction@.
-freecfunction :: CFunction -> Lua ()
-freecfunction = liftIO . freeHaskellFunPtr
+freeCFunction :: CFunction -> Lua ()
+freeCFunction = liftIO . freeHaskellFunPtr
 
 -- | Helper class used to make lua functions useable from haskell
 class LuaCallFunc a where
-  callfunc' :: String -> Lua () -> NumArgs -> a
+  callFunc' :: String -> Lua () -> NumArgs -> a
 
 instance (FromLuaStack a) => LuaCallFunc (Lua a) where
-  callfunc' fnName x nargs = do
+  callFunc' fnName x nargs = do
     getglobal' fnName
     x
     z <- pcall nargs 1 Nothing
@@ -135,72 +133,66 @@ instance (FromLuaStack a) => LuaCallFunc (Lua a) where
       else peek (-1) <* pop 1
 
 instance (ToLuaStack a, LuaCallFunc b) => LuaCallFunc (a -> b) where
-  callfunc' fnName pushArgs nargs x =
-    callfunc' fnName (pushArgs *> push x) (nargs + 1)
+  callFunc' fnName pushArgs nargs x =
+    callFunc' fnName (pushArgs *> push x) (nargs + 1)
 
 -- | Call a Lua function. Use as:
 --
 -- > v <- callfunc "proc" "abc" (1::Int) (5.0::Double)
-callfunc :: (LuaCallFunc a) => String -> a
-callfunc f = callfunc' f (return ()) 0
-
-
-foreign export ccall hsmethod__gc :: LuaState -> IO CInt
-foreign import ccall "&hsmethod__gc" hsmethod__gc_addr :: CFunction
-
-foreign export ccall hsmethod__call :: LuaState -> IO CInt
-foreign import ccall "&hsmethod__call" hsmethod__call_addr :: CFunction
-
-hsmethod__gc :: LuaState -> IO CInt
-hsmethod__gc l = do
-  ptr <- runLuaWith l $ peek (-1)
-  stableptr <- F.peek (castPtr ptr)
-  freeStablePtr stableptr
-  return 0
-
-hsmethod__call :: LuaState -> IO CInt
-hsmethod__call l = do
-  ptr <- runLuaWith l $ peek 1 <* remove 1
-  stableptr <- F.peek (castPtr ptr)
-  f <- deRefStablePtr stableptr
-  f l
-
+callFunc :: (LuaCallFunc a) => String -> a
+callFunc f = callFunc' f (return ()) 0
 
 -- | Pushes Haskell function converted to a Lua function.
 -- All values created will be garbage collected. Use as:
 --
--- > Lua.pushhsfunction myfun
--- > Lua.setglobal "myfun"
+-- > pushHaskellFunction myfun
+-- > setglobal "myfun"
 --
 -- You are not allowed to use @lua_error@ anywhere, but
 -- use an error code of (-1) to the same effect. Push
 -- error message as the sole return value.
-pushhsfunction :: ToHaskellFunction a => a -> Lua ()
-pushhsfunction =
-  pushrawhsfunction . flip runLuaWith . fromHaskellFunction . toHaskellFunction
+pushHaskellFunction :: HaskellFunction -> Lua ()
+pushHaskellFunction = pushPreCFunction . flip runLuaWith . fromHaskellFunction
 
--- | Pushes _raw_ Haskell function converted to a Lua function.
--- Raw Haskell functions collect parameters from the stack and return
+-- | Converts a pre C function to a Lua function and pushes it to the stack.
+--
+-- Pre C functions collect parameters from the stack and return
 -- a `CInt` that represents number of return values left in the stack.
-pushrawhsfunction :: PreCFunction -> Lua ()
-pushrawhsfunction f = do
+pushPreCFunction :: PreCFunction -> Lua ()
+pushPreCFunction f = do
   stableptr <- liftIO $ newStablePtr f
   p <- newuserdata (F.sizeOf stableptr)
   liftIO $ F.poke (castPtr p) stableptr
   v <- newmetatable "HaskellImportedFunction"
   when v $ do
     -- create new metatable, fill it with two entries __gc and __call
-    push hsmethod__gc_addr
+    pushcfunction hsmethod__gc_addr
     setfield (-2) "__gc"
-    push hsmethod__call_addr
+    pushcfunction hsmethod__call_addr
     setfield (-2) "__call"
   setmetatable (-2)
   return ()
 
 -- | Imports a Haskell function and registers it at global name.
-registerhsfunction :: ToHaskellFunction a => String -> a -> Lua ()
-registerhsfunction n f = pushhsfunction f *> setglobal n
+registerHaskellFunction :: String -> HaskellFunction -> Lua ()
+registerHaskellFunction n f = pushHaskellFunction f *> setglobal n
 
--- | Imports a raw Haskell function and registers it at global name.
-registerrawhsfunction :: String -> PreCFunction -> Lua ()
-registerrawhsfunction n f = pushrawhsfunction f *> setglobal n
+foreign export ccall hsMethodGc :: PreCFunction
+foreign import ccall "&hsMethodGc" hsmethod__gc_addr :: CFunction
+
+foreign export ccall hsMethodCall :: PreCFunction
+foreign import ccall "&hsMethodCall" hsmethod__call_addr :: CFunction
+
+hsMethodGc :: LuaState -> IO CInt
+hsMethodGc l = do
+  ptr <- runLuaWith l $ peek (-1)
+  stableptr <- F.peek (castPtr ptr)
+  freeStablePtr stableptr
+  return 0
+
+hsMethodCall :: LuaState -> IO CInt
+hsMethodCall l = do
+  ptr <- runLuaWith l $ peek 1 <* remove 1
+  stableptr <- F.peek (castPtr ptr)
+  f <- deRefStablePtr stableptr
+  f l

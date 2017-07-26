@@ -150,11 +150,11 @@ tests = testGroup "lua integration tests"
 
           comp :: Lua String
           comp = do
-            fn <- newcfunction (greeter "World")
+            fn <- newCFunction (greeter "World")
             push ("Hello" :: String)
             pushcclosure fn 1
             call 0 multret
-            freecfunction fn
+            freeCFunction fn
             peek (-1)
 
       in assertEqual "greeting function failed" (Right "Hello, World!") =<<
