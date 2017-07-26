@@ -46,6 +46,7 @@ module Foreign.Lua
   -- * Pushing values to Lua stack (Haskell → Lua)
   , ToLuaStack (..)
   -- * Calling Function
+  , LuaCFunction
   , luaimport
   , callfunc
   , newcfunction

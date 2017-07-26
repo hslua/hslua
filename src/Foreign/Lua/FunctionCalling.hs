@@ -42,6 +42,7 @@ module Foreign.Lua.FunctionCalling
   , LuaCallFunc (..)
   , LuaImport (..)
   , ToLuaStack (..)
+  , LuaCFunction
   , freecfunction
   , luaimport
   , callfunc
@@ -63,6 +64,10 @@ import Foreign.Ptr (FunPtr, castPtr, freeHaskellFunPtr)
 import Foreign.StablePtr (deRefStablePtr, freeStablePtr, newStablePtr)
 
 import qualified Foreign.Storable as F
+
+
+-- | Type of raw haskell functions that can be made into 'CFunction's.
+type LuaCFunction = LuaState -> IO CInt
 
 -- | Operations and functions that can be pushed to the lua stack. This is a
 -- helper function not intended to be used directly. Use the @'luaimport'@

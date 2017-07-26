@@ -780,7 +780,7 @@ pushboolean b = liftLua $ \l -> lua_pushboolean l (fromIntegral (fromEnum b))
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_pushcclosure lua_pushcclosure>.
-pushcclosure :: FunPtr LuaCFunction -> Int -> Lua ()
+pushcclosure :: CFunction -> Int -> Lua ()
 pushcclosure f n = liftLua $ \l -> lua_pushcclosure l f (fromIntegral n)
 
 -- | Pushes a C function onto the stack. This function receives a pointer to a C
@@ -788,11 +788,11 @@ pushcclosure f n = liftLua $ \l -> lua_pushcclosure l f (fromIntegral n)
 -- called, invokes the corresponding C function.
 --
 -- Any function to be callable by Lua must follow the correct protocol to
--- receive its parameters and return its results (see @'LuaCFunction'@)
+-- receive its parameters and return its results (see @'CFunction'@)
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_pushcfunction lua_pushcfunction>.
-pushcfunction :: FunPtr LuaCFunction -> Lua ()
+pushcfunction :: CFunction -> Lua ()
 pushcfunction f = pushcclosure f 0
 
 -- | Pushes an integer with with the given value onto the stack.
@@ -917,7 +917,7 @@ ref t = liftLua $ \l -> fromIntegral <$> luaL_ref l (fromStackIndex t)
 -- | Sets the C function @f@ as the new value of global @name@.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_register lua_register>.
-register :: String -> FunPtr LuaCFunction -> Lua ()
+register :: String -> CFunction -> Lua ()
 register name f = do
     pushcfunction f
     setglobal name
@@ -1035,7 +1035,7 @@ toboolean n = liftLua $ \l -> (/= 0) <$> lua_toboolean l (fromStackIndex n)
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_tocfunction lua_tocfunction>.
-tocfunction :: StackIndex -> Lua (FunPtr LuaCFunction)
+tocfunction :: StackIndex -> Lua CFunction
 tocfunction n = liftLua $ \l -> lua_tocfunction l (fromStackIndex n)
 
 -- | Converts the Lua value at the given acceptable index to the signed integral

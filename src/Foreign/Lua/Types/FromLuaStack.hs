@@ -52,7 +52,7 @@ import Data.Monoid ((<>))
 import Foreign.Lua.Api
 import Foreign.Lua.Types.Lua
 import Foreign.Lua.Types.Error
-import Foreign.Ptr (FunPtr, Ptr)
+import Foreign.Ptr (Ptr)
 
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
@@ -84,7 +84,7 @@ instance FromLuaStack ByteString where
 instance FromLuaStack Bool where
   peek = typeChecked "boolean" isboolean toboolean
 
-instance FromLuaStack (FunPtr LuaCFunction) where
+instance FromLuaStack CFunction where
   peek = typeChecked "C function" iscfunction tocfunction
 
 instance FromLuaStack (Ptr a) where

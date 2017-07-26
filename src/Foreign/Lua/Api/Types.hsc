@@ -84,15 +84,15 @@ type LuaWriter = LuaState -> Ptr CChar -> CSize -> Ptr () -> IO CInt
 -- properly discarded by Lua. Like a Lua function, a C function called by Lua
 -- can also return many results.
 --
--- See <https://www.lua.org/manual/5.3/#lua_CFunction lua_CFunction>.
-type LuaCFunction = LuaState -> IO CInt
+-- See <https://www.lua.org/manual/5.3/manual.html#lua_CFunction lua_CFunction>.
+type CFunction = FunPtr (LuaState -> IO CInt)
 
 -- |  The type of integers in Lua.
 --
 -- By default this type is @'Int64'@, but that can be changed to different
 -- values in lua. (See @LUA_INT_TYPE@ in @luaconf.h@.)
 --
--- See <https://www.lua.org/manual/5.3/#lua_Integer lua_Integer>.
+-- See <https://www.lua.org/manual/5.3/manual.html#lua_Integer lua_Integer>.
 type LuaInteger = #{type LUA_INTEGER}
 
 -- |  The type of floats in Lua.
@@ -100,11 +100,11 @@ type LuaInteger = #{type LUA_INTEGER}
 -- By default this type is @'Double'@, but that can be changed in Lua to a
 -- single float or a long double. (See @LUA_FLOAT_TYPE@ in @luaconf.h@.)
 --
--- See <https://www.lua.org/manual/5.3/#lua_Number lua_Number>.
+-- See <https://www.lua.org/manual/5.3/manual.html#lua_Number lua_Number>.
 type LuaNumber = #{type LUA_NUMBER}
 
 -- | Enumeration used as type tag.
--- See <https://www.lua.org/manual/5.3/#lua_type lua_type>.
+-- See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>.
 data LTYPE
   = TNONE           -- ^ non-valid stack index
   | TNIL            -- ^ type of lua's @nil@ value
@@ -113,7 +113,7 @@ data LTYPE
   | TNUMBER         -- ^ type of lua numbers. See @'LuaNumber'@
   | TSTRING         -- ^ type of lua string values
   | TTABLE          -- ^ type of lua tables
-  | TFUNCTION       -- ^ type of functions, either normal or @'LuaCFunction'@
+  | TFUNCTION       -- ^ type of functions, either normal or @'CFunction'@
   | TUSERDATA       -- ^ type of full user data
   | TTHREAD         -- ^ type of lua threads
   deriving (Bounded, Eq, Ord, Show)

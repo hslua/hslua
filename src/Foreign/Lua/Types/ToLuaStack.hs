@@ -48,7 +48,7 @@ import Data.ByteString (ByteString)
 import Data.Map (Map, toList)
 import Foreign.Lua.Api
 import Foreign.Lua.Types.Lua
-import Foreign.Ptr (FunPtr, Ptr)
+import Foreign.Ptr (Ptr)
 
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
@@ -77,7 +77,7 @@ instance ToLuaStack ByteString where
 instance ToLuaStack Bool where
   push = pushboolean
 
-instance ToLuaStack (FunPtr LuaCFunction) where
+instance ToLuaStack CFunction where
   push = pushcfunction
 
 instance ToLuaStack (Ptr a) where

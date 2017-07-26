@@ -68,7 +68,7 @@ foreign import ccall unsafe "lua.h lua_newthread"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_atpanic lua_atpanic>
 foreign import ccall "lua.h lua_atpanic"
-  lua_atpanic :: LuaState -> FunPtr LuaCFunction -> IO (FunPtr LuaCFunction)
+  lua_atpanic :: LuaState -> CFunction -> IO CFunction
 
 
 --------------------------------------------------------------------------------
@@ -171,7 +171,7 @@ foreign import ccall unsafe "lua.h lua_toboolean"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tocfunction lua_tocfunction>
 foreign import ccall unsafe "lua.h lua_tocfunction"
-  lua_tocfunction :: LuaState -> CInt -> IO (FunPtr LuaCFunction)
+  lua_tocfunction :: LuaState -> CInt -> IO CFunction
 
 #if LUA_VERSION_NUMBER >= 502
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tointegerx lua_tointegerx>
@@ -248,7 +248,7 @@ foreign import ccall unsafe "lua.h lua_pushstring"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushcclosure lua_pushcclosure>
 foreign import ccall unsafe "lua.h lua_pushcclosure"
-  lua_pushcclosure :: LuaState -> FunPtr LuaCFunction -> CInt -> IO ()
+  lua_pushcclosure :: LuaState -> CFunction -> CInt -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushboolean lua_pushboolean>
 foreign import ccall unsafe "lua.h lua_pushboolean"
@@ -373,7 +373,7 @@ foreign import ccall "lua.h lua_pcall"
 #if LUA_VERSION_NUMBER < 502
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_cpcall lua_cpcall>
 foreign import ccall "lua.h lua_cpcall"
-  lua_cpcall :: LuaState -> FunPtr LuaCFunction -> Ptr a -> IO CInt
+  lua_cpcall :: LuaState -> CFunction -> Ptr a -> IO CInt
 #endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_load lua_load>
