@@ -47,14 +47,14 @@ module Foreign.Lua
   , ToLuaStack (..)
   -- * Calling Functions
   , PreCFunction
-  , luaimport
+  , HaskellFunction (..)
   , callfunc
   , newcfunction
+  , freecfunction
   , pushhsfunction
   , pushrawhsfunction
   , registerhsfunction
   , registerrawhsfunction
-  , mkWrapper
   -- * Utility functions
   , runLua
   , runLuaEither

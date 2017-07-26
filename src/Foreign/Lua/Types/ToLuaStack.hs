@@ -91,7 +91,7 @@ instance {-# OVERLAPS #-} ToLuaStack [Char] where
 #else
 instance ToLuaStack [Char] where
 #endif
-  push = push . (T.pack)
+  push = push . T.pack
 
 instance ToLuaStack a => ToLuaStack [a] where
   push xs = do
@@ -101,6 +101,6 @@ instance ToLuaStack a => ToLuaStack [a] where
 
 instance (ToLuaStack a, ToLuaStack b) => ToLuaStack (Map a b) where
   push m = do
-    let addValue (k, v) = push k *> push v *> settable (-3)
+    let addValue (k, v) = push k *> push v *> rawset (-3)
     newtable
     mapM_ addValue (toList m)

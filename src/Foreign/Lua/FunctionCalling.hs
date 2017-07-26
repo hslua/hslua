@@ -40,18 +40,18 @@ Call haskell functions from Lua, and vice versa.
 module Foreign.Lua.FunctionCalling
   ( FromLuaStack (..)
   , LuaCallFunc (..)
-  , LuaImport (..)
+  , ToHaskellFunction (..)
+  , HaskellFunction (..)
   , ToLuaStack (..)
   , PreCFunction
-  , freecfunction
-  , luaimport
+  , toHaskellFunction
   , callfunc
+  , freecfunction
   , newcfunction
   , pushhsfunction
   , pushrawhsfunction
   , registerhsfunction
   , registerrawhsfunction
-  , mkWrapper
   ) where
 
 import Control.Monad (when)
@@ -68,19 +68,26 @@ import qualified Foreign.Storable as F
 -- | Type of raw haskell functions that can be made into 'CFunction's.
 type PreCFunction = LuaState -> IO CInt
 
+-- | Haskell function that can be called from Lua.
+newtype HaskellFunction = HaskellFunction { fromHaskellFunction :: Lua CInt }
+
 -- | Operations and functions that can be pushed to the lua stack. This is a
--- helper function not intended to be used directly. Use the @'luaimport'@
--- wrapper instead.
-class LuaImport a where
+-- helper function not intended to be used directly. Use the
+-- @'toHaskellFunction'@ wrapper instead.
+class ToHaskellFunction a where
   -- | Helper function, called by @'luaimport'@
-  luaimport' :: StackIndex -> a -> Lua ()
+  luaimport' :: StackIndex -> a -> Lua CInt
 
-instance ToLuaStack a => LuaImport (Lua a) where
-  luaimport' _narg x = () <$ (x >>= push)
+instance ToHaskellFunction HaskellFunction where
+  luaimport' _narg = fromHaskellFunction
 
-instance (FromLuaStack a, LuaImport b) => LuaImport (a -> b) where
+instance ToLuaStack a => ToHaskellFunction (Lua a) where
+  luaimport' _narg x = 1 <$ (x >>= push)
+
+instance (FromLuaStack a, ToHaskellFunction b) =>
+         ToHaskellFunction (a -> b) where
   luaimport' narg f = getArg >>= luaimport' (narg + 1) . f
-    where
+     where
       getArg = peek narg `catchLuaError` \err ->
         throwLuaError ("could not read argument "
                      ++ show (fromStackIndex narg) ++ ": " ++ show err)
@@ -94,15 +101,17 @@ instance (FromLuaStack a, LuaImport b) => LuaImport (a -> b) where
 --
 -- Any Haskell exception will be converted to a string and returned
 -- as Lua error.
-luaimport :: LuaImport a => a -> Lua CInt
-luaimport a = (1 <$ luaimport' 1 a) `catchLuaError` \err -> do
+toHaskellFunction :: ToHaskellFunction a => a -> HaskellFunction
+toHaskellFunction a = HaskellFunction $
+  luaimport' 1 a `catchLuaError` \err -> do
   push ("Error while calling haskell function: " ++ show err)
   fromIntegral <$> lerror
 
 -- | Create new foreign Lua function. Function created can be called
 -- by Lua engine. Remeber to free the pointer with @freecfunction@.
-newcfunction :: LuaImport a => a -> Lua CFunction
-newcfunction = liftIO . mkWrapper . flip runLuaWith . luaimport
+newcfunction :: ToHaskellFunction a => a -> Lua CFunction
+newcfunction =
+  liftIO . mkWrapper . flip runLuaWith . fromHaskellFunction . toHaskellFunction
 
 -- | Turn a @'PreCFunction'@ into an actual @'CFunction'@.
 foreign import ccall "wrapper"
@@ -166,8 +175,9 @@ hsmethod__call l = do
 -- You are not allowed to use @lua_error@ anywhere, but
 -- use an error code of (-1) to the same effect. Push
 -- error message as the sole return value.
-pushhsfunction :: LuaImport a => a -> Lua ()
-pushhsfunction = pushrawhsfunction . flip runLuaWith . luaimport
+pushhsfunction :: ToHaskellFunction a => a -> Lua ()
+pushhsfunction =
+  pushrawhsfunction . flip runLuaWith . fromHaskellFunction . toHaskellFunction
 
 -- | Pushes _raw_ Haskell function converted to a Lua function.
 -- Raw Haskell functions collect parameters from the stack and return
@@ -188,11 +198,9 @@ pushrawhsfunction f = do
   return ()
 
 -- | Imports a Haskell function and registers it at global name.
-registerhsfunction :: LuaImport a => String -> a -> Lua ()
+registerhsfunction :: ToHaskellFunction a => String -> a -> Lua ()
 registerhsfunction n f = pushhsfunction f *> setglobal n
 
 -- | Imports a raw Haskell function and registers it at global name.
 registerrawhsfunction :: String -> PreCFunction -> Lua ()
 registerrawhsfunction n f = pushrawhsfunction f *> setglobal n
-
-
