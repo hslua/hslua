@@ -24,8 +24,7 @@ module Foreign.Lua.FunctionCallingTest (tests) where
 
 import Data.ByteString.Char8 (pack, unpack)
 import Foreign.Lua.Api
-import Foreign.Lua.FunctionCalling (HaskellFunction, callFunc, peek,
-                                    registerHaskellFunction, toHaskellFunction)
+import Foreign.Lua.FunctionCalling (callFunc, peek, registerHaskellFunction)
 import Foreign.Lua.Types (Lua, catchLuaError)
 import Foreign.Lua.Util (runLua)
 import Test.Tasty (TestTree, testGroup)
@@ -36,13 +35,10 @@ import Test.Tasty.HUnit (assertEqual, testCase)
 tests :: TestTree
 tests = testGroup "Interoperability"
   [ testGroup "call haskell functions from lua" $
-    let integerOperation' :: Int -> Int -> Lua Int
-        integerOperation' i1 i2 =
+    let integerOperation :: Int -> Int -> Lua Int
+        integerOperation i1 i2 =
           let (j1, j2) = (fromIntegral i1, fromIntegral i2)
           in return $ fromIntegral (product [1..j1] `mod` j2 :: Integer)
-
-        integerOperation :: HaskellFunction
-        integerOperation = toHaskellFunction integerOperation'
     in
     [ testCase "push haskell function to lua" $
       let add :: Lua Int
@@ -53,7 +49,7 @@ tests = testGroup "Interoperability"
 
           luaOp :: Lua Int
           luaOp = do
-            registerHaskellFunction "add" (toHaskellFunction add)
+            registerHaskellFunction "add" add
             loadstring "return add(23, 5)" *> call 0 1
             peek (-1) <* pop 1
 

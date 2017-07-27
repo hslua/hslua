@@ -47,7 +47,7 @@ module Foreign.Lua
   , ToLuaStack (..)
   -- * Calling Functions
   , PreCFunction
-  , HaskellFunction (..)
+  , HaskellFunction
   , callFunc
   , newCFunction
   , freeCFunction

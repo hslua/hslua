@@ -143,7 +143,7 @@ tests = testGroup "lua integration tests"
       -- Closures would usually be defined on the Haskell, unless the upvalues
       -- cannot be read from the stack.
       let greeter :: String -> HaskellFunction
-          greeter greetee = HaskellFunction $ do
+          greeter greetee = do
             greeting <- peek (upvalueindex 1)
             push (greeting ++ (", " :: String) ++ greetee ++ ("!" :: String))
             return 1

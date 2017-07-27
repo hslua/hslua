@@ -24,6 +24,9 @@ THE SOFTWARE.
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
+#if !MIN_VERSION_base(4,8,0)
+{-# LANGUAGE OverlappingInstances #-}
+#endif
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
 Module      : Foreign.Lua.FunctionCalling
@@ -41,7 +44,7 @@ module Foreign.Lua.FunctionCalling
   ( FromLuaStack (..)
   , LuaCallFunc (..)
   , ToHaskellFunction (..)
-  , HaskellFunction (..)
+  , HaskellFunction
   , ToLuaStack (..)
   , PreCFunction
   , toHaskellFunction
@@ -64,20 +67,24 @@ import Foreign.StablePtr (deRefStablePtr, freeStablePtr, newStablePtr)
 import qualified Foreign.Storable as F
 
 -- | Type of raw haskell functions that can be made into 'CFunction's.
-type PreCFunction = LuaState -> IO CInt
+type PreCFunction = LuaState -> IO NumResults
 
 -- | Haskell function that can be called from Lua.
-newtype HaskellFunction = HaskellFunction { fromHaskellFunction :: Lua CInt }
+type HaskellFunction = Lua NumResults
 
 -- | Operations and functions that can be pushed to the lua stack. This is a
 -- helper function not intended to be used directly. Use the
 -- @'toHaskellFunction'@ wrapper instead.
 class ToHaskellFunction a where
-  -- | Helper function, called by @'luaimport'@
-  toHsFun :: StackIndex -> a -> Lua CInt
+  -- | Helper function, called by @'toHaskellFunction'@
+  toHsFun :: StackIndex -> a -> Lua NumResults
 
+#if MIN_VERSION_base(4,8,0)
+instance {-# OVERLAPPING #-} ToHaskellFunction HaskellFunction where
+#else
 instance ToHaskellFunction HaskellFunction where
-  toHsFun _narg = fromHaskellFunction
+#endif
+  toHsFun _ = id
 
 instance ToLuaStack a => ToHaskellFunction (Lua a) where
   toHsFun _narg x = 1 <$ (x >>= push)
@@ -100,16 +107,14 @@ instance (FromLuaStack a, ToHaskellFunction b) =>
 -- Any Haskell exception will be converted to a string and returned
 -- as Lua error.
 toHaskellFunction :: ToHaskellFunction a => a -> HaskellFunction
-toHaskellFunction a = HaskellFunction $
-  toHsFun 1 a `catchLuaError` \err -> do
+toHaskellFunction a = toHsFun 1 a `catchLuaError` \err -> do
   push ("Error while calling haskell function: " ++ show err)
   fromIntegral <$> lerror
 
 -- | Create new foreign Lua function. Function created can be called
 -- by Lua engine. Remeber to free the pointer with @freecfunction@.
 newCFunction :: ToHaskellFunction a => a -> Lua CFunction
-newCFunction =
-  liftIO . mkWrapper . flip runLuaWith . fromHaskellFunction . toHaskellFunction
+newCFunction = liftIO . mkWrapper . flip runLuaWith . toHaskellFunction
 
 -- | Turn a @'PreCFunction'@ into an actual @'CFunction'@.
 foreign import ccall "wrapper"
@@ -151,8 +156,8 @@ callFunc f = callFunc' f (return ()) 0
 -- You are not allowed to use @lua_error@ anywhere, but
 -- use an error code of (-1) to the same effect. Push
 -- error message as the sole return value.
-pushHaskellFunction :: HaskellFunction -> Lua ()
-pushHaskellFunction = pushPreCFunction . flip runLuaWith . fromHaskellFunction
+pushHaskellFunction :: ToHaskellFunction a => a -> Lua ()
+pushHaskellFunction = pushPreCFunction . flip runLuaWith . toHaskellFunction
 
 -- | Converts a pre C function to a Lua function and pushes it to the stack.
 --
@@ -174,8 +179,10 @@ pushPreCFunction f = do
   return ()
 
 -- | Imports a Haskell function and registers it at global name.
-registerHaskellFunction :: String -> HaskellFunction -> Lua ()
-registerHaskellFunction n f = pushHaskellFunction f *> setglobal n
+registerHaskellFunction :: ToHaskellFunction a => String -> a -> Lua ()
+registerHaskellFunction n f = do
+  pushHaskellFunction f
+  setglobal n
 
 foreign export ccall hsMethodGc :: PreCFunction
 foreign import ccall "&hsMethodGc" hsmethod__gc_addr :: CFunction
@@ -183,14 +190,14 @@ foreign import ccall "&hsMethodGc" hsmethod__gc_addr :: CFunction
 foreign export ccall hsMethodCall :: PreCFunction
 foreign import ccall "&hsMethodCall" hsmethod__call_addr :: CFunction
 
-hsMethodGc :: LuaState -> IO CInt
+hsMethodGc :: LuaState -> IO NumResults
 hsMethodGc l = do
   ptr <- runLuaWith l $ peek (-1)
   stableptr <- F.peek (castPtr ptr)
   freeStablePtr stableptr
   return 0
 
-hsMethodCall :: LuaState -> IO CInt
+hsMethodCall :: LuaState -> IO NumResults
 hsMethodCall l = do
   ptr <- runLuaWith l $ peek 1 <* remove 1
   stableptr <- F.peek (castPtr ptr)
