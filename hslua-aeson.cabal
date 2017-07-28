@@ -1,5 +1,5 @@
 name:                hslua-aeson
-version:             0.1.0.4
+version:             0.2.0.0
 synopsis:            Glue between aeson and hslua
 description:         Please see README.md
 homepage:            https://github.com/tarleb/hslua-aeson#readme
@@ -19,7 +19,7 @@ library
   build-depends:       base                 >= 4.7     && < 5
                      , aeson                >= 0.11    && < 1.3
                      , hashable             >= 1.2     && < 1.3
-                     , hslua                >= 0.4     && < 0.6
+                     , hslua                >= 0.6     && < 0.7
                      , scientific           >= 0.3     && < 0.4
                      , text                 >= 1.1.1.0 && < 1.3
                      , unordered-containers >= 0.2     && < 0.3

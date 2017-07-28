@@ -17,14 +17,14 @@ import Data.HashMap.Lazy (HashMap)
 import Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
 import Data.Text (Text)
 import Data.Vector (Vector)
-import Scripting.Lua.Aeson (StackValue, newstate)
+import Foreign.Lua
+import Scripting.Lua.Aeson (registerNull)
 import Test.Hspec
 import Test.HUnit
 import Test.QuickCheck
 import Test.QuickCheck.Instances ()
 
 import qualified Data.Aeson as Aeson
-import qualified Scripting.Lua as Lua
 
 -- | Run this spec.
 main :: IO ()
@@ -73,39 +73,32 @@ assertRoundtripApprox x = do
   let ydouble = toRealFloat y :: Double
   assert (xdouble ~== ydouble)
 
-assertRoundtripEqual :: (Show a, Eq a, StackValue a) => a -> IO ()
+assertRoundtripEqual :: (Show a, Eq a, ToLuaStack a, FromLuaStack a) => a -> IO ()
 assertRoundtripEqual x = do
   y <- roundtrip x
   assert (x == y)
 
-roundtrip :: (StackValue a) => a -> IO a
-roundtrip x = do
-  lua <- newstate
-  Lua.push lua x
-  size <- Lua.gettop lua
+roundtrip :: (ToLuaStack a, FromLuaStack a) => a -> IO a
+roundtrip x = runLua $ do
+  registerNull
+  push x
+  size <- gettop
   when (size /= 1) $
     error ("not the right amount of elements on the stack: " ++ show size)
-  res <- Lua.peek lua (-1)
-  retval <- case res of
-        Nothing -> error "could not read from stack"
-        Just y  -> return y
-  Lua.close lua
-  return retval
+  peek (-1)
 
-luaTest :: StackValue a => String -> [(String, a)] -> IO Bool
-luaTest luaTestCode xs = do
-  lua <- Lua.newstate
+luaTest :: ToLuaStack a => String -> [(String, a)] -> IO Bool
+luaTest luaTestCode xs = runLua $ do
+  openlibs
+  registerNull
   forM_ xs $ \(var, value) ->
-    Lua.push lua value *> Lua.setglobal lua var
+    push value *> setglobal var
   let luaScript = "function run() return (" ++ luaTestCode ++ ") end"
-  Lua.openlibs lua
-  _ <- loadstring lua luaScript "test script"
-  Lua.call lua 0 0
-  retval <- Lua.callfunc lua "run"
-  Lua.close lua
-  return retval
+  _ <- loadstring luaScript
+  call 0 0
+  callFunc "run"
 
-luaNumberToScientific :: Lua.LuaNumber -> Scientific
+luaNumberToScientific :: LuaNumber -> Scientific
 luaNumberToScientific = fromFloatDigits
 
 instance Arbitrary Aeson.Value where
@@ -120,11 +113,3 @@ arbitraryValue size = frequency $
     , (2, resize (size - 1) $ Aeson.Array <$> arbitrary)
     , (2, resize (size - 1) $ Aeson.Object <$> arbitrary)
     ]
-
--- | Interpret string as lua code and load into the lua environment.
-loadstring :: Lua.LuaState -> String -> String -> IO Int
-#if MIN_VERSION_hslua(0,5,0)
-loadstring lua script _ = Lua.loadstring lua script
-#else
-loadstring lua script cn = Lua.loadstring lua script cn
-#endif

@@ -26,149 +26,129 @@ conventions are used:
   objects.
 -}
 module Scripting.Lua.Aeson
-  ( module Scripting.Lua
-  , newstate
+  ( registerNull
   ) where
 
 #if MIN_VERSION_base(4,8,0)
 #else
 import Control.Applicative ((<$>), (<*>), (*>))
 #endif
+import Control.Monad (zipWithM_)
 import Data.HashMap.Lazy (HashMap)
 import Data.Hashable (Hashable)
 import Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
-import Data.Text (Text)
-import Data.Text.Encoding (decodeUtf8, encodeUtf8)
 import Data.Vector (Vector, fromList, toList)
-import Scripting.Lua (LuaState, StackValue)
+import Foreign.Lua hiding (newstate)
 
 import qualified Data.Aeson as Aeson
 import qualified Data.HashMap.Lazy as HashMap
 import qualified Data.Vector as Vector
-import qualified Scripting.Lua as Lua
+import qualified Foreign.Lua as Lua
 
-instance StackValue Scientific where
-  push lua n = Lua.pushnumber lua (toRealFloat n)
-  peek lua n = fmap fromFloatDigits <$>
-               (Lua.peek lua n :: IO (Maybe Lua.LuaNumber))
-  valuetype _ = Lua.TNUMBER
+-- Scientific
+instance ToLuaStack Scientific where
+  push n = pushnumber (toRealFloat n)
 
-instance StackValue Text where
-  push lua t = Lua.push lua (encodeUtf8 t)
-  peek lua i = fmap decodeUtf8 <$> Lua.peek lua i
-  valuetype _ = Lua.TSTRING
+instance FromLuaStack Scientific where
+  peek n = fromFloatDigits <$> (peek n :: Lua LuaNumber)
 
-instance (StackValue a) => StackValue (Vector a) where
-  push lua v = pushvector lua v
-  peek lua i = tovector lua i
-  valuetype _ = Lua.TTABLE
+-- Vector
+instance (ToLuaStack a) => ToLuaStack (Vector a) where
+  push v = pushvector v
 
-instance (Eq a, Hashable a, StackValue a, StackValue b)
-      => StackValue (HashMap a b) where
-  push lua h = pushTextHashMap lua h
-  peek lua i = fmap HashMap.fromList <$> getPairs lua i
-  valuetype _ = Lua.TTABLE
+instance (FromLuaStack a) => FromLuaStack (Vector a) where
+  peek i = tovector i
+
+-- HashMap
+instance (Eq a, Hashable a, ToLuaStack a, ToLuaStack b)
+      => ToLuaStack (HashMap a b) where
+  push h = pushTextHashMap h
+
+instance (Eq a, Hashable a, FromLuaStack a, FromLuaStack b)
+      => FromLuaStack (HashMap a b) where
+  peek i = HashMap.fromList <$> pairsFromTable i
 
 -- | Hslua StackValue instance for the Aeson Value data type.
-instance StackValue Aeson.Value where
-  push lua = \case
-    Aeson.Object o -> Lua.push lua o
-    Aeson.Number n -> Lua.push lua n
-    Aeson.String s -> Lua.push lua s
-    Aeson.Array a -> Lua.push lua a
-    Aeson.Bool b -> Lua.push lua b
-    Aeson.Null -> Lua.getglobal lua "_NULL"
-  peek lua i = do
-    ltype <- Lua.ltype lua i
-    case ltype of
-      Lua.TBOOLEAN -> fmap Aeson.Bool  <$> Lua.peek lua i
-      Lua.TNUMBER -> fmap Aeson.Number <$> Lua.peek lua i
-      Lua.TSTRING -> fmap Aeson.String <$> Lua.peek lua i
-      Lua.TTABLE -> do
-        Lua.rawgeti lua i 0
-        len <- Lua.peek lua (-1)
-        Lua.pop lua 1
-        case (len :: Maybe Int) of
-          Just _  -> fmap Aeson.Array <$> Lua.peek lua i
-          Nothing -> do
-            objlen <- Lua.objlen lua i
+instance ToLuaStack Aeson.Value where
+  push = \case
+    Aeson.Object o -> push o
+    Aeson.Number n -> push n
+    Aeson.String s -> push s
+    Aeson.Array a -> push a
+    Aeson.Bool b -> push b
+    Aeson.Null -> getglobal "_NULL"
+
+instance FromLuaStack Aeson.Value where
+  peek i = do
+    ltype' <- ltype i
+    case ltype' of
+      TBOOLEAN -> Aeson.Bool  <$> peek i
+      TNUMBER -> Aeson.Number <$> peek i
+      TSTRING -> Aeson.String <$> peek i
+      TTABLE -> do
+        rawgeti i 0
+        isInt <- isnumber (-1)
+        pop 1
+        if isInt
+          then Aeson.Array <$> peek i
+          else do
+            objlen <- rawlen i
             if objlen > 0
-              then fmap Aeson.Array <$> Lua.peek lua i
+              then Aeson.Array <$> peek i
               else do
-                isNull <- isLuaNull lua i
+                isNull <- isLuaNull i
                 if isNull
-                  then return $ Just Aeson.Null
-                  else fmap Aeson.Object <$> Lua.peek lua i
-      Lua.TNIL -> return $ Just Aeson.Null
-      _        -> error $ "Unexpected type: " ++ (show ltype)
-  valuetype = \case
-    Aeson.Object _ -> Lua.TTABLE
-    Aeson.Number _ -> Lua.TNUMBER
-    Aeson.String _ -> Lua.TSTRING
-    Aeson.Array _ -> Lua.TTABLE
-    Aeson.Bool _ -> Lua.TBOOLEAN
-    Aeson.Null -> Lua.TTABLE
+                  then return Aeson.Null
+                  else Aeson.Object <$> peek i
+      TNIL -> return Aeson.Null
+      _    -> error $ "Unexpected type: " ++ (show ltype')
 
 -- | Create a new lua state suitable for use with aeson values. This behaves
 -- like @newstate@ in hslua, but initializes the @_NULL@ global. That variable
 -- is used to encode null values.
-newstate :: IO LuaState
-newstate = do
-  lua <- Lua.newstate
-  Lua.createtable lua 0 0
-  Lua.setglobal lua "_NULL"
-  return lua
+registerNull :: Lua ()
+registerNull = do
+  createtable 0 0
+  setglobal "_NULL"
 
--- | Check if the value under the given index is lua-equal to @_NULL@.
-isLuaNull :: LuaState -> Int -> IO Bool
-isLuaNull lua i = do
+-- | Check if the value under the given index is rawequal to @_NULL@.
+isLuaNull :: StackIndex -> Lua Bool
+isLuaNull i = do
   let i' = if i < 0 then i - 1 else i
-  Lua.getglobal lua "_NULL"
-  res <- Lua.equal lua i' (-1)
-  Lua.pop lua 1
-  return res
+  getglobal "_NULL"
+  rawequal i' (-1) <* pop 1
 
 -- | Push a vector unto the stack.
-pushvector :: StackValue a => LuaState -> Vector a -> IO ()
-pushvector lua v = do
-  Lua.pushlist lua . toList $ v
-  Lua.push lua (Vector.length v)
-  Lua.rawseti lua (-2) 0
+pushvector :: ToLuaStack a => Vector a -> Lua ()
+pushvector v = do
+  pushList . toList $ v
+  push (Vector.length v)
+  rawseti (-2) 0
 
 -- | Try reading the value under the given index as a vector.
-tovector :: StackValue a => LuaState -> Int -> IO (Maybe (Vector a))
-tovector = fmap (fmap (fmap fromList)) . Lua.tolist
-
--- | Try reading the value under the given index as a list of key-value pairs.
-getPairs :: (StackValue a, StackValue b)
-         => LuaState -> Int -> IO (Maybe [(a, b)])
-getPairs lua t = do
-  Lua.pushnil lua
-  pairs <- sequence <$> remainingPairs
-  return pairs
- where
-  t' = if t < 0 then t - 1 else t
-  remainingPairs = do
-    res <- nextPair
-    case res of
-      Nothing -> return []
-      Just a  -> (a:) <$> remainingPairs
-  nextPair = do
-    hasNext <- Lua.next lua t'
-    if hasNext
-      then do
-        val <- Lua.peek lua (-1)
-        key <- Lua.peek lua (-2)
-        Lua.pop lua 1 -- removes the value, keeps the key
-        return $ Just <$> ((,) <$> key <*> val)
-      else do
-        return Nothing
+tovector :: FromLuaStack a => StackIndex -> Lua (Vector a)
+tovector = fmap fromList . peekList
 
 -- | Push a hashmap unto the stack.
-pushTextHashMap :: (StackValue a, StackValue b) => LuaState -> HashMap a b -> IO ()
-pushTextHashMap lua hm = do
+pushTextHashMap :: (ToLuaStack a, ToLuaStack b) => HashMap a b -> Lua ()
+pushTextHashMap hm = do
     let xs = HashMap.toList hm
-    Lua.createtable lua (length xs + 1) 0
-    let addValue (k, v) = Lua.push lua k *> Lua.push lua v *>
-                          Lua.rawset lua (-3)
+    let addValue (k, v) = push k *> push v *> rawset (-3)
+    newtable
     mapM_ addValue xs
+
+pushList :: ToLuaStack a => [a] -> Lua ()
+pushList xs = do
+  let setField i x = push x *> rawseti (-2) i
+  newtable
+  zipWithM_ setField [1..] xs
+
+-- | Read a table into a list
+peekList :: FromLuaStack a => StackIndex -> Lua [a]
+peekList n = (go . enumFromTo 1 =<< rawlen n) `catchLuaError` amendError
+ where
+  go [] = return []
+  go (i : is) = do
+    ret <- rawgeti n i *> peek (-1) <* pop 1
+    (ret:) <$> go is
+  amendError err = throwLuaError ("Could not read list: " ++ show err)
