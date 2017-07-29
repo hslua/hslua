@@ -43,7 +43,6 @@ import Foreign.Lua hiding (newstate)
 import qualified Data.Aeson as Aeson
 import qualified Data.HashMap.Lazy as HashMap
 import qualified Data.Vector as Vector
-import qualified Foreign.Lua as Lua
 
 -- Scientific
 instance ToLuaStack Scientific where
