@@ -92,8 +92,8 @@ instance FromLuaStack Aeson.Value where
         if isInt
           then Aeson.Array <$> peek i
           else do
-            objlen <- rawlen i
-            if objlen > 0
+            rawlen' <- rawlen i
+            if rawlen' > 0
               then Aeson.Array <$> peek i
               else do
                 isNull <- isLuaNull i
