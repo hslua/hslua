@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE LambdaCase #-}
 {-|
-Module      :  Scripting.Lua.Aeson
+Module      :  Foreign.Lua.Aeson
 Copyright   :  © 2017 Albert Krewinkel
 License     :  MIT
 
@@ -25,7 +25,7 @@ conventions are used:
   index 0. This makes it possible to distinguish between empty arrays and empty
   objects.
 -}
-module Scripting.Lua.Aeson
+module Foreign.Lua.Aeson
   ( registerNull
   ) where
 

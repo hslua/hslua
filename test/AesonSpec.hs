@@ -18,7 +18,7 @@ import Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
 import Data.Text (Text)
 import Data.Vector (Vector)
 import Foreign.Lua
-import Scripting.Lua.Aeson (registerNull)
+import Foreign.Lua.Aeson (registerNull)
 import Test.Hspec
 import Test.HUnit
 import Test.QuickCheck

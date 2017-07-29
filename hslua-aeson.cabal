@@ -1,7 +1,8 @@
 name:                hslua-aeson
 version:             0.2.0.0
-synopsis:            Glue between aeson and hslua
-description:         Please see README.md
+synopsis:            Allow aeson data types to be used with lua.
+description:         This package provides instances to push and receive any
+                     datatype encodable as JSON to and from the Lua stack.
 homepage:            https://github.com/tarleb/hslua-aeson#readme
 license:             MIT
 license-file:        LICENSE
@@ -15,7 +16,7 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Scripting.Lua.Aeson
+  exposed-modules:     Foreign.Lua.Aeson
   build-depends:       base                 >= 4.7     && < 5
                      , aeson                >= 0.11    && < 1.3
                      , hashable             >= 1.2     && < 1.3
