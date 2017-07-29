@@ -136,11 +136,23 @@ tests = testGroup "Haskell version of the C API"
         liftIO . assertEqual "yielding will put thread status to Yield" LuaYield
           =<< status
 
-  , testCase "loadstring status" . runLua $ do
-      liftIO . assertEqual "loading a valid string doesn't return LuaOK"
-        LuaOK =<< loadstring "return 1"
-      liftIO . assertEqual "loading an invalid string doesn't return LuaErrSyntax"
-        LuaErrSyntax =<< loadstring "marzipan"
+  , testGroup "loading"
+    [ testCase "loadstring status" . runLua $ do
+        liftIO . assertEqual "loading a valid string doesn't return LuaOK"
+          LuaOK =<< loadstring "return 1"
+        liftIO . assertEqual "loading an invalid string doesn't return LuaErrSyntax"
+          LuaErrSyntax =<< loadstring "marzipan"
+
+    , testCase "dostring loading" . runLua $ do
+        liftIO . assertEqual "wrong dostring result"
+          LuaErrRun =<< (dostring "error 'this fails'")
+        liftIO . assertEqual "loading an invalid string doesn't return LuaErrSyntax"
+          LuaErrSyntax =<< dostring "marzipan"
+        liftIO . assertEqual "loading a valid program failed"
+          LuaOK =<< dostring "return (2 + 3)"
+        liftIO . assertEqual "top of the stack should be result of last computation"
+          (5 :: LuaInteger) =<< peek (-1)
+    ]
 
   , testCase "pcall status" . runLua $ do
       liftIO . assertEqual "calling error did not lead to an error status"

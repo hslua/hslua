@@ -158,6 +158,7 @@ module Foreign.Lua.Api (
   , openstring
   , opentable
   -- * Auxiliary library
+  , dostring
   , newmetatable
   , ref
   , unref
@@ -343,6 +344,17 @@ copy fromidx toidx = do
 createtable :: Int -> Int -> Lua ()
 createtable narr nrec = liftLua $ \l ->
   lua_createtable l (fromIntegral narr) (fromIntegral nrec)
+
+-- | Loads and runs the given string.
+--
+-- Returns @'LuaOK'@ on success, or an error if either loading of the string or
+-- calling of the thunk failed.
+dostring :: String -> Lua LuaStatus
+dostring s = do
+  loadRes <- loadstring s
+  if loadRes == LuaOK
+    then pcall 0 multret Nothing
+    else return loadRes
 
 -- TODO: implement dump
 
@@ -579,8 +591,7 @@ loadfile f = liftLua $ \l ->
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadstring>.
 loadstring :: String -> Lua LuaStatus
 loadstring str = liftLua $ \l ->
-  withCString str $ \strPtr ->
-  toLuaStatus <$> luaL_loadstring l strPtr
+  withCString str (fmap toLuaStatus . luaL_loadstring l)
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>.
 ltype :: StackIndex -> Lua LTYPE
