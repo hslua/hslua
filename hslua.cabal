@@ -19,7 +19,7 @@ description:            The Foreign.Lua module is a wrapper of Lua language
                         5.3.4. If you want to link it with a system-wide Lua
                         installation, use the @system-lua@ flag.
                         .
-                        <https://github.com/tarleb/hslua-examples Example programs>
+                        <https://github.com/hslua/hslua-examples Example programs>
                         are available in a separate repository.
 category:               Foreign
 extra-source-files:     lua-5.3.4/*.h
