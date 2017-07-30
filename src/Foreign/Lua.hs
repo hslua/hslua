@@ -46,6 +46,7 @@ module Foreign.Lua
   , pairsFromTable
   -- * Pushing values to Lua stack (Haskell → Lua)
   , ToLuaStack (..)
+  , pushList
   -- * Calling Functions
   , PreCFunction
   , HaskellFunction

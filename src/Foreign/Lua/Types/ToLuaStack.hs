@@ -41,6 +41,7 @@ Sending haskell objects to the lua stack.
 -}
 module Foreign.Lua.Types.ToLuaStack
   ( ToLuaStack (..)
+  , pushList
   ) where
 
 import Control.Monad (zipWithM_)
@@ -94,10 +95,13 @@ instance ToLuaStack [Char] where
   push = push . T.pack
 
 instance ToLuaStack a => ToLuaStack [a] where
-  push xs = do
-    let setField i x = push x *> rawseti (-2) i
-    newtable
-    zipWithM_ setField [1..] xs
+  push = pushList
+
+pushList :: ToLuaStack a => [a] -> Lua ()
+pushList xs = do
+  let setField i x = push x *> rawseti (-2) i
+  newtable
+  zipWithM_ setField [1..] xs
 
 instance (ToLuaStack a, ToLuaStack b) => ToLuaStack (Map a b) where
   push m = do
