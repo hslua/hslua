@@ -44,6 +44,7 @@ module Foreign.Lua.Types.FromLuaStack
   , Result
   , peekEither
   , pairsFromTable
+  , toList
   ) where
 
 import Data.ByteString (ByteString)
@@ -126,16 +127,20 @@ instance FromLuaStack String where
   peek = fmap T.unpack . peek
 
 instance FromLuaStack a => FromLuaStack [a] where
-  peek n = catchLuaError (go . enumFromTo 1 =<< rawlen n) amendError
-   where
-    go [] = return []
-    go (i : is) = do
-      ret <- rawgeti n i *> peek (-1) <* pop 1
-      (ret:) <$> go is
-    amendError err = throwLuaError ("Could not read list: " ++ show err)
+  peek = toList
 
 instance (Ord a, FromLuaStack a, FromLuaStack b) => FromLuaStack (Map a b) where
   peek idx = fromList <$> pairsFromTable idx
+
+-- | Read a table into a list
+toList :: FromLuaStack a => StackIndex -> Lua [a]
+toList n = (go . enumFromTo 1 =<< rawlen n) `catchLuaError` amendError
+ where
+  go [] = return []
+  go (i : is) = do
+    ret <- rawgeti n i *> peek (-1) <* pop 1
+    (ret:) <$> go is
+  amendError err = throwLuaError ("Could not read list: " ++ show err)
 
 -- | Read a table into a list of pairs.
 pairsFromTable :: (FromLuaStack a, FromLuaStack b) => StackIndex -> Lua [(a, b)]
