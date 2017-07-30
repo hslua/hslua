@@ -104,3 +104,91 @@ instance (ToLuaStack a, ToLuaStack b) => ToLuaStack (Map a b) where
     let addValue (k, v) = push k *> push v *> rawset (-3)
     newtable
     mapM_ addValue (toList m)
+
+--
+-- Tuples
+--
+instance (ToLuaStack a, ToLuaStack b) => ToLuaStack (a, b) where
+  push (a, b) = do
+    newtable
+    addRawInt 1 a
+    addRawInt 2 b
+
+instance (ToLuaStack a, ToLuaStack b, ToLuaStack c) =>
+         ToLuaStack (a, b, c)
+ where
+  push (a, b, c) = do
+    newtable
+    addRawInt 1 a
+    addRawInt 2 b
+    addRawInt 3 c
+
+instance (ToLuaStack a, ToLuaStack b, ToLuaStack c, ToLuaStack d) =>
+         ToLuaStack (a, b, c, d)
+ where
+  push (a, b, c, d) = do
+    newtable
+    addRawInt 1 a
+    addRawInt 2 b
+    addRawInt 3 c
+    addRawInt 4 d
+
+instance (ToLuaStack a, ToLuaStack b, ToLuaStack c,
+          ToLuaStack d, ToLuaStack e) =>
+         ToLuaStack (a, b, c, d, e)
+ where
+  push (a, b, c, d, e) = do
+    newtable
+    addRawInt 1 a
+    addRawInt 2 b
+    addRawInt 3 c
+    addRawInt 4 d
+    addRawInt 5 e
+
+instance (ToLuaStack a, ToLuaStack b, ToLuaStack c,
+          ToLuaStack d, ToLuaStack e, ToLuaStack f) =>
+         ToLuaStack (a, b, c, d, e, f)
+ where
+  push (a, b, c, d, e, f) = do
+    newtable
+    addRawInt 1 a
+    addRawInt 2 b
+    addRawInt 3 c
+    addRawInt 4 d
+    addRawInt 5 e
+    addRawInt 6 f
+
+instance (ToLuaStack a, ToLuaStack b, ToLuaStack c, ToLuaStack d,
+          ToLuaStack e, ToLuaStack f, ToLuaStack g) =>
+         ToLuaStack (a, b, c, d, e, f, g)
+ where
+  push (a, b, c, d, e, f, g) = do
+    newtable
+    addRawInt 1 a
+    addRawInt 2 b
+    addRawInt 3 c
+    addRawInt 4 d
+    addRawInt 5 e
+    addRawInt 6 f
+    addRawInt 7 g
+
+instance (ToLuaStack a, ToLuaStack b, ToLuaStack c, ToLuaStack d,
+          ToLuaStack e, ToLuaStack f, ToLuaStack g, ToLuaStack h) =>
+         ToLuaStack (a, b, c, d, e, f, g, h)
+ where
+  push (a, b, c, d, e, f, g, h) = do
+    newtable
+    addRawInt 1 a
+    addRawInt 2 b
+    addRawInt 3 c
+    addRawInt 4 d
+    addRawInt 5 e
+    addRawInt 6 f
+    addRawInt 7 g
+    addRawInt 8 h
+
+-- | Set numeric key/value in table at the top of the stack.
+addRawInt :: ToLuaStack a => Int -> a -> Lua ()
+addRawInt idx val = do
+  push val
+  rawseti (-2) idx

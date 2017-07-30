@@ -60,11 +60,33 @@ import qualified Data.Text.Encoding as T
 -- | Result returned when trying to get a value from the lua stack.
 type Result a = Either String a
 
+-- | Use @test@ to check whether the value at stack index @n@ has the correct
+-- type and use @peekfn@ to convert it to a haskell value if possible. A
+-- successfully received value is wrapped using the @'Success'@ constructor,
+-- while a type mismatch results in an @Error@ with the given error message.
+typeChecked :: String
+            -> (StackIndex -> Lua Bool)
+            -> (StackIndex -> Lua a)
+            -> StackIndex
+            -> Lua a
+typeChecked expectedType test peekfn n = do
+  v <- test n
+  if v
+    then peekfn n
+    else do
+      actual <- ltype n >>= typename
+      throwLuaError $ "Expected a " <> expectedType <> " but got a " <> actual
+
 -- | A value that can be read from the Lua stack.
 class FromLuaStack a where
   -- | Check if at index @n@ there is a convertible Lua value and if so return
   -- it.  Throws a @'LuaException'@ otherwise.
   peek :: StackIndex -> Lua a
+
+-- | Try to convert the value at the given stack index to a haskell value.
+-- Returns @Left@ with an error message on failure.
+peekEither :: FromLuaStack a => StackIndex -> Lua (Either String a)
+peekEither idx = catchLuaError (return <$> peek idx) (return . Left . show)
 
 instance FromLuaStack () where
   peek = typeChecked "nil" isnil (const $ return ())
@@ -140,24 +162,101 @@ nextPair idx = do
       return (Just (k, v))
     else return Nothing
 
--- | Use @test@ to check whether the value at stack index @n@ has the correct
--- type and use @peekfn@ to convert it to a haskell value if possible. A
--- successfully received value is wrapped using the @'Success'@ constructor,
--- while a type mismatch results in an @Error@ with the given error message.
-typeChecked :: String
-            -> (StackIndex -> Lua Bool)
-            -> (StackIndex -> Lua a)
-            -> StackIndex
-            -> Lua a
-typeChecked expectedType test peekfn n = do
-  v <- test n
-  if v
-    then peekfn n
-    else do
-      actual <- ltype n >>= typename
-      throwLuaError $ "Expected a " <> expectedType <> " but got a " <> actual
+--
+-- Tuples
+--
 
--- | Try to convert the value at the given stack index to a haskell value.
--- Returns @Left@ with an error message on failure.
-peekEither :: FromLuaStack a => StackIndex -> Lua (Either String a)
-peekEither idx = catchLuaError (return <$> peek idx) (return . Left . show)
+instance (FromLuaStack a, FromLuaStack b) => FromLuaStack (a, b) where
+  peek idx = do
+    a <- rawgeti idx 1 *> peek (-1) <* pop 1
+    b <- rawgeti idx 2 *> peek (-1) <* pop 1
+    return (a, b)
+
+instance (FromLuaStack a, FromLuaStack b, FromLuaStack c) =>
+         FromLuaStack (a, b, c)
+ where
+  peek idx = do
+    pushvalue idx
+    a <- getTableIndex 1
+    b <- getTableIndex 2
+    c <- getTableIndex 3
+    pop 4
+    return (a, b, c)
+
+instance (FromLuaStack a, FromLuaStack b, FromLuaStack c, FromLuaStack d) =>
+         FromLuaStack (a, b, c, d)
+ where
+  peek idx = do
+    pushvalue idx
+    a <- getTableIndex 1
+    b <- getTableIndex 2
+    c <- getTableIndex 3
+    d <- getTableIndex 4
+    pop 5
+    return (a, b, c, d)
+
+instance (FromLuaStack a, FromLuaStack b, FromLuaStack c,
+          FromLuaStack d, FromLuaStack e) =>
+         FromLuaStack (a, b, c, d, e)
+ where
+  peek idx = do
+    pushvalue idx
+    a <- getTableIndex 1
+    b <- getTableIndex 2
+    c <- getTableIndex 3
+    d <- getTableIndex 4
+    e <- getTableIndex 5
+    pop 6
+    return (a, b, c, d, e)
+
+instance (FromLuaStack a, FromLuaStack b, FromLuaStack c,
+          FromLuaStack d, FromLuaStack e, FromLuaStack f) =>
+         FromLuaStack (a, b, c, d, e, f)
+ where
+  peek idx = do
+    pushvalue idx
+    a <- getTableIndex 1
+    b <- getTableIndex 2
+    c <- getTableIndex 3
+    d <- getTableIndex 4
+    e <- getTableIndex 5
+    f <- getTableIndex 6
+    pop 7
+    return (a, b, c, d, e, f)
+
+instance (FromLuaStack a, FromLuaStack b, FromLuaStack c, FromLuaStack d,
+          FromLuaStack e, FromLuaStack f, FromLuaStack g) =>
+         FromLuaStack (a, b, c, d, e, f, g)
+ where
+  peek idx = do
+    pushvalue idx
+    a <- getTableIndex 1
+    b <- getTableIndex 2
+    c <- getTableIndex 3
+    d <- getTableIndex 4
+    e <- getTableIndex 5
+    f <- getTableIndex 6
+    g <- getTableIndex 7
+    pop 8
+    return (a, b, c, d, e, f, g)
+
+instance (FromLuaStack a, FromLuaStack b, FromLuaStack c, FromLuaStack d,
+          FromLuaStack e, FromLuaStack f, FromLuaStack g, FromLuaStack h) =>
+         FromLuaStack (a, b, c, d, e, f, g, h)
+ where
+  peek idx = do
+    pushvalue idx
+    a <- getTableIndex 1
+    b <- getTableIndex 2
+    c <- getTableIndex 3
+    d <- getTableIndex 4
+    e <- getTableIndex 5
+    f <- getTableIndex 6
+    g <- getTableIndex 7
+    h <- getTableIndex 8
+    pop 9
+    return (a, b, c, d, e, f, g, h)
+
+-- | Helper function to get the nth table value
+getTableIndex :: FromLuaStack b => Int -> Lua b
+getTableIndex key = rawgeti (StackIndex (- (fromIntegral key))) key *> peek (-1)

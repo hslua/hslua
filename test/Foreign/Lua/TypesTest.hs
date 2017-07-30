@@ -74,6 +74,28 @@ tests = testGroup "peek and push are well behaved"
 
     , testProperty "map of strings to LuaNumber"
       (prop_roundtripEqual :: Map String LuaNumber -> Property)
+
+    , testGroup "tuples"
+      [ testProperty "pair of LuaNumbers"
+        (prop_roundtripEqual :: (LuaNumber, LuaNumber) -> Property)
+      , testProperty "triple of LuaNumbers"
+        (prop_roundtripEqual :: (LuaNumber, LuaNumber, LuaNumber) -> Property)
+      , testProperty "quadruple of LuaNumbers"
+        (prop_roundtripEqual
+         :: (LuaNumber, LuaNumber, LuaNumber, LuaNumber) -> Property)
+      , testProperty "quintuple of LuaNumbers"
+        (prop_roundtripEqual
+         :: (LuaNumber, LuaNumber, LuaNumber, LuaNumber, LuaNumber) -> Property)
+      , testProperty "hextuple of Text, LuaNumbers and Booleans"
+        (prop_roundtripEqual
+         :: (Bool, LuaNumber, T.Text, Bool, LuaNumber, LuaNumber) -> Property)
+      , testProperty "septuple of Text, LuaNumber and Booleans"
+        (prop_roundtripEqual
+         :: (T.Text, Bool, LuaNumber, Bool, Bool, LuaNumber, Bool) -> Property)
+      , testProperty "octuple of Strings and Booleans"
+        (prop_roundtripEqual
+         :: (Bool, String, Bool, Bool, String, Bool, Bool, String) -> Property)
+      ]
     ]
 
   , testGroup "Random stack values"
