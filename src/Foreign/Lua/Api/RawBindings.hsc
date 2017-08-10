@@ -76,45 +76,45 @@ foreign import ccall "lua.h lua_atpanic"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_gettop lua_gettop>
 foreign import ccall unsafe "lua.h lua_gettop"
-  lua_gettop :: LuaState -> IO CInt
+  lua_gettop :: LuaState -> IO StackIndex
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_settop lua_settop>
 foreign import ccall unsafe "lua.h lua_settop"
-  lua_settop :: LuaState -> CInt -> IO ()
+  lua_settop :: LuaState -> StackIndex -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushvalue lua_pushvalue>
 foreign import ccall unsafe "lua.h lua_pushvalue"
-  lua_pushvalue :: LuaState -> CInt -> IO ()
+  lua_pushvalue :: LuaState -> StackIndex -> IO ()
 
 #if LUA_VERSION_NUMBER >= 503
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rotate lua_rotate>
 foreign import ccall unsafe "lua.h lua_rotate"
-  lua_rotate :: LuaState -> CInt -> CInt -> IO ()
+  lua_rotate :: LuaState -> StackIndex -> CInt -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_copy lua_copy>
 foreign import ccall unsafe "lua.h lua_copy"
-  lua_copy :: LuaState -> CInt -> CInt -> IO ()
+  lua_copy :: LuaState -> StackIndex -> StackIndex -> IO ()
 #else
 -- | See <https://www.lua.org/manual/5.2/manual.html#lua_remove lua_remove>
 foreign import ccall unsafe "lua.h lua_remove"
-  lua_remove :: LuaState -> CInt -> IO ()
+  lua_remove :: LuaState -> StackIndex -> IO ()
 
 -- | See <https://www.lua.org/manual/5.2/manual.html#lua_insert lua_insert>
 foreign import ccall unsafe "lua.h lua_insert"
-  lua_insert :: LuaState -> CInt -> IO ()
+  lua_insert :: LuaState -> StackIndex -> IO ()
 
 -- | See <https://www.lua.org/manual/5.2/manual.html#lua_replace lua_replace>
 foreign import ccall unsafe "lua.h lua_replace"
-  lua_replace :: LuaState -> CInt -> IO ()
+  lua_replace :: LuaState -> StackIndex -> IO ()
 #endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_checkstack lua_checkstack>
 foreign import ccall unsafe "lua.h lua_checkstack"
-  lua_checkstack :: LuaState -> CInt -> IO CInt
+  lua_checkstack :: LuaState -> StackIndex -> IO CInt
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_xmove lua_xmove>
 foreign import ccall unsafe "lua.h lua_xmove"
-  lua_xmove :: LuaState -> LuaState -> CInt -> IO ()
+  lua_xmove :: LuaState -> LuaState -> StackIndex -> IO ()
 
 
 --------------------------------------------------------------------------------
@@ -122,23 +122,23 @@ foreign import ccall unsafe "lua.h lua_xmove"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_isnumber lua_isnumber>
 foreign import ccall unsafe "lua.h lua_isnumber"
-  lua_isnumber :: LuaState -> CInt -> IO CInt
+  lua_isnumber :: LuaState -> StackIndex -> IO CInt
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_isstring lua_isstring>
 foreign import ccall unsafe "lua.h lua_isstring"
-  lua_isstring :: LuaState -> CInt -> IO CInt
+  lua_isstring :: LuaState -> StackIndex -> IO CInt
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_iscfunction lua_iscfunction>
 foreign import ccall unsafe "lua.h lua_iscfunction"
-  lua_iscfunction :: LuaState -> CInt -> IO CInt
+  lua_iscfunction :: LuaState -> StackIndex -> IO CInt
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_isuserdata lua_isuserdata>
 foreign import ccall unsafe "lua.h lua_isuserdata"
-  lua_isuserdata :: LuaState -> CInt -> IO CInt
+  lua_isuserdata :: LuaState -> StackIndex -> IO CInt
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>
 foreign import ccall unsafe "lua.h lua_type"
-  lua_type :: LuaState -> CInt -> IO CInt
+  lua_type :: LuaState -> StackIndex -> IO CInt
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_typename lua_typename>
 foreign import ccall unsafe "lua.h lua_typename"
@@ -147,65 +147,65 @@ foreign import ccall unsafe "lua.h lua_typename"
 #if LUA_VERSION_NUMBER >= 502
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_compare lua_compare>
 foreign import ccall "lua.h lua_compare"
-  lua_compare :: LuaState -> CInt -> CInt -> CInt -> IO CInt
+  lua_compare :: LuaState -> StackIndex -> StackIndex -> CInt -> IO CInt
 #else
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_equal lua_equal>
 foreign import ccall "lua.h lua_equal"
-  lua_equal :: LuaState -> CInt -> CInt -> IO CInt
+  lua_equal :: LuaState -> StackIndex -> StackIndex -> IO CInt
 
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_lessthan lua_lessthan>
 foreign import ccall "lua.h lua_lessthan"
-  lua_lessthan :: LuaState -> CInt -> CInt -> IO CInt
+  lua_lessthan :: LuaState -> StackIndex -> StackIndex -> IO CInt
 #endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawequal lua_rawequal>
 foreign import ccall unsafe "lua.h lua_rawequal"
-  lua_rawequal :: LuaState -> CInt -> CInt -> IO CInt
+  lua_rawequal :: LuaState -> StackIndex -> StackIndex -> IO CInt
 
 --
 -- Type coercion
 --
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_toboolean lua_toboolean>
 foreign import ccall unsafe "lua.h lua_toboolean"
-  lua_toboolean :: LuaState -> CInt -> IO CInt
+  lua_toboolean :: LuaState -> StackIndex -> IO CInt
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tocfunction lua_tocfunction>
 foreign import ccall unsafe "lua.h lua_tocfunction"
-  lua_tocfunction :: LuaState -> CInt -> IO CFunction
+  lua_tocfunction :: LuaState -> StackIndex -> IO CFunction
 
 #if LUA_VERSION_NUMBER >= 502
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tointegerx lua_tointegerx>
 foreign import ccall unsafe "lua.h lua_tointegerx"
-  lua_tointegerx :: LuaState -> CInt -> CInt -> IO LuaInteger
+  lua_tointegerx :: LuaState -> StackIndex -> CInt -> IO LuaInteger
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tonumberx lua_tonumberx>
 foreign import ccall unsafe "lua.h lua_tonumberx"
-  lua_tonumberx :: LuaState -> CInt -> CInt -> IO LuaNumber
+  lua_tonumberx :: LuaState -> StackIndex -> CInt -> IO LuaNumber
 #else
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_tointeger lua_tointeger>
 foreign import ccall unsafe "lua.h lua_tointeger"
-  lua_tointeger :: LuaState -> CInt -> IO LuaInteger
+  lua_tointeger :: LuaState -> StackIndex -> IO LuaInteger
 
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_tonumber lua_tonumber>
 foreign import ccall unsafe "lua.h lua_tonumber"
-  lua_tonumber :: LuaState -> CInt -> IO LuaNumber
+  lua_tonumber :: LuaState -> StackIndex -> IO LuaNumber
 #endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tolstring lua_tolstring>
 foreign import ccall unsafe "lua.h lua_tolstring"
-  lua_tolstring :: LuaState -> CInt -> Ptr CSize -> IO (Ptr CChar)
+  lua_tolstring :: LuaState -> StackIndex -> Ptr CSize -> IO (Ptr CChar)
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_topointer lua_topointer>
 foreign import ccall unsafe "lua.h lua_topointer"
-  lua_topointer :: LuaState -> CInt -> IO (Ptr ())
+  lua_topointer :: LuaState -> StackIndex -> IO (Ptr ())
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tothread lua_tothread>
 foreign import ccall unsafe "lua.h lua_tothread"
-  lua_tothread :: LuaState -> CInt -> IO LuaState
+  lua_tothread :: LuaState -> StackIndex -> IO LuaState
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_touserdata lua_touserdata>
 foreign import ccall unsafe "lua.h lua_touserdata"
-  lua_touserdata :: LuaState -> CInt -> IO (Ptr a)
+  lua_touserdata :: LuaState -> StackIndex -> IO (Ptr a)
 
 
 --
@@ -215,11 +215,11 @@ foreign import ccall unsafe "lua.h lua_touserdata"
 #if LUA_VERSION_NUMBER >= 502
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawlen lua_rawlen>
 foreign import ccall unsafe "lua.h lua_rawlen"
-  lua_rawlen :: LuaState -> CInt -> IO CSize
+  lua_rawlen :: LuaState -> StackIndex -> IO CSize
 #else
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_objlen lua_objlen>
 foreign import ccall unsafe "lua.h lua_objlen"
-  lua_objlen :: LuaState -> CInt -> IO CSize
+  lua_objlen :: LuaState -> StackIndex -> IO CSize
 #endif
 
 
@@ -269,24 +269,24 @@ foreign import ccall unsafe "lua.h lua_pushthread"
 #if LUA_VERSION_NUMBER >= 503
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_gettable lua_gettable>
 foreign import ccall "lua.h lua_gettable"
-  lua_gettable :: LuaState -> CInt -> IO CInt
+  lua_gettable :: LuaState -> StackIndex -> IO CInt
 #else
 -- | See <https://www.lua.org/manual/5.2/manual.html#lua_gettable lua_gettable>
 foreign import ccall "lua.h lua_gettable"
-  lua_gettable :: LuaState -> CInt -> IO ()
+  lua_gettable :: LuaState -> StackIndex -> IO ()
 #endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_getfield lua_getfield>
 foreign import ccall "lua.h lua_getfield"
-  lua_getfield :: LuaState -> CInt -> Ptr CChar -> IO ()
+  lua_getfield :: LuaState -> StackIndex -> Ptr CChar -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawget lua_rawget>
 foreign import ccall unsafe "lua.h lua_rawget"
-  lua_rawget :: LuaState -> CInt -> IO ()
+  lua_rawget :: LuaState -> StackIndex -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawgeti lua_rawgeti>
 foreign import ccall unsafe "lua.h lua_rawgeti"
-  lua_rawgeti :: LuaState -> CInt -> CInt -> IO ()
+  lua_rawgeti :: LuaState -> StackIndex -> CInt -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_createtable lua_createtable>
 foreign import ccall unsafe "lua.h lua_createtable"
@@ -298,12 +298,12 @@ foreign import ccall unsafe "lua.h lua_newuserdata"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_getmetatable lua_getmetatable>
 foreign import ccall unsafe "lua.h lua_getmetatable"
-  lua_getmetatable :: LuaState -> CInt -> IO CInt
+  lua_getmetatable :: LuaState -> StackIndex -> IO CInt
 
 #if LUA_VERSION_NUMBER < 502
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_getfenv lua_getfenv>
 foreign import ccall "lua.h lua_getfenv"
-  lua_getfenv :: LuaState -> CInt -> IO ()
+  lua_getfenv :: LuaState -> StackIndex -> IO ()
 #endif
 
 #if LUA_VERSION_NUMBER >= 502
@@ -317,28 +317,28 @@ foreign import ccall "lua.h lua_getglobal"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_settable lua_settable>
 foreign import ccall "lua.h lua_settable"
-  lua_settable :: LuaState -> CInt -> IO ()
+  lua_settable :: LuaState -> StackIndex -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_setfield lua_setfield>
 foreign import ccall "lua.h lua_setfield"
-  lua_setfield :: LuaState -> CInt -> Ptr CChar -> IO ()
+  lua_setfield :: LuaState -> StackIndex -> Ptr CChar -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawset lua_rawset>
 foreign import ccall unsafe "lua.h lua_rawset"
-  lua_rawset :: LuaState -> CInt -> IO ()
+  lua_rawset :: LuaState -> StackIndex -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawseti lua_rawseti>
 foreign import ccall unsafe "lua.h lua_rawseti"
-  lua_rawseti :: LuaState -> CInt -> CInt -> IO ()
+  lua_rawseti :: LuaState -> StackIndex -> CInt -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_setmetatable lua_setmetatable>
 foreign import ccall unsafe "lua.h lua_setmetatable"
-  lua_setmetatable :: LuaState -> CInt -> IO ()
+  lua_setmetatable :: LuaState -> StackIndex -> IO ()
 
 #if LUA_VERSION_NUMBER < 502
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_setfenv lua_setfenv>
 foreign import ccall "lua.h lua_setfenv"
-  lua_setfenv :: LuaState -> CInt -> IO CInt
+  lua_setfenv :: LuaState -> StackIndex -> IO CInt
 #endif
 
 #if LUA_VERSION_NUMBER >= 502
@@ -363,11 +363,11 @@ foreign import ccall "lua.h lua_call"
 #if LUA_VERSION_NUMBER >= 502
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pcallk lua_pcallk>
 foreign import ccall "lua.h lua_pcallk"
-  lua_pcallk :: LuaState -> CInt -> CInt -> CInt -> CInt -> Ptr () -> IO CInt
+  lua_pcallk :: LuaState -> CInt -> CInt -> StackIndex -> CInt -> Ptr () -> IO CInt
 #else
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_pcall lua_pcall>
 foreign import ccall "lua.h lua_pcall"
-  lua_pcall :: LuaState -> CInt -> CInt -> CInt -> IO CInt
+  lua_pcall :: LuaState -> CInt -> CInt -> StackIndex -> IO CInt
 #endif
 
 #if LUA_VERSION_NUMBER < 502
@@ -430,7 +430,7 @@ foreign import ccall unsafe "lua.h lua_error"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_next lua_next>
 foreign import ccall "lua.h lua_next"
-  lua_next :: LuaState -> CInt -> IO CInt
+  lua_next :: LuaState -> StackIndex -> IO CInt
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_concat lua_concat>
 foreign import ccall "lua.h lua_concat"
@@ -522,11 +522,11 @@ foreign import ccall "lauxlib.h luaL_argerror"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_ref luaL_ref>
 foreign import ccall "lauxlib.h luaL_ref"
-  luaL_ref :: LuaState -> CInt -> IO CInt
+  luaL_ref :: LuaState -> StackIndex -> IO CInt
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_unref luaL_unref>
 foreign import ccall "lauxlib.h luaL_unref"
-  luaL_unref :: LuaState -> CInt -> CInt -> IO ()
+  luaL_unref :: LuaState -> StackIndex -> CInt -> IO ()
 
 #if LUA_VERSION_NUMBER >= 502
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadfilex luaL_loadfilex>

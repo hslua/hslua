@@ -167,6 +167,7 @@ module Foreign.Lua.Api (
 import Prelude hiding (compare, concat)
 
 import Control.Monad
+import Data.Maybe (fromMaybe)
 import Foreign.C
 import Foreign.Lua.Api.Constants
 import Foreign.Lua.Api.RawBindings
@@ -288,19 +289,15 @@ close = lua_close
 compare :: StackIndex -> StackIndex -> LuaRelation -> Lua Bool
 #if LUA_VERSION_NUMBER >= 502
 compare idx1 idx2 relOp = fmap (/= 0) . throwOnError =<< do
-  liftLua $ \l ->
-    hslua_compare l
-      (fromStackIndex idx1)
-      (fromStackIndex idx2)
-      (fromLuaRelation relOp)
+  liftLua $ \l -> hslua_compare l idx1 idx2 (fromLuaRelation relOp)
 #else
 compare idx1 idx2 op = liftLua $ \l ->
   (/= 0) <$>
   case op of
-    LuaEQ -> lua_equal l (fromStackIndex idx1) (fromStackIndex idx2)
-    LuaLT -> lua_lessthan l (fromStackIndex idx1) (fromStackIndex idx2)
-    LuaLE -> (+) <$> lua_equal l (fromStackIndex idx1) (fromStackIndex idx2)
-                 <*> lua_lessthan l (fromStackIndex idx1) (fromStackIndex idx2)
+    LuaEQ -> lua_equal l idx1 idx2
+    LuaLT -> lua_lessthan l idx1 idx2
+    LuaLE -> (+) <$> lua_equal l idx1 idx2
+                 <*> lua_lessthan l idx1 idx2
 #endif
 
 -- | Concatenates the @n@ values at the top of the stack, pops them, and leaves
@@ -323,8 +320,7 @@ concat n = void . throwOnError =<< liftLua (`hslua_concat` fromIntegral n)
 -- the lua manual.
 copy :: StackIndex -> StackIndex -> Lua ()
 #if LUA_VERSION_NUMBER >= 503
-copy fromidx toidx = liftLua $ \l ->
-  lua_copy l (fromStackIndex fromidx) (fromStackIndex toidx)
+copy fromidx toidx = liftLua $ \l -> lua_copy l fromidx toidx
 #else
 copy fromidx toidx = do
   pushvalue fromidx
@@ -409,7 +405,7 @@ gc what data' = liftLua $ \l ->
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getfield lua_getfield>.
 getfield :: StackIndex -> String -> Lua ()
 getfield i s = void . throwOnError =<< liftLua
-  (\l -> withCString s (hslua_getfield l (fromStackIndex i)))
+  (\l -> withCString s (hslua_getfield l i))
 
 -- | Pushes onto the stack the value of the global @name@. Returns the type of
 -- that value.
@@ -428,7 +424,7 @@ getglobal name = void . throwOnError =<<
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getmetatable lua_getmetatable>.
 getmetatable :: StackIndex -> Lua Bool
 getmetatable n = liftLua $ \l ->
-  fmap (/= 0) (lua_getmetatable l (fromStackIndex n))
+  fmap (/= 0) (lua_getmetatable l n)
 
 -- | Pushes onto the stack the value @t[k]@, where @t@ is the value at the given
 -- index and @k@ is the value at the top of the stack.
@@ -442,7 +438,7 @@ getmetatable n = liftLua $ \l ->
 -- <https://www.lua.org/manual/5.3/manual.html#lua_gettable lua_gettable>.
 gettable :: StackIndex -> Lua ()
 gettable n = void . throwOnError =<<
-  liftLua (\l -> hslua_gettable l (fromStackIndex n))
+  liftLua (\l -> hslua_gettable l n)
 
 -- | Returns the index of the top element in the stack. Because indices start at
 -- 1, this result is equal to the number of elements in the stack (and so 0
@@ -450,7 +446,7 @@ gettable n = void . throwOnError =<<
 --
 -- See also: <https://www.lua.org/manual/5.3/manual.html#lua_gettop lua_gettop>.
 gettop :: Lua StackIndex
-gettop = liftLua $ fmap fromIntegral . lua_gettop
+gettop = liftLua lua_gettop
 
 -- | Moves the top element into the given valid index, shifting up the elements
 -- above this index to open space. This function cannot be called with a
@@ -460,9 +456,9 @@ gettop = liftLua $ fmap fromIntegral . lua_gettop
 -- <https://www.lua.org/manual/5.3/manual.html#lua_insert lua_insert>.
 insert :: StackIndex -> Lua ()
 #if LUA_VERSION_NUMBER >= 503
-insert index = liftLua $ \l -> lua_rotate l (fromStackIndex index) 1
+insert index = liftLua $ \l -> lua_rotate l index 1
 #else
-insert index = liftLua $ \l -> lua_insert l (fromStackIndex index)
+insert index = liftLua $ \l -> lua_insert l index
 #endif
 
 -- | Returns @True@ if the value at the given index is a boolean, and @False@
@@ -479,7 +475,7 @@ isboolean n = (== TBOOLEAN) <$> ltype n
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_iscfunction lua_iscfunction>.
 iscfunction :: StackIndex -> Lua Bool
-iscfunction n = liftLua $ \l -> (/= 0) <$> lua_iscfunction l (fromStackIndex n)
+iscfunction n = liftLua $ \l -> (/= 0) <$> lua_iscfunction l n
 
 -- | Returns @True@ if the value at the given index is a function (either C or
 -- Lua), and @False@ otherwise.
@@ -527,7 +523,7 @@ isnoneornil idx = (<= TNIL) <$> ltype idx
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isnumber lua_isnumber>.
 isnumber :: StackIndex -> Lua Bool
-isnumber n = liftLua $ \l -> (/= 0) <$> lua_isnumber l (fromStackIndex n)
+isnumber n = liftLua $ \l -> (/= 0) <$> lua_isnumber l n
 
 -- | Returns @True@ if the value at the given index is a string or a number
 -- (which is always convertible to a string), and @False@ otherwise.
@@ -535,7 +531,7 @@ isnumber n = liftLua $ \l -> (/= 0) <$> lua_isnumber l (fromStackIndex n)
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isstring lua_isstring>.
 isstring :: StackIndex -> Lua Bool
-isstring n = liftLua $ \l -> (/= 0) <$> lua_isstring l (fromStackIndex n)
+isstring n = liftLua $ \l -> (/= 0) <$> lua_isstring l n
 
 -- | Returns @True@ if the value at the given index is a table, and @False@
 -- otherwise.
@@ -559,7 +555,7 @@ isthread n = (== TTHREAD) <$> ltype n
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isuserdata lua_isuserdata>.
 isuserdata :: StackIndex -> Lua Bool
-isuserdata n = liftLua $ \l -> (/= 0) <$> lua_isuserdata l (fromStackIndex n)
+isuserdata n = liftLua $ \l -> (/= 0) <$> lua_isuserdata l n
 
 -- | This is a convenience function to implement error propagation convention
 -- described in [Error handling in hslua](#g:1). hslua doesn't implement
@@ -595,8 +591,7 @@ loadstring str = liftLua $ \l ->
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>.
 ltype :: StackIndex -> Lua LTYPE
-ltype idx = toLuaType <$>
-  liftLua (flip lua_type $ fromStackIndex idx)
+ltype idx = toLuaType <$> liftLua (flip lua_type idx)
 
 -- | If the registry already has the key tname, returns @False@. Otherwise,
 -- creates a new table to be used as a metatable for userdata, adds to this new
@@ -654,7 +649,7 @@ newuserdata = liftLua1 lua_newuserdata . fromIntegral
 -- <https://www.lua.org/manual/5.3/manual.html#lua_next lua_next>.
 next :: StackIndex -> Lua Bool
 next idx = fmap (/= 0) . throwOnError =<<
-  liftLua (\l -> hslua_next l (fromStackIndex idx))
+  liftLua (\l -> hslua_next l idx)
 
 {-# DEPRECATED objlen "Use rawlen instead." #-}
 -- | Obsolete alias for @'rawlen'@.
@@ -750,7 +745,7 @@ pcall nargs nresults msgh = liftLua $ \l ->
   lua_pcallk l
     (fromNumArgs nargs)
     (fromNumResults nresults)
-    (maybe 0 fromStackIndex msgh)
+    (fromMaybe 0 msgh)
     0
     nullPtr
 #else
@@ -759,7 +754,7 @@ pcall nargs nresults msgh = liftLua $ \l ->
   lua_pcall l
     (fromNumArgs nargs)
     (fromNumResults nresults)
-    (maybe 0 fromStackIndex msgh)
+    (fromMaybe 0 msgh)
 #endif
 
 -- | Pops @n@ elements from the stack.
@@ -860,7 +855,7 @@ pushthread = (1 ==)  <$> liftLua lua_pushthread
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_pushvalue lua_pushvalue>.
 pushvalue :: StackIndex -> Lua ()
-pushvalue n = liftLua $ \l -> lua_pushvalue l (fromStackIndex n)
+pushvalue n = liftLua $ \l -> lua_pushvalue l n
 
 -- | Returns @True@ if the two values in indices @idx1@ and @idx2@ are
 -- primitively equal (that is, without calling the @__eq@ metamethod). Otherwise
@@ -870,14 +865,14 @@ pushvalue n = liftLua $ \l -> lua_pushvalue l (fromStackIndex n)
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawequal lua_rawequal>.
 rawequal :: StackIndex -> StackIndex -> Lua Bool
 rawequal idx1 idx2 = liftLua $ \l ->
-  (/= 0) <$> lua_rawequal l (fromStackIndex idx1) (fromStackIndex idx2)
+  (/= 0) <$> lua_rawequal l idx1 idx2
 
 -- | Similar to @'gettable'@, but does a raw access (i.e., without metamethods).
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawget lua_rawget>.
 rawget :: StackIndex -> Lua ()
-rawget n = liftLua $ \l -> lua_rawget l (fromStackIndex n)
+rawget n = liftLua $ \l -> lua_rawget l n
 
 -- | Pushes onto the stack the value @t[n]@, where @t@ is the table at the given
 -- index. The access is raw, that is, it does not invoke the @__index@
@@ -886,7 +881,7 @@ rawget n = liftLua $ \l -> lua_rawget l (fromStackIndex n)
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawgeti lua_rawgeti>.
 rawgeti :: StackIndex -> Int -> Lua ()
-rawgeti k m = liftLua $ \l -> lua_rawgeti l (fromStackIndex k) (fromIntegral m)
+rawgeti k m = liftLua $ \l -> lua_rawgeti l k (fromIntegral m)
 
 -- | Returns the raw "length" of the value at the given index: for strings, this
 -- is the string length; for tables, this is the result of the length operator
@@ -897,9 +892,9 @@ rawgeti k m = liftLua $ \l -> lua_rawgeti l (fromStackIndex k) (fromIntegral m)
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawlen lua_rawlen>.
 rawlen :: StackIndex -> Lua Int
 #if LUA_VERSION_NUMBER >= 502
-rawlen idx = liftLua $ \l -> fromIntegral <$> lua_rawlen l (fromStackIndex idx)
+rawlen idx = liftLua $ \l -> fromIntegral <$> lua_rawlen l idx
 #else
-rawlen idx = liftLua $ \l -> fromIntegral <$> lua_objlen l (fromStackIndex idx)
+rawlen idx = liftLua $ \l -> fromIntegral <$> lua_objlen l idx
 #endif
 
 -- | Similar to @'settable'@, but does a raw assignment (i.e., without
@@ -908,7 +903,7 @@ rawlen idx = liftLua $ \l -> fromIntegral <$> lua_objlen l (fromStackIndex idx)
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawset lua_rawset>.
 rawset :: StackIndex -> Lua ()
-rawset n = liftLua $ \l -> lua_rawset l (fromStackIndex n)
+rawset n = liftLua $ \l -> lua_rawset l n
 
 -- | Does the equivalent of @t[i] = v@, where @t@ is the table at the given
 -- index and @v@ is the value at the top of the stack.
@@ -919,11 +914,11 @@ rawset n = liftLua $ \l -> lua_rawset l (fromStackIndex n)
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawseti lua_rawseti>.
 rawseti :: StackIndex -> Int -> Lua ()
-rawseti k m = liftLua $ \l -> lua_rawseti l (fromStackIndex k) (fromIntegral m)
+rawseti k m = liftLua $ \l -> lua_rawseti l k (fromIntegral m)
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_ref luaL_ref>.
 ref :: StackIndex -> Lua Int
-ref t = liftLua $ \l -> fromIntegral <$> luaL_ref l (fromStackIndex t)
+ref t = liftLua $ \l -> fromIntegral <$> luaL_ref l t
 
 -- | Sets the C function @f@ as the new value of global @name@.
 --
@@ -940,9 +935,9 @@ register name f = do
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_remove lua_remove>.
 remove :: StackIndex -> Lua ()
 #if LUA_VERSION_NUMBER >= 503
-remove n = liftLua (\l -> lua_rotate l (fromStackIndex n) (-1)) *> pop 1
+remove n = liftLua (\l -> lua_rotate l n (-1)) *> pop 1
 #else
-remove n = liftLua $ \l -> lua_remove l (fromStackIndex n)
+remove n = liftLua $ \l -> lua_remove l n
 #endif
 
 -- | Moves the top element into the given valid index without shifting any
@@ -952,9 +947,9 @@ remove n = liftLua $ \l -> lua_remove l (fromStackIndex n)
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_replace lua_replace>.
 replace :: StackIndex -> Lua ()
 #if LUA_VERSION_NUMBER >= 503
-replace n = liftLua (\l -> lua_copy l (-1) (fromStackIndex n)) *> pop 1
+replace n = liftLua (\l -> lua_copy l (-1) n) *> pop 1
 #else
-replace n = liftLua $ \l ->  lua_replace l (fromStackIndex n)
+replace n = liftLua $ \l ->  lua_replace l n
 #endif
 
 -- | Does the equivalent to @t[k] = v@, where @t@ is the value at the given
@@ -969,7 +964,7 @@ replace n = liftLua $ \l ->  lua_replace l (fromStackIndex n)
 -- <https://www.lua.org/manual/5.3/manual.html#lua_setfield lua_setfield>.
 setfield :: StackIndex -> String -> Lua ()
 setfield i s = void . throwOnError =<<
-  liftLua (\l -> withCString s (hslua_setfield l (fromStackIndex i)))
+  liftLua (\l -> withCString s (hslua_setfield l i))
 
 -- | Pops a value from the stack and sets it as the new value of global @name@.
 --
@@ -986,7 +981,7 @@ setglobal s = void . throwOnError =<<
 -- <https://www.lua.org/manual/5.3/manual.html#lua_setmetatable \
 -- lua_setmetatable>.
 setmetatable :: StackIndex -> Lua ()
-setmetatable idx = liftLua $ \l -> lua_setmetatable l (fromStackIndex idx)
+setmetatable idx = liftLua $ \l -> lua_setmetatable l idx
 
 -- | Does the equivalent to @t[k] = v@, where @t@ is the value at the given
 -- index, @v@ is the value at the top of the stack, and @k@ is the value just
@@ -1001,7 +996,7 @@ setmetatable idx = liftLua $ \l -> lua_setmetatable l (fromStackIndex idx)
 -- <https://www.lua.org/manual/5.3/manual.html#lua_settable lua_settable>.
 settable :: StackIndex -> Lua ()
 settable index = void . throwOnError =<<
-  liftLua (\l -> hslua_settable l (fromStackIndex index))
+  liftLua (\l -> hslua_settable l index)
 
 -- | Accepts any index, or 0, and sets the stack top to this index. If the new
 -- top is larger than the old one, then the new elements are filled with nil. If
@@ -1010,7 +1005,7 @@ settable index = void . throwOnError =<<
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_settop lua_settop>.
 settop :: StackIndex -> Lua ()
-settop = liftLua1 lua_settop . fromStackIndex
+settop = liftLua1 lua_settop
 
 -- |  Returns the status of this Lua thread.
 --
@@ -1039,7 +1034,7 @@ strlen = rawlen
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_toboolean lua_toboolean>.
 toboolean :: StackIndex -> Lua Bool
-toboolean n = liftLua $ \l -> (/= 0) <$> lua_toboolean l (fromStackIndex n)
+toboolean n = liftLua $ \l -> (/= 0) <$> lua_toboolean l n
 
 -- | Converts a value at the given index to a C function. That value must be a C
 -- function; otherwise, returns NULL.
@@ -1047,7 +1042,7 @@ toboolean n = liftLua $ \l -> (/= 0) <$> lua_toboolean l (fromStackIndex n)
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_tocfunction lua_tocfunction>.
 tocfunction :: StackIndex -> Lua CFunction
-tocfunction n = liftLua $ \l -> lua_tocfunction l (fromStackIndex n)
+tocfunction n = liftLua $ \l -> lua_tocfunction l n
 
 -- | Converts the Lua value at the given acceptable index to the signed integral
 -- type @'lua_Integer'@. The Lua value must be an integer, a number or a string
@@ -1061,9 +1056,9 @@ tocfunction n = liftLua $ \l -> lua_tocfunction l (fromStackIndex n)
 -- <https://www.lua.org/manual/5.3/manual.html#lua_tointeger lua_tointeger>.
 tointeger :: StackIndex -> Lua LuaInteger
 #if LUA_VERSION_NUMBER >= 502
-tointeger n = liftLua $ \l -> lua_tointegerx l (fromStackIndex n) 0
+tointeger n = liftLua $ \l -> lua_tointegerx l n 0
 #else
-tointeger n = liftLua $ \l -> lua_tointeger l (fromStackIndex n)
+tointeger n = liftLua $ \l -> lua_tointeger l n
 #endif
 
 -- | Converts the Lua value at the given index to the C type lua_Number. The Lua
@@ -1073,9 +1068,9 @@ tointeger n = liftLua $ \l -> lua_tointeger l (fromStackIndex n)
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_tonumber lua_tonumber>.
 tonumber :: StackIndex -> Lua LuaNumber
 #if LUA_VERSION_NUMBER >= 502
-tonumber n = liftLua $ \l -> lua_tonumberx l (fromStackIndex n) 0
+tonumber n = liftLua $ \l -> lua_tonumberx l n 0
 #else
-tonumber n = liftLua $ \l -> lua_tonumber l (fromStackIndex n)
+tonumber n = liftLua $ \l -> lua_tonumber l n
 #endif
 
 -- | Converts the value at the given index to a generic C pointer (void*). The
@@ -1088,12 +1083,12 @@ tonumber n = liftLua $ \l -> lua_tonumber l (fromStackIndex n)
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_topointer lua_topointer>.
 topointer :: StackIndex -> Lua (Ptr ())
-topointer n = liftLua $ \l -> lua_topointer l (fromStackIndex n)
+topointer n = liftLua $ \l -> lua_topointer l n
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tostring lua_tostring>.
 tostring :: StackIndex -> Lua B.ByteString
 tostring n = liftLua $ \l -> alloca $ \lenPtr -> do
-    cstr <- lua_tolstring l (fromStackIndex n) lenPtr
+    cstr <- lua_tolstring l n lenPtr
     cstrLen <- F.peek lenPtr
     B.packCStringLen (cstr, fromIntegral cstrLen)
 
@@ -1104,7 +1099,7 @@ tostring n = liftLua $ \l -> alloca $ \lenPtr -> do
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_tothread lua_tothread>.
 tothread :: StackIndex -> Lua LuaState
-tothread n = liftLua $ \l -> lua_tothread l (fromStackIndex n)
+tothread n = liftLua $ \l -> lua_tothread l n
 
 -- | If the value at the given index is a full userdata, returns its block
 -- address. If the value is a light userdata, returns its pointer. Otherwise,
@@ -1113,7 +1108,7 @@ tothread n = liftLua $ \l -> lua_tothread l (fromStackIndex n)
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_touserdata lua_touserdata>.
 touserdata :: StackIndex -> Lua (Ptr a)
-touserdata n = liftLua $ \l -> lua_touserdata l (fromStackIndex n)
+touserdata n = liftLua $ \l -> lua_touserdata l n
 
 -- | Returns the name of the type encoded by the value @tp@, which must be one
 -- the values returned by @'ltype'@.
@@ -1132,7 +1127,7 @@ typename tp = liftLua $ \l ->
 -- <https://www.lua.org/manual/5.3/manual.html#luaL_unref luaL_unref>.
 unref :: StackIndex -> Int -> Lua ()
 unref idx r = liftLua $ \l ->
-  luaL_unref l (fromStackIndex idx) (fromIntegral r)
+  luaL_unref l idx (fromIntegral r)
 
 -- | Returns the pseudo-index that represents the @i@-th upvalue of the running
 -- function (see <https://www.lua.org/manual/5.3/manual.html#4.4 §4.4> of the

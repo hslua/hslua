@@ -29,7 +29,7 @@ import Foreign.Ptr
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_compare \
 -- @lua_compare@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_compare"
-  hslua_compare :: LuaState -> CInt -> CInt -> CInt -> IO CInt
+  hslua_compare :: LuaState -> StackIndex -> StackIndex -> CInt -> IO CInt
 #endif
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_concat \
@@ -40,7 +40,7 @@ foreign import ccall "safer-api.h hslua_concat"
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_getfield \
 -- @lua_getfield@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_getfield"
-  hslua_getfield :: LuaState -> CInt -> Ptr CChar -> IO CInt
+  hslua_getfield :: LuaState -> StackIndex -> Ptr CChar -> IO CInt
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_getglobal \
 -- @lua_getglobal@> which catches any @longjmp@s.
@@ -50,17 +50,17 @@ foreign import ccall "safer-api.h hslua_getglobal"
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_gettable \
 -- @lua_gettable@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_gettable"
-  hslua_gettable :: LuaState -> CInt -> IO CInt
+  hslua_gettable :: LuaState -> StackIndex -> IO CInt
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_next \
 -- @lua_next@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_next"
-  hslua_next :: LuaState -> CInt -> IO CInt
+  hslua_next :: LuaState -> StackIndex -> IO CInt
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_setfield \
 -- @lua_setfield@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_setfield"
-  hslua_setfield :: LuaState -> CInt -> Ptr CChar -> IO CInt
+  hslua_setfield :: LuaState -> StackIndex -> Ptr CChar -> IO CInt
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_setglobal \
 -- @lua_setglobal@> which catches any @longjmp@s.
@@ -70,4 +70,4 @@ foreign import ccall "safer-api.h hslua_setglobal"
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_settable \
 -- @lua_settable@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_settable"
-  hslua_settable :: LuaState -> CInt -> IO CInt
+  hslua_settable :: LuaState -> StackIndex -> IO CInt
