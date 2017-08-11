@@ -58,7 +58,7 @@ tests = testGroup "lua integration tests"
       idx1 <- ref registryindex
       idx2 <- ref registryindex
       -- functions are removed from stack
-      liftIO . assert =<< fmap (TFUNCTION /=) (ltype (-1))
+      liftIO . assert =<< fmap (TypeFunction /=) (ltype (-1))
 
       -- get functions from registry
       rawgeti registryindex idx1

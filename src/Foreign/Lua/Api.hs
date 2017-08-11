@@ -67,7 +67,7 @@ module Foreign.Lua.Api (
   , replace
   , checkstack
   -- ** types and type checks
-  , LTYPE (..)
+  , Type (..)
   , fromLuaType
   , toLuaType
   , ltype
@@ -466,7 +466,7 @@ insert index = liftLua $ \l -> lua_insert l index
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isboolean lua_isboolean>.
 isboolean :: StackIndex -> Lua Bool
-isboolean n = (== TBOOLEAN) <$> ltype n
+isboolean n = (== TypeBoolean) <$> ltype n
 
 -- | Returns @True@ if the value at the given index is a C function, and @False@
 -- otherwise.
@@ -482,7 +482,7 @@ iscfunction n = liftLua $ \l -> fromLuaBool <$> lua_iscfunction l n
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isfunction lua_isfunction>.
 isfunction :: StackIndex -> Lua Bool
-isfunction n = (== TFUNCTION) <$> ltype n
+isfunction n = (== TypeFunction) <$> ltype n
 
 -- | Returns @True@ if the value at the given index is a light userdata, and
 -- @False@ otherwise.
@@ -491,7 +491,7 @@ isfunction n = (== TFUNCTION) <$> ltype n
 -- <https://www.lua.org/manual/5.3/manual.html#lua_islightuserdata \
 -- lua_islightuserdata>.
 islightuserdata :: StackIndex -> Lua Bool
-islightuserdata n = (== TLIGHTUSERDATA) <$> ltype n
+islightuserdata n = (== TypeLightUserdata) <$> ltype n
 
 -- | Returns @True@ if the value at the given index is @nil@, and @False@
 -- otherwise.
@@ -499,14 +499,14 @@ islightuserdata n = (== TLIGHTUSERDATA) <$> ltype n
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isnil lua_isnil>.
 isnil :: StackIndex -> Lua Bool
-isnil n = (== TNIL) <$> ltype n
+isnil n = (== TypeNil) <$> ltype n
 
 -- | Returns @True@ if the given index is not valid, and @False@ otherwise.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isnone lua_isnone>.
 isnone :: StackIndex -> Lua Bool
-isnone n = (== TNONE) <$> ltype n
+isnone n = (== TypeNone) <$> ltype n
 
 -- | Returns @True@ if the given index is not valid or if the value at the given
 -- index is @nil@, and @False@ otherwise.
@@ -514,7 +514,7 @@ isnone n = (== TNONE) <$> ltype n
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isnoneornil lua_isnoneornil>.
 isnoneornil :: StackIndex -> Lua Bool
-isnoneornil idx = (<= TNIL) <$> ltype idx
+isnoneornil idx = (<= TypeNil) <$> ltype idx
 
 -- | Returns @True@ if the value at the given index is a number or a string
 -- convertible to a number, and @False@ otherwise.
@@ -538,7 +538,7 @@ isstring n = liftLua $ \l -> fromLuaBool <$> lua_isstring l n
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_istable lua_istable>.
 istable :: StackIndex -> Lua Bool
-istable n = (== TTABLE) <$> ltype n
+istable n = (== TypeTable) <$> ltype n
 
 -- | Returns @True@ if the value at the given index is a thread, and @False@
 -- otherwise.
@@ -546,7 +546,7 @@ istable n = (== TTABLE) <$> ltype n
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isthread lua_isthread>.
 isthread :: StackIndex -> Lua Bool
-isthread n = (== TTHREAD) <$> ltype n
+isthread n = (== TypeThread) <$> ltype n
 
 -- | Returns @True@ if the value at the given index is a userdata (either full
 -- or light), and @False@ otherwise.
@@ -589,7 +589,7 @@ loadstring str = liftLua $ \l ->
   withCString str (fmap toLuaStatus . luaL_loadstring l)
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>.
-ltype :: StackIndex -> Lua LTYPE
+ltype :: StackIndex -> Lua Type
 ltype idx = toLuaType <$> liftLua (flip lua_type idx)
 
 -- | If the registry already has the key tname, returns @False@. Otherwise,
@@ -1104,7 +1104,7 @@ touserdata n = liftLua $ \l -> lua_touserdata l n
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_typename lua_typename>.
-typename :: LTYPE -> Lua String
+typename :: Type -> Lua String
 typename tp = liftLua $ \l ->
   lua_typename l (fromLuaType tp) >>= peekCString
 

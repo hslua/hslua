@@ -180,7 +180,7 @@ tests = testGroup "Haskell version of the C API"
       assert $ luaCmp == (n1 < n2)
 
   , testProperty "order of Lua types is consistent" $ \ lt1 lt2 ->
-      let n1 = fromLuaType (lt1 :: LTYPE)
+      let n1 = fromLuaType (lt1 :: Type)
           n2 = fromLuaType lt2
       in Prelude.compare n1 n2 == Prelude.compare lt1 lt2
   ]
@@ -212,5 +212,5 @@ compareWith op luaOp n = compareLT .&&. compareEQ .&&. compareGT
       compare (-2) (-1) luaOp
     assert $ luaRes == op (n + 1) n
 
-instance Arbitrary LTYPE where
+instance Arbitrary Type where
   arbitrary = arbitraryBoundedEnum

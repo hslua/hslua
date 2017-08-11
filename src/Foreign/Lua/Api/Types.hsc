@@ -105,52 +105,51 @@ toLuaBool :: Bool -> LuaBool
 toLuaBool True  = LuaBool 1
 toLuaBool False = LuaBool 0
 
-
 -- | Enumeration used as type tag.
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>.
-data LTYPE
-  = TNONE           -- ^ non-valid stack index
-  | TNIL            -- ^ type of lua's @nil@ value
-  | TBOOLEAN        -- ^ type of lua booleans
-  | TLIGHTUSERDATA  -- ^ type of light userdata
-  | TNUMBER         -- ^ type of lua numbers. See @'LuaNumber'@
-  | TSTRING         -- ^ type of lua string values
-  | TTABLE          -- ^ type of lua tables
-  | TFUNCTION       -- ^ type of functions, either normal or @'CFunction'@
-  | TUSERDATA       -- ^ type of full user data
-  | TTHREAD         -- ^ type of lua threads
+data Type
+  = TypeNone           -- ^ non-valid stack index
+  | TypeNil            -- ^ type of lua's @nil@ value
+  | TypeBoolean        -- ^ type of lua booleans
+  | TypeLightUserdata  -- ^ type of light userdata
+  | TypeNumber         -- ^ type of lua numbers. See @'LuaNumber'@
+  | TypeString         -- ^ type of lua string values
+  | TypeTable          -- ^ type of lua tables
+  | TypeFunction       -- ^ type of functions, either normal or @'CFunction'@
+  | TypeUserdata       -- ^ type of full user data
+  | TypeThread         -- ^ type of lua threads
   deriving (Bounded, Eq, Ord, Show)
 
-instance Enum LTYPE where
-  fromEnum TNONE          = #{const LUA_TNONE}
-  fromEnum TNIL           = #{const LUA_TNIL}
-  fromEnum TBOOLEAN       = #{const LUA_TBOOLEAN}
-  fromEnum TLIGHTUSERDATA = #{const LUA_TLIGHTUSERDATA}
-  fromEnum TNUMBER        = #{const LUA_TNUMBER}
-  fromEnum TSTRING        = #{const LUA_TSTRING}
-  fromEnum TTABLE         = #{const LUA_TTABLE}
-  fromEnum TFUNCTION      = #{const LUA_TFUNCTION}
-  fromEnum TUSERDATA      = #{const LUA_TUSERDATA}
-  fromEnum TTHREAD        = #{const LUA_TTHREAD}
+instance Enum Type where
+  fromEnum TypeNone          = #{const LUA_TNONE}
+  fromEnum TypeNil           = #{const LUA_TNIL}
+  fromEnum TypeBoolean       = #{const LUA_TBOOLEAN}
+  fromEnum TypeLightUserdata = #{const LUA_TLIGHTUSERDATA}
+  fromEnum TypeNumber        = #{const LUA_TNUMBER}
+  fromEnum TypeString        = #{const LUA_TSTRING}
+  fromEnum TypeTable         = #{const LUA_TTABLE}
+  fromEnum TypeFunction      = #{const LUA_TFUNCTION}
+  fromEnum TypeUserdata      = #{const LUA_TUSERDATA}
+  fromEnum TypeThread        = #{const LUA_TTHREAD}
 
-  toEnum (#{const LUA_TNONE})          = TNONE
-  toEnum (#{const LUA_TNIL})           = TNIL
-  toEnum (#{const LUA_TBOOLEAN})       = TBOOLEAN
-  toEnum (#{const LUA_TLIGHTUSERDATA}) = TLIGHTUSERDATA
-  toEnum (#{const LUA_TNUMBER})        = TNUMBER
-  toEnum (#{const LUA_TSTRING})        = TSTRING
-  toEnum (#{const LUA_TTABLE})         = TTABLE
-  toEnum (#{const LUA_TFUNCTION})      = TFUNCTION
-  toEnum (#{const LUA_TUSERDATA})      = TUSERDATA
-  toEnum (#{const LUA_TTHREAD})        = TTHREAD
-  toEnum n                             = error $ "Cannot convert (" ++ show n ++ ") to LTYPE"
+  toEnum (#{const LUA_TNONE})          = TypeNone
+  toEnum (#{const LUA_TNIL})           = TypeNil
+  toEnum (#{const LUA_TBOOLEAN})       = TypeBoolean
+  toEnum (#{const LUA_TLIGHTUSERDATA}) = TypeLightUserdata
+  toEnum (#{const LUA_TNUMBER})        = TypeNumber
+  toEnum (#{const LUA_TSTRING})        = TypeString
+  toEnum (#{const LUA_TTABLE})         = TypeTable
+  toEnum (#{const LUA_TFUNCTION})      = TypeFunction
+  toEnum (#{const LUA_TUSERDATA})      = TypeUserdata
+  toEnum (#{const LUA_TTHREAD})        = TypeThread
+  toEnum n                             = error $ "Cannot convert (" ++ show n ++ ") to Type"
 
 -- | Convert number to lua type.
-toLuaType :: CInt -> LTYPE
+toLuaType :: CInt -> Type
 toLuaType = toEnum . fromIntegral
 
 -- | Convert Lua type to its C representation.
-fromLuaType :: LTYPE -> CInt
+fromLuaType :: Type -> CInt
 fromLuaType = fromIntegral . fromEnum
 
 -- | Lua comparison operations.
@@ -199,6 +198,8 @@ toLuaStatus (#{const LUA_ERRERR})    = LuaErrErr
 toLuaStatus (#{const LUA_ERRERR})    = LuaErrErr
 #endif
 toLuaStatus n = error $ "Cannot convert (" ++ show n ++ ") to LuaStatus"
+
+data ErrorProtocol a = ErrorProtocol CInt
 
 -- | Enumeration used by @gc@ function.
 data GCCONTROL
