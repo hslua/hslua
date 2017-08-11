@@ -42,6 +42,7 @@ import Foreign.Lua.Api.Types
 import Foreign.Ptr
 
 #include "lua.h"
+#include "safer-api.h"
 
 -- TODO: lua_getallocf, lua_setallocf
 -- TODO: Debugger functions
@@ -134,9 +135,13 @@ foreign import ccall unsafe "lua.h lua_type"
 foreign import ccall unsafe "lua.h lua_typename"
   lua_typename :: LuaState -> CInt -> IO (Ptr CChar)
 
---- lua_compare is unsafe (might cause a longjmp), use hslua_compare instead.
-
-#if LUA_VERSION_NUMBER < 502
+-- lua_compare is unsafe (might cause a longjmp), use hslua_compare instead.
+#if LUA_VERSION_NUM >= 502
+-- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_compare \
+-- @lua_compare@> which catches any @longjmp@s.
+foreign import ccall "safer-api.h hslua_compare"
+  hslua_compare :: LuaState -> StackIndex -> StackIndex -> CInt -> IO CInt
+#else
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_equal lua_equal>
 foreign import ccall "lua.h lua_equal"
   lua_equal :: LuaState -> StackIndex -> StackIndex -> IO CInt
@@ -254,8 +259,19 @@ foreign import ccall unsafe "lua.h lua_pushthread"
 -- * Get functions
 
 -- lua_gettable is unsafe, use hslua_gettable instead.
-
 -- lua_getfield is unsafe, use hslua_getfield instead.
+-- lua_getglobal is unsafe, use hslua_getglobal instead.
+-- lua_getfenv (5.1 only) is not supported.
+
+-- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_gettable \
+-- @lua_gettable@> which catches any @longjmp@s.
+foreign import ccall "safer-api.h hslua_gettable"
+  hslua_gettable :: LuaState -> StackIndex -> IO CInt
+
+-- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_getfield \
+-- @lua_getfield@> which catches any @longjmp@s.
+foreign import ccall "safer-api.h hslua_getfield"
+  hslua_getfield :: LuaState -> StackIndex -> Ptr CChar -> IO CInt
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawget lua_rawget>
 foreign import ccall unsafe "lua.h lua_rawget"
@@ -277,16 +293,29 @@ foreign import ccall unsafe "lua.h lua_newuserdata"
 foreign import ccall unsafe "lua.h lua_getmetatable"
   lua_getmetatable :: LuaState -> StackIndex -> IO CInt
 
--- lua_getfenv (5.1 only) is not supported.
+-- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_getglobal \
+-- @lua_getglobal@> which catches any @longjmp@s.
+foreign import ccall "safer-api.h hslua_getglobal"
+  hslua_getglobal :: LuaState -> Ptr CChar -> IO CInt
 
--- lua_getglobal is unsafe, use lua_getglobal instead.
 
 --------------------------------------------------------------------------------
 -- * Set functions
 
 -- lua_settable is unsafe, use hslua_settable instead.
-
 -- lua_setfield is unsafe, use hslua_setfield instead.
+-- lua_setglobal is unsafe, use hslua_setglobal instead.
+-- lua_setfenv (5.1 only) is not supported.
+
+-- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_settable \
+-- @lua_settable@> which catches any @longjmp@s.
+foreign import ccall "safer-api.h hslua_settable"
+  hslua_settable :: LuaState -> StackIndex -> IO CInt
+
+-- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_setfield \
+-- @lua_setfield@> which catches any @longjmp@s.
+foreign import ccall "safer-api.h hslua_setfield"
+  hslua_setfield :: LuaState -> StackIndex -> Ptr CChar -> IO CInt
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawset lua_rawset>
 foreign import ccall unsafe "lua.h lua_rawset"
@@ -300,9 +329,11 @@ foreign import ccall unsafe "lua.h lua_rawseti"
 foreign import ccall unsafe "lua.h lua_setmetatable"
   lua_setmetatable :: LuaState -> StackIndex -> IO ()
 
--- lua_setfenv (5.1 only) is not supported.
+-- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_setglobal \
+-- @lua_setglobal@> which catches any @longjmp@s.
+foreign import ccall "safer-api.h hslua_setglobal"
+  hslua_setglobal :: LuaState -> Ptr CChar -> IO CInt
 
--- lua_setglobal is unsafe, use hslua_setglobal instead.
 
 --------------------------------------------------------------------------------
 -- * 'load' and 'call' functions (load and run Lua code)
@@ -354,18 +385,26 @@ foreign import ccall "lua.h lua_gc"
 -- * Miscellaneous functions
 
 -- lua_error is unsafe in a haskell context and hence not supported.
-
 -- lua_next is unsafe, use hslua_next instead.
-
 -- lua_concat is unsafe (may trigger a longjmp), use hslua_concat instead.
 
--- | See <https://www.lua.org/manual/5.3/manual.html#luaL_openlibs luaL_openlibs>
-foreign import ccall unsafe "lualib.h luaL_openlibs"
-  luaL_openlibs :: LuaState -> IO ()
+-- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_next \
+-- @lua_next@> which catches any @longjmp@s.
+foreign import ccall "safer-api.h hslua_next"
+  hslua_next :: LuaState -> StackIndex -> IO CInt
+
+-- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_concat \
+-- @lua_concat@> which catches any @longjmp@s.
+foreign import ccall "safer-api.h hslua_concat"
+  hslua_concat :: LuaState -> CInt -> IO CInt
 
 
 ------------------------------------------------------------------------------
 -- * Lua Libraries
+
+-- | See <https://www.lua.org/manual/5.3/manual.html#luaL_openlibs luaL_openlibs>
+foreign import ccall unsafe "lualib.h luaL_openlibs"
+  luaL_openlibs :: LuaState -> IO ()
 
 -- | Point to function opening the base library.
 foreign import ccall unsafe "lualib.h &luaopen_base"

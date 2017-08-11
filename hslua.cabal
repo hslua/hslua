@@ -69,7 +69,6 @@ library
                       , Foreign.Lua.Api.Constants
                       , Foreign.Lua.Api.RawBindings
                       , Foreign.Lua.Api.Types
-                      , Foreign.Lua.Api.SafeBindings
                       , Foreign.Lua.FunctionCalling
                       , Foreign.Lua.Types
                       , Foreign.Lua.Types.Error

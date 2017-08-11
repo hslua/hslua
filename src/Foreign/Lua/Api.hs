@@ -171,7 +171,6 @@ import Data.Maybe (fromMaybe)
 import Foreign.C
 import Foreign.Lua.Api.Constants
 import Foreign.Lua.Api.RawBindings
-import Foreign.Lua.Api.SafeBindings
 import Foreign.Lua.Api.Types
 import Foreign.Lua.Types.Error
 import Foreign.Lua.Types.Lua
