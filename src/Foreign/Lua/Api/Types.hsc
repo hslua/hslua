@@ -53,23 +53,6 @@ import Foreign.Ptr
 -- Synonym for @lua_State *@. See <https://www.lua.org/manual/5.3/#lua_State lua_State>.
 newtype LuaState = LuaState (Ptr ()) deriving (Eq)
 
--- | Synonym for @lua_Alloc@. See <https://www.lua.org/manual/5.3/#lua_Alloc lua_Alloc>.
-type LuaAlloc = Ptr () -> Ptr () -> CSize -> CSize -> IO (Ptr ())
-
--- | The reader function used by @'lua_load'@. Every time it needs another piece
--- of the chunk, @'lua_load'@ calls the reader, passing along its data
--- parameter. The reader must return a pointer to a block of memory with a new
--- piece of the chunk and set size to the block size. The block must exist until
--- the reader function is called again. To signal the end of the chunk, the
--- reader must return NULL or set size to zero. The reader function may return
--- pieces of any size greater than zero.
---
--- See <https://www.lua.org/manual/5.3/#lua_Reader lua_Reader>.
-type LuaReader = Ptr () -> Ptr () -> Ptr CSize -> IO (Ptr CChar)
-
--- | Synonym for @lua_Writer@. See <https://www.lua.org/manual/5.3/#lua_Writer lua_Writer>.
-type LuaWriter = LuaState -> Ptr CChar -> CSize -> Ptr () -> IO CInt
-
 -- |  Type for C functions.
 --
 -- In order to communicate properly with Lua, a C function must use the
