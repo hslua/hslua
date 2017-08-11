@@ -136,8 +136,8 @@ module Foreign.Lua.Api (
   , loadfile
   , loadstring
   -- ** Coroutine functions
-  , LuaStatus (..)
-  , toLuaStatus
+  , Status (..)
+  , toStatus
   , status
   -- ** garbage-collection function and options
   , GCCONTROL (..)
@@ -243,7 +243,7 @@ throwTopMessageAsError = do
 call :: NumArgs -> NumResults -> Lua ()
 call nargs nresults = do
   res <- pcall nargs nresults Nothing
-  when (res /= LuaOK) throwTopMessageAsError
+  when (res /= OK) throwTopMessageAsError
 
 -- | Ensures that the stack has space for at least @n@ extra slots (that is,
 -- that you can safely push up to @n@ values into it). It returns false if it
@@ -342,12 +342,12 @@ createtable narr nrec = liftLua $ \l ->
 
 -- | Loads and runs the given string.
 --
--- Returns @'LuaOK'@ on success, or an error if either loading of the string or
+-- Returns @'OK'@ on success, or an error if either loading of the string or
 -- calling of the thunk failed.
-dostring :: String -> Lua LuaStatus
+dostring :: String -> Lua Status
 dostring s = do
   loadRes <- loadstring s
-  if loadRes == LuaOK
+  if loadRes == OK
     then pcall 0 multret Nothing
     else return loadRes
 
@@ -584,9 +584,9 @@ loadfile f = liftLua $ \l ->
 #endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadstring>.
-loadstring :: String -> Lua LuaStatus
+loadstring :: String -> Lua Status
 loadstring str = liftLua $ \l ->
-  withCString str (fmap toLuaStatus . luaL_loadstring l)
+  withCString str (fmap toStatus . luaL_loadstring l)
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>.
 ltype :: StackIndex -> Lua Type
@@ -737,13 +737,13 @@ opentable = pushcfunction lua_open_table_ptr *> call 0 multret
 -- after the return of @'pcall'@, since by then the stack has unwound.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_pcall lua_pcall>.
-pcall :: NumArgs -> NumResults -> Maybe StackIndex -> Lua LuaStatus
+pcall :: NumArgs -> NumResults -> Maybe StackIndex -> Lua Status
 #if LUA_VERSION_NUMBER >= 502
 pcall nargs nresults msgh = liftLua $ \l ->
-  toLuaStatus <$> lua_pcallk l nargs nresults (fromMaybe 0 msgh) 0 nullPtr
+  toStatus <$> lua_pcallk l nargs nresults (fromMaybe 0 msgh) 0 nullPtr
 #else
 pcall nargs nresults msgh = liftLua $ \l ->
-  toLuaStatus <$> lua_pcall l nargs nresults (fromMaybe 0 msgh)
+  toStatus <$> lua_pcall l nargs nresults (fromMaybe 0 msgh)
 #endif
 
 -- | Pops @n@ elements from the stack.
@@ -998,17 +998,17 @@ settop = liftLua1 lua_settop
 
 -- |  Returns the status of this Lua thread.
 --
--- The status can be @'LuaOK'@ for a normal thread, an error value if the thread
--- finished the execution of a @'lua_resume'@ with an error, or @'LuaYield'@ if
+-- The status can be @'OK'@ for a normal thread, an error value if the thread
+-- finished the execution of a @'lua_resume'@ with an error, or @'Yield'@ if
 -- the thread is suspended.
 --
--- You can only call functions in threads with status @'LuaOK'@. You can resume
--- threads with status @'LuaOK'@ (to start a new coroutine) or @'LuaYield'@ (to
+-- You can only call functions in threads with status @'OK'@. You can resume
+-- threads with status @'OK'@ (to start a new coroutine) or @'Yield'@ (to
 -- resume a coroutine).
 --
 -- See also: <https://www.lua.org/manual/5.3/manual.html#lua_status lua_status>.
-status :: Lua LuaStatus
-status = liftLua $ fmap toLuaStatus . lua_status
+status :: Lua Status
+status = liftLua $ fmap toStatus . lua_status
 
 {-# DEPRECATED strlen "Use rawlen instead." #-}
 -- | Compatibility alias for rawlen

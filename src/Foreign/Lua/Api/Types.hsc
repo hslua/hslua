@@ -172,32 +172,32 @@ fromLuaRelation LuaLE = 2
 #endif
 
 -- | Lua status values.
-data LuaStatus
-  = LuaOK        -- ^ success
-  | LuaYield     -- ^ yielding / suspended coroutine
-  | LuaErrRun    -- ^ a runtime rror
-  | LuaErrSyntax -- ^ syntax error during precompilation
-  | LuaErrMem    -- ^ memory allocation (out-of-memory) error.
-  | LuaErrErr    -- ^ error while running the message handler.
-  | LuaErrGcmm   -- ^ error while running a @__gc@ metamethod.
+data Status
+  = OK        -- ^ success
+  | Yield     -- ^ yielding / suspended coroutine
+  | ErrRun    -- ^ a runtime rror
+  | ErrSyntax -- ^ syntax error during precompilation
+  | ErrMem    -- ^ memory allocation (out-of-memory) error.
+  | ErrErr    -- ^ error while running the message handler.
+  | ErrGcmm   -- ^ error while running a @__gc@ metamethod.
   deriving (Eq, Show)
 
 -- | Convert C integer constant to @'LuaStatus'@.
-toLuaStatus :: CInt -> LuaStatus
+toStatus :: CInt -> Status
 -- LUA_OK is not defined in Lua 5.1
-toLuaStatus 0                        = LuaOK
-toLuaStatus (#{const LUA_YIELD})     = LuaYield
-toLuaStatus (#{const LUA_ERRRUN})    = LuaErrRun
-toLuaStatus (#{const LUA_ERRSYNTAX}) = LuaErrSyntax
-toLuaStatus (#{const LUA_ERRMEM})    = LuaErrMem
+toStatus 0                        = OK
+toStatus (#{const LUA_YIELD})     = Yield
+toStatus (#{const LUA_ERRRUN})    = ErrRun
+toStatus (#{const LUA_ERRSYNTAX}) = ErrSyntax
+toStatus (#{const LUA_ERRMEM})    = ErrMem
 -- LUA_ERRGCMM did not exist in Lua 5.1; comes before LUA_ERRERR when defined
 #if LUA_VERSION_NUMBER >= 502
-toLuaStatus (#{const LUA_ERRGCMM})   = LuaErrGcmm
-toLuaStatus (#{const LUA_ERRERR})    = LuaErrErr
+toStatus (#{const LUA_ERRGCMM})   = ErrGcmm
+toStatus (#{const LUA_ERRERR})    = ErrErr
 #else
-toLuaStatus (#{const LUA_ERRERR})    = LuaErrErr
+toStatus (#{const LUA_ERRERR})    = ErrErr
 #endif
-toLuaStatus n = error $ "Cannot convert (" ++ show n ++ ") to LuaStatus"
+toStatus n = error $ "Cannot convert (" ++ show n ++ ") to LuaStatus"
 
 data ErrorProtocol a = ErrorProtocol CInt
 

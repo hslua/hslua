@@ -133,7 +133,7 @@ instance (FromLuaStack a) => LuaCallFunc (Lua a) where
     getglobal' fnName
     x
     z <- pcall nargs 1 Nothing
-    if z /= LuaOK
+    if z /= OK
       then tostring (-1) >>= throwLuaError . unpack
       else peek (-1) <* pop 1
 

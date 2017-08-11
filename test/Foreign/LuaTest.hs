@@ -197,7 +197,7 @@ tests = testGroup "lua integration tests"
       (runLuaEither $ do
           openbase
           res <- loadstring luaCode
-          when (res == LuaOK) $ call 0 0)
+          when (res == OK) $ call 0 0)
     ]
   ]
 

@@ -126,39 +126,39 @@ tests = testGroup "Haskell version of the C API"
       assertBool "different lua threads are equal in haskell" (luaSt1 /= luaSt2)
 
   , testCase "thread status" . runLua $ do
-      status >>= liftIO . assertEqual "base status should be OK" LuaOK
+      status >>= liftIO . assertEqual "base status should be OK" OK
       openlibs
       getglobal' "coroutine.resume"
       pushLuaExpr "coroutine.create(function() coroutine.yield(9) end)"
       co <- tothread (-1)
       call 1 0
       liftIO . runLuaWith co $ do
-        liftIO . assertEqual "yielding will put thread status to Yield" LuaYield
+        liftIO . assertEqual "yielding will put thread status to Yield" Yield
           =<< status
 
   , testGroup "loading"
     [ testCase "loadstring status" . runLua $ do
-        liftIO . assertEqual "loading a valid string doesn't return LuaOK"
-          LuaOK =<< loadstring "return 1"
-        liftIO . assertEqual "loading an invalid string doesn't return LuaErrSyntax"
-          LuaErrSyntax =<< loadstring "marzipan"
+        liftIO . assertEqual "loading a valid string doesn't return OK"
+          OK =<< loadstring "return 1"
+        liftIO . assertEqual "loading an invalid string doesn't return ErrSyntax"
+          ErrSyntax =<< loadstring "marzipan"
 
     , testCase "dostring loading" . runLua $ do
         liftIO . assertEqual "wrong dostring result"
-          LuaErrRun =<< (dostring "error 'this fails'")
-        liftIO . assertEqual "loading an invalid string doesn't return LuaErrSyntax"
-          LuaErrSyntax =<< dostring "marzipan"
+          ErrRun =<< (dostring "error 'this fails'")
+        liftIO . assertEqual "loading an invalid string doesn't return ErrSyntax"
+          ErrSyntax =<< dostring "marzipan"
         liftIO . assertEqual "loading a valid program failed"
-          LuaOK =<< dostring "return (2 + 3)"
+          OK =<< dostring "return (2 + 3)"
         liftIO . assertEqual "top of the stack should be result of last computation"
           (5 :: LuaInteger) =<< peek (-1)
     ]
 
   , testCase "pcall status" . runLua $ do
       liftIO . assertEqual "calling error did not lead to an error status"
-        LuaErrRun =<< (loadstring "error \"this fails\"" *> pcall 0 0 Nothing)
+        ErrRun =<< (loadstring "error \"this fails\"" *> pcall 0 0 Nothing)
       liftIO . assertEqual "calling error did not lead to an error status"
-        LuaErrErr =<< do
+        ErrErr =<< do
           pushLuaExpr "function () error 'error in error handler' end"
           loadstring "error 'this fails'" *> pcall 0 0 (Just (-2))
 
