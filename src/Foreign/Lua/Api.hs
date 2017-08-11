@@ -740,20 +740,10 @@ opentable = pushcfunction lua_open_table_ptr *> call 0 multret
 pcall :: NumArgs -> NumResults -> Maybe StackIndex -> Lua LuaStatus
 #if LUA_VERSION_NUMBER >= 502
 pcall nargs nresults msgh = liftLua $ \l ->
-  toLuaStatus <$>
-  lua_pcallk l
-    (fromNumArgs nargs)
-    (fromNumResults nresults)
-    (fromMaybe 0 msgh)
-    0
-    nullPtr
+  toLuaStatus <$> lua_pcallk l nargs nresults (fromMaybe 0 msgh) 0 nullPtr
 #else
 pcall nargs nresults msgh = liftLua $ \l ->
-  toLuaStatus <$>
-  lua_pcall l
-    (fromNumArgs nargs)
-    (fromNumResults nresults)
-    (fromMaybe 0 msgh)
+  toLuaStatus <$> lua_pcall l nargs nresults (fromMaybe 0 msgh)
 #endif
 
 -- | Pops @n@ elements from the stack.

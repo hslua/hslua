@@ -339,23 +339,15 @@ foreign import ccall "safer-api.h hslua_setglobal"
 -- * 'load' and 'call' functions (load and run Lua code)
 
 #if LUA_VERSION_NUMBER >= 502
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_callk lua_callk>
-foreign import ccall "lua.h lua_callk"
-  lua_callk :: LuaState -> CInt -> CInt -> CInt -> Ptr () -> IO ()
-#else
--- | See <https://www.lua.org/manual/5.1/manual.html#lua_call lua_call>
-foreign import ccall "lua.h lua_call"
-  lua_call :: LuaState -> CInt -> CInt -> IO ()
-#endif
-
-#if LUA_VERSION_NUMBER >= 502
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pcallk lua_pcallk>
 foreign import ccall "lua.h lua_pcallk"
-  lua_pcallk :: LuaState -> CInt -> CInt -> StackIndex -> CInt -> Ptr () -> IO CInt
+  lua_pcallk :: LuaState -> NumArgs -> NumResults -> StackIndex
+             -> CInt -> Ptr () -> IO CInt
 #else
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_pcall lua_pcall>
 foreign import ccall "lua.h lua_pcall"
-  lua_pcall :: LuaState -> CInt -> CInt -> StackIndex -> IO CInt
+  lua_pcall :: LuaState -> NumArgs -> NumResults -> StackIndex
+            -> IO CInt
 #endif
 
 -- currently unsupported:
