@@ -385,7 +385,7 @@ foreign import ccall "lua.h lua_dump"
   lua_dump :: LuaState -> FunPtr LuaWriter -> Ptr () -> IO ()
 
 
---------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 -- * Coroutine functions
 
 #if LUA_VERSION_NUMBER >= 502
@@ -413,7 +413,7 @@ foreign import ccall unsafe "lua.h lua_status"
   lua_status :: LuaState -> IO CInt
 
 
---------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 -- * Garbage-collection functions and options
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_gc lua_gc>
@@ -421,7 +421,7 @@ foreign import ccall "lua.h lua_gc"
   lua_gc :: LuaState -> CInt -> CInt -> IO CInt
 
 
---------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 -- * Miscellaneous functions
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_error lua_error>
@@ -440,67 +440,39 @@ foreign import ccall "lua.h lua_concat"
 foreign import ccall unsafe "lualib.h luaL_openlibs"
   luaL_openlibs :: LuaState -> IO ()
 
--- | Opens the base library.
-foreign import ccall unsafe "lualib.h luaopen_base"
-  lua_open_base :: LuaState -> IO CInt
 
--- | Function pointer to @'lua_open_base'@
+------------------------------------------------------------------------------
+-- * Lua Libraries
+
+-- | Point to function opening the base library.
 foreign import ccall unsafe "lualib.h &luaopen_base"
   lua_open_base_ptr :: FunPtr (LuaState -> IO CInt)
 
--- | Opens the table library.
-foreign import ccall unsafe "lualib.h luaopen_table"
-  lua_open_table :: LuaState -> IO CInt
-
--- | Function pointer to @'lua_open_table'@
+-- | Point to function opening the table library.
 foreign import ccall unsafe "lualib.h &luaopen_table"
   lua_open_table_ptr :: FunPtr (LuaState -> IO CInt)
 
--- | Opens the io library.
-foreign import ccall unsafe "lualib.h luaopen_io"
-  lua_open_io :: LuaState -> IO CInt
-
--- | Function pointer to @'lua_open_io'@
+-- | Point to function opening the io library.
 foreign import ccall unsafe "lualib.h &luaopen_io"
   lua_open_io_ptr :: FunPtr (LuaState -> IO CInt)
 
--- | Opens the os library.
-foreign import ccall unsafe "lualib.h luaopen_os"
-  lua_open_os :: LuaState -> IO CInt
-
--- | Function pointer to @'lua_open_os'@
+-- | Point to function opening the os library.
 foreign import ccall unsafe "lualib.h &luaopen_os"
   lua_open_os_ptr :: FunPtr (LuaState -> IO CInt)
 
--- | Opens the string library.
-foreign import ccall unsafe "lualib.h luaopen_string"
-  lua_open_string :: LuaState -> IO CInt
-
--- | Function pointer to @'lua_open_string'@
+-- | Point to function opening the string library.
 foreign import ccall unsafe "lualib.h &luaopen_string"
   lua_open_string_ptr :: FunPtr (LuaState -> IO CInt)
 
--- | Opens the math library.
-foreign import ccall unsafe "lualib.h luaopen_math"
-  lua_open_math :: LuaState -> IO CInt
-
--- | Function pointer to @'lua_open_math'@
+-- | Point to function opening the math library.
 foreign import ccall unsafe "lualib.h &luaopen_math"
   lua_open_math_ptr :: FunPtr (LuaState -> IO CInt)
 
--- | Opens the debug library.
-foreign import ccall unsafe "lualib.h luaopen_debug"
-  lua_open_debug :: LuaState -> IO CInt
-
--- | Function pointer to @'lua_open_debug'@
+-- | Point to function opening the debug library.
 foreign import ccall unsafe "lualib.h &luaopen_debug"
   lua_open_debug_ptr :: FunPtr (LuaState -> IO CInt)
 
--- | Opens the package library.
-foreign import ccall unsafe "lualib.h luaopen_package"
-  lua_open_package :: LuaState -> IO CInt
-
--- | Function pointer to @'lua_open_package'@
+-- | Point to function opening the package library.
 foreign import ccall unsafe "lualib.h &luaopen_package"
   lua_open_package_ptr :: FunPtr (LuaState -> IO CInt)
 
