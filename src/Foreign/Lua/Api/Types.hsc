@@ -86,6 +86,26 @@ type LuaInteger = #{type LUA_INTEGER}
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_Number lua_Number>.
 type LuaNumber = #{type LUA_NUMBER}
 
+
+--
+-- LuaBool
+--
+
+-- | Boolean value returned by a Lua C API function. This is a @'CInt'@ and
+-- interpreted as @'False'@ iff the value is @0@, @'True'@ otherwise.
+newtype LuaBool = LuaBool CInt deriving Eq
+
+-- | Convert a @'LuaBool'@ to a Haskell @'Bool'@.
+fromLuaBool :: LuaBool -> Bool
+fromLuaBool (LuaBool 0) = False
+fromLuaBool _           = True
+
+-- | Convert a Haskell @'Bool'@ to a @'LuaBool'@.
+toLuaBool :: Bool -> LuaBool
+toLuaBool True  = LuaBool 1
+toLuaBool False = LuaBool 0
+
+
 -- | Enumeration used as type tag.
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>.
 data LTYPE

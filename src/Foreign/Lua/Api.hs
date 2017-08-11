@@ -256,7 +256,7 @@ call nargs nresults = do
 -- This is a wrapper function of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_checkstack lua_checkstack>.
 checkstack :: Int -> Lua Bool
-checkstack n = liftLua $ \l -> (/= 0) <$> lua_checkstack l (fromIntegral n)
+checkstack n = liftLua $ \l -> fromLuaBool <$> lua_checkstack l (fromIntegral n)
 
 -- | Destroys all objects in the given Lua state (calling the corresponding
 -- garbage-collection metamethods, if any) and frees all dynamic memory used by
@@ -474,7 +474,7 @@ isboolean n = (== TBOOLEAN) <$> ltype n
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_iscfunction lua_iscfunction>.
 iscfunction :: StackIndex -> Lua Bool
-iscfunction n = liftLua $ \l -> (/= 0) <$> lua_iscfunction l n
+iscfunction n = liftLua $ \l -> fromLuaBool <$> lua_iscfunction l n
 
 -- | Returns @True@ if the value at the given index is a function (either C or
 -- Lua), and @False@ otherwise.
@@ -522,7 +522,7 @@ isnoneornil idx = (<= TNIL) <$> ltype idx
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isnumber lua_isnumber>.
 isnumber :: StackIndex -> Lua Bool
-isnumber n = liftLua $ \l -> (/= 0) <$> lua_isnumber l n
+isnumber n = liftLua $ \l -> fromLuaBool <$> lua_isnumber l n
 
 -- | Returns @True@ if the value at the given index is a string or a number
 -- (which is always convertible to a string), and @False@ otherwise.
@@ -530,7 +530,7 @@ isnumber n = liftLua $ \l -> (/= 0) <$> lua_isnumber l n
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isstring lua_isstring>.
 isstring :: StackIndex -> Lua Bool
-isstring n = liftLua $ \l -> (/= 0) <$> lua_isstring l n
+isstring n = liftLua $ \l -> fromLuaBool <$> lua_isstring l n
 
 -- | Returns @True@ if the value at the given index is a table, and @False@
 -- otherwise.
@@ -554,7 +554,7 @@ isthread n = (== TTHREAD) <$> ltype n
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isuserdata lua_isuserdata>.
 isuserdata :: StackIndex -> Lua Bool
-isuserdata n = liftLua $ \l -> (/= 0) <$> lua_isuserdata l n
+isuserdata n = liftLua $ \l -> fromLuaBool <$> lua_isuserdata l n
 
 -- | This is a convenience function to implement error propagation convention
 -- described in [Error handling in hslua](#g:1). hslua doesn't implement
@@ -605,7 +605,7 @@ ltype idx = toLuaType <$> liftLua (flip lua_type idx)
 -- <https://www.lua.org/manual/5.3/manual.html#luaL_newmetatable luaL_newmetatable>.
 newmetatable :: String -> Lua Bool
 newmetatable tname = liftLua $ \l ->
-  (/= 0) <$> withCString tname (luaL_newmetatable l)
+  fromLuaBool <$> withCString tname (luaL_newmetatable l)
 
 -- | Creates a new Lua state. It calls @'lua_newstate'@ with an allocator based
 -- on the standard C @realloc@ function and then sets a panic function (see
@@ -757,7 +757,7 @@ pop n = settop (-n - 1)
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_pushboolean lua_pushboolean>.
 pushboolean :: Bool -> Lua ()
-pushboolean b = liftLua $ \l -> lua_pushboolean l (fromIntegral (fromEnum b))
+pushboolean b = liftLua $ \l -> lua_pushboolean l (toLuaBool b)
 
 -- | Pushes a new C closure onto the stack.
 --
@@ -854,7 +854,7 @@ pushvalue n = liftLua $ \l -> lua_pushvalue l n
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawequal lua_rawequal>.
 rawequal :: StackIndex -> StackIndex -> Lua Bool
 rawequal idx1 idx2 = liftLua $ \l ->
-  (/= 0) <$> lua_rawequal l idx1 idx2
+  fromLuaBool <$> lua_rawequal l idx1 idx2
 
 -- | Similar to @'gettable'@, but does a raw access (i.e., without metamethods).
 --

@@ -103,7 +103,7 @@ foreign import ccall unsafe "lua.h lua_replace"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_checkstack lua_checkstack>
 foreign import ccall unsafe "lua.h lua_checkstack"
-  lua_checkstack :: LuaState -> StackIndex -> IO CInt
+  lua_checkstack :: LuaState -> StackIndex -> IO LuaBool
 
 -- lua_xmove is currently not supported.
 
@@ -113,19 +113,19 @@ foreign import ccall unsafe "lua.h lua_checkstack"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_isnumber lua_isnumber>
 foreign import ccall unsafe "lua.h lua_isnumber"
-  lua_isnumber :: LuaState -> StackIndex -> IO CInt
+  lua_isnumber :: LuaState -> StackIndex -> IO LuaBool
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_isstring lua_isstring>
 foreign import ccall unsafe "lua.h lua_isstring"
-  lua_isstring :: LuaState -> StackIndex -> IO CInt
+  lua_isstring :: LuaState -> StackIndex -> IO LuaBool
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_iscfunction lua_iscfunction>
 foreign import ccall unsafe "lua.h lua_iscfunction"
-  lua_iscfunction :: LuaState -> StackIndex -> IO CInt
+  lua_iscfunction :: LuaState -> StackIndex -> IO LuaBool
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_isuserdata lua_isuserdata>
 foreign import ccall unsafe "lua.h lua_isuserdata"
-  lua_isuserdata :: LuaState -> StackIndex -> IO CInt
+  lua_isuserdata :: LuaState -> StackIndex -> IO LuaBool
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>
 foreign import ccall unsafe "lua.h lua_type"
@@ -153,14 +153,14 @@ foreign import ccall "lua.h lua_lessthan"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawequal lua_rawequal>
 foreign import ccall unsafe "lua.h lua_rawequal"
-  lua_rawequal :: LuaState -> StackIndex -> StackIndex -> IO CInt
+  lua_rawequal :: LuaState -> StackIndex -> StackIndex -> IO LuaBool
 
 --
 -- Type coercion
 --
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_toboolean lua_toboolean>
 foreign import ccall unsafe "lua.h lua_toboolean"
-  lua_toboolean :: LuaState -> StackIndex -> IO CInt
+  lua_toboolean :: LuaState -> StackIndex -> IO StackIndex
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tocfunction lua_tocfunction>
 foreign import ccall unsafe "lua.h lua_tocfunction"
@@ -240,11 +240,11 @@ foreign import ccall unsafe "lua.h lua_pushlstring"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushcclosure lua_pushcclosure>
 foreign import ccall unsafe "lua.h lua_pushcclosure"
-  lua_pushcclosure :: LuaState -> CFunction -> CInt -> IO ()
+  lua_pushcclosure :: LuaState -> CFunction -> NumArgs -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushboolean lua_pushboolean>
 foreign import ccall unsafe "lua.h lua_pushboolean"
-  lua_pushboolean :: LuaState -> CInt -> IO ()
+  lua_pushboolean :: LuaState -> LuaBool -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushlightuserdata lua_pushlightuserdata>
 foreign import ccall unsafe "lua.h lua_pushlightuserdata"
@@ -440,7 +440,7 @@ foreign import ccall unsafe "lauxlib.h luaL_newstate"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_newmetatable luaL_newmetatable>
 foreign import ccall "lauxlib.h luaL_newmetatable"
-  luaL_newmetatable :: LuaState -> Ptr CChar -> IO CInt
+  luaL_newmetatable :: LuaState -> Ptr CChar -> IO LuaBool
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_ref luaL_ref>
 foreign import ccall "lauxlib.h luaL_ref"
