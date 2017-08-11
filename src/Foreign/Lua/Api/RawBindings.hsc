@@ -388,7 +388,7 @@ foreign import ccall "safer-api.h hslua_next"
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_concat \
 -- @lua_concat@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_concat"
-  hslua_concat :: LuaState -> CInt -> IO CInt
+  hslua_concat :: LuaState -> NumArgs -> IO CInt
 
 
 ------------------------------------------------------------------------------

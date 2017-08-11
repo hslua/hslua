@@ -308,8 +308,8 @@ compare idx1 idx2 op = liftLua $ \l ->
 --
 -- This is a wrapper function of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_concat lua_concat>.
-concat :: Int -> Lua ()
-concat n = void . throwOnError =<< liftLua (`hslua_concat` fromIntegral n)
+concat :: NumArgs -> Lua ()
+concat n = void . throwOnError =<< liftLua (`hslua_concat` n)
 
 -- | Copies the element at index @fromidx@ into the valid index @toidx@,
 -- replacing the value at that position. Values at other positions are not
