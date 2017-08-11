@@ -54,21 +54,13 @@ import Foreign.Ptr
 --------------------------------------------------------------------------------
 -- * State manipulation
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_newstate lua_newstate>
-foreign import ccall unsafe "lua.h lua_newstate"
-  lua_newstate :: FunPtr LuaAlloc -> Ptr () -> IO LuaState
+-- lua_newstate is currently not supported.
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_close lua_close>
 foreign import ccall "lua.h lua_close"
   lua_close :: LuaState -> IO ()
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_newthread lua_newthread>
-foreign import ccall unsafe "lua.h lua_newthread"
-  lua_newthread :: LuaState -> IO LuaState
-
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_atpanic lua_atpanic>
-foreign import ccall "lua.h lua_atpanic"
-  lua_atpanic :: LuaState -> CFunction -> IO CFunction
+-- lua_newthread is currently not supported.
 
 
 --------------------------------------------------------------------------------
@@ -112,9 +104,7 @@ foreign import ccall unsafe "lua.h lua_replace"
 foreign import ccall unsafe "lua.h lua_checkstack"
   lua_checkstack :: LuaState -> StackIndex -> IO CInt
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_xmove lua_xmove>
-foreign import ccall unsafe "lua.h lua_xmove"
-  lua_xmove :: LuaState -> LuaState -> StackIndex -> IO ()
+-- lua_xmove is currently not supported.
 
 
 --------------------------------------------------------------------------------
@@ -144,11 +134,9 @@ foreign import ccall unsafe "lua.h lua_type"
 foreign import ccall unsafe "lua.h lua_typename"
   lua_typename :: LuaState -> CInt -> IO (Ptr CChar)
 
-#if LUA_VERSION_NUMBER >= 502
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_compare lua_compare>
-foreign import ccall "lua.h lua_compare"
-  lua_compare :: LuaState -> StackIndex -> StackIndex -> CInt -> IO CInt
-#else
+--- lua_compare is unsafe (might cause a longjmp), use hslua_compare instead.
+
+#if LUA_VERSION_NUMBER < 502
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_equal lua_equal>
 foreign import ccall "lua.h lua_equal"
   lua_equal :: LuaState -> StackIndex -> StackIndex -> IO CInt
@@ -242,9 +230,8 @@ foreign import ccall unsafe "lua.h lua_pushinteger"
 foreign import ccall unsafe "lua.h lua_pushlstring"
   lua_pushlstring :: LuaState -> Ptr CChar -> CSize -> IO ()
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushstring lua_pushstring>
-foreign import ccall unsafe "lua.h lua_pushstring"
-  lua_pushstring :: LuaState -> Ptr CChar -> IO ()
+-- lua_pushstring is currently not supported. It's difficult to use in a haskell
+-- context.
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushcclosure lua_pushcclosure>
 foreign import ccall unsafe "lua.h lua_pushcclosure"
@@ -266,19 +253,9 @@ foreign import ccall unsafe "lua.h lua_pushthread"
 --------------------------------------------------------------------------------
 -- * Get functions
 
-#if LUA_VERSION_NUMBER >= 503
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_gettable lua_gettable>
-foreign import ccall "lua.h lua_gettable"
-  lua_gettable :: LuaState -> StackIndex -> IO CInt
-#else
--- | See <https://www.lua.org/manual/5.2/manual.html#lua_gettable lua_gettable>
-foreign import ccall "lua.h lua_gettable"
-  lua_gettable :: LuaState -> StackIndex -> IO ()
-#endif
+-- lua_gettable is unsafe, use hslua_gettable instead.
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_getfield lua_getfield>
-foreign import ccall "lua.h lua_getfield"
-  lua_getfield :: LuaState -> StackIndex -> Ptr CChar -> IO ()
+-- lua_getfield is unsafe, use hslua_getfield instead.
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawget lua_rawget>
 foreign import ccall unsafe "lua.h lua_rawget"
@@ -300,28 +277,16 @@ foreign import ccall unsafe "lua.h lua_newuserdata"
 foreign import ccall unsafe "lua.h lua_getmetatable"
   lua_getmetatable :: LuaState -> StackIndex -> IO CInt
 
-#if LUA_VERSION_NUMBER < 502
--- | See <https://www.lua.org/manual/5.1/manual.html#lua_getfenv lua_getfenv>
-foreign import ccall "lua.h lua_getfenv"
-  lua_getfenv :: LuaState -> StackIndex -> IO ()
-#endif
+-- lua_getfenv (5.1 only) is not supported.
 
-#if LUA_VERSION_NUMBER >= 502
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_getglobal lua_getglobal>
-foreign import ccall "lua.h lua_getglobal"
-  lua_getglobal :: LuaState -> Ptr CChar -> IO ()
-#endif
+-- lua_getglobal is unsafe, use lua_getglobal instead.
 
 --------------------------------------------------------------------------------
 -- * Set functions
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_settable lua_settable>
-foreign import ccall "lua.h lua_settable"
-  lua_settable :: LuaState -> StackIndex -> IO ()
+-- lua_settable is unsafe, use hslua_settable instead.
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_setfield lua_setfield>
-foreign import ccall "lua.h lua_setfield"
-  lua_setfield :: LuaState -> StackIndex -> Ptr CChar -> IO ()
+-- lua_setfield is unsafe, use hslua_setfield instead.
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawset lua_rawset>
 foreign import ccall unsafe "lua.h lua_rawset"
@@ -335,17 +300,9 @@ foreign import ccall unsafe "lua.h lua_rawseti"
 foreign import ccall unsafe "lua.h lua_setmetatable"
   lua_setmetatable :: LuaState -> StackIndex -> IO ()
 
-#if LUA_VERSION_NUMBER < 502
--- | See <https://www.lua.org/manual/5.1/manual.html#lua_setfenv lua_setfenv>
-foreign import ccall "lua.h lua_setfenv"
-  lua_setfenv :: LuaState -> StackIndex -> IO CInt
-#endif
+-- lua_setfenv (5.1 only) is not supported.
 
-#if LUA_VERSION_NUMBER >= 502
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_setglobal lua_setglobal>
-foreign import ccall "lua.h lua_setglobal"
-  lua_setglobal :: LuaState -> Ptr CChar -> IO ()
-#endif
+-- lua_setglobal is unsafe, use hslua_setglobal instead.
 
 --------------------------------------------------------------------------------
 -- * 'load' and 'call' functions (load and run Lua code)
@@ -370,43 +327,15 @@ foreign import ccall "lua.h lua_pcall"
   lua_pcall :: LuaState -> CInt -> CInt -> StackIndex -> IO CInt
 #endif
 
-#if LUA_VERSION_NUMBER < 502
--- | See <https://www.lua.org/manual/5.1/manual.html#lua_cpcall lua_cpcall>
-foreign import ccall "lua.h lua_cpcall"
-  lua_cpcall :: LuaState -> CFunction -> Ptr a -> IO CInt
-#endif
-
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_load lua_load>
-foreign import ccall "lua.h lua_load"
-  lua_load :: LuaState -> FunPtr LuaReader -> Ptr () -> Ptr CChar -> IO CInt
-
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_dump lua_dump>
-foreign import ccall "lua.h lua_dump"
-  lua_dump :: LuaState -> FunPtr LuaWriter -> Ptr () -> IO ()
+-- currently unsupported:
+-- lua_load
+-- lua_dump
 
 
 ------------------------------------------------------------------------------
 -- * Coroutine functions
 
-#if LUA_VERSION_NUMBER >= 502
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_yieldk lua_yieldk>
-foreign import ccall "lua.h lua_yieldk"
-  lua_yieldk :: LuaState -> CInt -> CInt -> Ptr () -> IO CInt
-#else
--- | See <https://www.lua.org/manual/5.1/manual.html#lua_yield lua_yield>
-foreign import ccall "lua.h lua_yield"
-  lua_yield :: LuaState -> CInt -> IO CInt
-#endif
-
-#if LUA_VERSION_NUMBER >= 502
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_resume lua_resume>
-foreign import ccall "lua.h lua_resume"
-  lua_resume :: LuaState -> CInt -> CInt -> IO CInt
-#else
--- | See <https://www.lua.org/manual/5.1/manual.html#lua_resume lua_resume>
-foreign import ccall "lua.h lua_resume"
-  lua_resume :: LuaState -> CInt -> IO CInt
-#endif
+-- lua_yield / lua_yieldk and lua_resume are currently not supported.
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_status lua_status>
 foreign import ccall unsafe "lua.h lua_status"
@@ -424,17 +353,11 @@ foreign import ccall "lua.h lua_gc"
 ------------------------------------------------------------------------------
 -- * Miscellaneous functions
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_error lua_error>
-foreign import ccall unsafe "lua.h lua_error"
-  lua_error :: LuaState -> IO CInt
+-- lua_error is unsafe in a haskell context and hence not supported.
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_next lua_next>
-foreign import ccall "lua.h lua_next"
-  lua_next :: LuaState -> StackIndex -> IO CInt
+-- lua_next is unsafe, use hslua_next instead.
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_concat lua_concat>
-foreign import ccall "lua.h lua_concat"
-  lua_concat :: LuaState -> CInt -> IO ()
+-- lua_concat is unsafe (may trigger a longjmp), use hslua_concat instead.
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_openlibs luaL_openlibs>
 foreign import ccall unsafe "lualib.h luaL_openlibs"
@@ -487,10 +410,6 @@ foreign import ccall unsafe "lauxlib.h luaL_newstate"
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_newmetatable luaL_newmetatable>
 foreign import ccall "lauxlib.h luaL_newmetatable"
   luaL_newmetatable :: LuaState -> Ptr CChar -> IO CInt
-
--- | See <https://www.lua.org/manual/5.3/manual.html#luaL_argerror luaL_argerror>
-foreign import ccall "lauxlib.h luaL_argerror"
-  luaL_argerror :: LuaState -> CInt -> Ptr CChar -> IO CInt
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_ref luaL_ref>
 foreign import ccall "lauxlib.h luaL_ref"
