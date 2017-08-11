@@ -400,35 +400,35 @@ foreign import ccall unsafe "lualib.h luaL_openlibs"
 
 -- | Point to function opening the base library.
 foreign import ccall unsafe "lualib.h &luaopen_base"
-  lua_open_base_ptr :: FunPtr (LuaState -> IO CInt)
+  lua_open_base_ptr :: CFunction
 
 -- | Point to function opening the table library.
 foreign import ccall unsafe "lualib.h &luaopen_table"
-  lua_open_table_ptr :: FunPtr (LuaState -> IO CInt)
+  lua_open_table_ptr :: CFunction
 
 -- | Point to function opening the io library.
 foreign import ccall unsafe "lualib.h &luaopen_io"
-  lua_open_io_ptr :: FunPtr (LuaState -> IO CInt)
+  lua_open_io_ptr :: CFunction
 
 -- | Point to function opening the os library.
 foreign import ccall unsafe "lualib.h &luaopen_os"
-  lua_open_os_ptr :: FunPtr (LuaState -> IO CInt)
+  lua_open_os_ptr :: CFunction
 
 -- | Point to function opening the string library.
 foreign import ccall unsafe "lualib.h &luaopen_string"
-  lua_open_string_ptr :: FunPtr (LuaState -> IO CInt)
+  lua_open_string_ptr :: CFunction
 
 -- | Point to function opening the math library.
 foreign import ccall unsafe "lualib.h &luaopen_math"
-  lua_open_math_ptr :: FunPtr (LuaState -> IO CInt)
+  lua_open_math_ptr :: CFunction
 
 -- | Point to function opening the debug library.
 foreign import ccall unsafe "lualib.h &luaopen_debug"
-  lua_open_debug_ptr :: FunPtr (LuaState -> IO CInt)
+  lua_open_debug_ptr :: CFunction
 
 -- | Point to function opening the package library.
 foreign import ccall unsafe "lualib.h &luaopen_package"
-  lua_open_package_ptr :: FunPtr (LuaState -> IO CInt)
+  lua_open_package_ptr :: CFunction
 
 
 --------------------------------------------------------------------------------

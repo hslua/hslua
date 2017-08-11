@@ -40,8 +40,8 @@ The core Lua types, including mappings of Lua types to Haskell.
 module Foreign.Lua.Api.Types where
 
 import Data.Int
-import Foreign.C
-import Foreign.Ptr
+import Foreign.C (CInt)
+import Foreign.Ptr (FunPtr, Ptr)
 
 #include "lua.h"
 
@@ -68,7 +68,7 @@ newtype LuaState = LuaState (Ptr ()) deriving (Eq)
 -- can also return many results.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_CFunction lua_CFunction>.
-type CFunction = FunPtr (LuaState -> IO CInt)
+type CFunction = FunPtr (LuaState -> IO NumResults)
 
 -- |  The type of integers in Lua.
 --
