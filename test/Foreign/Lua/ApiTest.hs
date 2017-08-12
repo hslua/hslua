@@ -48,6 +48,7 @@ import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
 import Test.Tasty.QuickCheck (testProperty)
 
 import qualified Prelude
+import qualified Foreign.Lua.Api.RawBindings as LuaRaw
 
 
 -- | Specifications for Attributes parsing functions.
@@ -106,6 +107,12 @@ tests = testGroup "Haskell version of the C API"
         pushLuaExpr "nil"
         (&&) <$> isnoneornil 500 <*> isnoneornil (-1)
     ]
+
+  , testCase "CFunction handling" . runLua $ do
+      pushcfunction LuaRaw.lua_open_debug_ptr
+      liftIO . assertBool "not recognized as CFunction" =<< iscfunction (-1)
+      liftIO . assertEqual "CFunction changed after receiving it from the stack"
+        LuaRaw.lua_open_debug_ptr =<< tocfunction (-1)
 
   , testGroup "getting values"
     [ testCase "tointegerx returns numbers verbatim" . runLua $ do
