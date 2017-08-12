@@ -46,6 +46,8 @@ import Foreign.Ptr (FunPtr, Ptr)
 import Foreign.Storable (Storable)
 
 #include "lua.h"
+-- required only for LUA_ERRFILE
+#include "lauxlib.h"
 
 -- | An opaque structure that points to a thread and indirectly (through the
 -- thread) to the whole state of a Lua interpreter. The Lua library is fully
@@ -201,24 +203,27 @@ data Status
   | ErrMem    -- ^ memory allocation (out-of-memory) error.
   | ErrErr    -- ^ error while running the message handler.
   | ErrGcmm   -- ^ error while running a @__gc@ metamethod.
+  | ErrFile   -- ^ opening or reading a file failed.
   deriving (Eq, Show)
 
 -- | Convert C integer constant to @'LuaStatus'@.
 toStatus :: StatusCode -> Status
--- LUA_OK is not defined in Lua 5.1
-toStatus (StatusCode 0)                      = OK
-toStatus (StatusCode #{const LUA_YIELD})     = Yield
-toStatus (StatusCode #{const LUA_ERRRUN})    = ErrRun
-toStatus (StatusCode #{const LUA_ERRSYNTAX}) = ErrSyntax
-toStatus (StatusCode #{const LUA_ERRMEM})    = ErrMem
--- LUA_ERRGCMM did not exist in Lua 5.1; comes before LUA_ERRERR when defined
+toStatus (StatusCode c) = case c of
+  -- LUA_OK is not defined in Lua 5.1
+  0                        -> OK
+  (#{const LUA_YIELD})     -> Yield
+  (#{const LUA_ERRRUN})    -> ErrRun
+  (#{const LUA_ERRSYNTAX}) -> ErrSyntax
+  (#{const LUA_ERRMEM})    -> ErrMem
+  -- LUA_ERRGCMM did not exist in Lua 5.1; comes before LUA_ERRERR when defined
 #if LUA_VERSION_NUMBER >= 502
-toStatus (StatusCode #{const LUA_ERRGCMM})   = ErrGcmm
-toStatus (StatusCode #{const LUA_ERRERR})    = ErrErr
+  (#{const LUA_ERRGCMM})   -> ErrGcmm
+  (#{const LUA_ERRERR})    -> ErrErr
 #else
-toStatus (StatusCode #{const LUA_ERRERR})    = ErrErr
+  (#{const LUA_ERRERR})    -> ErrErr
 #endif
-toStatus (StatusCode n) = error $ "Cannot convert (" ++ show n ++ ") to LuaStatus"
+  (#{const LUA_ERRFILE})   -> ErrFile
+  n -> error $ "Cannot convert (" ++ show n ++ ") to LuaStatus"
 
 -- | Integer code used to signal the status of a thread or computation.
 -- See @'Status'@.
