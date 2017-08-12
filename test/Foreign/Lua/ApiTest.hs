@@ -180,8 +180,8 @@ tests = testGroup "Haskell version of the C API"
       assert $ luaCmp == (n1 < n2)
 
   , testProperty "order of Lua types is consistent" $ \ lt1 lt2 ->
-      let n1 = fromLuaType (lt1 :: Type)
-          n2 = fromLuaType lt2
+      let n1 = fromType lt1
+          n2 = fromType lt2
       in Prelude.compare n1 n2 == Prelude.compare lt1 lt2
   ]
 

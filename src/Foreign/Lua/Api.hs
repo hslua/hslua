@@ -68,8 +68,9 @@ module Foreign.Lua.Api (
   , checkstack
   -- ** types and type checks
   , Type (..)
-  , fromLuaType
-  , toLuaType
+  , TypeCode (..)
+  , fromType
+  , toType
   , ltype
   , typename
   , isboolean
@@ -589,7 +590,7 @@ loadstring str = liftLua $ \l ->
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>.
 ltype :: StackIndex -> Lua Type
-ltype idx = toLuaType <$> liftLua (flip lua_type idx)
+ltype idx = toType <$> liftLua (flip lua_type idx)
 
 -- | If the registry already has the key tname, returns @False@. Otherwise,
 -- creates a new table to be used as a metatable for userdata, adds to this new
@@ -1105,7 +1106,7 @@ touserdata n = liftLua $ \l -> lua_touserdata l n
 -- <https://www.lua.org/manual/5.3/manual.html#lua_typename lua_typename>.
 typename :: Type -> Lua String
 typename tp = liftLua $ \l ->
-  lua_typename l (fromLuaType tp) >>= peekCString
+  lua_typename l (fromType tp) >>= peekCString
 
 -- | Releases reference @'ref'@ from the table at index @idx@ (see @'ref'@). The
 -- entry is removed from the table, so that the referred object can be

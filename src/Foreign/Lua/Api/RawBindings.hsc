@@ -129,11 +129,11 @@ foreign import ccall unsafe "lua.h lua_isuserdata"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>
 foreign import ccall unsafe "lua.h lua_type"
-  lua_type :: LuaState -> StackIndex -> IO CInt
+  lua_type :: LuaState -> StackIndex -> IO TypeCode
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_typename lua_typename>
 foreign import ccall unsafe "lua.h lua_typename"
-  lua_typename :: LuaState -> CInt -> IO (Ptr CChar)
+  lua_typename :: LuaState -> TypeCode -> IO (Ptr CChar)
 
 -- lua_compare is unsafe (might cause a longjmp), use hslua_compare instead.
 #if LUA_VERSION_NUM >= 502

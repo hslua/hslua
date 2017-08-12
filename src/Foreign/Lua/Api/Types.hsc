@@ -126,38 +126,41 @@ data Type
   | TypeThread         -- ^ type of lua threads
   deriving (Bounded, Eq, Ord, Show)
 
+-- | Integer code used to encode the type of a lua value.
+newtype TypeCode = TypeCode { fromTypeCode :: CInt }
+  deriving (Eq, Ord, Show)
+
 instance Enum Type where
-  fromEnum TypeNone          = #{const LUA_TNONE}
-  fromEnum TypeNil           = #{const LUA_TNIL}
-  fromEnum TypeBoolean       = #{const LUA_TBOOLEAN}
-  fromEnum TypeLightUserdata = #{const LUA_TLIGHTUSERDATA}
-  fromEnum TypeNumber        = #{const LUA_TNUMBER}
-  fromEnum TypeString        = #{const LUA_TSTRING}
-  fromEnum TypeTable         = #{const LUA_TTABLE}
-  fromEnum TypeFunction      = #{const LUA_TFUNCTION}
-  fromEnum TypeUserdata      = #{const LUA_TUSERDATA}
-  fromEnum TypeThread        = #{const LUA_TTHREAD}
+  fromEnum = fromIntegral . fromTypeCode . fromType
+  toEnum = toType . TypeCode . fromIntegral
 
-  toEnum (#{const LUA_TNONE})          = TypeNone
-  toEnum (#{const LUA_TNIL})           = TypeNil
-  toEnum (#{const LUA_TBOOLEAN})       = TypeBoolean
-  toEnum (#{const LUA_TLIGHTUSERDATA}) = TypeLightUserdata
-  toEnum (#{const LUA_TNUMBER})        = TypeNumber
-  toEnum (#{const LUA_TSTRING})        = TypeString
-  toEnum (#{const LUA_TTABLE})         = TypeTable
-  toEnum (#{const LUA_TFUNCTION})      = TypeFunction
-  toEnum (#{const LUA_TUSERDATA})      = TypeUserdata
-  toEnum (#{const LUA_TTHREAD})        = TypeThread
-  toEnum n                             = error $ "Cannot convert (" ++ show n ++ ") to Type"
+fromType :: Type -> TypeCode
+fromType tp = TypeCode $ case tp of
+  TypeNone          -> #{const LUA_TNONE}
+  TypeNil           -> #{const LUA_TNIL}
+  TypeBoolean       -> #{const LUA_TBOOLEAN}
+  TypeLightUserdata -> #{const LUA_TLIGHTUSERDATA}
+  TypeNumber        -> #{const LUA_TNUMBER}
+  TypeString        -> #{const LUA_TSTRING}
+  TypeTable         -> #{const LUA_TTABLE}
+  TypeFunction      -> #{const LUA_TFUNCTION}
+  TypeUserdata      -> #{const LUA_TUSERDATA}
+  TypeThread        -> #{const LUA_TTHREAD}
 
--- | Convert number to lua type.
-toLuaType :: CInt -> Type
-toLuaType = toEnum . fromIntegral
-
--- | Convert Lua type to its C representation.
-fromLuaType :: Type -> CInt
-fromLuaType = fromIntegral . fromEnum
-
+-- | Convert numerical code to lua type.
+toType :: TypeCode -> Type
+toType (TypeCode c) = case c of
+  (#{const LUA_TNONE})          -> TypeNone
+  (#{const LUA_TNIL})           -> TypeNil
+  (#{const LUA_TBOOLEAN})       -> TypeBoolean
+  (#{const LUA_TLIGHTUSERDATA}) -> TypeLightUserdata
+  (#{const LUA_TNUMBER})        -> TypeNumber
+  (#{const LUA_TSTRING})        -> TypeString
+  (#{const LUA_TTABLE})         -> TypeTable
+  (#{const LUA_TFUNCTION})      -> TypeFunction
+  (#{const LUA_TUSERDATA})      -> TypeUserdata
+  (#{const LUA_TTHREAD})        -> TypeThread
+  _ -> error ("No Type corresponding to " ++ show c)
 
 --
 -- * Relational Operator
