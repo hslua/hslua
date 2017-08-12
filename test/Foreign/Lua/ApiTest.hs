@@ -118,11 +118,6 @@ tests = testGroup "Haskell version of the C API"
         res <- tointegerx (-1)
         liftIO $ assertEqual "Not the correct number" (Just 451) res
 
-    , testCase "tointegerx returns Nothing for non-integer numbers" . runLua $ do
-        pushLuaExpr "4.5"
-        res <- tointegerx (-1)
-        liftIO $ assertEqual "Not the correct number" Nothing res
-
     , testCase "tointegerx returns Nothing when given a boolean" . runLua $ do
         pushLuaExpr "true"
         liftIO . assertEqual "Not the correct number" Nothing =<< tointegerx (-1)
