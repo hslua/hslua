@@ -162,6 +162,7 @@ module Foreign.Lua.Api (
   , opentable
   -- * Auxiliary library
   , dostring
+  , dofile
   , newmetatable
   , ref
   , unref
@@ -349,6 +350,13 @@ createtable narr nrec = liftLua $ \l ->
 dostring :: String -> Lua Status
 dostring s = do
   loadRes <- loadstring s
+  if loadRes == OK
+    then pcall 0 multret Nothing
+    else return loadRes
+
+dofile :: FilePath -> Lua Status
+dofile fp = do
+  loadRes <- loadfile fp
   if loadRes == OK
     then pcall 0 multret Nothing
     else return loadRes

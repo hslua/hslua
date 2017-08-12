@@ -205,6 +205,18 @@ tests = testGroup "Haskell version of the C API"
         liftIO . assertEqual "fib function not defined or not correct"
           (8 :: LuaInteger) =<< (getglobal "fib" *> pushinteger 6 *>
                                  call 1 1 *> peek (-1))
+
+    , testCase "dofile loading" . runLua $ do
+        liftIO . assertEqual "wrong error code for non-existing file"
+          ErrFile =<< dofile "./file-does-not-exist.lua"
+        liftIO . assertEqual "loading an invalid file doesn't return ErrSyntax"
+          ErrSyntax =<< dofile "test/lua/syntax-error.lua"
+        liftIO . assertEqual "wrong dofile result"
+          ErrRun =<< dofile "test/lua/error.lua"
+        liftIO . assertEqual "loading a valid program failed"
+          OK =<< dofile "./test/lua/example.lua"
+        liftIO . assertEqual "fib function not defined or not correct"
+          (13 :: LuaInteger) =<< dostring "return fib(7)" *> peek (-1)
     ]
 
   , testCase "pcall status" . runLua $ do
