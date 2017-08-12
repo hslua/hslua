@@ -187,8 +187,7 @@ import qualified Foreign.Storable as F
 --
 
 -- | Throw a lua error if the computation signaled a failure.
--- | Throw a lua error if the computation signaled a failure.
-throwOnError :: CInt -> Lua CInt
+throwOnError :: Failable a -> Lua CInt
 throwOnError x =
   if x < 0
   then throwTopMessageAsError
@@ -572,15 +571,15 @@ lessthan :: StackIndex -> StackIndex -> Lua Bool
 lessthan index1 index2 = compare index1 index2 LT
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadfile luaL_loadfile>.
-loadfile :: String -> Lua Int
+loadfile :: String -> Lua Status
 #if LUA_VERSION_NUMBER >= 502
 loadfile f = liftLua $ \l ->
   withCString f $ \fPtr ->
-  fromIntegral <$> luaL_loadfilex l fPtr nullPtr
+  toStatus <$> luaL_loadfilex l fPtr nullPtr
 #else
 loadfile f = liftLua $ \l ->
   withCString f $ \fPtr ->
-  fromIntegral <$> luaL_loadfile l fPtr
+  toStatus <$> luaL_loadfile l fPtr
 #endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadstring>.

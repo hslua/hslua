@@ -140,7 +140,8 @@ foreign import ccall unsafe "lua.h lua_typename"
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_compare \
 -- @lua_compare@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_compare"
-  hslua_compare :: LuaState -> StackIndex -> StackIndex -> CInt -> IO CInt
+  hslua_compare :: LuaState -> StackIndex -> StackIndex -> CInt
+                -> IO (Failable LuaBool)
 #else
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_equal lua_equal>
 foreign import ccall "lua.h lua_equal"
@@ -342,12 +343,12 @@ foreign import ccall "safer-api.h hslua_setglobal"
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pcallk lua_pcallk>
 foreign import ccall "lua.h lua_pcallk"
   lua_pcallk :: LuaState -> NumArgs -> NumResults -> StackIndex
-             -> CInt -> Ptr () -> IO CInt
+             -> CInt -> Ptr () -> IO StatusCode
 #else
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_pcall lua_pcall>
 foreign import ccall "lua.h lua_pcall"
   lua_pcall :: LuaState -> NumArgs -> NumResults -> StackIndex
-            -> IO CInt
+            -> IO StatusCode
 #endif
 
 -- currently unsupported:
@@ -362,7 +363,7 @@ foreign import ccall "lua.h lua_pcall"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_status lua_status>
 foreign import ccall unsafe "lua.h lua_status"
-  lua_status :: LuaState -> IO CInt
+  lua_status :: LuaState -> IO StatusCode
 
 
 ------------------------------------------------------------------------------
@@ -383,12 +384,12 @@ foreign import ccall "lua.h lua_gc"
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_next \
 -- @lua_next@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_next"
-  hslua_next :: LuaState -> StackIndex -> IO CInt
+  hslua_next :: LuaState -> StackIndex -> IO (Failable LuaBool)
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_concat \
 -- @lua_concat@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_concat"
-  hslua_concat :: LuaState -> NumArgs -> IO CInt
+  hslua_concat :: LuaState -> NumArgs -> IO (Failable LuaBool)
 
 
 ------------------------------------------------------------------------------
@@ -453,13 +454,13 @@ foreign import ccall "lauxlib.h luaL_unref"
 #if LUA_VERSION_NUMBER >= 502
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadfilex luaL_loadfilex>
 foreign import ccall "lauxlib.h luaL_loadfilex"
-  luaL_loadfilex :: LuaState -> Ptr CChar -> Ptr CChar -> IO CInt
+  luaL_loadfilex :: LuaState -> Ptr CChar -> Ptr CChar -> IO StatusCode
 #else
 -- | See <https://www.lua.org/manual/5.1/manual.html#luaL_loadfile luaL_loadfile>
 foreign import ccall "lauxlib.h luaL_loadfile"
-  luaL_loadfile :: LuaState -> Ptr CChar -> IO CInt
+  luaL_loadfile :: LuaState -> Ptr CChar -> IO StatusCode
 #endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadstring>
 foreign import ccall unsafe "lauxlib.h luaL_loadstring"
-  luaL_loadstring :: LuaState -> Ptr CChar -> IO CInt
+  luaL_loadstring :: LuaState -> Ptr CChar -> IO StatusCode

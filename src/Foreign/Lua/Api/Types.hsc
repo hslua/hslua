@@ -199,21 +199,30 @@ data Status
   deriving (Eq, Show)
 
 -- | Convert C integer constant to @'LuaStatus'@.
-toStatus :: CInt -> Status
+toStatus :: StatusCode -> Status
 -- LUA_OK is not defined in Lua 5.1
-toStatus 0                        = OK
-toStatus (#{const LUA_YIELD})     = Yield
-toStatus (#{const LUA_ERRRUN})    = ErrRun
-toStatus (#{const LUA_ERRSYNTAX}) = ErrSyntax
-toStatus (#{const LUA_ERRMEM})    = ErrMem
+toStatus (StatusCode 0)                      = OK
+toStatus (StatusCode #{const LUA_YIELD})     = Yield
+toStatus (StatusCode #{const LUA_ERRRUN})    = ErrRun
+toStatus (StatusCode #{const LUA_ERRSYNTAX}) = ErrSyntax
+toStatus (StatusCode #{const LUA_ERRMEM})    = ErrMem
 -- LUA_ERRGCMM did not exist in Lua 5.1; comes before LUA_ERRERR when defined
 #if LUA_VERSION_NUMBER >= 502
-toStatus (#{const LUA_ERRGCMM})   = ErrGcmm
-toStatus (#{const LUA_ERRERR})    = ErrErr
+toStatus (StatusCode #{const LUA_ERRGCMM})   = ErrGcmm
+toStatus (StatusCode #{const LUA_ERRERR})    = ErrErr
 #else
-toStatus (#{const LUA_ERRERR})    = ErrErr
+toStatus (StatusCode #{const LUA_ERRERR})    = ErrErr
 #endif
-toStatus n = error $ "Cannot convert (" ++ show n ++ ") to LuaStatus"
+toStatus (StatusCode n) = error $ "Cannot convert (" ++ show n ++ ") to LuaStatus"
+
+-- | Integer code used to signal the status of a thread or computation.
+-- See @'Status'@.
+newtype StatusCode = StatusCode CInt deriving Eq
+
+-- | Value or an error, using the convention that value below zero indicate an
+-- error. Values greater than zero are used verbatim. The phantom type is
+-- currently used for documentation only and has no effect.
+type Failable a = CInt
 
 
 --
