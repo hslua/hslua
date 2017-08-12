@@ -38,7 +38,7 @@ module Foreign.Lua.ApiTest (tests) where
 import Prelude hiding (compare)
 
 import Control.Monad (forM_)
-import Foreign.Lua
+import Foreign.Lua as Lua
 import Test.HsLua.Util (luaTestCase, pushLuaExpr)
 import Test.QuickCheck (Property, (.&&.))
 import Test.QuickCheck.Arbitrary (Arbitrary (..), arbitraryBoundedEnum)
@@ -167,9 +167,9 @@ tests = testGroup "Haskell version of the C API"
       forM_ [GCSTOP .. GCSETSTEPMUL] $ \what -> (gc what 23)
 
   , testGroup "compare"
-    [ testProperty "identifies strictly smaller values" $ compareWith (<) LuaLT
-    , testProperty "identifies smaller or equal values" $ compareWith (<=) LuaLE
-    , testProperty "identifies equal values" $ compareWith (==) LuaEQ
+    [ testProperty "identifies strictly smaller values" $ compareWith (<) Lua.LT
+    , testProperty "identifies smaller or equal values" $ compareWith (<=) Lua.LE
+    , testProperty "identifies equal values" $ compareWith (==) Lua.EQ
     ]
 
   , testProperty "lessthan works" $ \n1 n2 -> monadicIO $ do
@@ -185,7 +185,7 @@ tests = testGroup "Haskell version of the C API"
       in Prelude.compare n1 n2 == Prelude.compare lt1 lt2
   ]
 
-compareWith :: (Int -> Int -> Bool) -> LuaRelation -> Int -> Property
+compareWith :: (Int -> Int -> Bool) -> RelationalOperator -> Int -> Property
 compareWith op luaOp n = compareLT .&&. compareEQ .&&. compareGT
  where
   compareLT :: Property

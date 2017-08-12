@@ -39,7 +39,8 @@ The core Lua types, including mappings of Lua types to Haskell.
 -}
 module Foreign.Lua.Api.Types where
 
-import Data.Int
+import Prelude hiding (EQ, LT)
+import Data.Int (#{type LUA_INTEGER})
 import Foreign.C (CInt)
 import Foreign.Ptr (FunPtr, Ptr)
 
@@ -105,6 +106,11 @@ toLuaBool :: Bool -> LuaBool
 toLuaBool True  = LuaBool 1
 toLuaBool False = LuaBool 0
 
+
+--
+-- * Type of Lua values
+--
+
 -- | Enumeration used as type tag.
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>.
 data Type
@@ -152,24 +158,34 @@ toLuaType = toEnum . fromIntegral
 fromLuaType :: Type -> CInt
 fromLuaType = fromIntegral . fromEnum
 
+
+--
+-- * Relational Operator
+--
+
 -- | Lua comparison operations.
-data LuaRelation
-  = LuaEQ -- ^ Correponds to lua's equality (==) operator.
-  | LuaLT -- ^ Correponds to lua's strictly-lesser-than (<) operator
-  | LuaLE -- ^ Correponds to lua's lesser-or-equal (<=) operator
+data RelationalOperator
+  = EQ -- ^ Correponds to lua's equality (==) operator.
+  | LT -- ^ Correponds to lua's strictly-lesser-than (<) operator
+  | LE -- ^ Correponds to lua's lesser-or-equal (<=) operator
   deriving (Eq, Ord, Show)
 
 -- | Convert relation operator to its C representation.
-fromLuaRelation :: LuaRelation -> CInt
+fromRelationalOperator :: RelationalOperator -> CInt
 #if LUA_VERSION_NUMBER >= 502
-fromLuaRelation LuaEQ = #{const LUA_OPEQ}
-fromLuaRelation LuaLT = #{const LUA_OPLT}
-fromLuaRelation LuaLE = #{const LUA_OPLE}
+fromRelationalOperator EQ = #{const LUA_OPEQ}
+fromRelationalOperator LT = #{const LUA_OPLT}
+fromRelationalOperator LE = #{const LUA_OPLE}
 #else
-fromLuaRelation LuaEQ = 0
-fromLuaRelation LuaLT = 1
-fromLuaRelation LuaLE = 2
+fromRelationalOperator EQ = 0
+fromRelationalOperator LT = 1
+fromRelationalOperator LE = 2
 #endif
+
+
+--
+-- * Status
+--
 
 -- | Lua status values.
 data Status
@@ -199,7 +215,10 @@ toStatus (#{const LUA_ERRERR})    = ErrErr
 #endif
 toStatus n = error $ "Cannot convert (" ++ show n ++ ") to LuaStatus"
 
-data ErrorProtocol a = ErrorProtocol CInt
+
+--
+-- * Gargabe Collection Control
+--
 
 -- | Enumeration used by @gc@ function.
 data GCCONTROL

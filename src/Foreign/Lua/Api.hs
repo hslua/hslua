@@ -97,8 +97,8 @@ module Foreign.Lua.Api (
   , rawlen
   , strlen
   -- ** Comparison and arithmetic functions
-  , LuaRelation (..)
-  , fromLuaRelation
+  , RelationalOperator (..)
+  , fromRelationalOperator
   , compare
   , equal
   , lessthan
@@ -164,7 +164,7 @@ module Foreign.Lua.Api (
   , unref
   ) where
 
-import Prelude hiding (compare, concat)
+import Prelude hiding (EQ, LT, compare, concat)
 
 import Control.Monad
 import Data.Maybe (fromMaybe)
@@ -285,18 +285,18 @@ close = lua_close
 --
 -- This is a wrapper function of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_compare lua_compare>.
-compare :: StackIndex -> StackIndex -> LuaRelation -> Lua Bool
+compare :: StackIndex -> StackIndex -> RelationalOperator -> Lua Bool
 #if LUA_VERSION_NUMBER >= 502
 compare idx1 idx2 relOp = fmap (/= 0) . throwOnError =<< do
-  liftLua $ \l -> hslua_compare l idx1 idx2 (fromLuaRelation relOp)
+  liftLua $ \l -> hslua_compare l idx1 idx2 (fromRelationalOperator relOp)
 #else
 compare idx1 idx2 op = liftLua $ \l ->
   (/= 0) <$>
   case op of
-    LuaEQ -> lua_equal l idx1 idx2
-    LuaLT -> lua_lessthan l idx1 idx2
-    LuaLE -> (+) <$> lua_equal l idx1 idx2
-                 <*> lua_lessthan l idx1 idx2
+    EQ -> lua_equal l idx1 idx2
+    LT -> lua_lessthan l idx1 idx2
+    LE -> (+) <$> lua_equal l idx1 idx2
+              <*> lua_lessthan l idx1 idx2
 #endif
 
 -- | Concatenates the @n@ values at the top of the stack, pops them, and leaves
@@ -358,7 +358,7 @@ dostring s = do
 -- call metamethods). Otherwise returns False. Also returns False if any of the
 -- indices is non valid. Uses @'compare'@ internally.
 equal :: StackIndex -> StackIndex -> Lua Bool
-equal index1 index2 = compare index1 index2 LuaEQ
+equal index1 index2 = compare index1 index2 EQ
 
 -- |  Controls the garbage collector.
 --
@@ -569,7 +569,7 @@ lerror = do
 -- | Tests whether the object under the first index is smaller than that under
 -- the second. Uses @'compare'@ internally.
 lessthan :: StackIndex -> StackIndex -> Lua Bool
-lessthan index1 index2 = compare index1 index2 LuaLT
+lessthan index1 index2 = compare index1 index2 LT
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadfile luaL_loadfile>.
 loadfile :: String -> Lua Int
