@@ -43,6 +43,7 @@ import Prelude hiding (EQ, LT)
 import Data.Int (#{type LUA_INTEGER})
 import Foreign.C (CInt)
 import Foreign.Ptr (FunPtr, Ptr)
+import Foreign.Storable (Storable)
 
 #include "lua.h"
 
@@ -94,7 +95,8 @@ type LuaNumber = #{type LUA_NUMBER}
 
 -- | Boolean value returned by a Lua C API function. This is a @'CInt'@ and
 -- interpreted as @'False'@ iff the value is @0@, @'True'@ otherwise.
-newtype LuaBool = LuaBool CInt deriving Eq
+newtype LuaBool = LuaBool CInt
+  deriving (Eq, Storable)
 
 -- | Convert a @'LuaBool'@ to a Haskell @'Bool'@.
 fromLuaBool :: LuaBool -> Bool

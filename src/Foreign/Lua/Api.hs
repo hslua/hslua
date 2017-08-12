@@ -89,7 +89,9 @@ module Foreign.Lua.Api (
   , toboolean
   , tocfunction
   , tointeger
+  , tointegerx
   , tonumber
+  , tonumberx
   , topointer
   , tostring
   , tothread
@@ -175,7 +177,7 @@ import Foreign.Lua.Api.RawBindings
 import Foreign.Lua.Api.Types
 import Foreign.Lua.Types.Error
 import Foreign.Lua.Types.Lua
-import Foreign.Marshal.Alloc
+import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 
 import qualified Data.ByteString as B
@@ -1045,9 +1047,26 @@ tocfunction n = liftLua $ \l -> lua_tocfunction l n
 -- <https://www.lua.org/manual/5.3/manual.html#lua_tointeger lua_tointeger>.
 tointeger :: StackIndex -> Lua LuaInteger
 #if LUA_VERSION_NUMBER >= 502
-tointeger n = liftLua $ \l -> lua_tointegerx l n 0
+tointeger n = liftLua $ \l -> lua_tointegerx l n nullPtr
 #else
 tointeger n = liftLua $ \l -> lua_tointeger l n
+#endif
+
+-- | Like @'tointeger'@, but returns @Nothing@ if the conversion failed
+tointegerx :: StackIndex -> Lua (Maybe LuaInteger)
+#if LUA_VERSION_NUMBER >= 502
+tointegerx n = liftLua $ \l -> alloca $ \bptr -> do
+  res <- lua_tointegerx l n bptr
+  isNum <- fromLuaBool <$> F.peek bptr
+  if isNum
+    then return $ Just res
+    else return $ Nothing
+#else
+tointegerx n = do
+  isNum <- isnumber n
+  if isNum
+    then Just <$> tointeger n
+    else return Nothing
 #endif
 
 -- | Converts the Lua value at the given index to the C type lua_Number. The Lua
@@ -1057,9 +1076,26 @@ tointeger n = liftLua $ \l -> lua_tointeger l n
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_tonumber lua_tonumber>.
 tonumber :: StackIndex -> Lua LuaNumber
 #if LUA_VERSION_NUMBER >= 502
-tonumber n = liftLua $ \l -> lua_tonumberx l n 0
+tonumber n = liftLua $ \l -> lua_tonumberx l n nullPtr
 #else
 tonumber n = liftLua $ \l -> lua_tonumber l n
+#endif
+
+-- | Like @'tonumber'@, but returns @Nothing@ if the conversion failed
+tonumberx :: StackIndex -> Lua (Maybe LuaNumber)
+#if LUA_VERSION_NUMBER >= 502
+tonumberx n = liftLua $ \l -> alloca $ \bptr -> do
+  res <- lua_tonumberx l n bptr
+  isNum <- fromLuaBool <$> F.peek bptr
+  if isNum
+    then return $ Just res
+    else return $ Nothing
+#else
+tonumberx n = do
+  isNum <- isnumber n
+  if isNum
+    then Just <$> tonumber n
+    else return Nothing
 #endif
 
 -- | Converts the value at the given index to a generic C pointer (void*). The
@@ -1077,9 +1113,9 @@ topointer n = liftLua $ \l -> lua_topointer l n
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tostring lua_tostring>.
 tostring :: StackIndex -> Lua B.ByteString
 tostring n = liftLua $ \l -> alloca $ \lenPtr -> do
-    cstr <- lua_tolstring l n lenPtr
-    cstrLen <- F.peek lenPtr
-    B.packCStringLen (cstr, fromIntegral cstrLen)
+  cstr <- lua_tolstring l n lenPtr
+  cstrLen <- F.peek lenPtr
+  B.packCStringLen (cstr, fromIntegral cstrLen)
 
 -- | Converts the value at the given index to a Lua thread (represented as
 -- lua_State*). This value must be a thread; otherwise, the function returns

@@ -170,11 +170,11 @@ foreign import ccall unsafe "lua.h lua_tocfunction"
 #if LUA_VERSION_NUMBER >= 502
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tointegerx lua_tointegerx>
 foreign import ccall unsafe "lua.h lua_tointegerx"
-  lua_tointegerx :: LuaState -> StackIndex -> CInt -> IO LuaInteger
+  lua_tointegerx :: LuaState -> StackIndex -> Ptr LuaBool -> IO LuaInteger
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tonumberx lua_tonumberx>
 foreign import ccall unsafe "lua.h lua_tonumberx"
-  lua_tonumberx :: LuaState -> StackIndex -> CInt -> IO LuaNumber
+  lua_tonumberx :: LuaState -> StackIndex -> Ptr LuaBool -> IO LuaNumber
 #else
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_tointeger lua_tointeger>
 foreign import ccall unsafe "lua.h lua_tointeger"

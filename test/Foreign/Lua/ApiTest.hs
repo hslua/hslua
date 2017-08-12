@@ -93,15 +93,54 @@ tests = testGroup "Haskell version of the C API"
       slen <- strlen (-1)
       return $ rlen == olen && rlen == slen && rlen == 6
 
-  , luaTestCase "isfunction" $ do
-      pushLuaExpr "function () print \"hi!\" end"
-      isfunction (-1)
+  , testGroup "Type checking"
+    [ luaTestCase "isfunction" $ do
+        pushLuaExpr "function () print \"hi!\" end"
+        isfunction (-1)
 
-  , luaTestCase "isnil" $ pushLuaExpr "nil" *> isnil (-1)
-  , luaTestCase "isnone" $ isnone 500 -- stack index 500 does not exist
-  , luaTestCase "isnoneornil" $ do
-      pushLuaExpr "nil"
-      (&&) <$> isnoneornil 500 <*> isnoneornil (-1)
+    , luaTestCase "isnil" $ pushLuaExpr "nil" *> isnil (-1)
+
+    , luaTestCase "isnone" $ isnone 500 -- stack index 500 does not exist
+
+    , luaTestCase "isnoneornil" $ do
+        pushLuaExpr "nil"
+        (&&) <$> isnoneornil 500 <*> isnoneornil (-1)
+    ]
+
+  , testGroup "getting values"
+    [ testCase "tointegerx returns numbers verbatim" . runLua $ do
+        pushLuaExpr "149"
+        res <- tointegerx (-1)
+        liftIO $ assertEqual "Not the correct number" (Just 149) res
+
+    , testCase "tointegerx accepts strings coercible to integers" . runLua $ do
+        pushLuaExpr "'451'"
+        res <- tointegerx (-1)
+        liftIO $ assertEqual "Not the correct number" (Just 451) res
+
+    , testCase "tointegerx returns Nothing for non-integer numbers" . runLua $ do
+        pushLuaExpr "4.5"
+        res <- tointegerx (-1)
+        liftIO $ assertEqual "Not the correct number" Nothing res
+
+    , testCase "tointegerx returns Nothing when given a boolean" . runLua $ do
+        pushLuaExpr "true"
+        liftIO . assertEqual "Not the correct number" Nothing =<< tointegerx (-1)
+
+    , testCase "tonumberx returns numbers verbatim" . runLua $ do
+        pushLuaExpr "14.9"
+        res <- tonumberx (-1)
+        liftIO $ assertEqual "Not the correct number" (Just 14.9) res
+
+    , testCase "tonumberx accepts strings as numbers" . runLua $ do
+        pushLuaExpr "'42.23'"
+        res <- tonumberx (-1)
+        liftIO $ assertEqual "Not the correct number" (Just 42.23) res
+
+    , testCase "tonumberx returns Nothing when given a boolean" . runLua $ do
+        pushLuaExpr "true"
+        liftIO . assertEqual "Not the correct number" Nothing =<< tonumberx (-1)
+    ]
 
   , luaTestCase "setting and getting a global works" $ do
       pushLuaExpr "{'Moin', Hello = 'World'}"
