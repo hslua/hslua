@@ -193,6 +193,18 @@ tests = testGroup "Haskell version of the C API"
           OK =<< dostring "return (2 + 3)"
         liftIO . assertEqual "top of the stack should be result of last computation"
           (5 :: LuaInteger) =<< peek (-1)
+
+    , testCase "loadfile loading" . runLua $ do
+        liftIO . assertEqual "wrong error code for non-existing file"
+          ErrFile =<< loadfile "./file-does-not-exist.lua"
+        liftIO . assertEqual "loading an invalid file doesn't return ErrSyntax"
+          ErrSyntax =<< loadfile "test/lua/syntax-error.lua"
+        liftIO . assertEqual "loading a valid program failed"
+          OK =<< loadfile "./test/lua/example.lua"
+        call 0 0
+        liftIO . assertEqual "fib function not defined or not correct"
+          (8 :: LuaInteger) =<< (getglobal "fib" *> pushinteger 6 *>
+                                 call 1 1 *> peek (-1))
     ]
 
   , testCase "pcall status" . runLua $ do
