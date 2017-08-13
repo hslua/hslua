@@ -138,6 +138,7 @@ instance Enum Type where
   fromEnum = fromIntegral . fromTypeCode . fromType
   toEnum = toType . TypeCode . fromIntegral
 
+-- | Convert a lua Type to a type code which can be passed to the C API.
 fromType :: Type -> TypeCode
 fromType tp = TypeCode $ case tp of
   TypeNone          -> #{const LUA_TNONE}

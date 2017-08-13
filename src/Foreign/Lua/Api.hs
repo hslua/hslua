@@ -354,6 +354,7 @@ dostring s = do
     then pcall 0 multret Nothing
     else return loadRes
 
+-- | Loads and runs the given file.
 dofile :: FilePath -> Lua Status
 dofile fp = do
   loadRes <- loadfile fp

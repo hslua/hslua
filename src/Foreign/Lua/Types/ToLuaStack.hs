@@ -97,6 +97,7 @@ instance ToLuaStack [Char] where
 instance ToLuaStack a => ToLuaStack [a] where
   push = pushList
 
+-- | Push list as numerically indexed table.
 pushList :: ToLuaStack a => [a] -> Lua ()
 pushList xs = do
   let setField i x = push x *> rawseti (-2) i
