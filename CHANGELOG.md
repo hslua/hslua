@@ -1,4 +1,35 @@
 ## Changelog
+### 0.7.0
+
+- Tuples from pairs to octuples have been made instances of `FromLuaStack` and
+  `ToLuaStack`.
+- New functions `dostring` and `dofile` are provided to load and run strings and
+  files in a single step.
+- `LuaStatus` was renamed to `Status`, the *Lua* prefix was removed from its
+  type constructors.
+- The constructor `ErrFile` was added to `Status`. It is returned by `loadfile`
+  if the file cannot be read.
+- Remove unused FFI bindings and unused types, including all functions unsafe to
+  use from within Haskell and the library functions added with 0.5.0. Users with
+  special requirements should define their own wrappers and raw bindings.
+- The module *Foreign.Lua.Api.SafeBindings* was merge into
+  *Foreign.Lua.Api.RawBindings*.
+- FFI bindings are changed to use newtypes where sensible, most notably
+  `StackIndex`, `NumArgs`, and `NumResults`, but also the newly introduced
+  newtypes `StatusCode`, `TypeCode`, and `LuaBool`.
+- Add functions `tointegerx` and `tonumberx` which can be used to get and check
+  values from the stack in a single step.
+- The signature of `concat` was changed from `Int -> Lua ()` to
+  `NumArgs -> Lua ()`.
+- The signature of `loadfile` was changed from `String -> Lua Int` to
+  `String -> Lua Status`. 
+- The type `LTYPE` was renamed to `Type`, its constructors were renamed to
+  follow the pattern `Type<Typename>`. `LuaRelation` was renamed to
+  `RelationalOperator`, the *Lua* prefix was removed from its constructors.
+- Add function `tolist` to allow getting a generic list from the stack without
+  having to worry about the overlapping instance with `[Char]`.
+
+
 ### 0.6.0
 
 * Supported Lua Versions now include Lua 5.2 and Lua 5.3. LuaJIT and Lua 5.1
@@ -39,7 +70,7 @@
 * Drop support for GHC versions < 7.8, avoid compiler warnings.
 * Ensure no symbols are stripped when linking the bundled lua interpreter.
 * Simplify `tostring` function definition. (Sean Proctor)
-* Explicitly decprecate `strlen`. (Sean Proctor)
+* Explicitly deprecate `strlen`. (Sean Proctor)
 * Add links to lua documentation for functions wrapping the official lua C API.
   (Sean Proctor).
 
