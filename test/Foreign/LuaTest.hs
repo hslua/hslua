@@ -103,7 +103,7 @@ tests = testGroup "lua integration tests"
       mt1 <- peek (-1) <* pop 1 :: Lua ByteString
       liftIO (assert (mt1 == "yup"))
 
-  , testGroup "stack values"
+  , testGroup "Getting strings to and from the stack"
     [ testCase "unicode ByteString" $ do
         let val = T.pack "öçşiğüİĞı"
         val' <- runLua $ do
@@ -139,9 +139,22 @@ tests = testGroup "lua integration tests"
   , testGroup "luaopen_base returns the right number of tables" testOpenBase
 
   , testGroup "C functions"
-    [ testCase "pushing a C function to and calling it from Lua" $
-      -- Closures would usually be defined on the Haskell, unless the upvalues
-      -- cannot be read from the stack.
+    [ testCase "Registering a C function and calling it from Lua" $
+      let comp :: Lua [String]
+          comp = do
+            fn <- newCFunction (return . words :: String -> Lua [String])
+            register "words" fn
+            res <- dostring "return words('Caffeine induced nonsense')"
+            freeCFunction fn
+            if res == OK
+              then peek (-1)
+              else throwLuaError "Error in words function."
+      in assertEqual "greeting function failed"
+          (Right ["Caffeine", "induced", "nonsense"]) =<< runLuaEither comp
+
+    , testCase "pushing a C closure to and calling it from Lua" $
+      -- Closures would usually be defined on the Haskell side, unless the
+      -- upvalues cannot be read from the stack (e.g., a lua function).
       let greeter :: String -> HaskellFunction
           greeter greetee = do
             greeting <- peek (upvalueindex 1)
