@@ -127,7 +127,7 @@ instance FromLuaStack String where
   peek = fmap T.unpack . peek
 
 instance FromLuaStack a => FromLuaStack [a] where
-  peek = toList
+  peek = typeChecked "table" istable toList
 
 instance (Ord a, FromLuaStack a, FromLuaStack b) => FromLuaStack (Map a b) where
   peek idx = fromList <$> pairsFromTable idx
