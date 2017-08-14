@@ -83,7 +83,7 @@ library
   if impl(ghc < 7.10)
      hs-source-dirs:    prelude
      other-modules:     Prelude
-  ghc-options:          -Wall -O2
+  ghc-options:          -Wall
   extensions:           CPP
   if flag(system-lua) || flag(luajit) || flag(lua501) || flag(lua502)
     c-sources:          safer-api/safer-api.c
