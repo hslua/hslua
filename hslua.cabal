@@ -43,6 +43,10 @@ flag apicheck
   description:          Compile Lua with -DLUA_USE_APICHECK.
   default:              False
 
+flag lua_32bits
+  description:          Compile Lua with -DLUA_32BITS
+  default:              False
+
 flag luajit
   description:          Link with LuaJIT.  This implies flag system-lua as well.
   default:              False
@@ -165,8 +169,8 @@ library
     cc-options:         "-DLUA_USE_POSIX"
     ld-options:         "-Wl,-E"
 
-  if os(windows)
-    cc-options:         "-D__NO_ISOCEXT"
+  if flag(lua_32bits)
+    cc-options:         "-DLUA_32BITS"
 
   if flag(apicheck)
     cc-options:         "-DLUA_USE_APICHECK"
