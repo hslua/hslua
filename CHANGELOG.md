@@ -1,4 +1,11 @@
 ## Changelog
+### 0.7.1
+
+- The flag `lua_32bits` was added to allow users to compile Lua for 32-bit
+  systems.
+- When reading a list, throw an error if the lua value isn't a table instead of
+  silently returning an empty list.
+
 ### 0.7.0
 
 - Tuples from pairs to octuples have been made instances of `FromLuaStack` and
