@@ -1,4 +1,13 @@
 ## Changelog
+### 0.8.0
+
+- Use newtype definitions instead of type aliases for LuaNumber and LuaInteger.
+  This makes it easier to ensure the correct numeric instances in situations
+  where Lua might have been compiled with 32-bit numbers.
+- Instances of `FromLuaStack` and `ToLuaStack` for `Int` are removed. The
+  correctness of these instances cannot be guaranteed if Lua was compiled with a
+  non-standard integer type.
+
 ### 0.7.1
 
 - The flag `lua_32bits` was added to allow users to compile Lua for 32-bit
