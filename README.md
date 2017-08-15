@@ -37,3 +37,11 @@ are exported from the default module for that reason. However, raw bindings to
 the C API functions are still provided in `Foreign.Lua.RawBindings`. If you get
 coroutines to work, or just believe that there should be wrapper functions for
 other reasons, we'd love to hear from you.
+
+**Why are there no predefined stack instances for default numerical types?**
+HsLua defines instances for the `FromLuaStack` and `ToLuaStack` type-classes
+only if the following law holds: `return x == push x *> peek x`. Lua can be
+compiled with customized number types, making it impossible to verify the
+correctness of the above equation. Furthermore, instances for numerical types
+can be based on those of LuaInteger and LuaNumber and are easy to write.
+Therefor hslua doesn't provide any such instances.
