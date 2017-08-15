@@ -41,7 +41,6 @@ import Foreign.Lua as Lua
 import Test.HsLua.Arbitrary ()
 import Test.HsLua.Util (luaTestCase, pushLuaExpr)
 import Test.QuickCheck (Property, (.&&.))
-import Test.QuickCheck.Arbitrary (Arbitrary (..), arbitraryBoundedEnum)
 import Test.QuickCheck.Monadic (assert, monadicIO, run)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
@@ -250,7 +249,8 @@ tests = testGroup "Haskell version of the C API"
       in Prelude.compare n1 n2 == Prelude.compare lt1 lt2
   ]
 
-compareWith :: (Int -> Int -> Bool) -> RelationalOperator -> Int -> Property
+compareWith :: (LuaInteger -> LuaInteger -> Bool)
+            -> RelationalOperator -> LuaInteger -> Property
 compareWith op luaOp n = compareLT .&&. compareEQ .&&. compareGT
  where
   compareLT :: Property

@@ -69,9 +69,6 @@ instance ToLuaStack LuaInteger where
 instance ToLuaStack LuaNumber where
   push = pushnumber
 
-instance ToLuaStack Int where
-  push = pushinteger . fromIntegral
-
 instance ToLuaStack ByteString where
   push = pushstring
 

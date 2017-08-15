@@ -32,7 +32,8 @@ Test for the conversion of lua values to haskell values.
 -}
 module Foreign.Lua.Types.FromLuaStackTest (tests) where
 
-import Foreign.Lua (Lua, LuaInteger, call, loadstring, runLua)
+import Foreign.Lua (Lua, LuaInteger, LuaException (LuaException), call,
+                    dostring, loadstring, runLua, tryLua)
 import Foreign.Lua.Types.FromLuaStack
 
 import Test.Tasty (TestTree, testGroup)
@@ -51,13 +52,13 @@ tests = testGroup "FromLuaStack"
       let boolNum = "Expected a boolean but got a number"
       assertEqual "error messsage mismatched" (Left boolNum) =<< runLua
         (loadstring "return 5" *> call 0 1 *> peekEither (-1) :: Lua (Result Bool))
-      let numBool = "Expected a number but got a boolean"
-      assertEqual "error message mismatched" (Left numBool) =<< runLua
-        (loadstring "return true" *> call 0 1 *> peekEither (-1) :: Lua (Result Int))
+      let numBoolExcept = LuaException "Expected a number but got a boolean"
+      assertEqual "error message mismatched" (Left numBoolExcept) =<< runLua
+        (tryLua $ dostring "return true" *> (peek (-1) :: Lua LuaInteger))
 
   , testCase "list cannot be read if a list element fails" $ do
       let err = "Could not read list: Expected a number but got a boolean"
       assertEqual "error message mismatched" (Left err) =<< runLua
         (loadstring "return {1, 5, 23, true, 42}" *> call 0 1
-         *> peekEither (-1) :: Lua (Result [Int]))
+         *> peekEither (-1) :: Lua (Result [LuaInteger]))
   ]

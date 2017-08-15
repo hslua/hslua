@@ -98,9 +98,6 @@ instance FromLuaStack LuaInteger where
 instance FromLuaStack LuaNumber where
   peek = typeChecked "number" isnumber tonumber
 
-instance FromLuaStack Int where
-  peek = typeChecked "number" isnumber (fmap fromIntegral . tointeger)
-
 instance FromLuaStack ByteString where
   peek = typeChecked "string" isstring tostring
 

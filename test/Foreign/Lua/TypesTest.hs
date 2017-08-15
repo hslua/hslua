@@ -102,16 +102,16 @@ tests = testGroup "peek and push are well behaved"
   , testGroup "Random stack values"
     [ testProperty "can push/pop booleans"
       (prop_stackPushingPulling :: Bool       -> Property)
-    , testProperty "can push/pop ints"
-      (prop_stackPushingPulling :: Int        -> Property)
+    , testProperty "can push/pop lua integers"
+      (prop_stackPushingPulling :: LuaInteger -> Property)
     , testProperty "can push/pop lua numbers"
       (prop_stackPushingPulling :: LuaNumber  -> Property)
     , testProperty "can push/pop bytestrings"
       (prop_stackPushingPulling :: ByteString -> Property)
     , testProperty "can push/pop lists of booleans"
       (prop_stackPushingPulling :: [Bool]     -> Property)
-    , testProperty "can push/pop lists of ints"
-      (prop_stackPushingPulling :: [Int]      -> Property)
+    , testProperty "can push/pop lists of LuaIntegers"
+      (prop_stackPushingPulling :: [LuaInteger] -> Property)
     , testProperty "can push/pop lists of bytestrings"
       (prop_stackPushingPulling :: [ByteString] -> Property)
     ]
@@ -138,9 +138,9 @@ prop_stackPushingPulling t = monadicIO $ do
   -- Note that duplicate values don't matter so we don't need to guard against that
   Ordered indices' <- pick arbitrary
   let indices = map getPositive indices'
-  let nItems = if null indices then 0 else last indices
+  let nItems = (if null indices then 0 else last indices) :: LuaInteger
   -- Make sure there's enough room in the stack
-  assert =<< run (runLuaWith l $ checkstack nItems)
+  assert =<< run (runLuaWith l $ checkstack (fromIntegral nItems))
   -- Push elements
   run $ forM_ [1..nItems] $ \n ->
     runLuaWith l $

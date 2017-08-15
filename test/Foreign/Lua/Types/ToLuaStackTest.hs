@@ -55,9 +55,9 @@ tests = testGroup "ToLuaStack"
         True
         "true"
 
-    , testCase "Ints can be pushed correctly" $
-      assertLuaEqual "5::Int was not pushed"
-        (5 :: Int)
+    , testCase "LuaNumbers can be pushed correctly" $
+      assertLuaEqual "5::LuaNumber was not pushed"
+        (5 :: LuaNumber)
         "5"
 
     , testCase "LuaIntegers can be pushed correctly" $

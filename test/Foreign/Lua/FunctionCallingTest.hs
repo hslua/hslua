@@ -35,19 +35,19 @@ import Test.Tasty.HUnit (assertEqual, testCase)
 tests :: TestTree
 tests = testGroup "Interoperability"
   [ testGroup "call haskell functions from lua" $
-    let integerOperation :: Int -> Int -> Lua Int
+    let integerOperation :: LuaInteger -> LuaInteger -> Lua LuaInteger
         integerOperation i1 i2 =
           let (j1, j2) = (fromIntegral i1, fromIntegral i2)
           in return $ fromIntegral (product [1..j1] `mod` j2 :: Integer)
     in
     [ testCase "push haskell function to lua" $
-      let add :: Lua Int
+      let add :: Lua LuaInteger
           add = do
             i1 <- peek (-1)
             i2 <- peek (-2)
             return (i1 + i2)
 
-          luaOp :: Lua Int
+          luaOp :: Lua LuaInteger
           luaOp = do
             registerHaskellFunction "add" add
             loadstring "return add(23, 5)" *> call 0 1
@@ -56,7 +56,7 @@ tests = testGroup "Interoperability"
       in assertEqual "Unexpected result" 28 =<< runLua luaOp
 
     , testCase "push multi-argument haskell function to lua" $
-      let luaOp :: Lua Int
+      let luaOp :: Lua LuaInteger
           luaOp = do
             registerHaskellFunction "integerOp" integerOperation
             loadstring "return integerOp(23, 42)" *> call 0 1
@@ -79,7 +79,7 @@ tests = testGroup "Interoperability"
   , testGroup "call lua function from haskell"
     [ testCase "test equality within lua" $
       assertEqual "raw equality test failed" True =<<
-      runLua (openlibs *> callFunc "rawequal" (5 :: Int) (5.0 :: LuaNumber))
+      runLua (openlibs *> callFunc "rawequal" (5 :: LuaInteger) (5.0 :: LuaNumber))
 
     , testCase "failing lua function call" $
       assertEqual "unexpected result" "foo" =<<
