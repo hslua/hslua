@@ -38,6 +38,7 @@ import Data.Monoid ((<>))
 import Foreign.Lua
 import Foreign.StablePtr (castStablePtrToPtr, freeStablePtr, newStablePtr)
 
+import Test.HsLua.Arbitrary ()
 import Test.QuickCheck (Property)
 import Test.QuickCheck.Instances ()
 import Test.QuickCheck.Monadic (monadicIO, run, assert)

@@ -80,7 +80,8 @@ type CFunction = FunPtr (LuaState -> IO NumResults)
 -- values in lua. (See @LUA_INT_TYPE@ in @luaconf.h@.)
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_Integer lua_Integer>.
-type LuaInteger = #{type LUA_INTEGER}
+newtype LuaInteger = LuaInteger #{type LUA_INTEGER}
+  deriving (Enum, Eq, Integral, Num, Ord, Real, Show)
 
 -- |  The type of floats in Lua.
 --
@@ -88,7 +89,8 @@ type LuaInteger = #{type LUA_INTEGER}
 -- single float or a long double. (See @LUA_FLOAT_TYPE@ in @luaconf.h@.)
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_Number lua_Number>.
-type LuaNumber = #{type LUA_NUMBER}
+newtype LuaNumber = LuaNumber #{type LUA_NUMBER}
+  deriving (Eq, Floating, Fractional, Num, Ord, Real, RealFloat, RealFrac, Show)
 
 
 --

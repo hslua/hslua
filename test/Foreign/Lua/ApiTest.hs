@@ -21,7 +21,6 @@ THE SOFTWARE.
 -}
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-|
 Module      :  Foreign.Lua.ApiTest
 Copyright   :  © 2017 Albert Krewinkel
@@ -39,6 +38,7 @@ import Prelude hiding (compare)
 
 import Control.Monad (forM_)
 import Foreign.Lua as Lua
+import Test.HsLua.Arbitrary ()
 import Test.HsLua.Util (luaTestCase, pushLuaExpr)
 import Test.QuickCheck (Property, (.&&.))
 import Test.QuickCheck.Arbitrary (Arbitrary (..), arbitraryBoundedEnum)
@@ -276,6 +276,3 @@ compareWith op luaOp n = compareLT .&&. compareEQ .&&. compareGT
       push n
       compare (-2) (-1) luaOp
     assert $ luaRes == op (n + 1) n
-
-instance Arbitrary Type where
-  arbitrary = arbitraryBoundedEnum

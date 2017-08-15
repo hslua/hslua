@@ -27,6 +27,7 @@ import Control.Monad (forM, forM_)
 import Data.ByteString (ByteString)
 import Data.Map (Map)
 import Foreign.Lua
+import Test.HsLua.Arbitrary ()
 import Test.QuickCheck
 import Test.QuickCheck.Instances ()
 import Test.QuickCheck.Monadic
