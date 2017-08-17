@@ -38,7 +38,7 @@ spec = do
       it "can be converted to a lua number" $ property $
         \x -> assert =<< luaTest "type(x) == 'number'" [("x", x::Scientific)]
       it "can be round-tripped through the stack with numbers of double precision" $
-        property $ \x -> assertRoundtripEqual (luaNumberToScientific x)
+        property $ \x -> assertRoundtripEqual (luaNumberToScientific (LuaNumber x))
       it "can be round-tripped through the stack and stays approximately equal" $
         property $ \x -> assertRoundtripApprox (x :: Scientific)
     describe "Text" $ do
@@ -99,7 +99,7 @@ luaTest luaTestCode xs = runLua $ do
   callFunc "run"
 
 luaNumberToScientific :: LuaNumber -> Scientific
-luaNumberToScientific = fromFloatDigits
+luaNumberToScientific = fromFloatDigits . (realToFrac :: LuaNumber -> Double)
 
 instance Arbitrary Aeson.Value where
   arbitrary = arbitraryValue 7
@@ -108,7 +108,11 @@ arbitraryValue :: Int -> Gen Aeson.Value
 arbitraryValue size = frequency $
     [ (1, return Aeson.Null)
     , (4, Aeson.Bool <$> arbitrary)
-    , (4, Aeson.Number . luaNumberToScientific <$> arbitrary)
+    -- FIXME: this is cheating: we don't draw numbers from the whole possible
+    -- range, but only fro the range of nubers that can pass through the lua
+    -- stack without rounding errors. Good enough for now, but we still might
+    -- want to do better in the future.
+    , (4, Aeson.Number . luaNumberToScientific . LuaNumber <$> arbitrary)
     , (4, Aeson.String <$> arbitrary)
     , (2, resize (size - 1) $ Aeson.Array <$> arbitrary)
     , (2, resize (size - 1) $ Aeson.Object <$> arbitrary)

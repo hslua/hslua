@@ -33,13 +33,13 @@ module Foreign.Lua.Aeson
 #else
 import Control.Applicative ((<$>), (<*>), (*>), (<*))
 #endif
-import Control.Monad (zipWithM_)
 import Data.HashMap.Lazy (HashMap)
 import Data.Hashable (Hashable)
 import Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
 import Data.Vector (Vector, fromList, toList)
-import Foreign.Lua hiding (newstate)
+import Foreign.Lua hiding (newstate, toList)
 
+import qualified Foreign.Lua as Lua
 import qualified Data.Aeson as Aeson
 import qualified Data.HashMap.Lazy as HashMap
 import qualified Data.Vector as Vector
@@ -81,10 +81,10 @@ instance FromLuaStack Aeson.Value where
   peek i = do
     ltype' <- ltype i
     case ltype' of
-      TBOOLEAN -> Aeson.Bool  <$> peek i
-      TNUMBER -> Aeson.Number <$> peek i
-      TSTRING -> Aeson.String <$> peek i
-      TTABLE -> do
+      TypeBoolean -> Aeson.Bool  <$> peek i
+      TypeNumber -> Aeson.Number <$> peek i
+      TypeString -> Aeson.String <$> peek i
+      TypeTable -> do
         rawgeti i 0
         isInt <- isnumber (-1)
         pop 1
@@ -99,7 +99,7 @@ instance FromLuaStack Aeson.Value where
                 if isNull
                   then return Aeson.Null
                   else Aeson.Object <$> peek i
-      TNIL -> return Aeson.Null
+      TypeNil -> return Aeson.Null
       _    -> error $ "Unexpected type: " ++ (show ltype')
 
 -- | Create a new lua state suitable for use with aeson values. This behaves
@@ -121,12 +121,12 @@ isLuaNull i = do
 pushvector :: ToLuaStack a => Vector a -> Lua ()
 pushvector v = do
   pushList . toList $ v
-  push (Vector.length v)
+  push (fromIntegral (Vector.length v) :: LuaInteger)
   rawseti (-2) 0
 
 -- | Try reading the value under the given index as a vector.
 tovector :: FromLuaStack a => StackIndex -> Lua (Vector a)
-tovector = fmap fromList . peekList
+tovector = fmap fromList . Lua.toList
 
 -- | Push a hashmap unto the stack.
 pushTextHashMap :: (ToLuaStack a, ToLuaStack b) => HashMap a b -> Lua ()
@@ -135,19 +135,3 @@ pushTextHashMap hm = do
     let addValue (k, v) = push k *> push v *> rawset (-3)
     newtable
     mapM_ addValue xs
-
-pushList :: ToLuaStack a => [a] -> Lua ()
-pushList xs = do
-  let setField i x = push x *> rawseti (-2) i
-  newtable
-  zipWithM_ setField [1..] xs
-
--- | Read a table into a list
-peekList :: FromLuaStack a => StackIndex -> Lua [a]
-peekList n = (go . enumFromTo 1 =<< rawlen n) `catchLuaError` amendError
- where
-  go [] = return []
-  go (i : is) = do
-    ret <- rawgeti n i *> peek (-1) <* pop 1
-    (ret:) <$> go is
-  amendError err = throwLuaError ("Could not read list: " ++ show err)

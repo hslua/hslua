@@ -1,5 +1,5 @@
 resolver: lts-9.0
 packages: ['.']
 extra-deps:
-  - hslua-0.6.0
+  - hslua-0.8.0
 flags: {}
