@@ -10,7 +10,7 @@ matrix:
   include:
   # grab the appropriate GHC and cabal-install versions from hvr's PPA.
   - env: BUILD=cabal GHCVER=7.8.4 CABALVER=1.22
-    compiler: ": #GHC 7.8.4"
+    compiler: "GHC 7.8.4"
     addons:
       apt:
         packages:
@@ -19,7 +19,7 @@ matrix:
         sources: [hvr-ghc]
 
   - env: BUILD=cabal GHCVER=7.10.3 CABALVER=1.22
-    compiler: ": #GHC 7.10.3"
+    compiler: "GHC 7.10.3"
     addons:
       apt:
         packages:
@@ -28,7 +28,7 @@ matrix:
         sources: [hvr-ghc]
 
   - env: BUILD=cabal GHCVER=8.0.2 CABALVER=1.24
-    compiler: ": #GHC 8.0.2"
+    compiler: "GHC 8.0.2"
     addons:
       apt:
         packages:
@@ -37,7 +37,7 @@ matrix:
         sources: [hvr-ghc]
 
   - env: BUILD=cabal GHCVER=8.2.1 CABALVER=1.24
-    compiler: ": #GHC 8.2.1"
+    compiler: "GHC 8.2.1"
     addons:
       apt:
         packages:
@@ -48,7 +48,7 @@ matrix:
   # The Stack builds. We can pass in arbitrary Stack arguments via the ARGS
   # variable, such as using --stack-yaml to point to a different file.
   - env: BUILD=stack ARGS="--resolver lts-9"
-    compiler: ": #stack 8.0.2"
+    compiler: "stack 8.0.2"
     addons:
       apt:
         packages:
@@ -62,11 +62,12 @@ before_install:
 # Download and unpack the stack executable
 - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$HOME/.local/bin:$PATH
 - mkdir -p ~/.local/bin
-- curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+- |
+  curl -L https://www.stackage.org/stack/linux-x86_64 | \
+    tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 
 install:
 - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
-- if [ -f configure.ac ]; then autoreconf -i; fi
 - |
   case "$BUILD" in
     stack)
@@ -75,21 +76,22 @@ install:
     cabal)
       cabal --version
       travis_retry cabal update
-      cabal install --only-dependencies --enable-tests --enable-benchmarks --force-reinstalls --ghc-options=-O0 --reorder-goals --max-backjumps=-1 $CABALARGS
+      cabal install --only-dependencies --enable-tests --force-reinstalls --reorder-goals
       ;;
   esac
 
 script:
+- GHC_OPTIONS="-Wall -Werror"
 - |
   case "$BUILD" in
     stack)
-    stack --no-terminal test --haddock --no-haddock-deps --ghc-options="-Wall -fno-warn-unused-do-bind -Werror"
+      stack --no-terminal test --haddock --no-haddock-deps --ghc-options="$GHC_OPTIONS"
       ;;
     cabal)
-      cabal configure --enable-tests -v2 --ghc-options="-O0 -Werror"
+      cabal configure --enable-tests --ghc-options="$GHC_OPTIONS"
       cabal build
       cabal check
-      cabal test
+      cabal test --show-details=direct
       cabal copy
       cabal sdist
       SRC_TGZ=$(cabal info . | awk '{print $2;exit}').tar.gz && \
