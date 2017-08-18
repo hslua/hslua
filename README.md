@@ -1,8 +1,8 @@
 hslua-aeson
 ===========
 
-[![travis build status](https://img.shields.io/travis/tarleb/hslua-aeson/master.svg?style=flat-square)](https://travis-ci.org/tarleb/hslua-aeson)
-[![MIT License](https://img.shields.io/github/license/tarleb/hslua-aeson.svg?style=flat-square)](./LICENSE)
+[![travis build status]](https://travis-ci.org/hslua/hslua-aeson)
+[![MIT License]](./LICENSE)
 
 
 Glue to hslua for aeson values.
@@ -26,3 +26,6 @@ License
 This project is licensed under the liberal MIT license, the same license under
 which hslua and lua itself are published. See the [LICENSE](./LICENSE) file for
 details.
+
+[travis build status]: https://img.shields.io/travis/hslua/hslua-aeson/master.svg?style=flat-square
+[MIT License]: https://img.shields.io/github/license/hslua/hslua-aeson.svg?style=flat-square
