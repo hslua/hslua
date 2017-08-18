@@ -12,6 +12,7 @@ copyright:           © 2017 Albert Krewinkel
 category:            Foreign
 build-type:          Simple
 extra-source-files:  README.md
+                     changelog.md
 cabal-version:       >=1.10
 
 source-repository head
