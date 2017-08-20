@@ -72,37 +72,69 @@ foreign import ccall unsafe "lua.h lua_gettop"
   lua_gettop :: LuaState -> IO StackIndex
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_settop lua_settop>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_settop"
+#else
+foreign import ccall safe "lua.h lua_settop"
+#endif
   lua_settop :: LuaState -> StackIndex -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushvalue lua_pushvalue>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_pushvalue"
+#else
+foreign import ccall safe "lua.h lua_pushvalue"
+#endif
   lua_pushvalue :: LuaState -> StackIndex -> IO ()
 
 #if LUA_VERSION_NUMBER >= 503
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rotate lua_rotate>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_rotate"
+#else
+foreign import ccall "lua.h lua_rotate"
+#endif
   lua_rotate :: LuaState -> StackIndex -> CInt -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_copy lua_copy>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_copy"
+#else
+foreign import ccall "lua.h lua_copy"
+#endif
   lua_copy :: LuaState -> StackIndex -> StackIndex -> IO ()
 #else
 -- | See <https://www.lua.org/manual/5.2/manual.html#lua_remove lua_remove>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_remove"
+#else
+foreign import ccall safe "lua.h lua_remove"
+#endif
   lua_remove :: LuaState -> StackIndex -> IO ()
 
 -- | See <https://www.lua.org/manual/5.2/manual.html#lua_insert lua_insert>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_insert"
+#else
+foreign import ccall safe "lua.h lua_insert"
+#endif
   lua_insert :: LuaState -> StackIndex -> IO ()
 
 -- | See <https://www.lua.org/manual/5.2/manual.html#lua_replace lua_replace>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_replace"
+#else
+foreign import ccall safe "lua.h lua_replace"
+#endif
   lua_replace :: LuaState -> StackIndex -> IO ()
 #endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_checkstack lua_checkstack>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_checkstack"
+#else
+foreign import ccall safe "lua.h lua_checkstack"
+#endif
   lua_checkstack :: LuaState -> StackIndex -> IO LuaBool
 
 -- lua_xmove is currently not supported.
@@ -112,27 +144,51 @@ foreign import ccall unsafe "lua.h lua_checkstack"
 -- * Stack access functions
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_isnumber lua_isnumber>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_isnumber"
+#else
+foreign import ccall safe "lua.h lua_isnumber"
+#endif
   lua_isnumber :: LuaState -> StackIndex -> IO LuaBool
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_isstring lua_isstring>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_isstring"
+#else
+foreign import ccall safe "lua.h lua_isstring"
+#endif
   lua_isstring :: LuaState -> StackIndex -> IO LuaBool
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_iscfunction lua_iscfunction>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_iscfunction"
+#else
+foreign import ccall safe "lua.h lua_iscfunction"
+#endif
   lua_iscfunction :: LuaState -> StackIndex -> IO LuaBool
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_isuserdata lua_isuserdata>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_isuserdata"
+#else
+foreign import ccall safe "lua.h lua_isuserdata"
+#endif
   lua_isuserdata :: LuaState -> StackIndex -> IO LuaBool
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_type"
+#else
+foreign import ccall safe "lua.h lua_type"
+#endif
   lua_type :: LuaState -> StackIndex -> IO TypeCode
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_typename lua_typename>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_typename"
+#else
+foreign import ccall safe "lua.h lua_typename"
+#endif
   lua_typename :: LuaState -> TypeCode -> IO (Ptr CChar)
 
 -- lua_compare is unsafe (might cause a longjmp), use hslua_compare instead.
@@ -153,52 +209,96 @@ foreign import ccall "lua.h lua_lessthan"
 #endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawequal lua_rawequal>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_rawequal"
+#else
+foreign import ccall safe "lua.h lua_rawequal"
+#endif
   lua_rawequal :: LuaState -> StackIndex -> StackIndex -> IO LuaBool
 
 --
 -- Type coercion
 --
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_toboolean lua_toboolean>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_toboolean"
+#else
+foreign import ccall safe "lua.h lua_toboolean"
+#endif
   lua_toboolean :: LuaState -> StackIndex -> IO StackIndex
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tocfunction lua_tocfunction>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_tocfunction"
+#else
+foreign import ccall safe "lua.h lua_tocfunction"
+#endif
   lua_tocfunction :: LuaState -> StackIndex -> IO CFunction
 
 #if LUA_VERSION_NUMBER >= 502
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tointegerx lua_tointegerx>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_tointegerx"
+#else
+foreign import ccall safe "lua.h lua_tointegerx"
+#endif
   lua_tointegerx :: LuaState -> StackIndex -> Ptr LuaBool -> IO LuaInteger
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tonumberx lua_tonumberx>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_tonumberx"
+#else
+foreign import ccall safe "lua.h lua_tonumberx"
+#endif
   lua_tonumberx :: LuaState -> StackIndex -> Ptr LuaBool -> IO LuaNumber
 #else
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_tointeger lua_tointeger>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_tointeger"
+#else
+foreign import ccall safe "lua.h lua_tointeger"
+#endif
   lua_tointeger :: LuaState -> StackIndex -> IO LuaInteger
 
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_tonumber lua_tonumber>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_tonumber"
+#else
+foreign import ccall safe "lua.h lua_tonumber"
+#endif
   lua_tonumber :: LuaState -> StackIndex -> IO LuaNumber
 #endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tolstring lua_tolstring>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_tolstring"
+#else
+foreign import ccall safe "lua.h lua_tolstring"
+#endif
   lua_tolstring :: LuaState -> StackIndex -> Ptr CSize -> IO (Ptr CChar)
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_topointer lua_topointer>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_topointer"
+#else
+foreign import ccall safe "lua.h lua_topointer"
+#endif
   lua_topointer :: LuaState -> StackIndex -> IO (Ptr ())
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tothread lua_tothread>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_tothread"
+#else
+foreign import ccall safe "lua.h lua_tothread"
+#endif
   lua_tothread :: LuaState -> StackIndex -> IO LuaState
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_touserdata lua_touserdata>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_touserdata"
+#else
+foreign import ccall safe "lua.h lua_touserdata"
+#endif
   lua_touserdata :: LuaState -> StackIndex -> IO (Ptr a)
 
 
@@ -208,11 +308,19 @@ foreign import ccall unsafe "lua.h lua_touserdata"
 
 #if LUA_VERSION_NUMBER >= 502
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawlen lua_rawlen>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_rawlen"
+#else
+foreign import ccall safe "lua.h lua_rawlen"
+#endif
   lua_rawlen :: LuaState -> StackIndex -> IO CSize
 #else
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_objlen lua_objlen>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_objlen"
+#else
+foreign import ccall safe "lua.h lua_objlen"
+#endif
   lua_objlen :: LuaState -> StackIndex -> IO CSize
 #endif
 
@@ -221,38 +329,70 @@ foreign import ccall unsafe "lua.h lua_objlen"
 -- * Push functions
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushnil lua_pushnil>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_pushnil"
+#else
+foreign import ccall safe "lua.h lua_pushnil"
+#endif
   lua_pushnil :: LuaState -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushnumber lua_pushnumber>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_pushnumber"
+#else
+foreign import ccall safe "lua.h lua_pushnumber"
+#endif
   lua_pushnumber :: LuaState -> LuaNumber -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushinteger lua_pushinteger>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_pushinteger"
+#else
+foreign import ccall safe "lua.h lua_pushinteger"
+#endif
   lua_pushinteger :: LuaState -> LuaInteger -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushlstring lua_pushlstring>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_pushlstring"
+#else
+foreign import ccall safe "lua.h lua_pushlstring"
+#endif
   lua_pushlstring :: LuaState -> Ptr CChar -> CSize -> IO ()
 
 -- lua_pushstring is currently not supported. It's difficult to use in a haskell
 -- context.
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushcclosure lua_pushcclosure>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_pushcclosure"
+#else
+foreign import ccall safe "lua.h lua_pushcclosure"
+#endif
   lua_pushcclosure :: LuaState -> CFunction -> NumArgs -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushboolean lua_pushboolean>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_pushboolean"
+#else
+foreign import ccall safe "lua.h lua_pushboolean"
+#endif
   lua_pushboolean :: LuaState -> LuaBool -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushlightuserdata lua_pushlightuserdata>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_pushlightuserdata"
+#else
+foreign import ccall safe "lua.h lua_pushlightuserdata"
+#endif
   lua_pushlightuserdata :: LuaState -> Ptr a -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushthread lua_pushthread>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_pushthread"
+#else
+foreign import ccall safe "lua.h lua_pushthread"
+#endif
   lua_pushthread :: LuaState -> IO CInt
 
 
@@ -275,23 +415,43 @@ foreign import ccall "safer-api.h hslua_getfield"
   hslua_getfield :: LuaState -> StackIndex -> Ptr CChar -> IO CInt
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawget lua_rawget>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_rawget"
+#else
+foreign import ccall safe "lua.h lua_rawget"
+#endif
   lua_rawget :: LuaState -> StackIndex -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawgeti lua_rawgeti>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_rawgeti"
+#else
+foreign import ccall safe "lua.h lua_rawgeti"
+#endif
   lua_rawgeti :: LuaState -> StackIndex -> CInt -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_createtable lua_createtable>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_createtable"
+#else
+foreign import ccall safe "lua.h lua_createtable"
+#endif
   lua_createtable :: LuaState -> CInt -> CInt -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_newuserdata lua_newuserdata>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_newuserdata"
+#else
+foreign import ccall safe "lua.h lua_newuserdata"
+#endif
   lua_newuserdata :: LuaState -> CInt -> IO (Ptr ())
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_getmetatable lua_getmetatable>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_getmetatable"
+#else
+foreign import ccall safe "lua.h lua_getmetatable"
+#endif
   lua_getmetatable :: LuaState -> StackIndex -> IO CInt
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_getglobal \
@@ -319,15 +479,27 @@ foreign import ccall "safer-api.h hslua_setfield"
   hslua_setfield :: LuaState -> StackIndex -> Ptr CChar -> IO CInt
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawset lua_rawset>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_rawset"
+#else
+foreign import ccall safe "lua.h lua_rawset"
+#endif
   lua_rawset :: LuaState -> StackIndex -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawseti lua_rawseti>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_rawseti"
+#else
+foreign import ccall safe "lua.h lua_rawseti"
+#endif
   lua_rawseti :: LuaState -> StackIndex -> CInt -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_setmetatable lua_setmetatable>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lua.h lua_setmetatable"
+#else
+foreign import ccall safe "lua.h lua_setmetatable"
+#endif
   lua_setmetatable :: LuaState -> StackIndex -> IO ()
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_setglobal \
@@ -462,5 +634,9 @@ foreign import ccall "lauxlib.h luaL_loadfile"
 #endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadstring>
+#ifdef ALLOW_UNSAFE_GC
 foreign import ccall unsafe "lauxlib.h luaL_loadstring"
+#else
+foreign import ccall safe "lauxlib.h luaL_loadstring"
+#endif
   luaL_loadstring :: LuaState -> Ptr CChar -> IO StatusCode

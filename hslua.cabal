@@ -47,6 +47,12 @@ flag lua_32bits
   description:          Compile Lua with -DLUA_32BITS
   default:              False
 
+flag allow-unsafe-gc
+  description:          Allow optimizations which make Lua's garbage collection
+                        potentially unsafe; haskell finalizers must be handled
+                        with extreme care.
+  default:              True
+
 flag luajit
   description:          Link with LuaJIT.  This implies flag system-lua as well.
   default:              False
@@ -171,6 +177,9 @@ library
 
   if flag(lua_32bits)
     cc-options:         "-DLUA_32BITS"
+
+  if flag(allow-unsafe-gc)
+    cc-options:         "-DALLOW_UNSAFE_GC"
 
   if flag(apicheck)
     cc-options:         "-DLUA_USE_APICHECK"
