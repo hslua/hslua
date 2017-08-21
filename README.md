@@ -14,16 +14,47 @@ and lua.
 [Hackage]: http://img.shields.io/hackage/v/hslua.svg
 
 
-Using a different lua version
------------------------------
+Build flags
+-----------
 
-To use system-wide installed Lua/LuaJIT when linking hslua as a dependency,
+The following cabal build flags are supported:
+
+- `system-lua`: Use the locally installed Lua version instead of the version
+  shipped as part of HsLua.
+
+- `use-pkgconfig`: Use `pkg-config` to discover library and include paths. This
+  is used only when the `system-lua` flag is set or implied.
+
+- `lua501`: Build against Lua 5.1; this implies the flag `system-lua` as well.
+
+- `lua502`: Build against Lua 5.2; this implies the flag `system-lua` as well.
+
+- `luajit`: Build against LuaJIT; this implies the flag `system-lua` as well.
+
+- `allow-unsafe-gc`: Allow optimizations which make Lua's garbage collection
+  potentially unsafe; haskell finalizers must be handled with extreme care. This
+  is *enabled* per default, as this is rarely a problem in practice.
+
+- `apicheck`: Compile Lua with its API checks enabled.
+
+- `lua_32bits`: Compile Lua for a 32-bits system (e.g., i386, PowerPC G4).
+
+
+### Example: using a different lua version
+
+To use a system-wide installed Lua/LuaJIT when linking hslua as a dependency,
 build/install your package using `--constraint="hslua +system-lua"` or for
-LuaJIT: `--constraint="hslua +system-lua +luajit"`. For example, you can install
-Pandoc with hslua that uses system-wide LuaJIT like this:
+LuaJIT: `--constraint="hslua +luajit"`. For example, you can install Pandoc with
+hslua that uses system-wide LuaJIT like this:
 
 ``` sh
 cabal install pandoc --constraint="hslua +system-lua +luajit"
+```
+
+or with stack:
+
+``` sh
+stack install pandoc --flag=hslua:luajit
 ```
 
 
