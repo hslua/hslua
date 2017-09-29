@@ -53,6 +53,7 @@ import Foreign.Ptr (Ptr)
 
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
+import qualified Data.ByteString.Lazy as BL
 
 -- | A value that can be pushed to the Lua stack.
 class ToLuaStack a where
@@ -83,6 +84,9 @@ instance ToLuaStack (Ptr a) where
 
 instance ToLuaStack T.Text where
   push = push . T.encodeUtf8
+
+instance ToLuaStack BL.ByteString where
+  push = push . BL.toStrict
 
 #if MIN_VERSION_base(4,8,0)
 instance {-# OVERLAPS #-} ToLuaStack [Char] where

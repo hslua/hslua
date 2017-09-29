@@ -57,6 +57,7 @@ import Foreign.Ptr (Ptr)
 
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
+import qualified Data.ByteString.Lazy as BL
 
 -- | Result returned when trying to get a value from the lua stack.
 type Result a = Either String a
@@ -115,6 +116,9 @@ instance FromLuaStack LuaState where
 
 instance FromLuaStack T.Text where
   peek = fmap T.decodeUtf8 . peek
+
+instance FromLuaStack BL.ByteString where
+  peek = fmap BL.fromStrict . peek
 
 #if MIN_VERSION_base(4,8,0)
 instance {-# OVERLAPS #-} FromLuaStack [Char] where
