@@ -1,4 +1,19 @@
 ## Changelog
+### 0.9.0
+
+- Added cabal flag to allow fully safe garbage collection: Lua garbage
+  collection can occur in most of the API functions, even in those usually not
+  calling back into haskell and hence marked as optimizable. The effect of this
+  is that finalizers which call Haskell functions will cause the program to
+  hang. A new flag `allow-unsafe-gc` is introduced and enabled by default.
+  Disabling this flag will mark more C API functions as potentially calling back
+  into Haskell. This has a serious performance impact.
+- `FromLuaStack` and `ToLuaStack` instances for lazy ByteStrings are added.
+- None-string error messages are handled properly: Lua allows error messages to
+  be of any type, but the haskell error handlers expected string values. Tables,
+  booleans, and other non-string values are now handled as well and converted to
+  strings.
+
 ### 0.8.0
 
 - Use newtype definitions instead of type aliases for LuaNumber and LuaInteger.
