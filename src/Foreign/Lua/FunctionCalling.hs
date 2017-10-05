@@ -56,7 +56,6 @@ module Foreign.Lua.FunctionCalling
   ) where
 
 import Control.Monad (when)
-import Data.ByteString.Char8 (unpack)
 import Foreign.C (CInt (..))
 import Foreign.Lua.Api
 import Foreign.Lua.Types
@@ -133,9 +132,9 @@ instance (FromLuaStack a) => LuaCallFunc (Lua a) where
     getglobal' fnName
     x
     z <- pcall nargs 1 Nothing
-    if z /= OK
-      then tostring (-1) >>= throwLuaError . unpack
-      else peek (-1) <* pop 1
+    if z == OK
+      then peek (-1) <* pop 1
+      else throwTopMessageAsError
 
 instance (ToLuaStack a, LuaCallFunc b) => LuaCallFunc (a -> b) where
   callFunc' fnName pushArgs nargs x =

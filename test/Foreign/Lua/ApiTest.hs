@@ -37,6 +37,7 @@ module Foreign.Lua.ApiTest (tests) where
 import Prelude hiding (compare)
 
 import Control.Monad (forM_)
+import Data.Monoid ((<>))
 import Foreign.Lua as Lua
 import Test.HsLua.Arbitrary ()
 import Test.HsLua.Util (luaTestCase, pushLuaExpr)
@@ -64,7 +65,7 @@ tests = testGroup "Haskell version of the C API"
         rawequal (-1) (-3)
     ]
 
-  , testGroup "insert" $
+  , testGroup "insert"
     [ luaTestCase "inserts stack elements using negative indices" $ do
         pushLuaExpr "1, 2, 3, 4, 5, 6, 7, 8, 9"
         insert (-6)
@@ -226,7 +227,7 @@ tests = testGroup "Haskell version of the C API"
           pushLuaExpr "function () error 'error in error handler' end"
           loadstring "error 'this fails'" *> pcall 0 0 (Just (-2))
 
-  , testCase "garbage collection" . runLua $ do
+  , testCase "garbage collection" . runLua $
       -- test that gc can be called with all constructors of type GCCONTROL.
       forM_ [GCSTOP .. GCSETSTEPMUL] $ \what -> (gc what 23)
 
@@ -247,6 +248,24 @@ tests = testGroup "Haskell version of the C API"
       let n1 = fromType lt1
           n2 = fromType lt2
       in Prelude.compare n1 n2 == Prelude.compare lt1 lt2
+
+  , testCase "functions can throw a table as error message" $ do
+      let mt = "{__tostring = function (e) return e.error_code end}"
+      let err = "error(setmetatable({error_code = 23}," <> mt <> "))"
+      res <- runLua . tryLua $ openbase *> loadstring err *> call 0 0
+      assertEqual "wrong error message" (Left (LuaException "23")) res
+
+  , testCase "handling table errors won't leak" $ do
+      let mt = "{__tostring = function (e) return e.code end}"
+      let err = "error(setmetatable({code = 5}," <> mt <> "))"
+      let luaOp = do
+            openbase
+            oldtop <- gettop
+            _ <- tryLua $ loadstring err *> call 0 0
+            newtop <- gettop
+            return (newtop - oldtop)
+      res <- runLua luaOp
+      assertEqual "error handling leaks values to the stack" 0 res
   ]
 
 compareWith :: (LuaInteger -> LuaInteger -> Bool)

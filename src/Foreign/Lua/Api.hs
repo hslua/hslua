@@ -166,6 +166,9 @@ module Foreign.Lua.Api (
   , newmetatable
   , ref
   , unref
+  -- * Helper functions
+  , throwTopMessageAsError
+  , throwTopMessageAsError'
   ) where
 
 import Prelude hiding (EQ, LT, compare, concat)
@@ -198,9 +201,41 @@ throwOnError x =
   else return x
 
 throwTopMessageAsError :: Lua a
-throwTopMessageAsError = do
-  msg <- tostring (-1) <* pop 1
-  throwLuaError (BC.unpack msg)
+throwTopMessageAsError = throwTopMessageAsError' id
+
+throwTopMessageAsError' :: (String -> String) -> Lua a
+throwTopMessageAsError' msgMod = do
+  ty <- ltype (-1)
+  msg <- case ty of
+           TypeNil -> return "nil"
+           TypeBoolean -> show <$> toboolean (-1)
+           TypeLightUserdata -> showPointer
+           TypeNumber -> BC.unpack <$> tostring (-1)
+           TypeString -> BC.unpack <$> tostring (-1)
+           TypeTable  -> tryTostringMetaMethod
+           TypeFunction -> showPointer
+           TypeThread -> showPointer
+           TypeUserdata -> showPointer
+           TypeNone -> error "Error while receiving the error message!"
+  pop 1
+  throwLuaError (msgMod msg)
+ where
+  showPointer = show <$> topointer (-1)
+  tryTostringMetaMethod = do
+    hasMT <- getmetatable (-1)
+    if not hasMT
+      then showPointer
+      else do
+        -- push getmetatable(t).__tostring
+        pushstring (BC.pack "__tostring") *> rawget (-2)
+        remove (-2)              -- remove metatable from stack
+        isFn <- isfunction (-1)
+        if isFn
+          then do
+            insert (-2)
+            call 1 1
+            BC.unpack <$> tostring (-1)
+          else pop 1 *> showPointer
 
 --
 -- API functions
