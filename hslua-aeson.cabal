@@ -1,5 +1,5 @@
 name:                hslua-aeson
-version:             0.3.0
+version:             0.3.0.1
 synopsis:            Allow aeson data types to be used with lua.
 description:         This package provides instances to push and receive any
                      datatype encodable as JSON to and from the Lua stack.
