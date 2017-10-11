@@ -107,7 +107,7 @@ instance (FromLuaStack a, ToHaskellFunction b) =>
 -- as Lua error.
 toHaskellFunction :: ToHaskellFunction a => a -> HaskellFunction
 toHaskellFunction a = toHsFun 1 a `catchLuaError` \err -> do
-  push ("Error while calling haskell function: " ++ show err)
+  push ("Error during function call: " ++ show err)
   fromIntegral <$> lerror
 
 -- | Create new foreign Lua function. Function created can be called

@@ -71,7 +71,7 @@ tests = testGroup "Interoperability"
             err <- tostring (-1) <* pop 2 -- pop _HASKELLERROR
             return (unpack err)
 
-          errMsg = "Error while calling haskell function: could not read "
+          errMsg = "Error during function call: could not read "
                    ++ "argument 2: Expected a number but got a boolean"
       in assertEqual "Unexpected result" errMsg =<< runLua (catchLuaError luaOp (return . show))
     ]
