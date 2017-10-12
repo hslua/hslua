@@ -1,4 +1,11 @@
 ## Changelog
+### 0.9.1
+
+- Increase user-friendlyness of error messages: The error message returned by
+  `toHaskellFunction` hinted at the fact that the failing function is a Haskell
+  function. This is mostly unnecessary information and might have confused
+  users.
+
 ### 0.9.0
 
 - Added cabal flag to allow fully safe garbage collection: Lua garbage
