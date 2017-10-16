@@ -128,13 +128,11 @@ class LuaCallFunc a where
   callFunc' :: String -> Lua () -> NumArgs -> a
 
 instance (FromLuaStack a) => LuaCallFunc (Lua a) where
-  callFunc' fnName x nargs = do
+  callFunc' fnName pushArgs nargs = do
     getglobal' fnName
-    x
-    z <- pcall nargs 1 Nothing
-    if z == OK
-      then peek (-1) <* pop 1
-      else throwTopMessageAsError
+    pushArgs
+    call nargs 1
+    peek (-1) <* pop 1
 
 instance (ToLuaStack a, LuaCallFunc b) => LuaCallFunc (a -> b) where
   callFunc' fnName pushArgs nargs x =
