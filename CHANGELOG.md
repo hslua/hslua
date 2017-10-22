@@ -1,4 +1,11 @@
 ## Changelog
+### 0.9.2
+
+- Add cabal flag 'export-dynamic': Default behavior is to include all symbols in
+  the dynamic symbol table, as this enables users to load dynamic lua libraries.
+  However, it is sometimes desirable to disable, e.g., when compiling a fully
+  static binary. See jgm/pandoc#3986.
+
 ### 0.9.1
 
 - Increase user-friendlyness of error messages: The error message returned by
