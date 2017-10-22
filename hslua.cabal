@@ -53,6 +53,12 @@ flag allow-unsafe-gc
                         with extreme care.
   default:              True
 
+flag export-dynamic
+  description:          Add all symbols to dynamic symbol table; disabling this
+                        will make it possible to create fully static binaries,
+                        but renders loading of dynamic C libraries impossible.
+  default:              True
+
 flag luajit
   description:          Link with LuaJIT.  This implies flag system-lua as well.
   default:              False
@@ -166,14 +172,16 @@ library
 
   if os(linux)
     cc-options:         "-DLUA_USE_LINUX"
-    ld-options:         "-Wl,-E"
+    if flag(export-dynamic)
+      ld-options:         "-Wl,-E"
 
   if os(darwin)
     cc-options:         "-DLUA_USE_MACOSX"
 
   if os(freebsd)
     cc-options:         "-DLUA_USE_POSIX"
-    ld-options:         "-Wl,-E"
+    if flag(export-dynamic)
+      ld-options:         "-Wl,-E"
 
   if flag(lua_32bits)
     cc-options:         "-DLUA_32BITS"
