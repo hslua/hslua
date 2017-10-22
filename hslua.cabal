@@ -33,7 +33,7 @@ extra-source-files:     lua-5.3.4/*.h
 
 source-repository head
   type:                 git
-  location:             https://github.com/osa1/hslua.git
+  location:             https://github.com/hslua/hslua.git
 
 flag system-lua
   description:          Use the system-wide Lua instead of the bundled copy.

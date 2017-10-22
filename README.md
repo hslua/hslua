@@ -1,6 +1,6 @@
 # hslua – Lua interpreter interface for Haskell
 
-[![Build Status]](https://travis-ci.org/osa1/hslua)
+[![Build Status]](https://travis-ci.org/hslua/hslua)
 [![AppVeyor Status]](https://ci.appveyor.com/project/tarleb/hslua-r2y18)
 [![Coverage Status]](https://coveralls.io/github/osa1/hslua?branch=master)
 [![Hackage]](https://hackage.haskell.org/package/hslua)
@@ -8,7 +8,7 @@
 Hslua provides bindings, wrappers, types, and helper functions to bridge haskell
 and lua.
 
-[Build Status]: https://travis-ci.org/osa1/hslua.svg?branch=master
+[Build Status]: https://travis-ci.org/hslua/hslua.svg?branch=master
 [AppVeyor Status]: https://ci.appveyor.com/api/projects/status/ldutrilgxhpcau94/branch/master?svg=true
 [Coverage Status]: https://coveralls.io/repos/osa1/hslua/badge.svg?branch=master&service=github
 [Hackage]: http://img.shields.io/hackage/v/hslua.svg

@@ -53,7 +53,7 @@ install:
   - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
   - echo "$(cabal --version)"
   - cabal install --only-dependencies --enable-tests --disable-optimization
-  - if [ -n "${COVERAGE}" ] && [ "${TRAVIS_REPO_SLUG}" = "osa1/hslua" ]; then
+  - if [ -n "${COVERAGE}" ] && [ "${TRAVIS_REPO_SLUG}" = "hslua/hslua" ]; then
       cabal install --disable-optimization hpc-coveralls;
     fi
 
@@ -61,7 +61,7 @@ script:
   - CABAL_CONFIG_ARGS=""
   - |
     # Enable coverage testing for the main repo only as it will fail otherwise.
-    if [ -n "${COVERAGE}" ] && [ "${TRAVIS_REPO_SLUG}" = "osa1/hslua" ]; then
+    if [ -n "${COVERAGE}" ] && [ "${TRAVIS_REPO_SLUG}" = "hslua/hslua" ]; then
         CABAL_CONFIG_ARGS="--enable-library-coverage";
     fi
   - |
@@ -117,6 +117,6 @@ script:
 after_success:
   - set -e
   - set -x
-  - if [ -n "${COVERAGE}" ] && [ "${TRAVIS_REPO_SLUG}" = "osa1/hslua" ]; then
+  - if [ -n "${COVERAGE}" ] && [ "${TRAVIS_REPO_SLUG}" = "hslua/hslua" ]; then
       hpc-coveralls --exclude-dir=test --exclude-dir=dist test-hslua;
     fi
