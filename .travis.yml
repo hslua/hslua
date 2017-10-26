@@ -10,7 +10,7 @@ cache:
 matrix:
   include:
     # Default test
-    - env: GHCVER=8.0.2 CABALVER=1.24 LUAVER=default COVERAGE=true
+    - env: GHCVER=8.0.2 CABALVER=1.24 LUAVER=default
       compiler: ": #GHC 8.0.2"
       addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.2], sources: [hvr-ghc]}}
     # Test GHC 7.8
@@ -53,9 +53,6 @@ install:
   - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
   - echo "$(cabal --version)"
   - cabal install --only-dependencies --enable-tests --disable-optimization
-  - if [ -n "${COVERAGE}" ] && [ "${TRAVIS_REPO_SLUG}" = "hslua/hslua" ]; then
-      cabal install --disable-optimization hpc-coveralls;
-    fi
 
 script:
   - CABAL_CONFIG_ARGS=""
@@ -113,10 +110,3 @@ script:
   - cabal test
   - cabal copy
   - cabal sdist
-
-after_success:
-  - set -e
-  - set -x
-  - if [ -n "${COVERAGE}" ] && [ "${TRAVIS_REPO_SLUG}" = "hslua/hslua" ]; then
-      hpc-coveralls --exclude-dir=test --exclude-dir=dist test-hslua;
-    fi
