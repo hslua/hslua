@@ -33,7 +33,7 @@ Provide a lua module containing a selection of useful Text functions.
 module Foreign.Lua.Module.Text where
 
 import Data.Text (Text)
-import Foreign.Lua (NumResults, Lua, ToLuaStack)
+import Foreign.Lua (NumResults, Lua, LuaInteger, ToLuaStack)
 import Foreign.Lua.FunctionCalling (ToHaskellFunction, newCFunction)
 import qualified Foreign.Lua as Lua
 import qualified Data.Text as T
@@ -44,6 +44,7 @@ pushModuleText = do
   Lua.newtable
   addFunction "lower" (return . T.toLower :: Text -> Lua Text)
   addFunction "upper" (return . T.toUpper :: Text -> Lua Text)
+  addFunction "len" (return . fromIntegral . T.length :: Text -> Lua LuaInteger)
   return 1
 
 addPackagePreloader :: String -> Lua NumResults -> Lua ()
