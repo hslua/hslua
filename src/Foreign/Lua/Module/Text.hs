@@ -44,6 +44,7 @@ pushModuleText = do
   Lua.newtable
   addFunction "lower" (return . T.toLower :: Text -> Lua Text)
   addFunction "upper" (return . T.toUpper :: Text -> Lua Text)
+  addFunction "reverse" (return . T.reverse :: Text -> Lua Text)
   addFunction "len" (return . fromIntegral . T.length :: Text -> Lua LuaInteger)
   return 1
 
