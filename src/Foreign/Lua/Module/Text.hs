@@ -33,7 +33,8 @@ Provide a lua module containing a selection of useful Text functions.
 module Foreign.Lua.Module.Text where
 
 import Data.Text (Text)
-import Foreign.Lua (NumResults, Lua, LuaInteger, ToLuaStack)
+import Data.Maybe (fromMaybe)
+import Foreign.Lua (FromLuaStack, NumResults, Lua, LuaInteger, ToLuaStack)
 import Foreign.Lua.FunctionCalling (ToHaskellFunction, newCFunction)
 import qualified Foreign.Lua as Lua
 import qualified Data.Text as T
@@ -46,6 +47,7 @@ pushModuleText = do
   addFunction "upper" (return . T.toUpper :: Text -> Lua Text)
   addFunction "reverse" (return . T.reverse :: Text -> Lua Text)
   addFunction "len" (return . fromIntegral . T.length :: Text -> Lua LuaInteger)
+  addFunction "sub" sub
   return 1
 
 addPackagePreloader :: String -> Lua NumResults -> Lua ()
@@ -62,3 +64,21 @@ addFunction name fn = do
   Lua.push name
   Lua.pushHaskellFunction fn
   Lua.rawset (-3)
+
+sub :: Text -> LuaInteger -> OrNil LuaInteger -> Lua Text
+sub s i j =
+  let i' = fromIntegral i
+      j' = fromIntegral . fromMaybe (-1) $ toMaybe j
+      fromStart = if i' >= 0 then (max 1   i' ) - 1 else T.length s + i'
+      fromEnd   = if j' <= 0 then (max 1 (-j')) - 1 else T.length s - j'
+  in return . T.dropEnd fromEnd . T.drop fromStart $ s
+
+-- A lua value or nil
+newtype OrNil a = OrNil { toMaybe :: Maybe a }
+
+instance FromLuaStack a => FromLuaStack (OrNil a) where
+  peek idx = do
+    noValue <- Lua.isnoneornil idx
+    if noValue
+      then return (OrNil Nothing)
+      else OrNil . Just <$> Lua.peek idx

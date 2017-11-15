@@ -16,3 +16,12 @@ assert(hstext.len 'Charité' == 7)
 assert(hstext.len '☃' == 1)
 
 assert(hstext.reverse 'être' == 'ertê')
+assert(hstext.reverse 'être' == 'ertê')
+
+local hw = 'Hello, World'
+assert(string.sub(hw, 6)      == hstext.sub(hw, 6))
+assert(string.sub(hw, -1, -1) == hstext.sub(hw, -1, -1))
+assert(string.sub(hw, -7, -2) == hstext.sub(hw, -7, -2))
+assert(string.sub(hw,  7, -2) == hstext.sub(hw, 7, -2))
+assert(string.sub(hw,  1,  5) == hstext.sub(hw, 1, 5))
+assert(string.sub(hw, -19, 5) == hstext.sub(hw, -19, 5))
