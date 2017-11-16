@@ -1,22 +1,20 @@
 name:                hslua-module-text
 version:             0.1
 synopsis:            Lua module for text
--- description:         
+description:         UTF-8 aware subset of Lua's `string` module.
 homepage:            https://github.com/hslua/hslua-text-module
 license:             MIT
 license-file:        LICENSE
 author:              Albert Krewinkel
 maintainer:          albert+hslua@zeitkraut.de
 copyright:           © 2017 Albert Krewinkel
--- category:            
+category:            Foreign
 build-type:          Simple
 extra-source-files:  ChangeLog.md
 cabal-version:       >=1.10
 
 library
   exposed-modules:     Foreign.Lua.Module.Text
-  -- other-modules:       
-  -- other-extensions:    
   build-depends:       base  >= 4.8 && < 4.11
                      , hslua >= 0.9 && < 0.10
                      , text  >= 1   && < 1.3
