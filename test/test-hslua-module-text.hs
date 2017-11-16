@@ -21,7 +21,7 @@ THE SOFTWARE.
 -}
 import Control.Monad (void, when)
 import Foreign.Lua (Lua, runLua)
-import Foreign.Lua.Module.Text (addPackagePreloader, pushModuleText)
+import Foreign.Lua.Module.Text (preloadTextModule, pushModuleText)
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
 
@@ -38,20 +38,20 @@ tests = testGroup "FromLuaStack"
 
   , testCase "text module can be added to the preloader" . runLua $ do
       Lua.openlibs
-      addPackagePreloader "hstext" pushModuleText
+      preloadTextModule "hstext"
       assertEqual' "function not added to preloader" Lua.TypeFunction =<< do
         Lua.getglobal' "package.preload.hstext"
         Lua.ltype (-1)
 
   , testCase "text module can be loaded as hstext" . runLua $ do
       Lua.openlibs
-      addPackagePreloader "hstext" pushModuleText
+      preloadTextModule "hstext"
       assertEqual' "loading the module fails " Lua.OK =<<
         Lua.dostring "require 'hstext'"
 
   , testCase "Lua tests pass" . runLua $ do
       Lua.openlibs
-      addPackagePreloader "hstext" pushModuleText
+      preloadTextModule "hstext"
       assertEqual' "error while running lua tests" Lua.OK =<< do
         st <- Lua.loadfile "test/hstext-test.lua"
         when (st == Lua.OK) $ Lua.call 0 0

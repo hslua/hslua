@@ -30,7 +30,10 @@ Portability : ForeignFunctionInterface
 
 Provide a lua module containing a selection of useful Text functions.
 -}
-module Foreign.Lua.Module.Text where
+module Foreign.Lua.Module.Text
+  ( pushModuleText
+  , preloadTextModule
+  )where
 
 import Data.Text (Text)
 import Data.Maybe (fromMaybe)
