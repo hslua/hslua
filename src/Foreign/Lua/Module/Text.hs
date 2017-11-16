@@ -50,6 +50,9 @@ pushModuleText = do
   addFunction "sub" sub
   return 1
 
+preloadTextModule :: String -> Lua ()
+preloadTextModule = flip addPackagePreloader pushModuleText
+
 addPackagePreloader :: String -> Lua NumResults -> Lua ()
 addPackagePreloader name modulePusher = do
   Lua.getglobal' "package.preload"
