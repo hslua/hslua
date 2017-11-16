@@ -69,8 +69,8 @@ sub :: Text -> LuaInteger -> OrNil LuaInteger -> Lua Text
 sub s i j =
   let i' = fromIntegral i
       j' = fromIntegral . fromMaybe (-1) $ toMaybe j
-      fromStart = if i' >= 0 then (max 1   i' ) - 1 else T.length s + i'
-      fromEnd   = if j' <= 0 then (max 1 (-j')) - 1 else T.length s - j'
+      fromStart = if i' >= 0 then  i' - 1 else T.length s + i'
+      fromEnd   = if j' <  0 then -j' - 1 else T.length s - j'
   in return . T.dropEnd fromEnd . T.drop fromStart $ s
 
 -- A lua value or nil
