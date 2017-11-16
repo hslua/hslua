@@ -13,6 +13,10 @@ build-type:          Simple
 extra-source-files:  ChangeLog.md
 cabal-version:       >=1.10
 
+source-repository head
+  type:              git
+  location:          https://github.com/hslua/hslua-module-text.git
+
 library
   exposed-modules:     Foreign.Lua.Module.Text
   build-depends:       base  >= 4.8 && < 4.11
