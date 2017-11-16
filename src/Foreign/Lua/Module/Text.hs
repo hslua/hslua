@@ -50,9 +50,13 @@ pushModuleText = do
   addFunction "sub" sub
   return 1
 
+-- | Add the text module under the given name to the table of preloaded
+-- packages.
 preloadTextModule :: String -> Lua ()
 preloadTextModule = flip addPackagePreloader pushModuleText
 
+-- | Registers a preloading function. Takes an module name and the Lua operation
+-- which produces the package.
 addPackagePreloader :: String -> Lua NumResults -> Lua ()
 addPackagePreloader name modulePusher = do
   Lua.getglobal' "package.preload"
@@ -68,6 +72,7 @@ addFunction name fn = do
   Lua.pushHaskellFunction fn
   Lua.rawset (-3)
 
+-- | Returns a substring, using Lua's string indexing rules.
 sub :: Text -> LuaInteger -> OrNil LuaInteger -> Lua Text
 sub s i j =
   let i' = fromIntegral i
