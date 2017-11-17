@@ -35,6 +35,7 @@ module Foreign.Lua.Module.Text
   , preloadTextModule
   )where
 
+import Control.Applicative ((<$>))
 import Data.Text (Text)
 import Data.Maybe (fromMaybe)
 import Foreign.Lua (FromLuaStack, NumResults, Lua, LuaInteger, ToLuaStack)

@@ -31,7 +31,6 @@ test-suite test-hslua
   main-is:             test-hslua-module-text.hs
   hs-source-dirs:      test
   ghc-options:         -Wall -threaded
-  -- other-modules:       Foreign.Lua.Module.TextTest
   build-depends:       base
                      , hslua
                      , hslua-module-text
