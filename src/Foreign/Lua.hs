@@ -50,6 +50,8 @@ module Foreign.Lua
   -- * Calling Functions
   , PreCFunction
   , HaskellFunction
+  , ToHaskellFunction (..)
+  , toHaskellFunction
   , callFunc
   , newCFunction
   , freeCFunction
