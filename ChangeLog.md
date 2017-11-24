@@ -1,5 +1,11 @@
 # Revision history for hslua-module-text
 
+## 0.1.2.1  -- 2017-11-24
+
+- Add missing test file in the sources archive. This oversight had
+  caused some stackage test failures.
+
+
 ## 0.1.2  -- 2017-11-17
 
 - Run tests with Travis CI.
