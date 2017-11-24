@@ -27,9 +27,7 @@ extra-source-files:     lua-5.3.4/*.h
                         README.md
                         CHANGELOG.md
                         COPYRIGHT
-                        test/lua/syntax-error.lua
-                        test/lua/error.lua
-                        test/lua/example.lua
+                        test/lua/*.lua
 
 source-repository head
   type:                 git
