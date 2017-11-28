@@ -33,6 +33,7 @@ HsLua utility functions.
 -}
 module Foreign.Lua.Util
   ( getglobal'
+  , setglobal'
   , runLua
   , runLuaEither
   ) where
@@ -54,16 +55,42 @@ runLua = bracket newstate close . flip runLuaWith
 runLuaEither :: Lua a -> IO (Either LuaException a)
 runLuaEither = try . runLua
 
--- | Like @getglobal@, but knows about packages. e. g.
+-- | Like @getglobal@, but knows about packages and nested tables. E.g.
 --
--- > getglobal' l "math.sin"
+-- > getglobal' "math.sin"
 --
--- returns correct result
+-- will return the function @sin@ in package @math@.
 getglobal' :: String -> Lua ()
-getglobal' n = do
-    let (x : xs) = splitdot n
-    getglobal x
-    mapM_ dotable xs
-  where
-    splitdot  = filter (/= ".") . groupBy (\a b -> a /= '.' && b /= '.')
-    dotable a = getfield (-1) a *> remove (-2)
+getglobal' = getnested . splitdot
+
+-- | Like @setglobal@, but knows about packages and nested tables. E.g.
+--
+-- > pushstring "0.9.4"
+-- > setglobal' "mypackage.version"
+--
+-- All tables and fields, except for the last field, must exist.
+setglobal' :: String -> Lua ()
+setglobal' s =
+  case reverse (splitdot s) of
+    [] ->
+      return ()
+    [_] ->
+      setglobal s
+    (lastField : xs) -> do
+      getnested (reverse xs)
+      pushvalue (-2)
+      setfield (-2) lastField
+      pop 1
+
+-- | Gives the list of the longest substrings not containing dots.
+splitdot :: String -> [String]
+splitdot = filter (/= ".") . groupBy (\a b -> a /= '.' && b /= '.')
+
+-- | Pushes the value described by the strings to the stack; where the first
+-- value is the name of a global variable and the following strings are the
+-- field values in nested tables.
+getnested :: [String] -> Lua ()
+getnested [] = return ()
+getnested (x:xs) = do
+  getglobal x
+  mapM_ (\a -> getfield (-1) a *> remove (-2)) xs

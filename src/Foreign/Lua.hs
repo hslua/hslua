@@ -61,6 +61,7 @@ module Foreign.Lua
   , runLua
   , runLuaEither
   , getglobal'
+  , setglobal'
   -- * API
   , module Foreign.Lua.Api
   , module Foreign.Lua.Api.Types

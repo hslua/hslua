@@ -83,6 +83,16 @@ tests = testGroup "lua integration tests"
       pushLuaExpr "'Moin'"
       equal (-1) (-2)
 
+  , luaTestCase "setting a nested global works" $ do
+      let v = "Mitte"
+      newtable
+      setglobal "berlin"
+
+      pushstring v
+      setglobal' "berlin.neighborhood"
+      v' <- getglobal' "berlin.neighborhood" *> tostring (-1)
+      return (v == v')
+
   , testCase "table reading" .
     runLua $ do
       openbase
