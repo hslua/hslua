@@ -1,4 +1,23 @@
 ## Changelog
+
+### 0.9.3
+
+- Re-export more FunctionCalling helpers in `Foreign.Lua`: The typeclass
+  `ToHaskellFunction` and the helper function `toHaskellFunction` are
+  useful when working with functions. Importing them separately from
+  `Foreign.Lua.FunctionCalling` was an unnecessary burden; they are
+  therefor now re-exported by the main module.
+- Export registry-relatd constants `refnil` and `noref`: The constants
+  are related to Lua's registry functions (`ref` and `unref`).
+- Add helper to convert functions into CFunction: A new helper
+  `wrapHaskellFunction` is provided. It expects a
+  HaskellImportedFunction userdata (as produced by
+  `pushHaskellFunction`) on top of the stack and replaces it with a C
+  function. The new function converts error values generated with
+  `lerror` into Lua errors, i.e. it calls `lua_error`.
+- Add utility function `setglobal'`: It works like `setglobal`, but
+  works with packages and nested tables (dot-notation only).
+
 ### 0.9.2
 
 - Add cabal flag 'export-dynamic': Default behavior is to include all symbols in
