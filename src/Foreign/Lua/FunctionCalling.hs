@@ -144,7 +144,7 @@ instance (ToLuaStack a, LuaCallFunc b) => LuaCallFunc (a -> b) where
 callFunc :: (LuaCallFunc a) => String -> a
 callFunc f = callFunc' f (return ()) 0
 
--- | Pushes Haskell function converted to a Lua function.
+-- | Pushes Haskell function as a callable userdata.
 -- All values created will be garbage collected. Use as:
 --
 -- > pushHaskellFunction myfun

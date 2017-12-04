@@ -1,6 +1,44 @@
+#include <stdio.h>
 #include <string.h>
 #include "safer-api.h"
 
+/* *********************************************************************
+ * Transforming Haskell errors to Lua errors
+ * *********************************************************************/
+void hslua_pushhaskellerr(lua_State *L)
+{
+  lua_getglobal(L, "_HASKELLERR");
+}
+
+/* Error handling */
+int hslua_call_hs(lua_State *L)
+{
+  int nargs = lua_gettop(L);
+  /* Push HaskellImportFunction and call the underlying function */
+  lua_pushvalue(L, lua_upvalueindex(1));
+  lua_insert(L, 1);
+  lua_call(L, nargs, LUA_MULTRET);
+
+  /* Check whether an error value was returned */
+  int nres = lua_gettop(L);
+  /* We signal an error on the haskell side by passing two values: the special
+   * haskellerr object and the error message.
+   */
+  if (nres == 2) {
+    hslua_pushhaskellerr(L);
+    int is_err = lua_rawequal(L, 0 + 1, -1);
+    lua_pop(L, 1);               /* pop haskellerr used for equality test */
+    if (is_err) {
+      lua_remove(L, 1);          /* remove returned haskellerr */
+      return lua_error(L);
+    }
+  }
+  return nres;
+}
+
+/* *********************************************************************
+ * Transforming Lua errors to Haskell errors
+ * *********************************************************************/
 /* compare */
 #if LUA_VERSION_NUM >= 502
 int hslua__compare(lua_State *L)

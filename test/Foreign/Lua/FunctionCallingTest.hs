@@ -24,11 +24,12 @@ module Foreign.Lua.FunctionCallingTest (tests) where
 
 import Data.ByteString.Char8 (pack, unpack)
 import Foreign.Lua.Api
-import Foreign.Lua.FunctionCalling (callFunc, peek, registerHaskellFunction)
-import Foreign.Lua.Types (Lua, catchLuaError)
-import Foreign.Lua.Util (runLua)
+import Foreign.Lua.FunctionCalling (callFunc, peek, registerHaskellFunction,
+                                    pushHaskellFunction)
+import Foreign.Lua.Types (Lua, LuaException(..), catchLuaError, throwLuaError)
+import Foreign.Lua.Util (runLua, runLuaEither)
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit (assertEqual, testCase)
+import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
 
 
 -- | Specifications for Attributes parsing functions.
@@ -74,6 +75,30 @@ tests = testGroup "Interoperability"
           errMsg = "Error during function call: could not read "
                    ++ "argument 2: Expected a number but got a boolean"
       in assertEqual "Unexpected result" errMsg =<< runLua (catchLuaError luaOp (return . show))
+
+    , testCase "convert haskell function to c function" $
+      let luaOp :: Lua LuaInteger
+          luaOp = do
+            pushHaskellFunction integerOperation
+            wrapHaskellFunction
+            pushinteger 71
+            pushinteger 107
+            call 2 1
+            peek (-1) <* pop 1
+      in assertEqual "Unexpected result" 100 =<< runLua luaOp
+
+    , testCase "Error in Haskell function is converted into Lua error" $
+      let luaOp :: Lua (Bool, String)
+          luaOp = do
+            openlibs
+            pushHaskellFunction (throwLuaError "foo" :: Lua ())
+            wrapHaskellFunction
+            setglobal "throw_foo"
+            loadstring "return pcall(throw_foo)" *> call 0 2
+            (,) <$> peek (-2) <*> peek (-1)
+
+          errMsg = "Error during function call: foo"
+      in assertEqual "Unexpected result" (False, errMsg) =<< runLua luaOp
     ]
 
   , testGroup "call lua function from haskell"

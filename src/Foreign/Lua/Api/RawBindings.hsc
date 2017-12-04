@@ -41,7 +41,6 @@ import Foreign.C
 import Foreign.Lua.Api.Types
 import Foreign.Ptr
 
-#include "lua.h"
 #include "safer-api.h"
 
 -- TODO: lua_getallocf, lua_setallocf
@@ -640,3 +639,8 @@ foreign import ccall unsafe "lauxlib.h luaL_loadstring"
 foreign import ccall safe "lauxlib.h luaL_loadstring"
 #endif
   luaL_loadstring :: LuaState -> Ptr CChar -> IO StatusCode
+
+--------------------------------------------------------------------------------
+-- * Error transformation (Haskell to Lua)
+foreign import ccall "safer-api.h &hslua_call_hs"
+  hslua_call_hs_ptr :: CFunction

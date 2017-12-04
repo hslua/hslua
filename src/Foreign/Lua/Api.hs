@@ -171,6 +171,7 @@ module Foreign.Lua.Api (
   -- * Helper functions
   , throwTopMessageAsError
   , throwTopMessageAsError'
+  , wrapHaskellFunction
   ) where
 
 import Prelude hiding (EQ, LT, compare, concat)
@@ -238,6 +239,16 @@ throwTopMessageAsError' msgMod = do
             call 1 1
             BC.unpack <$> tostring (-1)
           else pop 1 *> showPointer
+
+-- | Convert a Haskell function userdata object into a CFuntion. The userdata
+-- object must be at the top of the stack. Errors signaled via lerror are
+-- converted to lua errors.
+wrapHaskellFunction :: Lua ()
+wrapHaskellFunction = do
+  t <- ltype (-1)
+  case t of
+    TypeUserdata -> pushcclosure hslua_call_hs_ptr 1
+    _ -> throwLuaError "Need HaskellImportedFunction to create a CFunction."
 
 --
 -- API functions
