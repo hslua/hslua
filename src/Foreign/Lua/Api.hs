@@ -51,6 +51,8 @@ module Foreign.Lua.Api (
   -- ** Constants and pseudo-indices
   , multret
   , registryindex
+  , noref
+  , refnil
   , upvalueindex
   -- ** State manipulation
   , LuaState (..)
@@ -951,7 +953,20 @@ rawset n = liftLua $ \l -> lua_rawset l n
 rawseti :: StackIndex -> Int -> Lua ()
 rawseti k m = liftLua $ \l -> lua_rawseti l k (fromIntegral m)
 
--- | See <https://www.lua.org/manual/5.3/manual.html#luaL_ref luaL_ref>.
+-- | Creates and returns a reference, in the table at index @t@, for the object
+-- at the top of the stack (and pops the object).
+--
+-- A reference is a unique integer key. As long as you do not manually add
+-- integer keys into table @t@, @ref@ ensures the uniqueness of the key it
+-- returns. You can retrieve an object referred by reference @r@ by calling
+-- @rawgeti t r@. Function @'unref'@ frees a reference and its associated
+-- object.
+--
+-- If the object at the top of the stack is nil, @'ref'@ returns the constant
+-- @'refnil'@. The constant @'noref'@ is guaranteed to be different from any
+-- reference returned by @'ref'@.
+--
+-- See also: <https://www.lua.org/manual/5.3/manual.html#luaL_ref luaL_ref>.
 ref :: StackIndex -> Lua Int
 ref t = liftLua $ \l -> fromIntegral <$> luaL_ref l t
 

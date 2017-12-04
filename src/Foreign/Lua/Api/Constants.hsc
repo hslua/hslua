@@ -38,6 +38,8 @@ Lua constants
 module Foreign.Lua.Api.Constants
   ( multret
   , registryindex
+  , refnil
+  , noref
 #if LUA_VERSION_NUMBER < 502
   , environindex
   , globalsindex
@@ -47,6 +49,7 @@ module Foreign.Lua.Api.Constants
 import Foreign.Lua.Api.Types
 
 #include "lua.h"
+#include "lauxlib.h"
 
 -- | Alias for C constant @LUA_MULTRET@. See
 -- <https://www.lua.org/manual/5.3/#lua_call lua_call>.
@@ -57,6 +60,14 @@ multret = NumResults $ #{const LUA_MULTRET}
 -- <https://www.lua.org/manual/5.3/#3.5 Lua registry>.
 registryindex :: StackIndex
 registryindex = StackIndex $ #{const LUA_REGISTRYINDEX}
+
+-- | Value signaling that no reference was created.
+refnil :: Int
+refnil = #{const LUA_REFNIL}
+
+-- | Value signaling that no reference was found.
+noref :: Int
+noref = #{const LUA_NOREF}
 
 #if LUA_VERSION_NUMBER < 502
 -- | Alias for C constant @LUA_ENVIRONINDEX@. See
