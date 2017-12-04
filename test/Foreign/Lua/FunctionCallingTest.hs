@@ -26,10 +26,10 @@ import Data.ByteString.Char8 (pack, unpack)
 import Foreign.Lua.Api
 import Foreign.Lua.FunctionCalling (callFunc, peek, registerHaskellFunction,
                                     pushHaskellFunction)
-import Foreign.Lua.Types (Lua, LuaException(..), catchLuaError, throwLuaError)
-import Foreign.Lua.Util (runLua, runLuaEither)
+import Foreign.Lua.Types (Lua, catchLuaError, throwLuaError)
+import Foreign.Lua.Util (runLua)
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
+import Test.Tasty.HUnit (assertEqual, testCase)
 
 
 -- | Specifications for Attributes parsing functions.
