@@ -58,7 +58,7 @@ tests = testGroup "Haskell version of the C API"
     [ luaTestCase "copies stack elements using positive indices" $ do
         pushLuaExpr "5, 4, 3, 2, 1"
         copy 4 3
-        rawequal 4 3
+        rawequal (nthFromBottom 4) (nthFromBottom 3)
     , luaTestCase "copies stack elements using negative indices" $ do
         pushLuaExpr "5, 4, 3, 2, 1"
         copy (-1) (-3)
@@ -84,8 +84,8 @@ tests = testGroup "Haskell version of the C API"
       pushLuaExpr "{sum = 13.37}"
       pushnumber 13.37
       pushstring "sum"
-      gettable (-3)
-      equal (-1) (-2)
+      gettable (nthFromTop 3)
+      equal (nthFromTop 1) (nthFromTop 2)
 
   , luaTestCase "strlen, objlen, and rawlen all behave the same" $ do
       pushLuaExpr "{1, 1, 2, 3, 5, 8}"
@@ -150,15 +150,15 @@ tests = testGroup "Haskell version of the C API"
 
       -- get first field
       getglobal "hamburg"
-      rawgeti (-1) 1 -- first field
+      rawgeti stackTop 1 -- first field
       pushLuaExpr "'Moin'"
-      equal (-1) (-2)
+      equal (nthFromTop 1) (nthFromTop 2)
 
   , luaTestCase "can push and receive a thread" $ do
       luaSt <- luaState
       isMain <- pushthread
       liftIO (assertBool "pushing the main thread should return True" isMain)
-      luaSt' <- peek (-1)
+      luaSt' <- peek stackTop
       return (luaSt == luaSt')
 
   , testCase "different threads are not equal" $ do
@@ -171,7 +171,7 @@ tests = testGroup "Haskell version of the C API"
       openlibs
       getglobal' "coroutine.resume"
       pushLuaExpr "coroutine.create(function() coroutine.yield(9) end)"
-      co <- tothread (-1)
+      co <- tothread stackTop
       call 1 0
       liftIO . runLuaWith co $ do
         liftIO . assertEqual "yielding will put thread status to Yield" Yield

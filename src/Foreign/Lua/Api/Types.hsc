@@ -258,6 +258,22 @@ data GCCONTROL
 newtype StackIndex = StackIndex { fromStackIndex :: CInt }
   deriving (Enum, Eq, Num, Ord, Show)
 
+-- | Stack index of the nth element from the top of the stack.
+nthFromTop :: CInt -> StackIndex
+nthFromTop n = StackIndex (-n)
+
+-- | Stack index of the nth element from the bottom of the stack.
+nthFromBottom :: CInt -> StackIndex
+nthFromBottom = StackIndex
+
+-- | Top of the stack
+stackTop :: StackIndex
+stackTop = -1
+
+-- | Bottom of the stack
+stackBottom :: StackIndex
+stackBottom = 1
+
 --
 -- Number of arguments and return values
 --

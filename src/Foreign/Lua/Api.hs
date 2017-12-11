@@ -45,6 +45,10 @@ module Foreign.Lua.Api (
   , LuaInteger
   , LuaNumber
   , StackIndex (..)
+  , nthFromBottom
+  , nthFromTop
+  , stackTop
+  , stackBottom
   , NumArgs (..)
   , NumResults (..)
   -- * Lua API
