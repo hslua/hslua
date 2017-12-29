@@ -28,11 +28,11 @@ module Test.HsLua.Util
 
 import Foreign.Lua (Lua, runLua, loadstring, call, multret)
 import Test.Tasty (TestTree)
-import Test.Tasty.HUnit (testCase, (@?))
+import Test.Tasty.HUnit (assertBool, testCase)
 
 luaTestCase :: String -> Lua Bool -> TestTree
 luaTestCase msg luaOp =
-  testCase msg $ runLua luaOp @? "lua operation returned false"
+  testCase msg $ assertBool "lua operation returned false" =<< runLua luaOp
 
 pushLuaExpr :: String -> Lua ()
 pushLuaExpr expr = loadstring ("return " ++ expr) *> call 0 multret

@@ -34,7 +34,7 @@ import Foreign.Lua
 import System.Mem (performMajorGC)
 import Test.HsLua.Util (luaTestCase, pushLuaExpr)
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit (assert, assertBool, assertEqual, testCase)
+import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
 
 import qualified Data.ByteString.Char8 as B
 import qualified Data.Text as T
@@ -57,19 +57,19 @@ tests = testGroup "lua integration tests"
       pushLuaExpr "function() return 2 end, function() return 1 end"
       idx1 <- ref registryindex
       idx2 <- ref registryindex
-      -- functions are removed from stack
-      liftIO . assert =<< fmap (TypeFunction /=) (ltype (-1))
+      liftIO . assertBool "functions are removed from stack"
+        =<< fmap (TypeFunction /=) (ltype (-1))
 
       -- get functions from registry
       rawgeti registryindex idx1
       call 0 1
       r1 <- peek (-1) :: Lua LuaInteger
-      liftIO (assert (r1 == 1))
+      liftIO (assertEqual "received function returned wrong value" 1 r1)
 
       rawgeti registryindex idx2
       call 0 1
       r2 <- peek (-1) :: Lua LuaInteger
-      liftIO (assert (r2 == 2))
+      liftIO (assertEqual "received function returned wrong value" 2 r2)
 
       -- delete references
       unref registryindex idx1
@@ -100,18 +100,18 @@ tests = testGroup "lua integration tests"
       pushLuaExpr $ "setmetatable(" <> tableStr <> ", {'yup'})"
       getfield (-1) "firstname"
       firstname <- peek (-1) <* pop 1 :: Lua ByteString
-      liftIO (assert (firstname == "Jane"))
+      liftIO (assertEqual "Wrong value for firstname" "Jane" firstname)
 
       push ("surname" :: ByteString)
       rawget (-2)
       surname <- peek (-1) <* pop 1 :: Lua ByteString
-      liftIO (assert (surname == "Doe"))
+      liftIO (assertEqual "Wrong value for surname" surname "Doe")
 
       hasMetaTable <- getmetatable (-1)
-      liftIO (assert hasMetaTable)
+      liftIO (assertBool "getmetatable returned wrong result" hasMetaTable)
       rawgeti (-1) 1
       mt1 <- peek (-1) <* pop 1 :: Lua ByteString
-      liftIO (assert (mt1 == "yup"))
+      liftIO (assertEqual "Metatable content not as expected " mt1 "yup")
 
   , testGroup "Getting strings to and from the stack"
     [ testCase "unicode ByteString" $ do
@@ -194,7 +194,8 @@ tests = testGroup "lua integration tests"
       runLuaEither (push True *> peek (-1) :: Lua Bool)
 
     , testCase "catching lua errors within the lua type" $
-      assert . isLeft =<< (runLua $ tryLua (throwLuaError "test"))
+      assertBool "No error was thrown" . isLeft
+        =<< (runLua $ tryLua (throwLuaError "test"))
 
     , testCase "second alternative is used when first fails" $
       assertEqual "alternative failed" (Right True) =<<
