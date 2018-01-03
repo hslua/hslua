@@ -39,7 +39,7 @@ module Foreign.Lua.Types.Lua
   , liftLua1
   ) where
 
-import Control.Monad.Catch (MonadCatch, MonadThrow)
+import Control.Monad.Catch (MonadCatch, MonadMask, MonadThrow)
 import Control.Monad.Reader (ReaderT (..), MonadReader, MonadIO, ask, liftIO)
 import Foreign.Lua.Api.Types (LuaState)
 
@@ -51,6 +51,7 @@ newtype Lua a = Lua { unLua :: ReaderT LuaState IO a }
     , Monad
     , MonadCatch
     , MonadIO
+    , MonadMask
     , MonadReader LuaState
     , MonadThrow
     )
