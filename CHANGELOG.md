@@ -1,5 +1,18 @@
 ## Changelog
 
+### 0.9.4 (unpublished)
+
+- Make Lua an instance of MonadMask: MonadMask from Control.Monad.Catch
+  allows to mask asynchronous exceptions. This allows to define a
+  finalizer for Lua operations.
+- Add functions and constants to refer to stack indices: The functions
+  `nthFromBottom`, `nthFromTop` as well as the constants `stackTop` and
+  `stackBottom` have been introduced. Numeric constants are less clear,
+  and named constants can aid readability.
+- Functions in `tasty` which have been deprecated have been replaced
+  with non-deprecated alternatives.
+
+
 ### 0.9.3
 
 - Re-export more FunctionCalling helpers in `Foreign.Lua`: The typeclass
