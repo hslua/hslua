@@ -11,6 +11,10 @@
   and named constants can aid readability.
 - Add type OrNil: This type can be used when dealing with optional
   arguments to Lua functions.
+- Add function absindex: it converts the acceptable index `idx` into an
+  equivalent absolute index (that is, one that does not depend on the
+  stack top). The function calls `lua_absindex` when compiled with Lua
+  5.2 or later; for Lua 5.1, it is reimplemented in Haskell.
 - Functions in `tasty` which have been deprecated have been replaced
   with non-deprecated alternatives.
 

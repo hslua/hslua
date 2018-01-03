@@ -66,6 +66,12 @@ foreign import ccall "lua.h lua_close"
 --------------------------------------------------------------------------------
 -- * Basic stack manipulation
 
+#if LUA_VERSION_NUMBER >= 502
+-- | See <https://www.lua.org/manual/5.3/manual.html#lua_absindex lua_absindex>
+foreign import ccall unsafe "lua.h lua_absindex"
+  lua_absindex :: LuaState -> StackIndex -> IO StackIndex
+#endif
+
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_gettop lua_gettop>
 foreign import ccall unsafe "lua.h lua_gettop"
   lua_gettop :: LuaState -> IO StackIndex

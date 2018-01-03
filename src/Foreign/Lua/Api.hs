@@ -63,6 +63,7 @@ module Foreign.Lua.Api (
   , newstate
   , close
   -- ** Basic stack manipulation
+  , absindex
   , gettop
   , settop
   , pushvalue
@@ -257,6 +258,20 @@ wrapHaskellFunction = do
 --
 -- API functions
 --
+
+-- | Converts the acceptable index @idx@ into an equivalent absolute index (that
+-- is, one that does not depend on the stack top).
+absindex :: StackIndex -> Lua StackIndex
+#if LUA_VERSION_NUMBER >= 502
+absindex = liftLua1 lua_absindex
+#else
+absindex idx =
+  if idx > 0 || ispseudo idx
+  then return idx
+  else fmap (\top -> top + 1 + idx) gettop
+ where
+  ispseudo = (<= registryindex)
+#endif
 
 -- |  Calls a function.
 --

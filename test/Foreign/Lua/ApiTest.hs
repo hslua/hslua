@@ -80,6 +80,15 @@ tests = testGroup "Haskell version of the C API"
         return (movedEl == 9 && newTop == 8)
     ]
 
+  , testCase "absindex" . runLua $ do
+      pushLuaExpr "1, 2, 3, 4"
+      liftIO . assertEqual "index from bottom doesn't change" (nthFromBottom 3)
+        =<< absindex (nthFromBottom 3)
+      liftIO . assertEqual "index from top is made absolute" (nthFromBottom 2)
+        =<< absindex (nthFromTop 3)
+      liftIO . assertEqual "pseudo indices are left unchanged" registryindex
+        =<< absindex registryindex
+
   , luaTestCase "gettable gets a table value" $ do
       pushLuaExpr "{sum = 13.37}"
       pushnumber 13.37
