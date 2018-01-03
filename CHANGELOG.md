@@ -9,6 +9,8 @@
   `nthFromBottom`, `nthFromTop` as well as the constants `stackTop` and
   `stackBottom` have been introduced. Numeric constants are less clear,
   and named constants can aid readability.
+- Add type OrNil: This type can be used when dealing with optional
+  arguments to Lua functions.
 - Functions in `tasty` which have been deprecated have been replaced
   with non-deprecated alternatives.
 

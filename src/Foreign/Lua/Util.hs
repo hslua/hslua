@@ -36,6 +36,7 @@ module Foreign.Lua.Util
   , setglobal'
   , runLua
   , runLuaEither
+  , OrNil (toMaybe)
   ) where
 
 import Control.Exception (bracket, try)
@@ -47,7 +48,7 @@ import Foreign.Lua.Types
 -- exceptions are passed through; error handling is the responsibility of the
 -- caller.
 runLua :: Lua a -> IO a
-runLua = bracket newstate close . flip runLuaWith
+runLua = (newstate `bracket` close) . flip runLuaWith
 
 -- | Run the given Lua computation; exceptions raised in haskell code are
 -- caught, but other exceptions (user exceptions raised in haskell, unchecked
@@ -94,3 +95,20 @@ getnested [] = return ()
 getnested (x:xs) = do
   getglobal x
   mapM_ (\a -> getfield (-1) a *> remove (-2)) xs
+
+-- | Newtype wrapper intended to be used for optional Lua values. Nesting this
+-- type is strongly discouraged as missing values on inner levels are
+-- indistinguishable from missing values on an outer level; wrong values
+-- would be the likely result.
+newtype OrNil a = OrNil { toMaybe :: Maybe a }
+
+instance FromLuaStack a => FromLuaStack (OrNil a) where
+  peek idx = do
+    noValue <- isnoneornil idx
+    if noValue
+      then return (OrNil Nothing)
+      else OrNil . Just <$> peek idx
+
+instance ToLuaStack a => ToLuaStack (OrNil a) where
+  push (OrNil Nothing)  = pushnil
+  push (OrNil (Just x)) = push x
