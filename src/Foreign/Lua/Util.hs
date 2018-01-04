@@ -36,7 +36,7 @@ module Foreign.Lua.Util
   , setglobal'
   , runLua
   , runLuaEither
-  , OrNil (toMaybe)
+  , OrNil (OrNil, toMaybe)
   ) where
 
 import Control.Exception (bracket, try)

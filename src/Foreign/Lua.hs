@@ -57,11 +57,12 @@ module Foreign.Lua
   , freeCFunction
   , pushHaskellFunction
   , registerHaskellFunction
-  -- * Utility functions
+  -- * Utility functions and types
   , runLua
   , runLuaEither
   , getglobal'
   , setglobal'
+  , OrNil (OrNil, toMaybe)
   -- * API
   , module Foreign.Lua.Api
   , module Foreign.Lua.Api.Types
