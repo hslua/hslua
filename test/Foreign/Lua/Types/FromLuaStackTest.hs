@@ -69,4 +69,10 @@ tests = testGroup "FromLuaStack"
       _ <- tryLua (toList stackTop :: Lua [Bool])
       liftIO . assertEqual "there should be exactly one element on the stack" 1
         =<< gettop
+
+  , testCase "stack is unchanged if getting key-value pairs fails" . runLua $ do
+      pushLuaExpr "{{foo = 'bar', baz = 5}}"
+      _ <- tryLua (pairsFromTable stackTop :: Lua [(String, String)])
+      liftIO . assertEqual "there should be no element on the stack" 1
+        =<< gettop
   ]

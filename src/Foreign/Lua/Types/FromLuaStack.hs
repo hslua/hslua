@@ -135,11 +135,8 @@ instance (Ord a, FromLuaStack a, FromLuaStack b) => FromLuaStack (Map a b) where
 
 -- | Read a table into a list
 toList :: FromLuaStack a => StackIndex -> Lua [a]
-toList n = do
-  oldTop <- gettop
-  (go . enumFromTo 1 =<< rawlen n) `catchLuaError` \(LuaException msg) -> do
-    settop oldTop
-    throwLuaError ("Could not read list: " ++ msg)
+toList n = resetStackOnError ("Could not read list: " ++) $
+  go . enumFromTo 1 =<< rawlen n
  where
   go [] = return []
   go (i : is) = do
@@ -148,9 +145,10 @@ toList n = do
 
 -- | Read a table into a list of pairs.
 pairsFromTable :: (FromLuaStack a, FromLuaStack b) => StackIndex -> Lua [(a, b)]
-pairsFromTable idx = do
-  pushnil
-  remainingPairs
+pairsFromTable idx =
+  resetStackOnError ("Could not read key-value pairs: " ++) $ do
+    pushnil
+    remainingPairs
  where
   remainingPairs = do
     res <- nextPair (if idx < 0 then idx - 1 else idx)
@@ -170,6 +168,13 @@ nextPair idx = do
       pop 1 -- removes the value, keeps the key
       return (Just (k, v))
     else return Nothing
+
+resetStackOnError :: (String -> String) -> Lua a -> Lua a
+resetStackOnError modifier op = do
+  oldTop <- gettop
+  op `catchLuaError` \(LuaException msg) -> do
+    settop oldTop
+    throwLuaError (modifier msg)
 
 --
 -- Tuples

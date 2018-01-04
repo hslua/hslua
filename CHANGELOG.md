@@ -10,7 +10,11 @@
   allows to alter error messages. This is most useful for amending
   errors with additional information.
 - Fixed a bug in `toList` which left a element on the stack if
-  deserializing that element lead to an error.
+  deserializing that element lead to an error. This also affected the
+  FromLuaStack instance for lists.
+- Fixed a bug in `pairsFromTable` which left a key-value pair on the
+  stack if either of them could not be read into the expected type. This
+  also affected the FromLuaStack instance for Map.
 
 ### 0.9.4
 
