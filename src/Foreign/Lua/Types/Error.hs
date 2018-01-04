@@ -35,6 +35,7 @@ module Foreign.Lua.Types.Error
   ( LuaException (..)
   , catchLuaError
   , throwLuaError
+  , modifyLuaError
   , tryLua
   ) where
 
@@ -60,6 +61,11 @@ throwLuaError = throwM . LuaException
 -- | Catch a @'LuaException'@.
 catchLuaError :: Lua a -> (LuaException -> Lua a) -> Lua a
 catchLuaError = catch
+
+-- | Catch @'LuaException'@, alter the error message and rethrow.
+modifyLuaError :: Lua a -> (String -> String) -> Lua a
+modifyLuaError luaOp modifier =
+  luaOp `catchLuaError` \(LuaException msg) -> throwLuaError (modifier msg)
 
 -- | Return either the result of a Lua computation or, if an exception was
 -- thrown, the error.

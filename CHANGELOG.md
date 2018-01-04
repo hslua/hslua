@@ -6,6 +6,9 @@
   have been fixed.
 - Provide utility function `raiseError`: Its argument will be thrown as
   an error in Lua.
+- Add `modifyLuaError`: The function lives in Foreign.Lua.Error and
+  allows to alter error messages. This is most useful for amending
+  errors with additional information.
 
 ### 0.9.4
 

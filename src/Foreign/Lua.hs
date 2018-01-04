@@ -153,6 +153,7 @@ module Foreign.Lua
   , catchLuaError
   , throwLuaError
   , tryLua
+  , modifyLuaError
   ) where
 
 import Prelude hiding (compare, concat)
