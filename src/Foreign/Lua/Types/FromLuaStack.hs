@@ -135,13 +135,16 @@ instance (Ord a, FromLuaStack a, FromLuaStack b) => FromLuaStack (Map a b) where
 
 -- | Read a table into a list
 toList :: FromLuaStack a => StackIndex -> Lua [a]
-toList n = (go . enumFromTo 1 =<< rawlen n) `catchLuaError` amendError
+toList n = do
+  oldTop <- gettop
+  (go . enumFromTo 1 =<< rawlen n) `catchLuaError` \(LuaException msg) -> do
+    settop oldTop
+    throwLuaError ("Could not read list: " ++ msg)
  where
   go [] = return []
   go (i : is) = do
     ret <- rawgeti n i *> peek (-1) <* pop 1
     (ret:) <$> go is
-  amendError err = throwLuaError ("Could not read list: " ++ show err)
 
 -- | Read a table into a list of pairs.
 pairsFromTable :: (FromLuaStack a, FromLuaStack b) => StackIndex -> Lua [(a, b)]

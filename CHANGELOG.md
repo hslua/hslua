@@ -9,6 +9,8 @@
 - Add `modifyLuaError`: The function lives in Foreign.Lua.Error and
   allows to alter error messages. This is most useful for amending
   errors with additional information.
+- Fixed a bug in `toList` which left a element on the stack if
+  deserializing that element lead to an error.
 
 ### 0.9.4
 

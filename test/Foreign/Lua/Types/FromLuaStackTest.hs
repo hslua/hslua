@@ -32,12 +32,12 @@ Test for the conversion of lua values to haskell values.
 -}
 module Foreign.Lua.Types.FromLuaStackTest (tests) where
 
-import Foreign.Lua (Lua, LuaInteger, LuaException (LuaException), call,
-                    dostring, loadstring, runLua, tryLua)
+import Foreign.Lua
 import Foreign.Lua.Types.FromLuaStack
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
+import Test.HsLua.Util (pushLuaExpr)
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
@@ -61,4 +61,12 @@ tests = testGroup "FromLuaStack"
       assertEqual "error message mismatched" (Left err) =<< runLua
         (loadstring "return {1, 5, 23, true, 42}" *> call 0 1
          *> peekEither (-1) :: Lua (Result [LuaInteger]))
+
+  , testCase "stack is unchanged if getting a list fails" . runLua $ do
+      liftIO . assertEqual "there should be no element on the stack" 0
+        =<< gettop
+      pushLuaExpr "{1, 1, 2, 3, 5, 8}"
+      _ <- tryLua (toList stackTop :: Lua [Bool])
+      liftIO . assertEqual "there should be exactly one element on the stack" 1
+        =<< gettop
   ]
