@@ -1,5 +1,5 @@
 {-
-Copyright © 2017 Albert Krewinkel
+Copyright © 2018 Albert Krewinkel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,29 +19,26 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
-import Test.Tasty (TestTree, defaultMain, testGroup)
+{-| Tests for utility types and functions
+-}
+module Foreign.Lua.UtilTest (tests) where
 
-import qualified Foreign.LuaTest
-import qualified Foreign.Lua.ApiTest
-import qualified Foreign.Lua.FunctionCallingTest
-import qualified Foreign.Lua.TypesTest
-import qualified Foreign.Lua.Types.FromLuaStackTest
-import qualified Foreign.Lua.Types.ToLuaStackTest
-import qualified Foreign.Lua.UtilTest
+import Foreign.Lua
+import Test.Tasty (TestTree, testGroup)
+import Test.Tasty.HUnit (assertEqual, testCase)
 
-main :: IO ()
-main = defaultMain $ testGroup "hslua" tests
+-- | Specifications for Attributes parsing functions.
+tests :: TestTree
+tests = testGroup "Utilities"
+  [ testCase "Optional return the value if it exists" . runLua $ do
+      push "Moin"
+      liftIO . assertEqual "Optional value should equal pushed value" (Just "Moin")
+        =<< fmap fromOptional (peek stackTop)
 
--- | HSpec tests
-tests :: [TestTree]
-tests =
-  [ Foreign.Lua.ApiTest.tests
-  , Foreign.Lua.FunctionCallingTest.tests
-  , Foreign.Lua.UtilTest.tests
-  , testGroup "Sendings and receiving values from the stack"
-    [ Foreign.Lua.TypesTest.tests
-    , Foreign.Lua.Types.FromLuaStackTest.tests
-    , Foreign.Lua.Types.ToLuaStackTest.tests
-    ]
-  , Foreign.LuaTest.tests
+  , testCase "Optional can deal with missing values" . runLua $ do
+      pushnil
+      liftIO . assertEqual "Peeking nil should return Nothing" Nothing
+        =<< fmap fromOptional (peek stackTop :: Lua (Optional String))
+      liftIO . assertEqual "Inexistant indices should be accepted" Nothing
+        =<< fmap fromOptional (peek (nthFromBottom 9) :: Lua (Optional String))
   ]

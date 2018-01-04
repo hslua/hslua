@@ -37,6 +37,7 @@ module Foreign.Lua.Util
   , runLua
   , runLuaEither
   , OrNil (OrNil, toMaybe)
+  , Optional (Optional, fromOptional)
   ) where
 
 import Control.Exception (bracket, try)
@@ -100,15 +101,25 @@ getnested (x:xs) = do
 -- type is strongly discouraged as missing values on inner levels are
 -- indistinguishable from missing values on an outer level; wrong values
 -- would be the likely result.
-newtype OrNil a = OrNil { toMaybe :: Maybe a }
+newtype Optional a = Optional { fromOptional :: Maybe a }
 
-instance FromLuaStack a => FromLuaStack (OrNil a) where
+instance FromLuaStack a => FromLuaStack (Optional a) where
   peek idx = do
     noValue <- isnoneornil idx
     if noValue
-      then return (OrNil Nothing)
-      else OrNil . Just <$> peek idx
+      then return (Optional Nothing)
+      else Optional . Just <$> peek idx
+
+instance ToLuaStack a => ToLuaStack (Optional a) where
+  push (Optional Nothing)  = pushnil
+  push (Optional (Just x)) = push x
+
+-- | Like @'Optional'@, but deprecated. Will be removed in the next major
+-- release.
+newtype OrNil a = OrNil { toMaybe :: Maybe a }
+
+instance FromLuaStack a => FromLuaStack (OrNil a) where
+  peek idx = fmap (OrNil . fromOptional) (peek idx)
 
 instance ToLuaStack a => ToLuaStack (OrNil a) where
-  push (OrNil Nothing)  = pushnil
-  push (OrNil (Just x)) = push x
+  push (OrNil x)  = push (Optional x)

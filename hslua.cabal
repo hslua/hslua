@@ -201,6 +201,7 @@ test-suite test-hslua
                       , Foreign.Lua.TypesTest
                       , Foreign.Lua.Types.FromLuaStackTest
                       , Foreign.Lua.Types.ToLuaStackTest
+                      , Foreign.Lua.UtilTest
                       , Test.HsLua.Arbitrary
                       , Test.HsLua.Util
   build-depends:        base

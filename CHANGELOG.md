@@ -1,6 +1,11 @@
 ## Changelog
 
-### 0.9.4 (unpublished)
+### 0.9.5 (unpublished)
+
+- Provide Optional as a replacement for OrNil. Exports of the latter
+  have been fixed.
+
+### 0.9.4
 
 - Make Lua an instance of MonadMask: MonadMask from Control.Monad.Catch
   allows to mask asynchronous exceptions. This allows to define a
