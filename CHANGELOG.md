@@ -4,6 +4,8 @@
 
 - Provide Optional as a replacement for OrNil. Exports of the latter
   have been fixed.
+- Provide utility function `raiseError`: Its argument will be thrown as
+  an error in Lua.
 
 ### 0.9.4
 

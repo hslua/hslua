@@ -36,6 +36,7 @@ module Foreign.Lua.Util
   , setglobal'
   , runLua
   , runLuaEither
+  , raiseError
   , OrNil (OrNil, toMaybe)
   , Optional (Optional, fromOptional)
   ) where
@@ -96,6 +97,15 @@ getnested [] = return ()
 getnested (x:xs) = do
   getglobal x
   mapM_ (\a -> getfield (-1) a *> remove (-2)) xs
+
+-- | Raise a Lua error, using the given value as the error object. This must be
+-- the return value of a function which has been wrapped with
+-- @'wrapHaskellFunction'@.
+raiseError :: ToLuaStack a => a -> Lua NumResults
+raiseError e = do
+  push e
+  fromIntegral <$> lerror
+{-# INLINABLE raiseError #-}
 
 -- | Newtype wrapper intended to be used for optional Lua values. Nesting this
 -- type is strongly discouraged as missing values on inner levels are

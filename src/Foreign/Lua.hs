@@ -62,6 +62,7 @@ module Foreign.Lua
   , runLuaEither
   , getglobal'
   , setglobal'
+  , raiseError
   , Optional (Optional, fromOptional)
   , OrNil (OrNil, toMaybe)
   -- * API

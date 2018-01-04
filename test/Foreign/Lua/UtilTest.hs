@@ -41,4 +41,14 @@ tests = testGroup "Utilities"
         =<< fmap fromOptional (peek stackTop :: Lua (Optional String))
       liftIO . assertEqual "Inexistant indices should be accepted" Nothing
         =<< fmap fromOptional (peek (nthFromBottom 9) :: Lua (Optional String))
+
+  , testCase "raiseError causes a Lua error" $ do
+      let msg = "error message"
+      let luaOp = do
+            pushHaskellFunction (raiseError msg)
+            wrapHaskellFunction
+            call 0 0
+            return ()
+      assertEqual "An error should be raised" (Left (LuaException msg))
+        =<< runLuaEither luaOp
   ]
