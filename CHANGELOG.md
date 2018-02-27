@@ -1,6 +1,6 @@
 ## Changelog
 
-### 0.9.5 (unpublished)
+### 0.9.5
 
 - Provide Optional as a replacement for OrNil. Exports of the latter
   have been fixed.
