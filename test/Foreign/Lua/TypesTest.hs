@@ -26,6 +26,7 @@ module Foreign.Lua.TypesTest (tests) where
 import Control.Monad (forM, forM_)
 import Data.ByteString (ByteString)
 import Data.Map (Map)
+import Data.Set (Set)
 import Foreign.Lua
 import Test.HsLua.Arbitrary ()
 import Test.QuickCheck
@@ -76,6 +77,9 @@ tests = testGroup "peek and push are well behaved"
     , testProperty "map of strings to LuaNumber"
       (prop_roundtripEqual :: Map String LuaNumber -> Property)
 
+    , testProperty "set of strings"
+      (prop_roundtripEqual :: Set LuaNumber -> Property)
+
     , testGroup "tuples"
       [ testProperty "pair of LuaNumbers"
         (prop_roundtripEqual :: (LuaNumber, LuaNumber) -> Property)
@@ -114,6 +118,8 @@ tests = testGroup "peek and push are well behaved"
       (prop_stackPushingPulling :: [LuaInteger] -> Property)
     , testProperty "can push/pop lists of bytestrings"
       (prop_stackPushingPulling :: [ByteString] -> Property)
+    , testProperty "can push/pop set of bytestrings"
+      (prop_stackPushingPulling :: Set ByteString -> Property)
     ]
   ]
 

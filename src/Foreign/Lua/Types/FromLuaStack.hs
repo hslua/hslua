@@ -49,12 +49,14 @@ module Foreign.Lua.Types.FromLuaStack
 
 import Data.ByteString (ByteString)
 import Data.Map (Map, fromList)
+import Data.Set (Set)
 import Data.Monoid ((<>))
 import Foreign.Lua.Api
 import Foreign.Lua.Types.Lua
 import Foreign.Lua.Types.Error
 import Foreign.Ptr (Ptr)
 
+import qualified Data.Set as Set
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.ByteString.Lazy as BL
@@ -175,6 +177,9 @@ resetStackOnError modifier op = do
   op `catchLuaError` \(LuaException msg) -> do
     settop oldTop
     throwLuaError (modifier msg)
+
+instance (Ord a, FromLuaStack a) => FromLuaStack (Set a) where
+  peek idx = Set.fromList . map fst . filter snd <$> pairsFromTable idx
 
 --
 -- Tuples
