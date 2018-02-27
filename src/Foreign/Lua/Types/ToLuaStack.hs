@@ -47,6 +47,7 @@ module Foreign.Lua.Types.ToLuaStack
 import Control.Monad (zipWithM_)
 import Data.ByteString (ByteString)
 import Data.Map (Map, toList)
+import Data.Set (Set)
 import Foreign.Lua.Api
 import Foreign.Lua.Types.Lua
 import Foreign.Ptr (Ptr)
@@ -110,6 +111,12 @@ instance (ToLuaStack a, ToLuaStack b) => ToLuaStack (Map a b) where
     let addValue (k, v) = push k *> push v *> rawset (-3)
     newtable
     mapM_ addValue (toList m)
+
+instance ToLuaStack a => ToLuaStack (Set a) where
+  push set = do
+    let addItem item = push item *> pushboolean True *> rawset (-3)
+    newtable
+    mapM_ addItem set
 
 --
 -- Tuples
