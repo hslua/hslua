@@ -1,5 +1,9 @@
 # Revision history for hslua-module-text
 
+## 0.1.2.2  -- 2018-03-09
+
+- Relax upper bound for base.
+
 ## 0.1.2.1  -- 2017-11-24
 
 - Add missing test file in the sources archive. This oversight had
