@@ -1,5 +1,5 @@
 {-
-Copyright © 2017 Albert Krewinkel
+Copyright © 2017-2018 Albert Krewinkel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@ THE SOFTWARE.
 -}
 {-|
 Module      :  Foreign.Lua.Types.FromLuaStackTest
-Copyright   :  © 2017 Albert Krewinkel
+Copyright   :  © 2017-2018 Albert Krewinkel
 License     :  MIT
 
 Maintainer  :  Albert Krewinkel <tarleb+hslua@zeitkraut.de>
