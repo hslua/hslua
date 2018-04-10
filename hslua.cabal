@@ -21,6 +21,7 @@ description:            The Foreign.Lua module is a wrapper of Lua language
                         .
                         <https://github.com/hslua/hslua-examples Example programs>
                         are available in a separate repository.
+tested-with:            GHC == 7.10.3, GHC == 8.0.2, GHC == 8.2.2
 category:               Foreign
 extra-source-files:     lua-5.3.4/*.h
                         safer-api/safer-api.h
@@ -74,7 +75,7 @@ flag use-pkgconfig
   default:              False
 
 library
-  build-depends:        base       >= 4.7    && < 5
+  build-depends:        base       >= 4.8    && < 5
                       , bytestring >= 0.10.2 && < 0.11
                       , containers >= 0.5    && < 0.6
                       , exceptions >= 0.8    && < 0.10
@@ -94,9 +95,6 @@ library
                       , Foreign.Lua.Types.ToLuaStack
                       , Foreign.Lua.Util
   hs-source-dirs:       src
-  if impl(ghc < 7.10)
-     hs-source-dirs:    prelude
-     other-modules:     Prelude
   ghc-options:          -Wall
   extensions:           CPP
   if flag(system-lua) || flag(luajit) || flag(lua501) || flag(lua502)
@@ -215,6 +213,3 @@ test-suite test-hslua
                       , tasty-hunit
                       , tasty-quickcheck
                       , text
-  if impl(ghc < 7.10)
-     hs-source-dirs:    prelude
-     other-modules:     Prelude

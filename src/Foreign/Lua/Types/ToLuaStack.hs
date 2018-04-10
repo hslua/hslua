@@ -24,9 +24,6 @@ THE SOFTWARE.
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-#if !MIN_VERSION_base(4,8,0)
-{-# LANGUAGE OverlappingInstances #-}
-#endif
 {-|
 Module      : Foreign.Lua.Types.ToLuaStack
 Copyright   : © 2007–2012 Gracjan Polak,
@@ -89,11 +86,7 @@ instance ToLuaStack T.Text where
 instance ToLuaStack BL.ByteString where
   push = push . BL.toStrict
 
-#if MIN_VERSION_base(4,8,0)
 instance {-# OVERLAPS #-} ToLuaStack [Char] where
-#else
-instance ToLuaStack [Char] where
-#endif
   push = push . T.pack
 
 instance ToLuaStack a => ToLuaStack [a] where

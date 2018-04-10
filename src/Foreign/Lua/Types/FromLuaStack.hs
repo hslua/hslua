@@ -24,9 +24,6 @@ THE SOFTWARE.
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-#if !MIN_VERSION_base(4,8,0)
-{-# LANGUAGE OverlappingInstances #-}
-#endif
 {-|
 Module      : Foreign.Lua.Types.FromLuaStack
 Copyright   : © 2007–2012 Gracjan Polak,
@@ -122,11 +119,7 @@ instance FromLuaStack T.Text where
 instance FromLuaStack BL.ByteString where
   peek = fmap BL.fromStrict . peek
 
-#if MIN_VERSION_base(4,8,0)
 instance {-# OVERLAPS #-} FromLuaStack [Char] where
-#else
-instance FromLuaStack String where
-#endif
   peek = fmap T.unpack . peek
 
 instance FromLuaStack a => FromLuaStack [a] where

@@ -24,9 +24,6 @@ THE SOFTWARE.
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
-#if !MIN_VERSION_base(4,8,0)
-{-# LANGUAGE OverlappingInstances #-}
-#endif
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
 Module      : Foreign.Lua.FunctionCalling
@@ -78,11 +75,7 @@ class ToHaskellFunction a where
   -- | Helper function, called by @'toHaskellFunction'@
   toHsFun :: StackIndex -> a -> Lua NumResults
 
-#if MIN_VERSION_base(4,8,0)
 instance {-# OVERLAPPING #-} ToHaskellFunction HaskellFunction where
-#else
-instance ToHaskellFunction HaskellFunction where
-#endif
   toHsFun _ = id
 
 instance ToLuaStack a => ToHaskellFunction (Lua a) where
