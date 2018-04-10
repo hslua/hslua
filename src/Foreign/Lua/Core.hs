@@ -42,8 +42,11 @@ however, are not caught and will cause the host program to terminate.
 module Foreign.Lua.Core (
   -- * Lua API types
     CFunction
-  , LuaInteger
-  , LuaNumber
+  , LuaBool (..)
+  , fromLuaBool
+  , toLuaBool
+  , LuaInteger (..)
+  , LuaNumber (..)
   , StackIndex (..)
   , nthFromBottom
   , nthFromTop
