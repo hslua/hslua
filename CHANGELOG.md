@@ -1,5 +1,15 @@
 ## Changelog
 
+### 1.0.0 (unreleased)
+
+- Add stack instance for Data.Set.Set.
+
+
+### 0.9.5.1
+
+- Relaxed upper bound on *exceptions*.
+
+
 ### 0.9.5
 
 - Provide Optional as a replacement for OrNil. Exports of the latter
