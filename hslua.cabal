@@ -21,7 +21,7 @@ description:            The Foreign.Lua module is a wrapper of Lua language
                         .
                         <https://github.com/hslua/hslua-examples Example programs>
                         are available in a separate repository.
-tested-with:            GHC == 7.10.3, GHC == 8.0.2, GHC == 8.2.2
+tested-with:            GHC == 7.10.3, GHC == 8.0.2, GHC == 8.2.2, GHC == 8.4.1
 category:               Foreign
 extra-source-files:     lua-5.3.4/*.h
                         safer-api/safer-api.h
