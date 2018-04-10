@@ -23,7 +23,7 @@ THE SOFTWARE.
 module Foreign.Lua.FunctionCallingTest (tests) where
 
 import Data.ByteString.Char8 (pack, unpack)
-import Foreign.Lua.Api
+import Foreign.Lua.Core
 import Foreign.Lua.FunctionCalling (callFunc, peek, registerHaskellFunction,
                                     pushHaskellFunction)
 import Foreign.Lua.Types (Lua, catchLuaError, throwLuaError)

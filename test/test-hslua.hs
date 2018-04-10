@@ -22,7 +22,7 @@ THE SOFTWARE.
 import Test.Tasty (TestTree, defaultMain, testGroup)
 
 import qualified Foreign.LuaTest
-import qualified Foreign.Lua.ApiTest
+import qualified Foreign.Lua.CoreTest
 import qualified Foreign.Lua.FunctionCallingTest
 import qualified Foreign.Lua.TypesTest
 import qualified Foreign.Lua.Types.FromLuaStackTest
@@ -35,7 +35,7 @@ main = defaultMain $ testGroup "hslua" tests
 -- | HSpec tests
 tests :: [TestTree]
 tests =
-  [ Foreign.Lua.ApiTest.tests
+  [ Foreign.Lua.CoreTest.tests
   , Foreign.Lua.FunctionCallingTest.tests
   , Foreign.Lua.UtilTest.tests
   , testGroup "Sendings and receiving values from the stack"

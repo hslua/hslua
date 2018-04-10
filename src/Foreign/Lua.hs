@@ -66,8 +66,8 @@ module Foreign.Lua
   , Optional (Optional, fromOptional)
   , OrNil (OrNil, toMaybe)
   -- * API
-  , module Foreign.Lua.Api
-  , module Foreign.Lua.Api.Types
+  , module Foreign.Lua.Core
+  , module Foreign.Lua.Core.Types
   -- * Error handling in hslua
   -- | We are trying to keep error handling on the haskell side very simple and
   -- intuitive. However, when combined with error handling on the Lua side, it
@@ -158,8 +158,8 @@ module Foreign.Lua
 
 import Prelude hiding (compare, concat)
 
-import Foreign.Lua.Api
-import Foreign.Lua.Api.Types
+import Foreign.Lua.Core
+import Foreign.Lua.Core.Types
 import Foreign.Lua.FunctionCalling
 import Foreign.Lua.Types
 import Foreign.Lua.Util

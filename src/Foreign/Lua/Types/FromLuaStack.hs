@@ -48,7 +48,7 @@ import Data.ByteString (ByteString)
 import Data.Map (Map, fromList)
 import Data.Set (Set)
 import Data.Monoid ((<>))
-import Foreign.Lua.Api
+import Foreign.Lua.Core
 import Foreign.Lua.Types.Lua
 import Foreign.Lua.Types.Error
 import Foreign.Ptr (Ptr)

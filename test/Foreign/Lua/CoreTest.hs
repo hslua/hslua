@@ -22,7 +22,7 @@ THE SOFTWARE.
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
 {-|
-Module      :  Foreign.Lua.ApiTest
+Module      :  Foreign.Lua.CoreTest
 Copyright   :  © 2017-2018 Albert Krewinkel
 License     :  MIT
 
@@ -30,9 +30,9 @@ Maintainer  :  Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   :  stable
 Portability :  portable
 
-Tests for lua C API-like functions
+Tests for Lua C API-like functions.
 -}
-module Foreign.Lua.ApiTest (tests) where
+module Foreign.Lua.CoreTest (tests) where
 
 import Prelude hiding (compare)
 
@@ -48,7 +48,7 @@ import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
 import Test.Tasty.QuickCheck (testProperty)
 
 import qualified Prelude
-import qualified Foreign.Lua.Api.RawBindings as LuaRaw
+import qualified Foreign.Lua.Core.RawBindings as LuaRaw
 
 
 -- | Specifications for Attributes parsing functions.

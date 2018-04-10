@@ -83,10 +83,10 @@ library
                       , mtl        >= 2.2    && < 2.3
                       , text
   exposed-modules:      Foreign.Lua
-                      , Foreign.Lua.Api
-                      , Foreign.Lua.Api.Constants
-                      , Foreign.Lua.Api.RawBindings
-                      , Foreign.Lua.Api.Types
+                      , Foreign.Lua.Core
+                      , Foreign.Lua.Core.Constants
+                      , Foreign.Lua.Core.RawBindings
+                      , Foreign.Lua.Core.Types
                       , Foreign.Lua.FunctionCalling
                       , Foreign.Lua.Types
                       , Foreign.Lua.Types.Error
@@ -194,7 +194,7 @@ test-suite test-hslua
   hs-source-dirs:       test
   ghc-options:          -Wall -threaded
   other-modules:        Foreign.LuaTest
-                      , Foreign.Lua.ApiTest
+                      , Foreign.Lua.CoreTest
                       , Foreign.Lua.FunctionCallingTest
                       , Foreign.Lua.TypesTest
                       , Foreign.Lua.Types.FromLuaStackTest

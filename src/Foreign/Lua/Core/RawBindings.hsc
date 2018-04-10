@@ -24,7 +24,7 @@ THE SOFTWARE.
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-|
-Module      : Foreign.Lua.Api.RawBindings
+Module      : Foreign.Lua.Core.RawBindings
 Copyright   : © 2007–2012 Gracjan Polak,
                 2012–2016 Ömer Sinan Ağacan,
                 2017-2018 Albert Krewinkel
@@ -35,10 +35,10 @@ Portability : ForeignFunctionInterface
 
 Haskell bindings to lua C API functions.
 -}
-module Foreign.Lua.Api.RawBindings where
+module Foreign.Lua.Core.RawBindings where
 
 import Foreign.C
-import Foreign.Lua.Api.Types
+import Foreign.Lua.Core.Types
 import Foreign.Ptr
 
 #include "safer-api.h"

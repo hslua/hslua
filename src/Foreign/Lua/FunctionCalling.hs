@@ -54,7 +54,7 @@ module Foreign.Lua.FunctionCalling
 
 import Control.Monad (when)
 import Foreign.C (CInt (..))
-import Foreign.Lua.Api
+import Foreign.Lua.Core
 import Foreign.Lua.Types
 import Foreign.Lua.Util (getglobal')
 import Foreign.Ptr (castPtr, freeHaskellFunPtr)

@@ -43,7 +43,7 @@ module Foreign.Lua.Util
 
 import Control.Exception (bracket, try)
 import Data.List (groupBy)
-import Foreign.Lua.Api
+import Foreign.Lua.Core
 import Foreign.Lua.Types
 
 -- | Run lua computation using the default HsLua state as starting point. Raised
