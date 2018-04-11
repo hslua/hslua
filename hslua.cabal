@@ -87,7 +87,7 @@ library
                       , Foreign.Lua.Core.Constants
                       , Foreign.Lua.Core.Lua
                       , Foreign.Lua.Core.RawBindings
-                      , Foreign.Lua.Core.Types
+                      , Foreign.Lua.Core.TypeBindings
                       , Foreign.Lua.FunctionCalling
                       , Foreign.Lua.Types
                       , Foreign.Lua.Types.Error

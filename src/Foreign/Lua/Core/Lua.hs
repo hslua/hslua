@@ -41,7 +41,7 @@ module Foreign.Lua.Core.Lua
 
 import Control.Monad.Catch (MonadCatch, MonadMask, MonadThrow)
 import Control.Monad.Reader (ReaderT (..), MonadReader, MonadIO, ask, liftIO)
-import Foreign.Lua.Core.Types (LuaState)
+import Foreign.Lua.Core.TypeBindings (LuaState)
 
 -- | Lua computation
 newtype Lua a = Lua { unLua :: ReaderT LuaState IO a }

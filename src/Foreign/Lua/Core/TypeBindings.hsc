@@ -26,7 +26,7 @@ THE SOFTWARE.
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE StandaloneDeriving         #-}
 {-|
-Module      : Foreign.Lua.Core.Types
+Module      : Foreign.Lua.Core.TypeBindings
 Copyright   : © 2007–2012 Gracjan Polak,
                 2012–2016 Ömer Sinan Ağacan,
                 2017-2018 Albert Krewinkel
@@ -37,7 +37,7 @@ Portability : ForeignFunctionInterface, GeneralizedNewtypeDeriving
 
 The core Lua types, including mappings of Lua types to Haskell.
 -}
-module Foreign.Lua.Core.Types where
+module Foreign.Lua.Core.TypeBindings where
 
 import Prelude hiding (EQ, LT)
 import Data.Int (#{type LUA_INTEGER})

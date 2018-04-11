@@ -195,7 +195,7 @@ import Foreign.C
 import Foreign.Lua.Core.Constants
 import Foreign.Lua.Core.Lua
 import Foreign.Lua.Core.RawBindings
-import Foreign.Lua.Core.Types
+import Foreign.Lua.Core.TypeBindings
 import Foreign.Lua.Types.Error
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
