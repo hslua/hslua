@@ -33,7 +33,6 @@ Test for the conversion of lua values to haskell values.
 module Foreign.Lua.Types.FromLuaStackTest (tests) where
 
 import Foreign.Lua
-import Foreign.Lua.Types.FromLuaStack
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
@@ -51,7 +50,7 @@ tests = testGroup "FromLuaStack"
   , testCase "returns an error if the types don't match" $ do
       let boolNum = "Expected a boolean but got a number"
       assertEqual "error messsage mismatched" (Left boolNum) =<< runLua
-        (loadstring "return 5" *> call 0 1 *> peekEither (-1) :: Lua (Result Bool))
+        (loadstring "return 5" *> call 0 1 *> peekEither (-1) :: Lua (Either String Bool))
       let numBoolExcept = LuaException "Expected a number but got a boolean"
       assertEqual "error message mismatched" (Left numBoolExcept) =<< runLua
         (tryLua $ dostring "return true" *> (peek (-1) :: Lua LuaInteger))
@@ -60,19 +59,19 @@ tests = testGroup "FromLuaStack"
       let err = "Could not read list: Expected a number but got a boolean"
       assertEqual "error message mismatched" (Left err) =<< runLua
         (loadstring "return {1, 5, 23, true, 42}" *> call 0 1
-         *> peekEither (-1) :: Lua (Result [LuaInteger]))
+         *> peekEither (-1) :: Lua (Either String [LuaInteger]))
 
   , testCase "stack is unchanged if getting a list fails" . runLua $ do
       liftIO . assertEqual "there should be no element on the stack" 0
         =<< gettop
       pushLuaExpr "{1, 1, 2, 3, 5, 8}"
-      _ <- tryLua (toList stackTop :: Lua [Bool])
+      _ <- tryLua (toList stackTop >>= force :: Lua [Bool])
       liftIO . assertEqual "there should be exactly one element on the stack" 1
         =<< gettop
 
   , testCase "stack is unchanged if getting key-value pairs fails" . runLua $ do
       pushLuaExpr "{{foo = 'bar', baz = 5}}"
-      _ <- tryLua (pairsFromTable stackTop :: Lua [(String, String)])
+      _ <- tryLua (pairsFromTable stackTop >>= force :: Lua [(String, String)])
       liftIO . assertEqual "there should be no element on the stack" 1
         =<< gettop
   ]
