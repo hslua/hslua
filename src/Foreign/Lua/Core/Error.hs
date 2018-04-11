@@ -22,7 +22,7 @@ THE SOFTWARE.
 {-# LANGUAGE DeriveDataTypeable         #-}
 {-# OPTIONS_GHC -fno-warn-orphans       #-}
 {-|
-Module      : Foreign.Lua.Types.Error
+Module      : Foreign.Lua.Core.Error
 Copyright   : © 2017-2018 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
@@ -31,7 +31,7 @@ Portability : DeriveDataTypeable
 
 Lua exceptions and exception handling.
 -}
-module Foreign.Lua.Types.Error
+module Foreign.Lua.Core.Error
   ( LuaException (..)
   , catchLuaError
   , throwLuaError

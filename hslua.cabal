@@ -85,12 +85,12 @@ library
   exposed-modules:      Foreign.Lua
                       , Foreign.Lua.Core
                       , Foreign.Lua.Core.Constants
+                      , Foreign.Lua.Core.Error
                       , Foreign.Lua.Core.RawBindings
                       , Foreign.Lua.Core.TypeBindings
                       , Foreign.Lua.Core.Types
                       , Foreign.Lua.FunctionCalling
                       , Foreign.Lua.Types
-                      , Foreign.Lua.Types.Error
                       , Foreign.Lua.Types.FromLuaStack
                       , Foreign.Lua.Types.ToLuaStack
                       , Foreign.Lua.Util

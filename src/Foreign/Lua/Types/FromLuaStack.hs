@@ -49,7 +49,6 @@ import Data.Map (Map, fromList)
 import Data.Set (Set)
 import Data.Monoid ((<>))
 import Foreign.Lua.Core
-import Foreign.Lua.Types.Error
 import Foreign.Ptr (Ptr)
 
 import qualified Data.Set as Set
