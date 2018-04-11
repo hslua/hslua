@@ -43,7 +43,7 @@ import Control.Applicative (Alternative (..))
 import Control.Exception (Exception)
 import Control.Monad.Catch (catch, throwM, try)
 import Data.Typeable (Typeable)
-import Foreign.Lua.Core.Lua (Lua)
+import Foreign.Lua.Core.Types (Lua)
 
 -- | Exceptions raised by Lua-related operations.
 data LuaException = LuaException String

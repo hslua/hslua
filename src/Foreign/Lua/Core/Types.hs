@@ -21,7 +21,7 @@ THE SOFTWARE.
 -}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-|
-Module      : Foreign.Lua.Core.Lua
+Module      : Foreign.Lua.Core.Types
 Copyright   : © 2017-2018 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
@@ -30,7 +30,7 @@ Portability : GeneralizedNewtypeDeriving
 
 The core Lua types, including mappings of Lua types to Haskell.
 -}
-module Foreign.Lua.Core.Lua
+module Foreign.Lua.Core.Types
   ( Lua (..)
   , luaState
   , runLuaWith
