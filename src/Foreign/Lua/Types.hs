@@ -33,11 +33,9 @@ Types for working with Lua.
 module Foreign.Lua.Types
   ( module Foreign.Lua.Types.Error
   , module Foreign.Lua.Types.FromLuaStack
-  , module Foreign.Lua.Types.Lua
   , module Foreign.Lua.Types.ToLuaStack
   ) where
 
 import Foreign.Lua.Types.Error
 import Foreign.Lua.Types.FromLuaStack
-import Foreign.Lua.Types.Lua
 import Foreign.Lua.Types.ToLuaStack

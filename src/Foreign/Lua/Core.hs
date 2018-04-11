@@ -40,8 +40,13 @@ the error is converted into a @'LuaException'@. Memory allocation errors,
 however, are not caught and will cause the host program to terminate.
 -}
 module Foreign.Lua.Core (
+  -- * Lua Computations
+    Lua (..)
+  , runLuaWith
+  , liftIO
+  , luaState
   -- * Lua API types
-    CFunction
+  , CFunction
   , LuaBool (..)
   , fromLuaBool
   , toLuaBool
@@ -188,10 +193,10 @@ import Control.Monad
 import Data.Maybe (fromMaybe)
 import Foreign.C
 import Foreign.Lua.Core.Constants
+import Foreign.Lua.Core.Lua
 import Foreign.Lua.Core.RawBindings
 import Foreign.Lua.Core.Types
 import Foreign.Lua.Types.Error
-import Foreign.Lua.Types.Lua
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 

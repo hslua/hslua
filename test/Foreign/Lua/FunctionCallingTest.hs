@@ -26,7 +26,7 @@ import Data.ByteString.Char8 (pack, unpack)
 import Foreign.Lua.Core
 import Foreign.Lua.FunctionCalling (callFunc, peek, registerHaskellFunction,
                                     pushHaskellFunction)
-import Foreign.Lua.Types (Lua, catchLuaError, throwLuaError)
+import Foreign.Lua.Types (catchLuaError, throwLuaError)
 import Foreign.Lua.Util (runLua)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)

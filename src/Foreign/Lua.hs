@@ -34,11 +34,9 @@ Portability : FlexibleInstances, ForeignFunctionInterface, ScopedTypeVariables
 Bindings, functions, and utilities enabling the integration of a lua interpreter
 into a haskell project.
 -}
-module Foreign.Lua
-  ( Lua (..)
-  , luaState
-  , runLuaWith
-  , liftIO
+module Foreign.Lua (
+  -- * Core
+    module Foreign.Lua.Core
   -- * Receiving values from Lua stack (Lua → Haskell)
   , FromLuaStack (..)
   , peekEither
@@ -65,8 +63,6 @@ module Foreign.Lua
   , raiseError
   , Optional (Optional, fromOptional)
   , OrNil (OrNil, toMaybe)
-  -- * API
-  , module Foreign.Lua.Core
   -- * Error handling in hslua
   -- | We are trying to keep error handling on the haskell side very simple and
   -- intuitive. However, when combined with error handling on the Lua side, it
