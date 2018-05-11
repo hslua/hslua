@@ -1,5 +1,11 @@
 ## Changelog
 
+### 0.9.6
+
+- Relax upper bound on `exceptions`.
+- Add stack instance for Data.Set.Set. Sets are converted to Lua tables, with
+  elements as keys and values set to `true`.
+
 ### 0.9.5.{1,2}
 
 - Relax upper bound on exceptions
