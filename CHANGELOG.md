@@ -1,5 +1,9 @@
 ## Changelog
 
+### 0.9.5.{1,2}
+
+- Relax upper bound on exceptions
+
 ### 0.9.5
 
 - Provide Optional as a replacement for OrNil. Exports of the latter
