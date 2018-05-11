@@ -1,5 +1,5 @@
 name:                   hslua
-version:                0.9.5.2
+version:                0.9.6
 stability:              beta
 cabal-version:          >= 1.8
 license:                MIT
