@@ -4,11 +4,9 @@
 
 - Add stack instance for Data.Set.Set.
 
-
-### 0.9.5.1
+### 0.9.5.{1,2}
 
 - Relaxed upper bound on *exceptions*.
-
 
 ### 0.9.5
 

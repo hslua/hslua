@@ -1,5 +1,5 @@
 name:                   hslua
-version:                0.9.5.1
+version:                0.9.5.2
 stability:              beta
 cabal-version:          >= 1.8
 license:                MIT
@@ -78,7 +78,7 @@ library
   build-depends:        base       >= 4.8    && < 5
                       , bytestring >= 0.10.2 && < 0.11
                       , containers >= 0.5    && < 0.6
-                      , exceptions >= 0.8    && < 0.10
+                      , exceptions >= 0.8    && < 0.11
                       , fail       >= 4.9    && < 5
                       , mtl        >= 2.2    && < 2.3
                       , text
