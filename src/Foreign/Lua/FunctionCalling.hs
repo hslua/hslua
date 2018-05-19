@@ -62,6 +62,7 @@ import Foreign.Ptr (castPtr, freeHaskellFunPtr)
 import Foreign.StablePtr (deRefStablePtr, freeStablePtr, newStablePtr)
 
 import qualified Data.ByteString.Char8 as BS
+import qualified Foreign.Lua.Core as Lua
 import qualified Foreign.Storable as F
 
 -- | Type of raw haskell functions that can be made into 'CFunction's.
@@ -105,7 +106,7 @@ instance (FromLuaStack a, ToHaskellFunction b) =>
 toHaskellFunction :: ToHaskellFunction a => a -> HaskellFunction
 toHaskellFunction a = toHsFun 1 a `catchLuaError` \err -> do
   push ("Error during function call: " ++ show err)
-  fromIntegral <$> lerror
+  fromIntegral <$> Lua.error
 
 -- | Create new foreign Lua function. Function created can be called
 -- by Lua engine. Remeber to free the pointer with @freecfunction@.

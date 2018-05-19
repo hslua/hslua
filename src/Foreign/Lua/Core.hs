@@ -162,7 +162,7 @@ module Foreign.Lua.Core (
   , gc
   -- ** miscellaneous and helper functions
   , next
-  , lerror
+  , error
   , concat
   , register
   -- * loading libraries
@@ -213,7 +213,7 @@ module Foreign.Lua.Core (
   -- call and our @'pcall'@ call.
   --
   -- To be able to catch errors from Haskell functions in Lua, we need to find a
-  -- convention. Currently hslua does this: @'lerror'@ has same type as Lua's
+  -- convention. Currently hslua does this: @'error'@ has same type as Lua's
   -- @lua_error@, but instead of calling real @lua_error@, it's returning two
   -- values: A special value @_HASKELLERR@ and error message as a string.
   --
@@ -273,7 +273,8 @@ module Foreign.Lua.Core (
   , wrapHaskellFunction
   ) where
 
-import Prelude hiding (EQ, LT, compare, concat)
+import Prelude hiding (EQ, LT, compare, concat, error)
+import qualified Prelude
 
 import Control.Monad
 import Data.Maybe (fromMaybe)
@@ -318,7 +319,7 @@ throwTopMessageAsError' msgMod = do
            TypeFunction -> showPointer
            TypeThread -> showPointer
            TypeUserdata -> showPointer
-           TypeNone -> error "Error while receiving the error message!"
+           TypeNone -> Prelude.error "Error while receiving the error message!"
   pop 1
   throwLuaError (msgMod msg)
  where
@@ -340,7 +341,7 @@ throwTopMessageAsError' msgMod = do
           else pop 1 *> showPointer
 
 -- | Convert a Haskell function userdata object into a CFuntion. The userdata
--- object must be at the top of the stack. Errors signaled via lerror are
+-- object must be at the top of the stack. Errors signaled via @'error'@ are
 -- converted to lua errors.
 wrapHaskellFunction :: Lua ()
 wrapHaskellFunction = do
@@ -531,6 +532,16 @@ dofile fp = do
 -- indices is non valid. Uses @'compare'@ internally.
 equal :: StackIndex -> StackIndex -> Lua Bool
 equal index1 index2 = compare index1 index2 EQ
+
+-- | This is a convenience function to implement error propagation convention
+-- described in [Error handling in hslua](#g:1). hslua doesn't implement
+-- `lua_error` function from Lua C API because it's never safe to use. (see
+-- [Error handling in hslua](#g:1) for details)
+error :: Lua Int
+error = do
+  getglobal "_HASKELLERR"
+  insert (-2)
+  return 2
 
 -- |  Controls the garbage collector.
 --
@@ -727,16 +738,6 @@ isthread n = (== TypeThread) <$> ltype n
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isuserdata lua_isuserdata>.
 isuserdata :: StackIndex -> Lua Bool
 isuserdata n = liftLua $ \l -> fromLuaBool <$> lua_isuserdata l n
-
--- | This is a convenience function to implement error propagation convention
--- described in [Error handling in hslua](#g:1). hslua doesn't implement
--- `lua_error` function from Lua C API because it's never safe to use. (see
--- [Error handling in hslua](#g:1) for details)
-lerror :: Lua Int
-lerror = do
-  getglobal "_HASKELLERR"
-  insert (-2)
-  return 2
 
 -- | Tests whether the object under the first index is smaller than that under
 -- the second. Uses @'compare'@ internally.

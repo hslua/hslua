@@ -45,6 +45,8 @@ import Data.List (groupBy)
 import Foreign.Lua.Core
 import Foreign.Lua.Types
 
+import qualified Foreign.Lua.Core as Lua
+
 -- | Run lua computation using the default HsLua state as starting point. Raised
 -- exceptions are passed through; error handling is the responsibility of the
 -- caller.
@@ -103,7 +105,7 @@ getnested (x:xs) = do
 raiseError :: ToLuaStack a => a -> Lua NumResults
 raiseError e = do
   push e
-  fromIntegral <$> lerror
+  fromIntegral <$> Lua.error
 {-# INLINABLE raiseError #-}
 
 -- | Newtype wrapper intended to be used for optional Lua values. Nesting this
