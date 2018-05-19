@@ -537,7 +537,7 @@ equal index1 index2 = compare index1 index2 EQ
 -- described in [Error handling in hslua](#g:1). hslua doesn't implement
 -- `lua_error` function from Lua C API because it's never safe to use. (see
 -- [Error handling in hslua](#g:1) for details)
-error :: Lua Int
+error :: Lua NumResults
 error = do
   getglobal "_HASKELLERR"
   insert (-2)

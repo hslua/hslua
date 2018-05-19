@@ -105,7 +105,7 @@ getnested (x:xs) = do
 raiseError :: ToLuaStack a => a -> Lua NumResults
 raiseError e = do
   push e
-  fromIntegral <$> Lua.error
+  Lua.error
 {-# INLINABLE raiseError #-}
 
 -- | Newtype wrapper intended to be used for optional Lua values. Nesting this
