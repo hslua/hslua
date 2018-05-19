@@ -64,7 +64,6 @@ module Foreign.Lua (
   , setglobal'
   , raiseError
   , Optional (Optional, fromOptional)
-  , OrNil (OrNil, toMaybe)
   ) where
 
 import Prelude hiding (compare, concat)

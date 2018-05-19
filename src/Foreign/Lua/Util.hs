@@ -37,7 +37,6 @@ module Foreign.Lua.Util
   , runLua
   , runLuaEither
   , raiseError
-  , OrNil (OrNil, toMaybe)
   , Optional (Optional, fromOptional)
   ) where
 
@@ -123,13 +122,3 @@ instance FromLuaStack a => FromLuaStack (Optional a) where
 instance ToLuaStack a => ToLuaStack (Optional a) where
   push (Optional Nothing)  = pushnil
   push (Optional (Just x)) = push x
-
--- | Like @'Optional'@, but deprecated. Will be removed in the next major
--- release.
-newtype OrNil a = OrNil { toMaybe :: Maybe a }
-
-instance FromLuaStack a => FromLuaStack (OrNil a) where
-  safePeek idx = fmap (OrNil . fromOptional) <$> safePeek idx
-
-instance ToLuaStack a => ToLuaStack (OrNil a) where
-  push (OrNil x)  = push (Optional x)
