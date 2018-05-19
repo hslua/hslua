@@ -24,6 +24,7 @@ module Foreign.Lua.FunctionCallingTest (tests) where
 
 import Data.ByteString.Char8 (pack, unpack)
 import Foreign.Lua.Core
+import Foreign.Lua.Types (Result (Error, Success))
 import Foreign.Lua.FunctionCalling (callFunc, peek, registerHaskellFunction,
                                     pushHaskellFunction)
 import Foreign.Lua.Util (runLua)
@@ -102,19 +103,30 @@ tests = testGroup "Interoperability"
 
   , testGroup "call lua function from haskell"
     [ testCase "test equality within lua" $
-      assertEqual "raw equality test failed" True =<<
+      assertEqual "raw equality test failed" (Success True) =<<
       runLua (openlibs *> callFunc "rawequal" (5 :: LuaInteger) (5.0 :: LuaNumber))
 
     , testCase "failing lua function call" $
-      assertEqual "unexpected result" "foo" =<<
-      runLua (catchLuaError (openlibs *> callFunc "assert" False (pack "foo")) (return . show))
+      assertEqual "unexpected result" (Left (LuaException "foo")) =<<
+      let luaOp = do
+             openlibs
+             callFunc "assert" False (pack "foo") :: Lua (Result Bool)
+      in runLua (tryLua luaOp)
 
     , testCase "print the empty string via lua procedure" $
-      assertEqual "raw equality test failed" () =<<
+      assertEqual "raw equality test failed" (Success ()) =<<
       runLua (openlibs *> callFunc "print" (pack ""))
 
     , testCase "failing lua procedure call" $
-      assertEqual "unexpected result" "foo" =<<
-      runLua (catchLuaError (openlibs *> callFunc "error" (pack "foo")) (return . show))
+      assertEqual "unexpected result" (Left (LuaException "foo")) =<<
+      let luaOp = (openlibs *> callFunc "error" (pack "foo") :: Lua (Result ()))
+      in runLua (tryLua luaOp)
+
+    , testCase "Error result when Lua-to-Haskell result conversion fails" $ do
+        luaRes <- runLua $ do
+          openlibs
+          callFunc "rawequal" (pack "a") () :: Lua (Result String)
+        let msg = pack "Expected a string but got a boolean"
+        assertEqual "raw equality test failed" (Error [msg]) luaRes
     ]
   ]

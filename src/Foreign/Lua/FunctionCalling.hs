@@ -24,6 +24,7 @@ THE SOFTWARE.
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
 Module      : Foreign.Lua.FunctionCalling
@@ -60,6 +61,7 @@ import Foreign.Lua.Util (getglobal')
 import Foreign.Ptr (castPtr, freeHaskellFunPtr)
 import Foreign.StablePtr (deRefStablePtr, freeStablePtr, newStablePtr)
 
+import qualified Data.ByteString.Char8 as BS
 import qualified Foreign.Storable as F
 
 -- | Type of raw haskell functions that can be made into 'CFunction's.
@@ -85,9 +87,11 @@ instance (FromLuaStack a, ToHaskellFunction b) =>
          ToHaskellFunction (a -> b) where
   toHsFun narg f = getArg >>= toHsFun (narg + 1) . f
      where
-      getArg = peek narg `catchLuaError` \err ->
-        throwLuaError ("could not read argument "
-                     ++ show (fromStackIndex narg) ++ ": " ++ show err)
+      getArg = safePeek narg >>= \case
+        Success x -> return x
+        Error msg -> throwLuaError $ "could not read argument "
+                     ++ show (fromStackIndex narg) ++ ": "
+                     ++ mconcat (map BS.unpack msg)
 
 -- | Convert a Haskell function to Lua function. Any Haskell function
 -- can be converted provided that:
@@ -120,12 +124,12 @@ freeCFunction = liftIO . freeHaskellFunPtr
 class LuaCallFunc a where
   callFunc' :: String -> Lua () -> NumArgs -> a
 
-instance (FromLuaStack a) => LuaCallFunc (Lua a) where
+instance (FromLuaStack a) => LuaCallFunc (Lua (Result a)) where
   callFunc' fnName pushArgs nargs = do
     getglobal' fnName
     pushArgs
     call nargs 1
-    peek (-1) <* pop 1
+    safePeek (-1) <* pop 1
 
 instance (ToLuaStack a, LuaCallFunc b) => LuaCallFunc (a -> b) where
   callFunc' fnName pushArgs nargs x =
