@@ -114,11 +114,11 @@ raiseError e = do
 newtype Optional a = Optional { fromOptional :: Maybe a }
 
 instance FromLuaStack a => FromLuaStack (Optional a) where
-  peek idx = do
+  safePeek idx = do
     noValue <- isnoneornil idx
     if noValue
-      then return (Optional Nothing)
-      else Optional . Just <$> peek idx
+      then return . return $ Optional Nothing
+      else fmap (Optional . Just) <$> safePeek idx
 
 instance ToLuaStack a => ToLuaStack (Optional a) where
   push (Optional Nothing)  = pushnil
@@ -129,7 +129,7 @@ instance ToLuaStack a => ToLuaStack (Optional a) where
 newtype OrNil a = OrNil { toMaybe :: Maybe a }
 
 instance FromLuaStack a => FromLuaStack (OrNil a) where
-  peek idx = fmap (OrNil . fromOptional) (peek idx)
+  safePeek idx = fmap (OrNil . fromOptional) <$> safePeek idx
 
 instance ToLuaStack a => ToLuaStack (OrNil a) where
   push (OrNil x)  = push (Optional x)
