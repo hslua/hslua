@@ -33,7 +33,6 @@ import Test.QuickCheck
 import Test.QuickCheck.Instances ()
 import Test.QuickCheck.Monadic
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.ExpectedFailure (ignoreTest)
 import Test.Tasty.QuickCheck (testProperty)
 
 import qualified Data.Text as T
@@ -51,8 +50,7 @@ tests = testGroup "peek and push are well behaved"
     , testProperty "lua numbers (i.e., doubles) remain equal under push/peek"
       (prop_roundtripEqual :: LuaNumber -> Property)
 
-    , ignoreTest $
-      testProperty "lua integers remain equal under push/peek"
+    , testProperty "lua integers remain equal under push/peek"
       (prop_roundtripEqual :: LuaInteger -> Property)
 
     , testProperty "bytestring remain equal under push/peek"
@@ -64,8 +62,7 @@ tests = testGroup "peek and push are well behaved"
     , testProperty "lists of boolean remain equal under push/peeks"
       (prop_roundtripEqual :: [Bool] -> Property)
 
-    , ignoreTest $
-      testProperty "lists of lua integers remain equal under push/peek"
+    , testProperty "lists of lua integers remain equal under push/peek"
       (prop_roundtripEqual :: [LuaInteger] -> Property)
 
     , testProperty "lists of bytestrings remain equal under push/peek"
