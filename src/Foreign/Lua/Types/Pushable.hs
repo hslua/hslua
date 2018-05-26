@@ -61,6 +61,9 @@ class Pushable a where
 instance Pushable () where
   push = const pushnil
 
+instance Pushable LuaBool where
+  push = pushboolean
+
 instance Pushable LuaInteger where
   push = pushinteger
 
