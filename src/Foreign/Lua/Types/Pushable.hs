@@ -74,7 +74,7 @@ instance Pushable ByteString where
   push = pushstring
 
 instance Pushable Bool where
-  push = pushboolean
+  push = pushboolean . toLuaBool
 
 instance Pushable CFunction where
   push = pushcfunction
@@ -109,7 +109,7 @@ instance (Pushable a, Pushable b) => Pushable (Map a b) where
 
 instance Pushable a => Pushable (Set a) where
   push set = do
-    let addItem item = push item *> pushboolean True *> rawset (-3)
+    let addItem item = push item *> push True *> rawset (-3)
     newtable
     mapM_ addItem set
 
