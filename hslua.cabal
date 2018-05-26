@@ -92,7 +92,7 @@ library
                       , Foreign.Lua.FunctionCalling
                       , Foreign.Lua.Types
                       , Foreign.Lua.Types.FromLuaStack
-                      , Foreign.Lua.Types.ToLuaStack
+                      , Foreign.Lua.Types.Pushable
                       , Foreign.Lua.Util
   hs-source-dirs:       src
   ghc-options:          -Wall
@@ -198,7 +198,7 @@ test-suite test-hslua
                       , Foreign.Lua.FunctionCallingTest
                       , Foreign.Lua.TypesTest
                       , Foreign.Lua.Types.FromLuaStackTest
-                      , Foreign.Lua.Types.ToLuaStackTest
+                      , Foreign.Lua.Types.PushableTest
                       , Foreign.Lua.UtilTest
                       , Test.HsLua.Arbitrary
                       , Test.HsLua.Util

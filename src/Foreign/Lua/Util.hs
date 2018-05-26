@@ -102,7 +102,7 @@ getnested (x:xs) = do
 -- | Raise a Lua error, using the given value as the error object. This must be
 -- the return value of a function which has been wrapped with
 -- @'wrapHaskellFunction'@.
-raiseError :: ToLuaStack a => a -> Lua NumResults
+raiseError :: Pushable a => a -> Lua NumResults
 raiseError e = do
   push e
   Lua.error
@@ -121,6 +121,6 @@ instance FromLuaStack a => FromLuaStack (Optional a) where
       then return . return $ Optional Nothing
       else fmap (Optional . Just) <$> safePeek idx
 
-instance ToLuaStack a => ToLuaStack (Optional a) where
+instance Pushable a => Pushable (Optional a) where
   push (Optional Nothing)  = pushnil
   push (Optional (Just x)) = push x

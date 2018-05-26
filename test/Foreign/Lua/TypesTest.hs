@@ -120,19 +120,19 @@ tests = testGroup "peek and push are well behaved"
     ]
   ]
 
-prop_roundtripEqual :: (Eq a, FromLuaStack a, ToLuaStack a) => a -> Property
+prop_roundtripEqual :: (Eq a, FromLuaStack a, Pushable a) => a -> Property
 prop_roundtripEqual x = monadicIO $ do
   y <- run $ roundtrip x
   assert (x == y)
 
-roundtrip :: (FromLuaStack a, ToLuaStack a) => a -> IO a
+roundtrip :: (FromLuaStack a, Pushable a) => a -> IO a
 roundtrip x = runLua $ do
   push x
   peek (-1)
 
--- | More involved check that the FromLuaStack and ToLuaStack instances of a
+-- | More involved check that the FromLuaStack and Pushable instances of a
 -- datatype work
-prop_stackPushingPulling :: (Show t, Eq t, ToLuaStack t, FromLuaStack t) => t -> Property
+prop_stackPushingPulling :: (Show t, Eq t, Pushable t, FromLuaStack t) => t -> Property
 prop_stackPushingPulling t = monadicIO $ do
   -- Init Lua state
   l <- run newstate

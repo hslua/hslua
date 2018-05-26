@@ -94,7 +94,7 @@ and
 
 ``` haskell
 -- | A value that can be pushed to the Lua stack.
-class ToLuaStack a where
+class Pushable a where
   -- | Pushes a value onto Lua stack, casting it into meaningfully
   --   nearest Lua type.
   push :: a -> Lua ()
@@ -169,7 +169,7 @@ coroutines to work, or just believe that there should be wrapper functions for
 other reasons, we'd love to hear from you.
 
 **Why are there no predefined stack instances for default numerical types?**
-HsLua defines instances for the `FromLuaStack` and `ToLuaStack` type-classes
+HsLua defines instances for the `FromLuaStack` and `Pushable` type-classes
 only if the following law holds: `return x == push x *> peek x`. Lua can be
 compiled with customized number types, making it impossible to verify the
 correctness of the above equation. Furthermore, instances for numerical types

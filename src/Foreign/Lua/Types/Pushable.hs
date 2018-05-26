@@ -25,7 +25,7 @@ THE SOFTWARE.
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
-Module      : Foreign.Lua.Types.ToLuaStack
+Module      : Foreign.Lua.Types.Pushable
 Copyright   : © 2007–2012 Gracjan Polak,
                 2012–2016 Ömer Sinan Ağacan,
                 2017-2018 Albert Krewinkel
@@ -36,8 +36,8 @@ Portability : FlexibleInstances, ScopedTypeVariables
 
 Sending haskell objects to the lua stack.
 -}
-module Foreign.Lua.Types.ToLuaStack
-  ( ToLuaStack (..)
+module Foreign.Lua.Types.Pushable
+  ( Pushable (..)
   , pushList
   ) where
 
@@ -53,58 +53,58 @@ import qualified Data.Text.Encoding as T
 import qualified Data.ByteString.Lazy as BL
 
 -- | A value that can be pushed to the Lua stack.
-class ToLuaStack a where
+class Pushable a where
   -- | Pushes a value onto Lua stack, casting it into meaningfully nearest Lua
   -- type.
   push :: a -> Lua ()
 
-instance ToLuaStack () where
+instance Pushable () where
   push = const pushnil
 
-instance ToLuaStack LuaInteger where
+instance Pushable LuaInteger where
   push = pushinteger
 
-instance ToLuaStack LuaNumber where
+instance Pushable LuaNumber where
   push = pushnumber
 
-instance ToLuaStack ByteString where
+instance Pushable ByteString where
   push = pushstring
 
-instance ToLuaStack Bool where
+instance Pushable Bool where
   push = pushboolean
 
-instance ToLuaStack CFunction where
+instance Pushable CFunction where
   push = pushcfunction
 
-instance ToLuaStack (Ptr a) where
+instance Pushable (Ptr a) where
   push = pushlightuserdata
 
-instance ToLuaStack T.Text where
+instance Pushable T.Text where
   push = push . T.encodeUtf8
 
-instance ToLuaStack BL.ByteString where
+instance Pushable BL.ByteString where
   push = push . BL.toStrict
 
-instance {-# OVERLAPS #-} ToLuaStack [Char] where
+instance {-# OVERLAPS #-} Pushable [Char] where
   push = push . T.pack
 
-instance ToLuaStack a => ToLuaStack [a] where
+instance Pushable a => Pushable [a] where
   push = pushList
 
 -- | Push list as numerically indexed table.
-pushList :: ToLuaStack a => [a] -> Lua ()
+pushList :: Pushable a => [a] -> Lua ()
 pushList xs = do
   let setField i x = push x *> rawseti (-2) i
   newtable
   zipWithM_ setField [1..] xs
 
-instance (ToLuaStack a, ToLuaStack b) => ToLuaStack (Map a b) where
+instance (Pushable a, Pushable b) => Pushable (Map a b) where
   push m = do
     let addValue (k, v) = push k *> push v *> rawset (-3)
     newtable
     mapM_ addValue (toList m)
 
-instance ToLuaStack a => ToLuaStack (Set a) where
+instance Pushable a => Pushable (Set a) where
   push set = do
     let addItem item = push item *> pushboolean True *> rawset (-3)
     newtable
@@ -113,14 +113,14 @@ instance ToLuaStack a => ToLuaStack (Set a) where
 --
 -- Tuples
 --
-instance (ToLuaStack a, ToLuaStack b) => ToLuaStack (a, b) where
+instance (Pushable a, Pushable b) => Pushable (a, b) where
   push (a, b) = do
     newtable
     addRawInt 1 a
     addRawInt 2 b
 
-instance (ToLuaStack a, ToLuaStack b, ToLuaStack c) =>
-         ToLuaStack (a, b, c)
+instance (Pushable a, Pushable b, Pushable c) =>
+         Pushable (a, b, c)
  where
   push (a, b, c) = do
     newtable
@@ -128,8 +128,8 @@ instance (ToLuaStack a, ToLuaStack b, ToLuaStack c) =>
     addRawInt 2 b
     addRawInt 3 c
 
-instance (ToLuaStack a, ToLuaStack b, ToLuaStack c, ToLuaStack d) =>
-         ToLuaStack (a, b, c, d)
+instance (Pushable a, Pushable b, Pushable c, Pushable d) =>
+         Pushable (a, b, c, d)
  where
   push (a, b, c, d) = do
     newtable
@@ -138,9 +138,9 @@ instance (ToLuaStack a, ToLuaStack b, ToLuaStack c, ToLuaStack d) =>
     addRawInt 3 c
     addRawInt 4 d
 
-instance (ToLuaStack a, ToLuaStack b, ToLuaStack c,
-          ToLuaStack d, ToLuaStack e) =>
-         ToLuaStack (a, b, c, d, e)
+instance (Pushable a, Pushable b, Pushable c,
+          Pushable d, Pushable e) =>
+         Pushable (a, b, c, d, e)
  where
   push (a, b, c, d, e) = do
     newtable
@@ -150,9 +150,9 @@ instance (ToLuaStack a, ToLuaStack b, ToLuaStack c,
     addRawInt 4 d
     addRawInt 5 e
 
-instance (ToLuaStack a, ToLuaStack b, ToLuaStack c,
-          ToLuaStack d, ToLuaStack e, ToLuaStack f) =>
-         ToLuaStack (a, b, c, d, e, f)
+instance (Pushable a, Pushable b, Pushable c,
+          Pushable d, Pushable e, Pushable f) =>
+         Pushable (a, b, c, d, e, f)
  where
   push (a, b, c, d, e, f) = do
     newtable
@@ -163,9 +163,9 @@ instance (ToLuaStack a, ToLuaStack b, ToLuaStack c,
     addRawInt 5 e
     addRawInt 6 f
 
-instance (ToLuaStack a, ToLuaStack b, ToLuaStack c, ToLuaStack d,
-          ToLuaStack e, ToLuaStack f, ToLuaStack g) =>
-         ToLuaStack (a, b, c, d, e, f, g)
+instance (Pushable a, Pushable b, Pushable c, Pushable d,
+          Pushable e, Pushable f, Pushable g) =>
+         Pushable (a, b, c, d, e, f, g)
  where
   push (a, b, c, d, e, f, g) = do
     newtable
@@ -177,9 +177,9 @@ instance (ToLuaStack a, ToLuaStack b, ToLuaStack c, ToLuaStack d,
     addRawInt 6 f
     addRawInt 7 g
 
-instance (ToLuaStack a, ToLuaStack b, ToLuaStack c, ToLuaStack d,
-          ToLuaStack e, ToLuaStack f, ToLuaStack g, ToLuaStack h) =>
-         ToLuaStack (a, b, c, d, e, f, g, h)
+instance (Pushable a, Pushable b, Pushable c, Pushable d,
+          Pushable e, Pushable f, Pushable g, Pushable h) =>
+         Pushable (a, b, c, d, e, f, g, h)
  where
   push (a, b, c, d, e, f, g, h) = do
     newtable
@@ -193,7 +193,7 @@ instance (ToLuaStack a, ToLuaStack b, ToLuaStack c, ToLuaStack d,
     addRawInt 8 h
 
 -- | Set numeric key/value in table at the top of the stack.
-addRawInt :: ToLuaStack a => Int -> a -> Lua ()
+addRawInt :: Pushable a => Int -> a -> Lua ()
 addRawInt idx val = do
   push val
   rawseti (-2) idx

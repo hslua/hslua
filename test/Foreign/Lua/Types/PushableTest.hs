@@ -21,7 +21,7 @@ THE SOFTWARE.
 -}
 {-# LANGUAGE OverloadedStrings #-}
 {-|
-Module      :  Foreign.Lua.Types.ToLuaStackTest
+Module      :  Foreign.Lua.Types.PushableTest
 Copyright   :  © 2017-2018 Albert Krewinkel
 License     :  MIT
 
@@ -31,7 +31,7 @@ Portability :  portable
 
 Test for the interoperability between haskell and lua.
 -}
-module Foreign.Lua.Types.ToLuaStackTest (tests) where
+module Foreign.Lua.Types.PushableTest (tests) where
 
 import Data.ByteString (ByteString)
 import Data.Monoid ((<>))
@@ -48,7 +48,7 @@ import Test.Tasty.QuickCheck (testProperty)
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
-tests = testGroup "ToLuaStack"
+tests = testGroup "Pushable"
   [ testGroup "pushing simple values to the stack"
     [ testCase "Boolean can be pushed correctly" $
       assertLuaEqual "true was not pushed"
@@ -101,13 +101,13 @@ tests = testGroup "ToLuaStack"
 
 -- | Takes a message, haskell value, and a representation of that value as lua
 -- string, assuming that the pushed values are equal within lua.
-assertLuaEqual :: ToLuaStack a => String -> a -> String -> Assertion
+assertLuaEqual :: Pushable a => String -> a -> String -> Assertion
 assertLuaEqual msg x lit = assertBool msg =<< runLua
   (loadstring ("return " <> lit) *> call 0 1
    *> push x
    *> equal (-1) (-2))
 
-prop_pushIncrStackSizeByOne :: ToLuaStack a => a -> Property
+prop_pushIncrStackSizeByOne :: Pushable a => a -> Property
 prop_pushIncrStackSizeByOne x = monadicIO $ do
   (oldSize, newSize) <- run $ runLua ((,) <$> gettop <*> (push x *> gettop))
   assert (newSize == succ oldSize)

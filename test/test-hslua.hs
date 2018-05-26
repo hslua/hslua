@@ -26,7 +26,7 @@ import qualified Foreign.Lua.CoreTest
 import qualified Foreign.Lua.FunctionCallingTest
 import qualified Foreign.Lua.TypesTest
 import qualified Foreign.Lua.Types.FromLuaStackTest
-import qualified Foreign.Lua.Types.ToLuaStackTest
+import qualified Foreign.Lua.Types.PushableTest
 import qualified Foreign.Lua.UtilTest
 
 main :: IO ()
@@ -41,7 +41,7 @@ tests =
   , testGroup "Sendings and receiving values from the stack"
     [ Foreign.Lua.TypesTest.tests
     , Foreign.Lua.Types.FromLuaStackTest.tests
-    , Foreign.Lua.Types.ToLuaStackTest.tests
+    , Foreign.Lua.Types.PushableTest.tests
     ]
   , Foreign.LuaTest.tests
   ]

@@ -43,7 +43,7 @@ module Foreign.Lua.FunctionCalling
   , LuaCallFunc (..)
   , ToHaskellFunction (..)
   , HaskellFunction
-  , ToLuaStack (..)
+  , Pushable (..)
   , PreCFunction
   , toHaskellFunction
   , callFunc
@@ -80,7 +80,7 @@ class ToHaskellFunction a where
 instance {-# OVERLAPPING #-} ToHaskellFunction HaskellFunction where
   toHsFun _ = id
 
-instance ToLuaStack a => ToHaskellFunction (Lua a) where
+instance Pushable a => ToHaskellFunction (Lua a) where
   toHsFun _narg x = 1 <$ (x >>= push)
 
 instance (FromLuaStack a, ToHaskellFunction b) =>
@@ -98,7 +98,7 @@ instance (FromLuaStack a, ToHaskellFunction b) =>
 --
 --   * all arguments are instances of @'FromLuaStack'@
 --   * return type is @Lua a@, where @a@ is an instance of
---     @'ToLuaStack'@
+--     @'Pushable'@
 --
 -- Any Haskell exception will be converted to a string and returned
 -- as Lua error.
@@ -130,7 +130,7 @@ instance (FromLuaStack a) => LuaCallFunc (Lua (Result a)) where
     call nargs 1
     safePeek (-1) <* pop 1
 
-instance (ToLuaStack a, LuaCallFunc b) => LuaCallFunc (a -> b) where
+instance (Pushable a, LuaCallFunc b) => LuaCallFunc (a -> b) where
   callFunc' fnName pushArgs nargs x =
     callFunc' fnName (pushArgs *> push x) (nargs + 1)
 

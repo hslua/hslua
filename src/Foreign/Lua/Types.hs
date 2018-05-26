@@ -32,8 +32,8 @@ Types for working with Lua.
 -}
 module Foreign.Lua.Types
   ( module Foreign.Lua.Types.FromLuaStack
-  , module Foreign.Lua.Types.ToLuaStack
+  , module Foreign.Lua.Types.Pushable
   ) where
 
 import Foreign.Lua.Types.FromLuaStack
-import Foreign.Lua.Types.ToLuaStack
+import Foreign.Lua.Types.Pushable
