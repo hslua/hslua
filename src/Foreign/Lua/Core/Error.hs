@@ -57,20 +57,24 @@ instance Exception LuaException
 -- | Raise a @'LuaException'@ containing the given error message.
 throwLuaError :: String -> Lua a
 throwLuaError = throwM . LuaException
+{-# INLINABLE throwLuaError #-}
 
 -- | Catch a @'LuaException'@.
 catchLuaError :: Lua a -> (LuaException -> Lua a) -> Lua a
 catchLuaError = catch
+{-# INLINABLE catchLuaError #-}
 
 -- | Catch @'LuaException'@, alter the error message and rethrow.
 modifyLuaError :: Lua a -> (String -> String) -> Lua a
 modifyLuaError luaOp modifier =
   luaOp `catchLuaError` \(LuaException msg) -> throwLuaError (modifier msg)
+{-# INLINABLE modifyLuaError #-}
 
 -- | Return either the result of a Lua computation or, if an exception was
 -- thrown, the error.
 tryLua :: Lua a -> Lua (Either LuaException a)
 tryLua = try
+{-# INLINABLE tryLua #-}
 
 instance Alternative Lua where
   empty = throwLuaError "empty"

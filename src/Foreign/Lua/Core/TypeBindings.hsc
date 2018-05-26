@@ -106,11 +106,13 @@ newtype LuaBool = LuaBool CInt
 fromLuaBool :: LuaBool -> Bool
 fromLuaBool (LuaBool 0) = False
 fromLuaBool _           = True
+{-# INLINABLE fromLuaBool #-}
 
 -- | Convert a Haskell @'Bool'@ to a @'LuaBool'@.
 toLuaBool :: Bool -> LuaBool
 toLuaBool True  = LuaBool 1
 toLuaBool False = LuaBool 0
+{-# INLINABLE toLuaBool #-}
 
 
 --
@@ -191,6 +193,7 @@ fromRelationalOperator EQ = 0
 fromRelationalOperator LT = 1
 fromRelationalOperator LE = 2
 #endif
+{-# INLINABLE fromRelationalOperator #-}
 
 
 --
@@ -227,6 +230,7 @@ toStatus (StatusCode c) = case c of
 #endif
   (#{const LUA_ERRFILE})   -> ErrFile
   n -> error $ "Cannot convert (" ++ show n ++ ") to LuaStatus"
+{-# INLINABLE toStatus #-}
 
 -- | Integer code used to signal the status of a thread or computation.
 -- See @'Status'@.
@@ -261,18 +265,22 @@ newtype StackIndex = StackIndex { fromStackIndex :: CInt }
 -- | Stack index of the nth element from the top of the stack.
 nthFromTop :: CInt -> StackIndex
 nthFromTop n = StackIndex (-n)
+{-# INLINABLE nthFromTop #-}
 
 -- | Stack index of the nth element from the bottom of the stack.
 nthFromBottom :: CInt -> StackIndex
 nthFromBottom = StackIndex
+{-# INLINABLE nthFromBottom #-}
 
 -- | Top of the stack
 stackTop :: StackIndex
 stackTop = -1
+{-# INLINABLE stackTop #-}
 
 -- | Bottom of the stack
 stackBottom :: StackIndex
 stackBottom = 1
+{-# INLINABLE stackBottom #-}
 
 --
 -- Number of arguments and return values
