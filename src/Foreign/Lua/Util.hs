@@ -114,7 +114,7 @@ raiseError e = do
 -- would be the likely result.
 newtype Optional a = Optional { fromOptional :: Maybe a }
 
-instance FromLuaStack a => FromLuaStack (Optional a) where
+instance Retrievable a => Retrievable (Optional a) where
   safePeek idx = do
     noValue <- isnoneornil idx
     if noValue

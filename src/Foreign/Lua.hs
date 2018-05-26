@@ -38,7 +38,7 @@ module Foreign.Lua (
   -- * Core
     module Foreign.Lua.Core
   -- * Receiving values from Lua stack (Lua → Haskell)
-  , FromLuaStack (..)
+  , Retrievable (..)
   , Result (..)
   , force
   , peekEither

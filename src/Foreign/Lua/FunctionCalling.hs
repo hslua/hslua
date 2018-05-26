@@ -39,7 +39,7 @@ Portability : FlexibleInstances, ForeignFunctionInterface, ScopedTypeVariables
 Call haskell functions from Lua, and vice versa.
 -}
 module Foreign.Lua.FunctionCalling
-  ( FromLuaStack (..)
+  ( Retrievable (..)
   , LuaCallFunc (..)
   , ToHaskellFunction (..)
   , HaskellFunction
@@ -83,7 +83,7 @@ instance {-# OVERLAPPING #-} ToHaskellFunction HaskellFunction where
 instance Pushable a => ToHaskellFunction (Lua a) where
   toHsFun _narg x = 1 <$ (x >>= push)
 
-instance (FromLuaStack a, ToHaskellFunction b) =>
+instance (Retrievable a, ToHaskellFunction b) =>
          ToHaskellFunction (a -> b) where
   toHsFun narg f = getArg >>= toHsFun (narg + 1) . f
      where
@@ -96,7 +96,7 @@ instance (FromLuaStack a, ToHaskellFunction b) =>
 -- | Convert a Haskell function to Lua function. Any Haskell function
 -- can be converted provided that:
 --
---   * all arguments are instances of @'FromLuaStack'@
+--   * all arguments are instances of @'Retrievable'@
 --   * return type is @Lua a@, where @a@ is an instance of
 --     @'Pushable'@
 --
@@ -123,7 +123,7 @@ freeCFunction = liftIO . freeHaskellFunPtr
 class LuaCallFunc a where
   callFunc' :: String -> Lua () -> NumArgs -> a
 
-instance (FromLuaStack a) => LuaCallFunc (Lua (Result a)) where
+instance (Retrievable a) => LuaCallFunc (Lua (Result a)) where
   callFunc' fnName pushArgs nargs = do
     getglobal' fnName
     pushArgs
