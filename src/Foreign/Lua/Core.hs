@@ -48,6 +48,8 @@ module Foreign.Lua.Core (
   -- * Lua API types
   , CFunction
   , LuaBool (..)
+  , false
+  , true
   , fromLuaBool
   , toLuaBool
   , LuaInteger (..)

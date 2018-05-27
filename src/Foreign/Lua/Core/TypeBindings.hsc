@@ -102,6 +102,14 @@ newtype LuaNumber = LuaNumber #{type LUA_NUMBER}
 newtype LuaBool = LuaBool CInt
   deriving (Eq, Storable, Show)
 
+-- | Generic Lua representation of a value interpreted as being true.
+true :: LuaBool
+true = LuaBool 1
+
+-- | Lua representation of the value interpreted as false.
+false :: LuaBool
+false = LuaBool 0
+
 -- | Convert a @'LuaBool'@ to a Haskell @'Bool'@.
 fromLuaBool :: LuaBool -> Bool
 fromLuaBool (LuaBool 0) = False
@@ -110,8 +118,8 @@ fromLuaBool _           = True
 
 -- | Convert a Haskell @'Bool'@ to a @'LuaBool'@.
 toLuaBool :: Bool -> LuaBool
-toLuaBool True  = LuaBool 1
-toLuaBool False = LuaBool 0
+toLuaBool True  = true
+toLuaBool False = false
 {-# INLINABLE toLuaBool #-}
 
 

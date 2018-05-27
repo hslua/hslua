@@ -258,6 +258,14 @@ tests = testGroup "Haskell version of the C API"
           n2 = fromType lt2
       in Prelude.compare n1 n2 == Prelude.compare lt1 lt2
 
+  , testCase "boolean values are correct" $ do
+      trueIsCorrect <- runLua $
+        pushboolean true *> dostring "return true" *> rawequal (-1) (-2)
+      falseIsCorrect <- runLua $
+        pushboolean false *> dostring "return false" *> rawequal (-1) (-2)
+      assertBool "LuaBool true is not equal to Lua's true" trueIsCorrect
+      assertBool "LuaBool false is not equal to Lua's false" falseIsCorrect
+
   , testCase "functions can throw a table as error message" $ do
       let mt = "{__tostring = function (e) return e.error_code end}"
       let err = "error(setmetatable({error_code = 23}," <> mt <> "))"
