@@ -100,7 +100,7 @@ newtype LuaNumber = LuaNumber #{type LUA_NUMBER}
 -- | Boolean value returned by a Lua C API function. This is a @'CInt'@ and
 -- interpreted as @'False'@ iff the value is @0@, @'True'@ otherwise.
 newtype LuaBool = LuaBool CInt
-  deriving (Eq, Storable)
+  deriving (Eq, Storable, Show)
 
 -- | Convert a @'LuaBool'@ to a Haskell @'Bool'@.
 fromLuaBool :: LuaBool -> Bool
