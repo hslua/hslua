@@ -433,7 +433,7 @@ foreign import ccall unsafe "lua.h lua_rawgeti"
 #else
 foreign import ccall safe "lua.h lua_rawgeti"
 #endif
-  lua_rawgeti :: LuaState -> StackIndex -> CInt -> IO ()
+  lua_rawgeti :: LuaState -> StackIndex -> LuaInteger -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_createtable lua_createtable>
 #ifdef ALLOW_UNSAFE_GC
@@ -497,7 +497,7 @@ foreign import ccall unsafe "lua.h lua_rawseti"
 #else
 foreign import ccall safe "lua.h lua_rawseti"
 #endif
-  lua_rawseti :: LuaState -> StackIndex -> CInt -> IO ()
+  lua_rawseti :: LuaState -> StackIndex -> LuaInteger -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_setmetatable lua_setmetatable>
 #ifdef ALLOW_UNSAFE_GC
