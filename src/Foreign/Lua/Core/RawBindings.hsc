@@ -449,7 +449,7 @@ foreign import ccall unsafe "lua.h lua_newuserdata"
 #else
 foreign import ccall safe "lua.h lua_newuserdata"
 #endif
-  lua_newuserdata :: LuaState -> CInt -> IO (Ptr ())
+  lua_newuserdata :: LuaState -> CSize -> IO (Ptr ())
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_getmetatable lua_getmetatable>
 #ifdef ALLOW_UNSAFE_GC
