@@ -196,7 +196,7 @@ instance (Pushable a, Pushable b, Pushable c, Pushable d,
     addRawInt 8 h
 
 -- | Set numeric key/value in table at the top of the stack.
-addRawInt :: Pushable a => Int -> a -> Lua ()
+addRawInt :: Pushable a => LuaInteger -> a -> Lua ()
 addRawInt idx val = do
   push val
   rawseti (-2) idx

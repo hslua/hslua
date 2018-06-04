@@ -1077,8 +1077,8 @@ rawset n = liftLua $ \l -> lua_rawset l n
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawseti lua_rawseti>.
-rawseti :: StackIndex -> Int -> Lua ()
-rawseti k m = liftLua $ \l -> lua_rawseti l k (fromIntegral m)
+rawseti :: StackIndex -> LuaInteger -> Lua ()
+rawseti k m = liftLua $ \l -> lua_rawseti l k m
 
 -- | Creates and returns a reference, in the table at index @t@, for the object
 -- at the top of the stack (and pops the object).
