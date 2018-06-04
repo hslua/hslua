@@ -61,12 +61,12 @@ tests = testGroup "lua integration tests"
         =<< fmap (TypeFunction /=) (ltype (-1))
 
       -- get functions from registry
-      rawgeti registryindex idx1
+      rawgeti registryindex (fromIntegral idx1)
       call 0 1
       r1 <- peek (-1) :: Lua LuaInteger
       liftIO (assertEqual "received function returned wrong value" 1 r1)
 
-      rawgeti registryindex idx2
+      rawgeti registryindex (fromIntegral idx2)
       call 0 1
       r2 <- peek (-1) :: Lua LuaInteger
       liftIO (assertEqual "received function returned wrong value" 2 r2)

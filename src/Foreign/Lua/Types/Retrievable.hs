@@ -178,7 +178,7 @@ instance (Ord a, Retrievable a) => Retrievable (Set a) where
 -- | Read a table into a list
 toList :: Retrievable a => StackIndex -> Lua (Result [a])
 toList n = inContext "Could not read list: " $
-  go . enumFromTo 1 =<< rawlen n
+  go . enumFromTo 1 . fromIntegral =<< rawlen n
  where
   go [] = return (Success [])
   go (i : is) = do
@@ -321,7 +321,7 @@ instance (Retrievable a, Retrievable b, Retrievable c, Retrievable d,
     return $ (,,,,,,,) <$> a <*> b <*> c <*> d <*> e <*> f <*> g <*> h
 
 -- | Helper function to get the nth table value
-getTableIndex :: Retrievable b => Int -> Lua (Result b)
+getTableIndex :: Retrievable b => LuaInteger -> Lua (Result b)
 getTableIndex key = do
   let idx = nthFromTop (fromIntegral key)
   rawgeti idx key

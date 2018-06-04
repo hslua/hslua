@@ -1044,8 +1044,8 @@ rawget n = liftLua $ \l -> lua_rawget l n
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawgeti lua_rawgeti>.
-rawgeti :: StackIndex -> Int -> Lua ()
-rawgeti k m = liftLua $ \l -> lua_rawgeti l k (fromIntegral m)
+rawgeti :: StackIndex -> LuaInteger -> Lua ()
+rawgeti k m = liftLua $ \l -> lua_rawgeti l k m
 
 -- | Returns the raw "length" of the value at the given index: for strings, this
 -- is the string length; for tables, this is the result of the length operator
