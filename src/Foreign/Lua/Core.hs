@@ -298,12 +298,22 @@ import qualified Foreign.Storable as F
 -- Helper functions
 --
 
--- | Throw a lua error if the computation signaled a failure.
-throwOnError :: Failable a -> Lua CInt
-throwOnError x =
+-- | Convert from Failable to target type, throwing an error if the value
+-- indicates a failure.
+fromFailable :: (CInt -> a) -> Failable a -> Lua a
+fromFailable fromCInt (Failable x) =
   if x < 0
   then throwTopMessageAsError
-  else return x
+  else return (fromCInt x)
+
+-- | Throw a lua error if the computation signaled a failure.
+throwOnError :: Failable CInt -> Lua CInt
+throwOnError = fromFailable id
+
+-- | Convert lua boolean to Haskell Bool, throwing an exception if the return
+-- value indicates that an error had happened.
+boolFromFailable :: Failable LuaBool -> Lua Bool
+boolFromFailable = fmap fromLuaBool . fromFailable LuaBool
 
 throwTopMessageAsError :: Lua a
 throwTopMessageAsError = throwTopMessageAsError' id
@@ -454,7 +464,7 @@ close = lua_close
 -- <https://www.lua.org/manual/5.3/manual.html#lua_compare lua_compare>.
 compare :: StackIndex -> StackIndex -> RelationalOperator -> Lua Bool
 #if LUA_VERSION_NUMBER >= 502
-compare idx1 idx2 relOp = fmap (/= 0) . throwOnError =<< do
+compare idx1 idx2 relOp = boolFromFailable =<< do
   liftLua $ \l -> hslua_compare l idx1 idx2 (fromRelationalOperator relOp)
 #else
 compare idx1 idx2 op = liftLua $ \l ->
@@ -473,10 +483,12 @@ compare idx1 idx2 op = liftLua $ \l ->
 -- (see <https://www.lua.org/manual/5.3/manual.html#3.4.6 §3.4.6> of the lua
 -- manual).
 --
+-- FIXME
+--
 -- This is a wrapper function of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_concat lua_concat>.
 concat :: NumArgs -> Lua ()
-concat n = void . throwOnError =<< liftLua (`hslua_concat` n)
+concat n = void . boolFromFailable =<< liftLua (`hslua_concat` n)
 
 -- | Copies the element at index @fromidx@ into the valid index @toidx@,
 -- replacing the value at that position. Values at other positions are not
@@ -583,7 +595,7 @@ gc what data' = liftLua $ \l ->
 -- "index" event (see <https://www.lua.org/manual/5.3/manual.html#2.4 §2.4> of
 -- lua's manual).
 --
--- Returns the type of the pushed value.
+-- Returns the type of the pushed value. FIXME
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getfield lua_getfield>.
@@ -593,6 +605,8 @@ getfield i s = void . throwOnError =<< liftLua
 
 -- | Pushes onto the stack the value of the global @name@. Returns the type of
 -- that value.
+--
+-- FIXME
 --
 -- Wrapper of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getglobal lua_getglobal>.
@@ -617,6 +631,8 @@ getmetatable n = liftLua $ \l ->
 -- place. As in Lua, this function may trigger a metamethod for the "index"
 -- event (see <https://www.lua.org/manual/5.3/manual.html#2.4 §2.4> of lua's
 -- manual).
+--
+-- Returns the type of the pushed value. FIXME
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_gettable lua_gettable>.
@@ -822,8 +838,7 @@ newuserdata = liftLua1 lua_newuserdata . fromIntegral
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_next lua_next>.
 next :: StackIndex -> Lua Bool
-next idx = fmap (/= 0) . throwOnError =<<
-  liftLua (\l -> hslua_next l idx)
+next idx = boolFromFailable =<< liftLua (\l -> hslua_next l idx)
 
 {-# DEPRECATED objlen "Use rawlen instead." #-}
 -- | Obsolete alias for @'rawlen'@.

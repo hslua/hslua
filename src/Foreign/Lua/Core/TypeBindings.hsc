@@ -244,10 +244,11 @@ toStatus (StatusCode c) = case c of
 -- See @'Status'@.
 newtype StatusCode = StatusCode CInt deriving Eq
 
--- | Value or an error, using the convention that value below zero indicate an
--- error. Values greater than zero are used verbatim. The phantom type is
--- currently used for documentation only and has no effect.
-type Failable a = CInt
+-- | CInt value or an error, using the convention that value below zero indicate
+-- an error. Values greater than zero are used verbatim. The phantom type is
+-- used for additional type safety and gives the type into which the wrapped
+-- CInt should be converted.
+newtype Failable a = Failable CInt
 
 
 --
