@@ -2,6 +2,7 @@
 #include <string.h>
 #include "safer-api.h"
 
+
 /* *********************************************************************
  * Transforming Haskell errors to Lua errors
  * *********************************************************************/
@@ -36,10 +37,14 @@ int hslua_call_hs(lua_State *L)
   return nres;
 }
 
+
 /* *********************************************************************
  * Transforming Lua errors to Haskell errors
  * *********************************************************************/
-/* compare */
+
+/*
+** compare
+*/
 #if LUA_VERSION_NUM >= 502
 int hslua__compare(lua_State *L)
 {
@@ -67,7 +72,10 @@ int hslua_compare(lua_State *L, int index1, int index2, int op)
 }
 #endif
 
-/* concat */
+
+/*
+** concat
+*/
 int hslua__concat(lua_State *L)
 {
   lua_concat(L, lua_gettop(L));
@@ -81,7 +89,10 @@ int hslua_concat(lua_State *L, int n)
   return -lua_pcall(L, n, 1, 0);
 }
 
-/* getfield */
+
+/*
+** getfield
+*/
 int hslua__getfield(lua_State *L)
 {
   const char *k = lua_tostring(L, 2);
@@ -98,7 +109,10 @@ int hslua_getfield(lua_State *L, int index, const char *k)
   return -lua_pcall(L, 2, 1, 0);
 }
 
-/* getglobal */
+
+/*
+** getglobal
+*/
 int hslua__getglobal(lua_State *L)
 {
   const char *name = lua_tostring(L, 1);
@@ -117,7 +131,10 @@ int hslua_getglobal(lua_State *L, const char *name)
   return -lua_pcall(L, 1, 1, 0);
 }
 
-/* gettable */
+
+/*
+** gettable
+*/
 int hslua__gettable(lua_State *L)
 {
   lua_pushvalue(L, 1);
@@ -133,7 +150,10 @@ int hslua_gettable(lua_State *L, int index)
   return -lua_pcall(L, 2, 1, 0);
 }
 
-/* setfield */
+
+/*
+** setfield
+*/
 int hslua__setfield(lua_State *L)
 {
   const char *k = lua_tostring(L, 3);
@@ -151,7 +171,10 @@ int hslua_setfield(lua_State *L, int index, const char *k)
   return -lua_pcall(L, 3, 0, 0);
 }
 
-/* setglobal */
+
+/*
+** setglobal
+*/
 int hslua__setglobal(lua_State *L)
 {
   const char *name = lua_tostring(L, 2);
@@ -172,7 +195,10 @@ int hslua_setglobal(lua_State *L, const char *name)
   return -lua_pcall(L, 2, 0, 0);
 }
 
-/* settable */
+
+/*
+** settable
+*/
 int hslua__settable(lua_State *L)
 {
   lua_pushvalue(L, 1);
@@ -189,7 +215,10 @@ int hslua_settable(lua_State *L, int index)
   return -lua_pcall(L, 3, 0, 0);
 }
 
-/* next */
+
+/*
+** next
+*/
 int hslua__next(lua_State *L)
 {
   lua_pushvalue(L, 1);

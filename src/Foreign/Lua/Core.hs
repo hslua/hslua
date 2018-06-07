@@ -307,8 +307,8 @@ fromFailable fromCInt (Failable x) =
   else return (fromCInt x)
 
 -- | Throw a lua error if the computation signaled a failure.
-throwOnError :: Failable CInt -> Lua CInt
-throwOnError = fromFailable id
+throwOnError :: Failable () -> Lua ()
+throwOnError = fromFailable (const ())
 
 -- | Convert lua boolean to Haskell Bool, throwing an exception if the return
 -- value indicates that an error had happened.
@@ -483,12 +483,10 @@ compare idx1 idx2 op = liftLua $ \l ->
 -- (see <https://www.lua.org/manual/5.3/manual.html#3.4.6 §3.4.6> of the lua
 -- manual).
 --
--- FIXME
---
 -- This is a wrapper function of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_concat lua_concat>.
 concat :: NumArgs -> Lua ()
-concat n = void . boolFromFailable =<< liftLua (`hslua_concat` n)
+concat n = throwOnError =<< liftLua (`hslua_concat` n)
 
 -- | Copies the element at index @fromidx@ into the valid index @toidx@,
 -- replacing the value at that position. Values at other positions are not
@@ -600,7 +598,7 @@ gc what data' = liftLua $ \l ->
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getfield lua_getfield>.
 getfield :: StackIndex -> String -> Lua ()
-getfield i s = void . throwOnError =<< liftLua
+getfield i s = throwOnError =<< liftLua
   (\l -> withCString s (hslua_getfield l i))
 
 -- | Pushes onto the stack the value of the global @name@. Returns the type of
@@ -611,7 +609,7 @@ getfield i s = void . throwOnError =<< liftLua
 -- Wrapper of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getglobal lua_getglobal>.
 getglobal :: String -> Lua ()
-getglobal name = void . throwOnError =<<
+getglobal name = throwOnError =<<
   liftLua (withCString name . hslua_getglobal)
 
 -- | If the value at the given index has a metatable, the function pushes that
@@ -637,7 +635,7 @@ getmetatable n = liftLua $ \l ->
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_gettable lua_gettable>.
 gettable :: StackIndex -> Lua ()
-gettable n = void . throwOnError =<<
+gettable n = throwOnError =<<
   liftLua (\l -> hslua_gettable l n)
 
 -- | Returns the index of the top element in the stack. Because indices start at
@@ -1155,7 +1153,7 @@ replace n = liftLua $ \l ->  lua_replace l n
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_setfield lua_setfield>.
 setfield :: StackIndex -> String -> Lua ()
-setfield i s = void . throwOnError =<<
+setfield i s = throwOnError =<<
   liftLua (\l -> withCString s (hslua_setfield l i))
 
 -- | Pops a value from the stack and sets it as the new value of global @name@.
@@ -1163,7 +1161,7 @@ setfield i s = void . throwOnError =<<
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_setglobal lua_setglobal>.
 setglobal :: String -> Lua ()
-setglobal s = void . throwOnError =<<
+setglobal s = throwOnError =<<
   liftLua (withCString s . hslua_setglobal)
 
 -- | Pops a table from the stack and sets it as the new metatable for the value
@@ -1187,7 +1185,7 @@ setmetatable idx = liftLua $ \l -> lua_setmetatable l idx
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_settable lua_settable>.
 settable :: StackIndex -> Lua ()
-settable index = void . throwOnError =<<
+settable index = throwOnError =<<
   liftLua (\l -> hslua_settable l index)
 
 -- | Accepts any index, or 0, and sets the stack top to this index. If the new
