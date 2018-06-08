@@ -230,7 +230,7 @@ foreign import ccall unsafe "lua.h lua_toboolean"
 #else
 foreign import ccall safe "lua.h lua_toboolean"
 #endif
-  lua_toboolean :: LuaState -> StackIndex -> IO StackIndex
+  lua_toboolean :: LuaState -> StackIndex -> IO LuaBool
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tocfunction lua_tocfunction>
 #ifdef ALLOW_UNSAFE_GC

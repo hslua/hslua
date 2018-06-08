@@ -1230,7 +1230,7 @@ strlen = rawlen
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_toboolean lua_toboolean>.
 toboolean :: StackIndex -> Lua Bool
-toboolean n = liftLua $ \l -> (/= 0) <$> lua_toboolean l n
+toboolean n = liftLua $ \l -> fromLuaBool <$> lua_toboolean l n
 
 -- | Converts a value at the given index to a C function. That value must be a C
 -- function; otherwise, returns @nullPtr@.
