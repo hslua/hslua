@@ -1233,7 +1233,7 @@ toboolean :: StackIndex -> Lua Bool
 toboolean n = liftLua $ \l -> (/= 0) <$> lua_toboolean l n
 
 -- | Converts a value at the given index to a C function. That value must be a C
--- function; otherwise, returns NULL.
+-- function; otherwise, returns @nullPtr@.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_tocfunction lua_tocfunction>.
@@ -1305,8 +1305,8 @@ tonumberx n = do
 
 -- | Converts the value at the given index to a generic C pointer (void*). The
 -- value can be a userdata, a table, a thread, or a function; otherwise,
--- lua_topointer returns NULL. Different objects will give different pointers.
--- There is no way to convert the pointer back to its original value.
+-- lua_topointer returns @nullPtr@. Different objects will give different
+-- pointers. There is no way to convert the pointer back to its original value.
 --
 -- Typically this function is used only for hashing and debug information.
 --
@@ -1324,7 +1324,7 @@ tostring n = liftLua $ \l -> alloca $ \lenPtr -> do
 
 -- | Converts the value at the given index to a Lua thread (represented as
 -- lua_State*). This value must be a thread; otherwise, the function returns
--- NULL.
+-- @LuaState nullPtr@.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_tothread lua_tothread>.
@@ -1333,7 +1333,7 @@ tothread n = liftLua $ \l -> lua_tothread l n
 
 -- | If the value at the given index is a full userdata, returns its block
 -- address. If the value is a light userdata, returns its pointer. Otherwise,
--- returns NULL.
+-- returns @nullPtr@.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_touserdata lua_touserdata>.
