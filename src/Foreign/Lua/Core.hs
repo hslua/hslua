@@ -592,7 +592,7 @@ gc what data' = liftLua $ \l ->
 -- "index" event (see <https://www.lua.org/manual/5.3/manual.html#2.4 §2.4> of
 -- lua's manual).
 --
--- Returns the type of the pushed value. FIXME
+-- Errors on the Lua side are caught and rethrown as LuaException.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getfield lua_getfield>.
@@ -600,10 +600,9 @@ getfield :: StackIndex -> String -> Lua ()
 getfield i s = throwOnError =<< liftLua
   (\l -> withCString s (hslua_getfield l i))
 
--- | Pushes onto the stack the value of the global @name@. Returns the type of
--- that value.
+-- | Pushes onto the stack the value of the global @name@.
 --
--- FIXME
+-- Errors on the Lua side are caught and rethrown as LuaException.
 --
 -- Wrapper of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getglobal lua_getglobal>.
@@ -629,7 +628,7 @@ getmetatable n = liftLua $ \l ->
 -- event (see <https://www.lua.org/manual/5.3/manual.html#2.4 §2.4> of lua's
 -- manual).
 --
--- Returns the type of the pushed value. FIXME
+-- Errors on the Lua side are caught and rethrown as LuaException.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_gettable lua_gettable>.
@@ -831,6 +830,8 @@ newuserdata = liftLua1 lua_newuserdata . fromIntegral
 -- | Pops a key from the stack, and pushes a key–value pair from the table at
 -- the given index (the "next" pair after the given key). If there are no more
 -- elements in the table, then @next@ returns @False@ (and pushes nothing).
+--
+-- Errors on the Lua side are caught and rethrown as a LuaException.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_next lua_next>.
@@ -1149,6 +1150,8 @@ replace n = liftLua $ \l ->  lua_replace l n
 -- <https://www.lua.org/manual/5.3/manual.html#2.4 §2.4> of the Lua 5.3
 -- Reference Manual).
 --
+-- Errors on the Lua side are caught and rethrown as a LuaException.
+--
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_setfield lua_setfield>.
 setfield :: StackIndex -> String -> Lua ()
@@ -1156,6 +1159,8 @@ setfield i s = throwOnError =<<
   liftLua (\l -> withCString s (hslua_setfield l i))
 
 -- | Pops a value from the stack and sets it as the new value of global @name@.
+--
+-- Errors on the Lua side are caught and rethrown as a LuaException.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_setglobal lua_setglobal>.
@@ -1180,6 +1185,8 @@ setmetatable idx = liftLua $ \l -> lua_setmetatable l idx
 -- function may trigger a metamethod for the "newindex" event (see
 -- <https://www.lua.org/manual/5.3/manual.html#2.4 §2.4> of the Lua 5.3
 -- Reference Manual).
+--
+-- Errors on the Lua side are caught and rethrown as a LuaException.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_settable lua_settable>.
