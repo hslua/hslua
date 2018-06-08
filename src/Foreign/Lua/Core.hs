@@ -468,12 +468,11 @@ compare idx1 idx2 relOp = boolFromFailable =<< do
   liftLua $ \l -> hslua_compare l idx1 idx2 (fromRelationalOperator relOp)
 #else
 compare idx1 idx2 op = liftLua $ \l ->
-  (/= 0) <$>
   case op of
-    EQ -> lua_equal l idx1 idx2
-    LT -> lua_lessthan l idx1 idx2
-    LE -> (+) <$> lua_equal l idx1 idx2
-              <*> lua_lessthan l idx1 idx2
+    EQ -> fromLuaBool <$> lua_equal l idx1 idx2
+    LT -> fromLuaBool <$> lua_lessthan l idx1 idx2
+    LE -> (||) <$> (fromLuaBool <$> lua_equal l idx1 idx2)
+               <*> (fromLuaBool <$> lua_lessthan l idx1 idx2)
 #endif
 
 -- | Concatenates the @n@ values at the top of the stack, pops them, and leaves

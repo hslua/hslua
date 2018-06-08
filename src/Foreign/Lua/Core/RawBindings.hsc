@@ -206,11 +206,11 @@ foreign import ccall "safer-api.h hslua_compare"
 #else
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_equal lua_equal>
 foreign import ccall "lua.h lua_equal"
-  lua_equal :: LuaState -> StackIndex -> StackIndex -> IO CInt
+  lua_equal :: LuaState -> StackIndex -> StackIndex -> IO LuaBool
 
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_lessthan lua_lessthan>
 foreign import ccall "lua.h lua_lessthan"
-  lua_lessthan :: LuaState -> StackIndex -> StackIndex -> IO CInt
+  lua_lessthan :: LuaState -> StackIndex -> StackIndex -> IO LuaBool
 #endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawequal lua_rawequal>
