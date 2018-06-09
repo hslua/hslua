@@ -41,7 +41,7 @@ module Foreign.Lua.Core.TypeBindings where
 
 import Prelude hiding (EQ, LT)
 import Data.Int (#{type LUA_INTEGER})
-import Foreign.C (CInt)
+import Foreign.C (CChar, CInt, CSize)
 import Foreign.Ptr (FunPtr, Ptr)
 import Foreign.Storable (Storable)
 
@@ -73,6 +73,17 @@ newtype LuaState = LuaState (Ptr ()) deriving (Eq)
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_CFunction lua_CFunction>.
 type CFunction = FunPtr (LuaState -> IO NumResults)
+
+-- | The reader function used by @'lua_load'@. Every time it needs another piece
+-- of the chunk, lua_load calls the reader, passing along its data parameter.
+-- The reader must return a pointer to a block of memory with a new piece of the
+-- chunk and set size to the block size. The block must exist until the reader
+-- function is called again. To signal the end of the chunk, the reader must
+-- return @NULL@ or set size to zero. The reader function may return pieces of any
+-- size greater than zero.
+--
+-- See <https://www.lua.org/manual/5.3/manual.html#lua_Reader lua_Reader>.
+type LuaReader = FunPtr (LuaState -> Ptr () -> Ptr CSize -> IO (Ptr CChar))
 
 -- |  The type of integers in Lua.
 --

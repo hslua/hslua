@@ -516,6 +516,8 @@ foreign import ccall "safer-api.h hslua_setglobal"
 --------------------------------------------------------------------------------
 -- * 'load' and 'call' functions (load and run Lua code)
 
+-- lua_call is inherently unsafe, we do not support it.
+
 #if LUA_VERSION_NUMBER >= 502
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pcallk lua_pcallk>
 foreign import ccall "lua.h lua_pcallk"
@@ -528,8 +530,19 @@ foreign import ccall "lua.h lua_pcall"
             -> IO StatusCode
 #endif
 
+#if LUA_VERSION_NUMBER >= 502
+-- | See <https://www.lua.org/manual/5.3/manual.html#lua_load lua_load>
+foreign import ccall safe "lua.h lua_load"
+  lua_load :: LuaState -> LuaReader -> Ptr () -> CString -> CString
+           -> IO StatusCode
+#else
+-- | See <https://www.lua.org/manual/5.1/manual.html#lua_load lua_load>
+foreign import ccall safe "lua.h lua_load"
+  lua_load :: LuaState -> LuaReader -> Ptr () -> CString
+           -> IO StatusCode
+#endif
+
 -- currently unsupported:
--- lua_load
 -- lua_dump
 
 
