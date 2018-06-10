@@ -203,6 +203,12 @@ tests = testGroup "Haskell version of the C API"
         liftIO . assertEqual "top of the stack should be result of last computation"
           (5 :: LuaInteger) =<< peek (-1)
 
+    , testCase "loadbuffer" . runLua $ do
+        liftIO . assertEqual "loading a string containing NUL"
+          OK =<< (loadbuffer "return 'Hello\NULWorld'" "test" <* call 0 1)
+        liftIO . assertEqual "correctly pushed a string containing NUL"
+          "Hello\NULWorld" =<< tostring stackTop
+
     , testCase "loadfile loading" . runLua $ do
         liftIO . assertEqual "wrong error code for non-existing file"
           ErrFile =<< loadfile "./file-does-not-exist.lua"

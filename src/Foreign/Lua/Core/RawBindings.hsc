@@ -659,6 +659,25 @@ foreign import ccall safe "lauxlib.h luaL_loadstring"
 #endif
   luaL_loadstring :: LuaState -> Ptr CChar -> IO StatusCode
 
+#if LUA_VERSION_NUMBER >= 502
+-- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadbufferx>
+#ifdef ALLOW_UNSAFE_GC
+foreign import ccall unsafe "lauxlib.h luaL_loadbufferx"
+#else
+foreign import ccall safe "lauxlib.h luaL_loadbufferx"
+#endif
+  luaL_loadbufferx :: LuaState -> Ptr CChar -> CSize -> CString -> CString
+                   -> IO StatusCode
+#else
+-- | See <https://www.lua.org/manual/5.1/manual.html#luaL_loadstring luaL_loadbuffer>
+#ifdef ALLOW_UNSAFE_GC
+foreign import ccall unsafe "lauxlib.h luaL_loadbuffer"
+#else
+foreign import ccall safe "lauxlib.h luaL_loadbuffer"
+#endif
+  luaL_loadbuffer :: LuaState -> Ptr CChar -> CSize -> CString -> IO StatusCode
+#endif
+
 --------------------------------------------------------------------------------
 -- * Error transformation (Haskell to Lua)
 foreign import ccall "safer-api.h &hslua_call_hs"

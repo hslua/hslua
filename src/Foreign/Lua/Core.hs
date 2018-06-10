@@ -154,6 +154,7 @@ module Foreign.Lua.Core (
   , call
   , pcall
   , load
+  , loadbuffer
   , loadfile
   , loadstring
   -- ** Coroutine functions
@@ -795,6 +796,25 @@ load reader data' name = liftLua $ \l ->
   toStatus <$> lua_load l reader data' namePtr
 #endif
 
+-- | Loads a ByteString as a Lua chunk.
+--
+-- This function returns the same results as @'load'@. @name@ is the chunk name,
+-- used for debug information and error messages.
+--
+-- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadbuffer luaL_loadbuffer>.
+loadbuffer :: B.ByteString -> String -> Lua Status
+#if LUA_VERSION_NUMBER >= 502
+loadbuffer bs name = liftLua $ \l ->
+  B.useAsCStringLen bs $ \(str, len) ->
+  withCString name $ \namePtr -> do
+  toStatus <$> luaL_loadbufferx l str (fromIntegral len) namePtr nullPtr
+#else
+loadbuffer bs name = liftLua $ \l ->
+  B.useAsCStringLen bs $ \(str, len) ->
+  withCString name $ \namePtr ->
+  toStatus <$> luaL_loadbuffer l str (fromIntegral len) namePtr
+#endif
+
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadfile luaL_loadfile>.
 loadfile :: String -> Lua Status
 #if LUA_VERSION_NUMBER >= 502
@@ -809,8 +829,7 @@ loadfile f = liftLua $ \l ->
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadstring>.
 loadstring :: String -> Lua Status
-loadstring str = liftLua $ \l ->
-  withCString str (fmap toStatus . luaL_loadstring l)
+loadstring str = loadbuffer (BC.pack str) (filter (/= '\NUL') str)
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>.
 ltype :: StackIndex -> Lua Type
