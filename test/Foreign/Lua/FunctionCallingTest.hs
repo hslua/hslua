@@ -22,6 +22,7 @@ THE SOFTWARE.
 -- | Tests that lua functions can be called from haskell and vice versa.
 module Foreign.Lua.FunctionCallingTest (tests) where
 
+import Control.Monad (forM_)
 import Data.ByteString.Char8 (pack, unpack)
 import Foreign.Lua.Core
 import Foreign.Lua.Types (Result (Error, Success))
@@ -129,4 +130,16 @@ tests = testGroup "Interoperability"
         let msg = pack "Expected a string but got a boolean"
         assertEqual "raw equality test failed" (Error [msg]) luaRes
     ]
+
+  -- The following test case will hang if there's a problem with garbage
+  -- collection.
+  , testCase "function garbage collection" $
+    assertEqual "problem while pushing many Haskell functions" () =<<
+      ( runLua $ forM_ [1..5000::LuaInteger] $ \n -> do
+         let fn :: LuaInteger -> Lua LuaInteger
+             fn x = return (x + n)
+         pushHaskellFunction fn
+         pop 1
+         gc GCCOLLECT 0
+      )
   ]

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <HsFFI.h>
 #include "safer-api.h"
 
 
@@ -11,7 +12,11 @@ void hslua_pushhaskellerr(lua_State *L)
   lua_getglobal(L, "_HASKELLERR");
 }
 
-/* Error handling */
+/*
+** Converts a Haskell function into a CFunction.
+**
+** If a special error object is returned, the other object is thrown as an error.
+*/
 int hslua_call_hs(lua_State *L)
 {
   int nargs = lua_gettop(L);
@@ -35,6 +40,22 @@ int hslua_call_hs(lua_State *L)
     }
   }
   return nres;
+}
+
+/* *********************************************************************
+ * Garbage Collection
+ * *********************************************************************/
+
+/*
+** Free stable Haskell pointer in userdata.
+*/
+int hslua_userdata_gc(lua_State *L)
+{
+  HsStablePtr *userdata = lua_touserdata(L, 1);
+  if (userdata) {
+    hs_free_stable_ptr(*userdata);
+  }
+  return 0;
 }
 
 

@@ -59,7 +59,7 @@ import Foreign.Lua.Core
 import Foreign.Lua.Types
 import Foreign.Lua.Util (getglobal', raiseError)
 import Foreign.Ptr (castPtr, freeHaskellFunPtr)
-import Foreign.StablePtr (deRefStablePtr, freeStablePtr, newStablePtr)
+import Foreign.StablePtr (deRefStablePtr, newStablePtr)
 
 import qualified Data.ByteString.Char8 as BS
 import qualified Foreign.Storable as F
@@ -140,6 +140,12 @@ instance (Pushable a, LuaCallFunc b) => LuaCallFunc (a -> b) where
 callFunc :: (LuaCallFunc a) => String -> a
 callFunc f = callFunc' f (return ()) 0
 
+-- | Imports a Haskell function and registers it at global name.
+registerHaskellFunction :: ToHaskellFunction a => String -> a -> Lua ()
+registerHaskellFunction n f = do
+  pushHaskellFunction f
+  setglobal n
+
 -- | Pushes Haskell function as a callable userdata.
 -- All values created will be garbage collected. Use as:
 --
@@ -164,35 +170,28 @@ pushPreCFunction f = do
   v <- newmetatable "HaskellImportedFunction"
   when v $ do
     -- create new metatable, fill it with two entries __gc and __call
-    pushcfunction hsmethod__gc_addr
+    pushcfunction hslua_userdata_gc_ptr
     setfield (-2) "__gc"
-    pushcfunction hsmethod__call_addr
+    pushcfunction hslua_call_wrapped_hs_fun_ptr
     setfield (-2) "__call"
   setmetatable (-2)
   return ()
 
--- | Imports a Haskell function and registers it at global name.
-registerHaskellFunction :: ToHaskellFunction a => String -> a -> Lua ()
-registerHaskellFunction n f = do
-  pushHaskellFunction f
-  setglobal n
+-- | Function to free the stable pointer in a userdata, ensuring the Haskell
+-- value can be garbage collected. This function does not call back into
+-- Haskell, making is safe to call even from functions imported as unsafe.
+foreign import ccall "&hslua_userdata_gc"
+  hslua_userdata_gc_ptr :: CFunction
 
-foreign export ccall hsMethodGc :: PreCFunction
-foreign import ccall "&hsMethodGc" hsmethod__gc_addr :: CFunction
-
-foreign export ccall hsMethodCall :: PreCFunction
-foreign import ccall "&hsMethodCall" hsmethod__call_addr :: CFunction
-
-hsMethodGc :: LuaState -> IO NumResults
-hsMethodGc l = do
-  ptr <- runLuaWith l $ peek (-1)
-  stableptr <- F.peek (castPtr ptr)
-  freeStablePtr stableptr
-  return 0
-
-hsMethodCall :: LuaState -> IO NumResults
-hsMethodCall l = do
+-- | Call the Haskell function stored in the userdata. This function is exported
+-- as a C function and then re-imported in order to get a C function pointer.
+hslua_call_wrapped_hs_fun :: LuaState -> IO NumResults
+hslua_call_wrapped_hs_fun l = do
   ptr <- runLuaWith l $ peek 1 <* remove 1
   stableptr <- F.peek (castPtr ptr)
   f <- deRefStablePtr stableptr
   f l
+
+foreign export ccall hslua_call_wrapped_hs_fun :: PreCFunction
+foreign import ccall "&hslua_call_wrapped_hs_fun"
+  hslua_call_wrapped_hs_fun_ptr :: CFunction
