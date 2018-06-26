@@ -21,8 +21,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
-{-# LANGUAGE CPP                        #-}
-{-# LANGUAGE ForeignFunctionInterface   #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE StandaloneDeriving         #-}
 {-|
@@ -33,7 +31,7 @@ Copyright   : © 2007–2012 Gracjan Polak,
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta
-Portability : ForeignFunctionInterface, GeneralizedNewtypeDeriving
+Portability : non-portable (depends on GHC)
 
 The core Lua types, including mappings of Lua types to Haskell.
 -}

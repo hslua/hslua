@@ -96,7 +96,9 @@ library
                       , Foreign.Lua.Util
   hs-source-dirs:       src
   ghc-options:          -Wall
-  extensions:           CPP
+  default-extensions:   CPP
+                      , ForeignFunctionInterface
+                      , LambdaCase
   if flag(system-lua) || flag(luajit) || flag(lua501) || flag(lua502)
     c-sources:          safer-api/safer-api.c
     include-dirs:       safer-api
