@@ -13,9 +13,22 @@ void hslua_pushhaskellerr(lua_State *L)
 }
 
 /*
+** Checks whether the object at the given index is a Haskell error.
+*/
+int hslua_is_haskell_error(lua_State *L, int idx) {
+  hslua_pushhaskellerr(L);
+  int is_err = lua_rawequal(L, idx, -1);
+  lua_pop(L, 1);                /* pop haskellerr used for equality test */
+  return is_err;
+}
+
+/*
 ** Converts a Haskell function into a CFunction.
 **
-** If a special error object is returned, the other object is thrown as an error.
+** We signal an error on the haskell side by passing two values: the
+** special haskellerr object and the error message. The function
+** returned an error iff there are exactly two results objects where the
+** first object is the special _HASKELLERR.
 */
 int hslua_call_hs(lua_State *L)
 {
@@ -27,18 +40,14 @@ int hslua_call_hs(lua_State *L)
 
   /* Check whether an error value was returned */
   int nres = lua_gettop(L);
-  /* We signal an error on the haskell side by passing two values: the special
-   * haskellerr object and the error message.
+
+  /* If there are two results, the first of which is the special error
+   * object, then the other object is thrown as an error.
    */
-  if (nres == 2) {
-    hslua_pushhaskellerr(L);
-    int is_err = lua_rawequal(L, 0 + 1, -1);
-    lua_pop(L, 1);               /* pop haskellerr used for equality test */
-    if (is_err) {
-      lua_remove(L, 1);          /* remove returned haskellerr */
-      return lua_error(L);
-    }
+  if (nres == 2 && hslua_is_haskell_error(L, 1)) {
+    return lua_error(L);        /* throw 2nd return value as error */
   }
+
   return nres;
 }
 
