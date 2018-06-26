@@ -184,11 +184,12 @@ library
   if flag(lua_32bits)
     cc-options:         "-DLUA_32BITS"
 
-  if flag(allow-unsafe-gc)
-    cc-options:         "-DALLOW_UNSAFE_GC"
-
   if flag(apicheck)
     cc-options:         "-DLUA_USE_APICHECK"
+
+  if flag(allow-unsafe-gc)
+    cpp-options:        -DALLOW_UNSAFE_GC
+
 
 test-suite test-hslua
   type:                 exitcode-stdio-1.0
