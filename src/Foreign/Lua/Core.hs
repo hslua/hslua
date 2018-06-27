@@ -218,23 +218,11 @@ module Foreign.Lua.Core (
   -- To be able to catch errors from Haskell functions in Lua, we need to find a
   -- convention. Currently hslua does this: @'error'@ has same type as Lua's
   -- @lua_error@, but instead of calling real @lua_error@, it's returning two
-  -- values: A special value @_HASKELLERR@ and error message as a string.
+  -- values: A special error value and an error message as a string.
   --
-  -- Using this, we can write a function to catch errors from Haskell like this:
-  --
-  -- > function catch_haskell(ret, err_msg)
-  -- >     if ret == _HASKELLERR then
-  -- >       print("Error caught from Haskell land: " .. err_msg)
-  -- >       return
-  -- >     end
-  -- >     return ret
-  -- > end
-  --
-  -- (`_HASKELLERR` is created by `newstate`)
-  --
-  -- (Type errors in Haskell functions are also handled using this convention.
-  -- E.g., if you pass a Lua value with the wrong type to a Haskell function,
-  -- the error will be reported in this way)
+  -- These internals should stay hidden most of the time, as all
+  -- Haskell functions are wrapped in such a way, that error values are
+  -- transformed into Lua errors behind the scenes.
   --
   -- At this point our call stack is like this:
   --
@@ -251,7 +239,7 @@ module Foreign.Lua.Core (
   -- errors and return error codes instead. Using @error@ within Lua should
   -- hence be safe.
   --
-  -- However, the raw C API bindings in @'Foreign.Lua.RawBindings'@ don't
+  -- However, the raw C API bindings in @'Foreign.Lua.Core.RawBindings'@ don't
   -- provide these guarantees. Even an apparently harmless operations like
   -- accessing a field via @'lua_getfield'@ can call a meta method and trigger a
   -- @longjmp@, causing the host program to crash.
@@ -263,8 +251,8 @@ module Foreign.Lua.Core (
   -- layers of abstraction. @lua_pcall@ then returns to Haskell.
   --
   -- NOTE: If you're loading a hslua program compiled to a dynamic library from
-  -- a Lua program, you need to define @_HASKELLERR = {}@ manually, after
-  -- creating the Lua state.
+  -- a Lua program, you need to set @HSLUA_ERR@ in the registry to any unique
+  -- value manually, after creating the Lua state.
   , LuaException (..)
   , catchLuaError
   , throwLuaError
@@ -551,7 +539,7 @@ equal index1 index2 = compare index1 index2 EQ
 -- [Error handling in hslua](#g:1) for details)
 error :: Lua NumResults
 error = do
-  getglobal "_HASKELLERR"
+  getfield registryindex "HSLUA_ERR"
   insert (-2)
   return 2
 
@@ -847,7 +835,7 @@ newstate = do
   l <- luaL_newstate
   runLuaWith l $ do
     createtable 0 0
-    setglobal "_HASKELLERR"
+    setfield registryindex "HSLUA_ERR"
     return l
 
 -- | Creates a new empty table and pushes it onto the stack. It is equivalent to

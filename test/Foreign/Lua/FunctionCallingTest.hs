@@ -70,7 +70,7 @@ tests = testGroup "Interoperability"
           luaOp = do
             registerHaskellFunction "integerOp" integerOperation
             loadstring "return integerOp(23, true)" *> call 0 2
-            err <- tostring (-1) <* pop 2 -- pop _HASKELLERROR
+            err <- tostring (-1) <* pop 2 -- pop HSLUA_ERR
             return (unpack err)
 
           errMsg = "Error during function call: could not read "

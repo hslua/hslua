@@ -9,7 +9,7 @@
  * *********************************************************************/
 void hslua_pushhaskellerr(lua_State *L)
 {
-  lua_getglobal(L, "_HASKELLERR");
+  lua_getfield(L, LUA_REGISTRYINDEX, "HSLUA_ERR");
 }
 
 /*
@@ -28,7 +28,7 @@ int hslua_is_haskell_error(lua_State *L, int idx) {
 ** We signal an error on the haskell side by passing two values: the
 ** special haskellerr object and the error message. The function
 ** returned an error iff there are exactly two results objects where the
-** first object is the special _HASKELLERR.
+** first object is the special HSLUA_ERR registry entry.
 */
 int hslua_call_hs(lua_State *L)
 {
