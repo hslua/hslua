@@ -652,11 +652,7 @@ gettop = liftLua lua_gettop
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_insert lua_insert>.
 insert :: StackIndex -> Lua ()
-#if LUA_VERSION_NUMBER >= 503
-insert index = liftLua $ \l -> lua_rotate l index 1
-#else
 insert index = liftLua $ \l -> lua_insert l index
-#endif
 
 -- | Returns @True@ if the value at the given index is a boolean, and @False@
 -- otherwise.
@@ -802,29 +798,16 @@ load reader data' name = liftLua $ \l ->
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadbuffer luaL_loadbuffer>.
 loadbuffer :: B.ByteString -> String -> Lua Status
-#if LUA_VERSION_NUMBER >= 502
-loadbuffer bs name = liftLua $ \l ->
-  B.useAsCStringLen bs $ \(str, len) ->
-  withCString name $ \namePtr -> do
-  toStatus <$> luaL_loadbufferx l str (fromIntegral len) namePtr nullPtr
-#else
 loadbuffer bs name = liftLua $ \l ->
   B.useAsCStringLen bs $ \(str, len) ->
   withCString name $ \namePtr ->
   toStatus <$> luaL_loadbuffer l str (fromIntegral len) namePtr
-#endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadfile luaL_loadfile>.
 loadfile :: String -> Lua Status
-#if LUA_VERSION_NUMBER >= 502
-loadfile f = liftLua $ \l ->
-  withCString f $ \fPtr ->
-  toStatus <$> luaL_loadfilex l fPtr nullPtr
-#else
 loadfile f = liftLua $ \l ->
   withCString f $ \fPtr ->
   toStatus <$> luaL_loadfile l fPtr
-#endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadstring>.
 loadstring :: String -> Lua Status
@@ -981,13 +964,8 @@ opentable = pushcfunction lua_open_table_ptr *> call 0 multret
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_pcall lua_pcall>.
 pcall :: NumArgs -> NumResults -> Maybe StackIndex -> Lua Status
-#if LUA_VERSION_NUMBER >= 502
-pcall nargs nresults msgh = liftLua $ \l ->
-  toStatus <$> lua_pcallk l nargs nresults (fromMaybe 0 msgh) 0 nullPtr
-#else
 pcall nargs nresults msgh = liftLua $ \l ->
   toStatus <$> lua_pcall l nargs nresults (fromMaybe 0 msgh)
-#endif
 
 -- | Pops @n@ elements from the stack.
 --
@@ -1179,11 +1157,7 @@ register name f = do
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_remove lua_remove>.
 remove :: StackIndex -> Lua ()
-#if LUA_VERSION_NUMBER >= 503
-remove n = liftLua (\l -> lua_rotate l n (-1)) *> pop 1
-#else
 remove n = liftLua $ \l -> lua_remove l n
-#endif
 
 -- | Moves the top element into the given valid index without shifting any
 -- element (therefore replacing the value at that given index), and then pops
@@ -1191,11 +1165,7 @@ remove n = liftLua $ \l -> lua_remove l n
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_replace lua_replace>.
 replace :: StackIndex -> Lua ()
-#if LUA_VERSION_NUMBER >= 503
-replace n = liftLua (\l -> lua_copy l (-1) n) *> pop 1
-#else
 replace n = liftLua $ \l ->  lua_replace l n
-#endif
 
 -- | Does the equivalent to @t[k] = v@, where @t@ is the value at the given
 -- index and @v@ is the value at the top of the stack.
@@ -1306,11 +1276,7 @@ tocfunction n = liftLua $ \l -> lua_tocfunction l n
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_tointeger lua_tointeger>.
 tointeger :: StackIndex -> Lua LuaInteger
-#if LUA_VERSION_NUMBER >= 502
-tointeger n = liftLua $ \l -> lua_tointegerx l n nullPtr
-#else
 tointeger n = liftLua $ \l -> lua_tointeger l n
-#endif
 
 -- | Like @'tointeger'@, but returns @Nothing@ if the conversion failed
 tointegerx :: StackIndex -> Lua (Maybe LuaInteger)
@@ -1335,11 +1301,7 @@ tointegerx n = do
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_tonumber lua_tonumber>.
 tonumber :: StackIndex -> Lua LuaNumber
-#if LUA_VERSION_NUMBER >= 502
-tonumber n = liftLua $ \l -> lua_tonumberx l n nullPtr
-#else
 tonumber n = liftLua $ \l -> lua_tonumber l n
-#endif
 
 -- | Like @'tonumber'@, but returns @Nothing@ if the conversion failed
 tonumberx :: StackIndex -> Lua (Maybe LuaNumber)

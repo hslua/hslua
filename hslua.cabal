@@ -96,7 +96,8 @@ library
                       , Foreign.Lua.Util
   hs-source-dirs:       src
   ghc-options:          -Wall
-  default-extensions:   CPP
+  default-extensions:   CApiFFI
+                      , CPP
                       , ForeignFunctionInterface
                       , LambdaCase
   if flag(system-lua) || flag(luajit) || flag(lua501) || flag(lua502)

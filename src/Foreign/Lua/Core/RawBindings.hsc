@@ -89,29 +89,25 @@ foreign import ccall SAFTY "lua.h lua_pushvalue"
   lua_pushvalue :: LuaState -> StackIndex -> IO ()
 
 #if LUA_VERSION_NUMBER >= 503
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_rotate lua_rotate>
-foreign import ccall SAFTY "lua.h lua_rotate"
-  lua_rotate :: LuaState -> StackIndex -> CInt -> IO ()
-
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_copy lua_copy>
 foreign import ccall SAFTY "lua.h lua_copy"
   lua_copy :: LuaState -> StackIndex -> StackIndex -> IO ()
-#else
+#endif
+
 -- | See <https://www.lua.org/manual/5.2/manual.html#lua_remove lua_remove>
-foreign import ccall SAFTY "lua.h lua_remove"
+foreign import capi SAFTY "lua.h lua_remove"
   lua_remove :: LuaState -> StackIndex -> IO ()
 
 -- | See <https://www.lua.org/manual/5.2/manual.html#lua_insert lua_insert>
-foreign import ccall SAFTY "lua.h lua_insert"
+foreign import capi SAFTY "lua.h lua_insert"
   lua_insert :: LuaState -> StackIndex -> IO ()
 
 -- | See <https://www.lua.org/manual/5.2/manual.html#lua_replace lua_replace>
-foreign import ccall SAFTY "lua.h lua_replace"
+foreign import capi SAFTY "lua.h lua_replace"
   lua_replace :: LuaState -> StackIndex -> IO ()
-#endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_checkstack lua_checkstack>
-foreign import ccall SAFTY "lua.h lua_checkstack"
+foreign import capi SAFTY "lua.h lua_checkstack"
   lua_checkstack :: LuaState -> StackIndex -> IO LuaBool
 
 -- lua_xmove is currently not supported.
@@ -169,7 +165,7 @@ foreign import ccall SAFTY "lua.h lua_rawequal"
 -- Type coercion
 --
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_toboolean lua_toboolean>
-foreign import ccall SAFTY "lua.h lua_toboolean"
+foreign import capi SAFTY "lua.h lua_toboolean"
   lua_toboolean :: LuaState -> StackIndex -> IO LuaBool
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tocfunction lua_tocfunction>
@@ -184,15 +180,15 @@ foreign import ccall SAFTY "lua.h lua_tointegerx"
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tonumberx lua_tonumberx>
 foreign import ccall SAFTY "lua.h lua_tonumberx"
   lua_tonumberx :: LuaState -> StackIndex -> Ptr LuaBool -> IO LuaNumber
-#else
+#endif
+
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_tointeger lua_tointeger>
-foreign import ccall SAFTY "lua.h lua_tointeger"
+foreign import capi SAFTY "lua.h lua_tointeger"
   lua_tointeger :: LuaState -> StackIndex -> IO LuaInteger
 
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_tonumber lua_tonumber>
-foreign import ccall SAFTY "lua.h lua_tonumber"
+foreign import capi SAFTY "lua.h lua_tonumber"
   lua_tonumber :: LuaState -> StackIndex -> IO LuaNumber
-#endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tolstring lua_tolstring>
 foreign import ccall SAFTY "lua.h lua_tolstring"
@@ -350,17 +346,10 @@ foreign import ccall "safer-api.h hslua_setglobal"
 
 -- lua_call is inherently unsafe, we do not support it.
 
-#if LUA_VERSION_NUMBER >= 502
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_pcallk lua_pcallk>
-foreign import ccall "lua.h lua_pcallk"
-  lua_pcallk :: LuaState -> NumArgs -> NumResults -> StackIndex
-             -> CInt -> Ptr () -> IO StatusCode
-#else
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_pcall lua_pcall>
-foreign import ccall "lua.h lua_pcall"
+foreign import capi "lua.h lua_pcall"
   lua_pcall :: LuaState -> NumArgs -> NumResults -> StackIndex
             -> IO StatusCode
-#endif
 
 #if LUA_VERSION_NUMBER >= 502
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_load lua_load>
@@ -473,30 +462,17 @@ foreign import ccall "lauxlib.h luaL_ref"
 foreign import ccall "lauxlib.h luaL_unref"
   luaL_unref :: LuaState -> StackIndex -> CInt -> IO ()
 
-#if LUA_VERSION_NUMBER >= 502
--- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadfilex luaL_loadfilex>
-foreign import ccall "lauxlib.h luaL_loadfilex"
-  luaL_loadfilex :: LuaState -> Ptr CChar -> Ptr CChar -> IO StatusCode
-#else
 -- | See <https://www.lua.org/manual/5.1/manual.html#luaL_loadfile luaL_loadfile>
-foreign import ccall "lauxlib.h luaL_loadfile"
+foreign import capi "lauxlib.h luaL_loadfile"
   luaL_loadfile :: LuaState -> Ptr CChar -> IO StatusCode
-#endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadstring>
 foreign import ccall SAFTY "lauxlib.h luaL_loadstring"
   luaL_loadstring :: LuaState -> Ptr CChar -> IO StatusCode
 
-#if LUA_VERSION_NUMBER >= 502
--- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadbufferx>
-foreign import ccall SAFTY "lauxlib.h luaL_loadbufferx"
-  luaL_loadbufferx :: LuaState -> Ptr CChar -> CSize -> CString -> CString
-                   -> IO StatusCode
-#else
 -- | See <https://www.lua.org/manual/5.1/manual.html#luaL_loadstring luaL_loadbuffer>
-foreign import ccall SAFTY "lauxlib.h luaL_loadbuffer"
+foreign import capi SAFTY "lauxlib.h luaL_loadbuffer"
   luaL_loadbuffer :: LuaState -> Ptr CChar -> CSize -> CString -> IO StatusCode
-#endif
 
 --------------------------------------------------------------------------------
 -- * Error transformation (Haskell to Lua)
