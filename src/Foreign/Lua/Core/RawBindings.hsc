@@ -466,10 +466,6 @@ foreign import ccall "lauxlib.h luaL_unref"
 foreign import capi "lauxlib.h luaL_loadfile"
   luaL_loadfile :: LuaState -> Ptr CChar -> IO StatusCode
 
--- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadstring>
-foreign import ccall SAFTY "lauxlib.h luaL_loadstring"
-  luaL_loadstring :: LuaState -> Ptr CChar -> IO StatusCode
-
 -- | See <https://www.lua.org/manual/5.1/manual.html#luaL_loadstring luaL_loadbuffer>
 foreign import capi SAFTY "lauxlib.h luaL_loadbuffer"
   luaL_loadbuffer :: LuaState -> Ptr CChar -> CSize -> CString -> IO StatusCode
