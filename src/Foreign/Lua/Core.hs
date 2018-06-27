@@ -557,7 +557,8 @@ error = do
 
 -- |  Controls the garbage collector.
 --
--- This function performs several tasks, according to the value of the parameter what:
+-- This function performs several tasks, according to the value of the parameter
+-- what:
 --
 --   * @'GCSTOP'@: stops the garbage collector.
 --
@@ -565,10 +566,11 @@ error = do
 --
 --   * @'GCCOLLECT'@: performs a full garbage-collection cycle.
 --
---   * @'GCCOUNT'@: returns the current amount of memory (in Kbytes) in use by Lua.
+--   * @'GCCOUNT'@: returns the current amount of memory (in Kbytes) in use by
+--     Lua.
 --
---   * @'GCCOUNTB'@: returns the remainder of dividing the current amount of bytes
---     of memory in use by Lua by 1024.
+--   * @'GCCOUNTB'@: returns the remainder of dividing the current amount of
+--     bytes of memory in use by Lua by 1024.
 --
 --   * @'GCSTEP'@: performs an incremental step of garbage collection. The step
 --     "size" is controlled by data (larger values mean more steps) in a
@@ -579,8 +581,8 @@ error = do
 --   * @'GCSETPAUSE@': sets data as the new value for the pause of the collector
 --     (see §2.10). The function returns the previous value of the pause.
 --
---   * @'GCSETSTEPMUL'@: sets data as the new value for the step multiplier of the
---     collector (see §2.10). The function returns the previous value of the
+--   * @'GCSETSTEPMUL'@: sets data as the new value for the step multiplier of
+--     the collector (see §2.10). The function returns the previous value of the
 --     step multiplier.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_gc lua_gc>.
@@ -945,10 +947,10 @@ opentable = pushcfunction lua_open_table_ptr *> call 0 multret
 
 -- | Calls a function in protected mode.
 --
--- Both @nargs@ and @nresults@ have the same meaning as in @'call'@. If there are
--- no errors during the call, @pcall@ behaves exactly like @'call'@. However,
--- if there is any error, @pcall@ catches it, pushes a single value on the
--- stack (the error message), and returns the error code. Like @'call'@,
+-- Both @nargs@ and @nresults@ have the same meaning as in @'call'@. If there
+-- are no errors during the call, @pcall@ behaves exactly like @'call'@.
+-- However, if there is any error, @pcall@ catches it, pushes a single value on
+-- the stack (the error message), and returns the error code. Like @'call'@,
 -- @pcall@ always removes the function and its arguments from the stack.
 --
 -- If @msgh@ is @Nothing@, then the error object returned on the stack is
