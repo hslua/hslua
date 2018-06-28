@@ -32,7 +32,7 @@ import Data.Either (isLeft, isRight)
 import Data.Monoid ((<>))
 import Foreign.Lua
 import System.Mem (performMajorGC)
-import Test.HsLua.Util (luaTestCase, pushLuaExpr)
+import Test.HsLua.Util ((?:), pushLuaExpr)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
 
@@ -75,7 +75,7 @@ tests = testGroup "lua integration tests"
       unref registryindex idx1
       unref registryindex idx2
 
-  , luaTestCase "getting a nested global works" $ do
+  , "getting a nested global works" ?: do
       pushLuaExpr "{greeting = 'Moin'}"
       setglobal "hamburg"
 
@@ -83,7 +83,7 @@ tests = testGroup "lua integration tests"
       pushLuaExpr "'Moin'"
       equal (-1) (-2)
 
-  , luaTestCase "setting a nested global works" $ do
+  , "setting a nested global works" ?: do
       let v = "Mitte"
       newtable
       setglobal "berlin"

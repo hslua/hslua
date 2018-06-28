@@ -22,17 +22,40 @@ THE SOFTWARE.
 {-# LANGUAGE OverloadedStrings #-}
 {-| Utilities for testing hslua -}
 module Test.HsLua.Util
-  ( luaTestCase
+  ( assertLuaBool
   , pushLuaExpr
+  , shouldBeResultOf
+  , (=:)
+  , (?:)
   ) where
 
-import Foreign.Lua (Lua, runLua, loadstring, call, multret)
+import Foreign.Lua ( Lua, LuaException (..), runLua, runLuaEither, loadstring
+                   , call, multret)
 import Test.Tasty (TestTree)
-import Test.Tasty.HUnit (assertBool, testCase)
-
-luaTestCase :: String -> Lua Bool -> TestTree
-luaTestCase msg luaOp =
-  testCase msg $ assertBool "lua operation returned false" =<< runLua luaOp
+import Test.Tasty.HUnit (Assertion, assertBool, assertFailure, testCase, (@?=))
 
 pushLuaExpr :: String -> Lua ()
 pushLuaExpr expr = loadstring ("return " ++ expr) *> call 0 multret
+
+shouldBeResultOf :: (Eq a, Show a) => a -> Lua a -> Assertion
+shouldBeResultOf expected luaOp = do
+  errOrRes <- runLuaEither luaOp
+  case errOrRes of
+    Left (LuaException msg) -> assertFailure $ "Lua operation failed with "
+                               ++ "message: '" ++ msg ++ "'"
+    Right res -> res @?= expected
+
+assertLuaBool :: Lua Bool -> Assertion
+assertLuaBool luaOp = assertBool "" =<< runLua luaOp
+
+infix  3 =:
+(=:) :: String -> Assertion -> TestTree
+(=:) = testCase
+
+infixr 3 ?:
+(?:) :: String -> Lua Bool -> TestTree
+(?:) = luaTestBool
+
+luaTestBool :: String -> Lua Bool -> TestTree
+luaTestBool msg luaOp = testCase msg $
+  assertBool "Lua operation returned false" =<< runLua luaOp

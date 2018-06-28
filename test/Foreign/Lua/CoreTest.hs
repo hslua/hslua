@@ -40,7 +40,7 @@ import Control.Monad (forM_)
 import Data.Monoid ((<>))
 import Foreign.Lua as Lua
 import Test.HsLua.Arbitrary ()
-import Test.HsLua.Util (luaTestCase, pushLuaExpr)
+import Test.HsLua.Util ((?:), (=:), shouldBeResultOf, pushLuaExpr)
 import Test.QuickCheck (Property, (.&&.))
 import Test.QuickCheck.Monadic (assert, monadicIO, run)
 import Test.Tasty (TestTree, testGroup)
@@ -55,24 +55,26 @@ import qualified Foreign.Lua.Core.RawBindings as LuaRaw
 tests :: TestTree
 tests = testGroup "Haskell version of the C API"
   [ testGroup "copy"
-    [ luaTestCase "copies stack elements using positive indices" $ do
+    [ "copies stack elements using positive indices" ?: do
         pushLuaExpr "5, 4, 3, 2, 1"
         copy 4 3
         rawequal (nthFromBottom 4) (nthFromBottom 3)
-    , luaTestCase "copies stack elements using negative indices" $ do
+
+    , "copies stack elements using negative indices" ?: do
         pushLuaExpr "5, 4, 3, 2, 1"
         copy (-1) (-3)
         rawequal (-1) (-3)
     ]
 
   , testGroup "insert"
-    [ luaTestCase "inserts stack elements using negative indices" $ do
+    [ "inserts stack elements using negative indices" ?: do
         pushLuaExpr "1, 2, 3, 4, 5, 6, 7, 8, 9"
         insert (-6)
         movedEl <- peek (-6) :: Lua LuaInteger
         newTop <- peek (-1) :: Lua LuaInteger
         return (movedEl == 9 && newTop == 8)
-    , luaTestCase "inserts stack elements using negative indices" $ do
+
+    , "inserts stack elements using negative indices" ?: do
         pushLuaExpr "1, 2, 3, 4, 5, 6, 7, 8, 9"
         insert 4
         movedEl <- peek 4 :: Lua LuaInteger
@@ -89,30 +91,31 @@ tests = testGroup "Haskell version of the C API"
       liftIO . assertEqual "pseudo indices are left unchanged" registryindex
         =<< absindex registryindex
 
-  , luaTestCase "gettable gets a table value" $ do
+  , "gettable gets a table value" =:
+    13.37 `shouldBeResultOf` do
       pushLuaExpr "{sum = 13.37}"
-      pushnumber 13.37
       pushstring "sum"
-      gettable (nthFromTop 3)
-      equal (nthFromTop 1) (nthFromTop 2)
+      gettable (nthFromTop 2)
+      tonumber stackTop
 
-  , luaTestCase "strlen, objlen, and rawlen all behave the same" $ do
-      pushLuaExpr "{1, 1, 2, 3, 5, 8}"
+  , "strlen, objlen, and rawlen all behave the same" =:
+    (7, 7, 7) `shouldBeResultOf` do
+      pushLuaExpr "{1, 1, 2, 3, 5, 8, 13}"
       rlen <- rawlen (-1)
       olen <- objlen (-1)
       slen <- strlen (-1)
-      return $ rlen == olen && rlen == slen && rlen == 6
+      return (rlen, olen, slen)
 
   , testGroup "Type checking"
-    [ luaTestCase "isfunction" $ do
+    [ "isfunction" ?: do
         pushLuaExpr "function () print \"hi!\" end"
         isfunction (-1)
 
-    , luaTestCase "isnil" $ pushLuaExpr "nil" *> isnil (-1)
+    , "isnil" ?: pushLuaExpr "nil" *> isnil (-1)
 
-    , luaTestCase "isnone" $ isnone 500 -- stack index 500 does not exist
+    , "isnone" ?: isnone 500 -- stack index 500 does not exist
 
-    , luaTestCase "isnoneornil" $ do
+    , "isnoneornil" ?: do
         pushLuaExpr "nil"
         (&&) <$> isnoneornil 500 <*> isnoneornil (-1)
     ]
@@ -124,56 +127,58 @@ tests = testGroup "Haskell version of the C API"
         LuaRaw.lua_open_debug_ptr =<< tocfunction (-1)
 
   , testGroup "getting values"
-    [ testCase "tointegerx returns numbers verbatim" . runLua $ do
+    [ "tointegerx returns numbers verbatim" =:
+      Just 149 `shouldBeResultOf` do
         pushLuaExpr "149"
-        res <- tointegerx (-1)
-        liftIO $ assertEqual "Not the correct number" (Just 149) res
+        tointegerx (-1)
 
-    , testCase "tointegerx accepts strings coercible to integers" . runLua $ do
+    , "tointegerx accepts strings coercible to integers" =:
+      Just 451 `shouldBeResultOf` do
         pushLuaExpr "'451'"
-        res <- tointegerx (-1)
-        liftIO $ assertEqual "Not the correct number" (Just 451) res
+        tointegerx (-1)
 
-    , testCase "tointegerx returns Nothing when given a boolean" . runLua $ do
+    , "tointegerx returns Nothing when given a boolean" =:
+      Nothing `shouldBeResultOf` do
         pushLuaExpr "true"
-        liftIO . assertEqual "Not the correct number" Nothing =<< tointegerx (-1)
+        tointegerx (-1)
 
-    , testCase "tonumberx returns numbers verbatim" . runLua $ do
+    , "tonumberx returns numbers verbatim" =:
+      Just 14.9 `shouldBeResultOf` do
         pushLuaExpr "14.9"
-        res <- tonumberx (-1)
-        liftIO $ assertEqual "Not the correct number" (Just 14.9) res
+        tonumberx (-1)
 
-    , testCase "tonumberx accepts strings as numbers" . runLua $ do
+    , "tonumberx accepts strings as numbers" =:
+      Just 42.23 `shouldBeResultOf` do
         pushLuaExpr "'42.23'"
-        res <- tonumberx (-1)
-        liftIO $ assertEqual "Not the correct number" (Just 42.23) res
+        tonumberx (-1)
 
-    , testCase "tonumberx returns Nothing when given a boolean" . runLua $ do
+    , "tonumberx returns Nothing when given a boolean" =:
+      Nothing `shouldBeResultOf` do
         pushLuaExpr "true"
-        liftIO . assertEqual "Not the correct number" Nothing =<< tonumberx (-1)
+        tonumberx (-1)
     ]
 
-  , luaTestCase "setting and getting a global works" $ do
+  , "setting and getting a global works" =:
+    "Moin" `shouldBeResultOf` do
       pushLuaExpr "{'Moin', Hello = 'World'}"
       setglobal "hamburg"
 
       -- get first field
       getglobal "hamburg"
       rawgeti stackTop 1 -- first field
-      pushLuaExpr "'Moin'"
-      equal (nthFromTop 1) (nthFromTop 2)
+      tostring stackTop
 
-  , luaTestCase "can push and receive a thread" $ do
+  , "can push and receive a thread" ?: do
       luaSt <- luaState
       isMain <- pushthread
       liftIO (assertBool "pushing the main thread should return True" isMain)
       luaSt' <- peek stackTop
       return (luaSt == luaSt')
 
-  , testCase "different threads are not equal" $ do
-      luaSt1 <- newstate
-      luaSt2 <- newstate
-      assertBool "different lua threads are equal in haskell" (luaSt1 /= luaSt2)
+  , "different threads are not equal in Haskell" ?: do
+      luaSt1 <- liftIO newstate
+      luaSt2 <- liftIO newstate
+      return (luaSt1 /= luaSt2)
 
   , testCase "thread status" . runLua $ do
       status >>= liftIO . assertEqual "base status should be OK" OK
@@ -187,60 +192,94 @@ tests = testGroup "Haskell version of the C API"
           =<< status
 
   , testGroup "loading"
-    [ testCase "loadstring status" . runLua $ do
-        liftIO . assertEqual "loading a valid string doesn't return OK"
-          OK =<< loadstring "return 1"
-        liftIO . assertEqual "loading an invalid string doesn't return ErrSyntax"
-          ErrSyntax =<< loadstring "marzipan"
+    [ testGroup "loadstring"
+      [ "loading a valid string should succeed" =:
+        OK `shouldBeResultOf` loadstring "return 1"
 
-    , testCase "dostring loading" . runLua $ do
-        liftIO . assertEqual "wrong dostring result"
-          ErrRun =<< (dostring "error 'this fails'")
-        liftIO . assertEqual "loading an invalid string doesn't return ErrSyntax"
-          ErrSyntax =<< dostring "marzipan"
-        liftIO . assertEqual "loading a valid program failed"
-          OK =<< dostring "return (2 + 3)"
-        liftIO . assertEqual "top of the stack should be result of last computation"
-          (5 :: LuaInteger) =<< peek (-1)
+      , "loading an invalid string should give a syntax error" =:
+        ErrSyntax `shouldBeResultOf` loadstring "marzipan"
+      ]
 
-    , testCase "loadbuffer" . runLua $ do
-        liftIO . assertEqual "loading a string containing NUL"
-          OK =<< (loadbuffer "return 'Hello\NULWorld'" "test" <* call 0 1)
-        liftIO . assertEqual "correctly pushed a string containing NUL"
-          "Hello\NULWorld" =<< tostring stackTop
+    , testGroup "dostring"
+      [ "loading a string which fails should give a run error" =:
+        ErrRun `shouldBeResultOf` dostring "error 'this fails'"
 
-    , testCase "loadfile loading" . runLua $ do
-        liftIO . assertEqual "wrong error code for non-existing file"
-          ErrFile =<< loadfile "./file-does-not-exist.lua"
-        liftIO . assertEqual "loading an invalid file doesn't return ErrSyntax"
-          ErrSyntax =<< loadfile "test/lua/syntax-error.lua"
-        liftIO . assertEqual "loading a valid program failed"
-          OK =<< loadfile "./test/lua/example.lua"
-        call 0 0
-        liftIO . assertEqual "fib function not defined or not correct"
-          (8 :: LuaInteger) =<< (getglobal "fib" *> pushinteger 6 *>
-                                 call 1 1 *> peek (-1))
+      , "loading an invalid string should return a syntax error" =:
+        ErrSyntax `shouldBeResultOf` dostring "marzipan"
 
-    , testCase "dofile loading" . runLua $ do
-        liftIO . assertEqual "wrong error code for non-existing file"
-          ErrFile =<< dofile "./file-does-not-exist.lua"
-        liftIO . assertEqual "loading an invalid file doesn't return ErrSyntax"
-          ErrSyntax =<< dofile "test/lua/syntax-error.lua"
-        liftIO . assertEqual "wrong dofile result"
-          ErrRun =<< dofile "test/lua/error.lua"
-        liftIO . assertEqual "loading a valid program failed"
-          OK =<< dofile "./test/lua/example.lua"
-        liftIO . assertEqual "fib function not defined or not correct"
-          (13 :: LuaInteger) =<< dostring "return fib(7)" *> peek (-1)
+      , "loading a valid program should succeed" =:
+        OK `shouldBeResultOf` dostring "return 1"
+
+      , "top of the stack should be result of last computation" =:
+        (5 :: LuaInteger) `shouldBeResultOf`
+          (dostring "return (2+3)" *> peek (-1))
+      ]
+
+    , testGroup "loadbuffer"
+      [ "loading a valid string should succeed" =:
+        OK `shouldBeResultOf` loadbuffer "return '\NUL'" "test"
+
+      , "loading a string containing NUL should be correct" =:
+        "\NUL" `shouldBeResultOf` do
+          _ <- loadbuffer "return '\NUL'" "test"
+          call 0 1
+          tostring stackTop
+      ]
+
+    , testGroup "loadfile"
+      [ "file error should be returned when file does not exist" =:
+        ErrFile `shouldBeResultOf` loadfile "./file-does-not-exist.lua"
+
+      , "loading an invalid file should give a syntax error" =:
+        ErrSyntax `shouldBeResultOf` loadfile "test/lua/syntax-error.lua"
+
+      , "loading a valid program should succeed" =:
+        OK `shouldBeResultOf` loadfile "./test/lua/example.lua"
+
+      , "example fib program should be loaded correctly" =:
+        (8 :: LuaInteger) `shouldBeResultOf` do
+          loadfile "./test/lua/example.lua" *> call 0 0
+          getglobal "fib"
+          pushinteger 6
+          call 1 1
+          peek stackTop
+      ]
+
+    , testGroup "dofile"
+      [ "file error should be returned when file does not exist" =:
+        ErrFile `shouldBeResultOf` dofile "./file-does-not-exist.lua"
+
+      , "loading an invalid file should give a syntax error" =:
+        ErrSyntax `shouldBeResultOf` dofile "test/lua/syntax-error.lua"
+
+      , "loading a failing program should give an run error" =:
+        ErrRun `shouldBeResultOf` dofile "test/lua/error.lua"
+
+      , "loading a valid program should succeed" =:
+        OK `shouldBeResultOf` dofile "./test/lua/example.lua"
+
+      , "example fib program should be loaded correctly" =:
+        (21 :: LuaInteger) `shouldBeResultOf` do
+          _ <- dofile "./test/lua/example.lua"
+          getglobal "fib"
+          pushinteger 8
+          call 1 1
+          peek stackTop
+      ]
     ]
 
-  , testCase "pcall status" . runLua $ do
-      liftIO . assertEqual "calling error did not lead to an error status"
-        ErrRun =<< (loadstring "error \"this fails\"" *> pcall 0 0 Nothing)
-      liftIO . assertEqual "calling error did not lead to an error status"
-        ErrErr =<< do
-          pushLuaExpr "function () error 'error in error handler' end"
-          loadstring "error 'this fails'" *> pcall 0 0 (Just (-2))
+  , testGroup "pcall"
+    [ "raising an error should lead to an error status" =:
+      ErrRun `shouldBeResultOf` do
+        _ <- loadstring "error \"this fails\""
+        pcall 0 0 Nothing
+
+    , "raising an error in the error handler should give a 'double error'" =:
+      ErrErr `shouldBeResultOf` do
+        pushLuaExpr "function () error 'error in error handler' end"
+        _ <- loadstring "error \"this fails\""
+        pcall 0 0 (Just (nthFromTop 2))
+    ]
 
   , testCase "garbage collection" . runLua $
       -- test that gc can be called with all constructors of type GCCONTROL.
