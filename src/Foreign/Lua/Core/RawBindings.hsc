@@ -36,7 +36,7 @@ Haskell bindings to lua C API functions.
 module Foreign.Lua.Core.RawBindings where
 
 import Foreign.C
-import Foreign.Lua.Core.TypeBindings
+import Foreign.Lua.Core.Types
 import Foreign.Ptr
 
 #include "safer-api.h"

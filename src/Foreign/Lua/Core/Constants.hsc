@@ -44,7 +44,7 @@ module Foreign.Lua.Core.Constants
 #endif
   ) where
 
-import Foreign.Lua.Core.TypeBindings
+import Foreign.Lua.Core.Types
 
 #include "lua.h"
 #include "lauxlib.h"

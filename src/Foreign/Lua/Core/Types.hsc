@@ -24,7 +24,7 @@ THE SOFTWARE.
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE StandaloneDeriving         #-}
 {-|
-Module      : Foreign.Lua.Core.TypeBindings
+Module      : Foreign.Lua.Core.Types
 Copyright   : © 2007–2012 Gracjan Polak,
                 2012–2016 Ömer Sinan Ağacan,
                 2017-2018 Albert Krewinkel
@@ -35,9 +35,47 @@ Portability : non-portable (depends on GHC)
 
 The core Lua types, including mappings of Lua types to Haskell.
 -}
-module Foreign.Lua.Core.TypeBindings where
+module Foreign.Lua.Core.Types
+  ( Lua (..)
+  , LuaState (..)
+  , LuaReader
+  , liftLua
+  , liftLua1
+  , luaState
+  , runLuaWith
+  , GCCONTROL (..)
+  , Type (..)
+  , TypeCode (..)
+  , fromType
+  , toType
+  , liftIO
+  , CFunction
+  , LuaBool (..)
+  , false
+  , true
+  , fromLuaBool
+  , toLuaBool
+  , LuaInteger (..)
+  , LuaNumber (..)
+  , StackIndex (..)
+  , nthFromBottom
+  , nthFromTop
+  , stackTop
+  , stackBottom
+  , NumArgs (..)
+  , NumResults (..)
+  , RelationalOperator (..)
+  , fromRelationalOperator
+  , Status (..)
+  , StatusCode (..)
+  , toStatus
+  , Failable (..)
+  ) where
 
 import Prelude hiding (EQ, LT)
+
+import Control.Monad.Catch (MonadCatch, MonadMask, MonadThrow)
+import Control.Monad.Reader (ReaderT (..), MonadReader, MonadIO, ask, liftIO)
 import Data.Int (#{type LUA_INTEGER})
 import Foreign.C (CChar, CInt, CSize)
 import Foreign.Ptr (FunPtr, Ptr)
@@ -46,6 +84,38 @@ import Foreign.Storable (Storable)
 #include "lua.h"
 -- required only for LUA_ERRFILE
 #include "lauxlib.h"
+
+-- | A Lua computation. This is the base type used to run Lua programs of any
+-- kind. The Lua state is handled automatically, but can be retrieved via
+-- @'luaState'@.
+newtype Lua a = Lua { unLua :: ReaderT LuaState IO a }
+  deriving
+    ( Applicative
+    , Functor
+    , Monad
+    , MonadCatch
+    , MonadIO
+    , MonadMask
+    , MonadReader LuaState
+    , MonadThrow
+    )
+
+-- | Turn a function of typ @LuaState -> IO a@ into a monadic lua operation.
+liftLua :: (LuaState -> IO a) -> Lua a
+liftLua f = luaState >>= liftIO . f
+
+-- | Turn a function of typ @LuaState -> a -> IO b@ into a monadic lua operation.
+liftLua1 :: (LuaState -> a -> IO b) -> a -> Lua b
+liftLua1 f x = liftLua $ \l -> f l x
+
+-- | Get the lua state of this lua computation.
+luaState :: Lua LuaState
+luaState = ask
+
+-- | Run lua computation with custom lua state. Errors are left unhandled, the
+-- caller of this function is responsible to catch lua errors.
+runLuaWith :: LuaState -> Lua a -> IO a
+runLuaWith l s = runReaderT (unLua s) l
 
 -- | An opaque structure that points to a thread and indirectly (through the
 -- thread) to the whole state of a Lua interpreter. The Lua library is fully
