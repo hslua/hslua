@@ -138,7 +138,7 @@ foreign import ccall SAFTY "lua.h lua_type"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_typename lua_typename>
 foreign import ccall SAFTY "lua.h lua_typename"
-  lua_typename :: LuaState -> TypeCode -> IO (Ptr CChar)
+  lua_typename :: LuaState -> TypeCode -> IO CString
 
 -- lua_compare is unsafe (might cause a longjmp), use hslua_compare instead.
 #if LUA_VERSION_NUM >= 502
@@ -277,7 +277,7 @@ foreign import ccall "safer-api.h hslua_gettable"
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_getfield \
 -- @lua_getfield@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_getfield"
-  hslua_getfield :: LuaState -> StackIndex -> Ptr CChar -> IO (Failable ())
+  hslua_getfield :: LuaState -> StackIndex -> CString -> IO (Failable ())
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawget lua_rawget>
 foreign import ccall SAFTY "lua.h lua_rawget"
@@ -302,7 +302,7 @@ foreign import ccall SAFTY "lua.h lua_getmetatable"
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_getglobal \
 -- @lua_getglobal@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_getglobal"
-  hslua_getglobal :: LuaState -> Ptr CChar -> IO (Failable ())
+  hslua_getglobal :: LuaState -> CString -> IO (Failable ())
 
 
 --------------------------------------------------------------------------------
@@ -321,7 +321,7 @@ foreign import ccall "safer-api.h hslua_settable"
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_setfield \
 -- @lua_setfield@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_setfield"
-  hslua_setfield :: LuaState -> StackIndex -> Ptr CChar -> IO (Failable ())
+  hslua_setfield :: LuaState -> StackIndex -> CString -> IO (Failable ())
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawset lua_rawset>
 foreign import ccall SAFTY "lua.h lua_rawset"
@@ -338,7 +338,7 @@ foreign import ccall SAFTY "lua.h lua_setmetatable"
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_setglobal \
 -- @lua_setglobal@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_setglobal"
-  hslua_setglobal :: LuaState -> Ptr CChar -> IO (Failable ())
+  hslua_setglobal :: LuaState -> CString -> IO (Failable ())
 
 
 --------------------------------------------------------------------------------
@@ -452,7 +452,7 @@ foreign import ccall unsafe "lauxlib.h luaL_newstate"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_newmetatable luaL_newmetatable>
 foreign import ccall "lauxlib.h luaL_newmetatable"
-  luaL_newmetatable :: LuaState -> Ptr CChar -> IO LuaBool
+  luaL_newmetatable :: LuaState -> CString -> IO LuaBool
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_ref luaL_ref>
 foreign import ccall "lauxlib.h luaL_ref"
@@ -464,7 +464,7 @@ foreign import ccall "lauxlib.h luaL_unref"
 
 -- | See <https://www.lua.org/manual/5.1/manual.html#luaL_loadfile luaL_loadfile>
 foreign import capi "lauxlib.h luaL_loadfile"
-  luaL_loadfile :: LuaState -> Ptr CChar -> IO StatusCode
+  luaL_loadfile :: LuaState -> CString -> IO StatusCode
 
 -- | See <https://www.lua.org/manual/5.1/manual.html#luaL_loadstring luaL_loadbuffer>
 foreign import capi SAFTY "lauxlib.h luaL_loadbuffer"
