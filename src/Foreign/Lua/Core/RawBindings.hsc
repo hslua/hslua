@@ -297,7 +297,7 @@ foreign import ccall SAFTY "lua.h lua_newuserdata"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_getmetatable lua_getmetatable>
 foreign import ccall SAFTY "lua.h lua_getmetatable"
-  lua_getmetatable :: LuaState -> StackIndex -> IO CInt
+  lua_getmetatable :: LuaState -> StackIndex -> IO LuaBool
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_getglobal \
 -- @lua_getglobal@> which catches any @longjmp@s.

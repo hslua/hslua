@@ -608,7 +608,7 @@ getglobal name = throwOnError =<<
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getmetatable lua_getmetatable>.
 getmetatable :: StackIndex -> Lua Bool
 getmetatable n = liftLua $ \l ->
-  fmap (/= 0) (lua_getmetatable l n)
+  fromLuaBool <$> lua_getmetatable l n
 
 -- | Pushes onto the stack the value @t[k]@, where @t@ is the value at the given
 -- index and @k@ is the value at the top of the stack.
