@@ -34,7 +34,6 @@ Test for the conversion of lua values to haskell values.
 module Foreign.Lua.Types.PeekableTest (tests) where
 
 import Foreign.Lua
-
 import Test.HsLua.Util ( (=:), (?:), pushLuaExpr, shouldBeResultOf
                        , shouldBeErrorMessageOf )
 import Test.Tasty (TestTree, testGroup)
@@ -57,7 +56,12 @@ tests = testGroup "Peekable"
         pushnumber 5
         peek stackTop :: Lua Bool
 
-    , "error is thrown if boolean is given insead of number" =:
+    , "floating point numbers cannot be peeked as integer" =:
+      "Expected a integer but got a number" `shouldBeErrorMessageOf` do
+        pushnumber 23.1
+        peek stackTop :: Lua LuaInteger
+
+    , "booleans cannot be retrieved as numbers" =:
       "Expected a number but got a boolean" `shouldBeErrorMessageOf` do
         pushboolean False
         peek stackTop :: Lua LuaNumber

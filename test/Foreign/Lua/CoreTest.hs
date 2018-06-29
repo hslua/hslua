@@ -98,7 +98,7 @@ tests = testGroup "Haskell version of the C API"
         =<< absindex registryindex
 
   , "gettable gets a table value" =:
-    13.37 `shouldBeResultOf` do
+    Just 13.37 `shouldBeResultOf` do
       pushLuaExpr "{sum = 13.37}"
       pushstring "sum"
       gettable (nthFromTop 2)
@@ -133,35 +133,35 @@ tests = testGroup "Haskell version of the C API"
         LuaRaw.lua_open_debug_ptr =<< tocfunction (-1)
 
   , testGroup "getting values"
-    [ "tointegerx returns numbers verbatim" =:
+    [ "tointeger returns numbers verbatim" =:
       Just 149 `shouldBeResultOf` do
         pushLuaExpr "149"
-        tointegerx (-1)
+        tointeger (-1)
 
-    , "tointegerx accepts strings coercible to integers" =:
+    , "tointeger accepts strings coercible to integers" =:
       Just 451 `shouldBeResultOf` do
         pushLuaExpr "'451'"
-        tointegerx (-1)
+        tointeger (-1)
 
-    , "tointegerx returns Nothing when given a boolean" =:
+    , "tointeger returns Nothing when given a boolean" =:
       Nothing `shouldBeResultOf` do
         pushLuaExpr "true"
-        tointegerx (-1)
+        tointeger (-1)
 
-    , "tonumberx returns numbers verbatim" =:
+    , "tonumber returns numbers verbatim" =:
       Just 14.9 `shouldBeResultOf` do
         pushLuaExpr "14.9"
-        tonumberx (-1)
+        tonumber (-1)
 
-    , "tonumberx accepts strings as numbers" =:
+    , "tonumber accepts strings as numbers" =:
       Just 42.23 `shouldBeResultOf` do
         pushLuaExpr "'42.23'"
-        tonumberx (-1)
+        tonumber (-1)
 
-    , "tonumberx returns Nothing when given a boolean" =:
+    , "tonumber returns Nothing when given a boolean" =:
       Nothing `shouldBeResultOf` do
         pushLuaExpr "true"
-        tonumberx (-1)
+        tonumber (-1)
     ]
 
   , "setting and getting a global works" =:

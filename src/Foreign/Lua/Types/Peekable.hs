@@ -109,6 +109,22 @@ typeChecked' :: ByteString
 typeChecked' expectedType test peekfn =
   typeChecked expectedType test (fmap return . peekfn)
 
+
+reportValueOnFailure :: ByteString
+                     -> (StackIndex -> Lua (Maybe a))
+                     -> StackIndex -> Lua (Result a)
+reportValueOnFailure expected peekMb idx = do
+  res <- peekMb idx
+  case res of
+    (Just x) -> return (Success x)
+    Nothing -> typeMismatchError expected idx
+
+typeMismatchError :: ByteString -> StackIndex -> Lua (Result a)
+typeMismatchError expectedType idx = do
+  actual <- ltype idx >>= typename
+  let msg = "Expected a " <> expectedType <> " but got a " <> actual
+  return (Error [msg])
+
 -- | A value that can be read from the Lua stack.
 class Peekable a where
   -- | Returns either the value at index @n@ of the Lua stack or a error
@@ -136,10 +152,10 @@ instance Peekable () where
   safePeek = typeChecked' "nil" isnil (const $ return ())
 
 instance Peekable LuaInteger where
-  safePeek = typeChecked' "number" isnumber tointeger
+  safePeek = reportValueOnFailure "integer" tointeger
 
 instance Peekable LuaNumber where
-  safePeek = typeChecked' "number" isnumber tonumber
+  safePeek = reportValueOnFailure "number" tonumber
 
 instance Peekable ByteString where
   safePeek = typeChecked' "string" isstring tostring

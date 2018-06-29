@@ -76,7 +76,7 @@ tests = testGroup "Interoperability"
             return (Char8.unpack err)
 
           errMsg = "Error during function call: could not read "
-                   ++ "argument 2: Expected a number but got a boolean"
+                   ++ "argument 2: Expected a integer but got a boolean"
       in assertEqual "Unexpected result" errMsg =<< runLua (catchLuaError luaOp (return . show))
 
     , "Haskell functions are converted to C functions" =:

@@ -105,9 +105,7 @@ module Foreign.Lua.Core (
   , toboolean
   , tocfunction
   , tointeger
-  , tointegerx
   , tonumber
-  , tonumberx
   , topointer
   , tostring
   , tothread
@@ -1201,35 +1199,27 @@ tocfunction n = liftLua $ \l -> lua_tocfunction l n
 -- type @'lua_Integer'@. The Lua value must be an integer, a number or a string
 -- convertible to an integer (see
 -- <https://www.lua.org/manual/5.3/manual.html#3.4.3 §3.4.3> of the Lua 5.3
--- Reference Manual); otherwise, @tointeger@ returns 0.
+-- Reference Manual); otherwise, @tointeger@ returns @Nothing@.
 --
 -- If the number is not an integer, it is truncated in some non-specified way.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_tointeger lua_tointeger>.
-tointeger :: StackIndex -> Lua LuaInteger
-tointeger n = liftLua $ \l -> lua_tointeger l n
-
--- | Like @'tointeger'@, but returns @Nothing@ if the conversion failed
-tointegerx :: StackIndex -> Lua (Maybe LuaInteger)
-tointegerx n = liftLua $ \l -> alloca $ \bptr -> do
-  res <- lua_tointegerx l n bptr
-  isNum <- fromLuaBool <$> F.peek bptr
+tointeger :: StackIndex -> Lua (Maybe LuaInteger)
+tointeger n = liftLua $ \l -> alloca $ \boolPtr -> do
+  res <- lua_tointegerx l n boolPtr
+  isNum <- fromLuaBool <$> F.peek boolPtr
   if isNum
     then return $ Just res
     else return $ Nothing
 
 -- | Converts the Lua value at the given index to the C type lua_Number. The Lua
 -- value must be a number or a string convertible to a number; otherwise,
--- @tonumber@ returns 0.
+-- @tonumber@ returns @'Nothing'@.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_tonumber lua_tonumber>.
-tonumber :: StackIndex -> Lua LuaNumber
-tonumber n = liftLua $ \l -> lua_tonumber l n
-
--- | Like @'tonumber'@, but returns @Nothing@ if the conversion failed
-tonumberx :: StackIndex -> Lua (Maybe LuaNumber)
-tonumberx n = liftLua $ \l -> alloca $ \bptr -> do
+tonumber :: StackIndex -> Lua (Maybe LuaNumber)
+tonumber n = liftLua $ \l -> alloca $ \bptr -> do
   res <- lua_tonumberx l n bptr
   isNum <- fromLuaBool <$> F.peek bptr
   if isNum
