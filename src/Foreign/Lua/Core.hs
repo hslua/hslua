@@ -966,8 +966,8 @@ pop n = settop (-n - 1)
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_pushboolean lua_pushboolean>.
-pushboolean :: LuaBool -> Lua ()
-pushboolean b = liftLua $ \l -> lua_pushboolean l b
+pushboolean :: Bool -> Lua ()
+pushboolean b = liftLua $ \l -> lua_pushboolean l (toLuaBool b)
 
 -- | Pushes a new C closure onto the stack.
 --

@@ -305,9 +305,9 @@ tests = testGroup "Haskell version of the C API"
 
   , testCase "boolean values are correct" $ do
       trueIsCorrect <- runLua $
-        pushboolean true *> dostring "return true" *> rawequal (-1) (-2)
+        pushboolean True *> dostring "return true" *> rawequal (-1) (-2)
       falseIsCorrect <- runLua $
-        pushboolean false *> dostring "return false" *> rawequal (-1) (-2)
+        pushboolean False *> dostring "return false" *> rawequal (-1) (-2)
       assertBool "LuaBool true is not equal to Lua's true" trueIsCorrect
       assertBool "LuaBool false is not equal to Lua's false" falseIsCorrect
 

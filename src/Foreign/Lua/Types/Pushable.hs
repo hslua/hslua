@@ -61,9 +61,6 @@ class Pushable a where
 instance Pushable () where
   push = const pushnil
 
-instance Pushable LuaBool where
-  push = pushboolean
-
 instance Pushable LuaInteger where
   push = pushinteger
 
@@ -74,7 +71,7 @@ instance Pushable ByteString where
   push = pushstring
 
 instance Pushable Bool where
-  push = pushboolean . toLuaBool
+  push = pushboolean
 
 instance Pushable CFunction where
   push = pushcfunction
