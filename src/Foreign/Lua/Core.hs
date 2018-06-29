@@ -985,8 +985,8 @@ pushboolean b = liftLua $ \l -> lua_pushboolean l (toLuaBool b)
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_pushcclosure lua_pushcclosure>.
-pushcclosure :: CFunction -> Int -> Lua ()
-pushcclosure f n = liftLua $ \l -> lua_pushcclosure l f (fromIntegral n)
+pushcclosure :: CFunction -> NumArgs -> Lua ()
+pushcclosure f n = liftLua $ \l -> lua_pushcclosure l f n
 
 -- | Pushes a C function onto the stack. This function receives a pointer to a C
 -- function and pushes onto the stack a Lua value of type function that, when
