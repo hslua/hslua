@@ -19,27 +19,11 @@ matrix:
       compiler: ": #GHC 8.4.2"
       addons: {apt: {packages: [cabal-install-2.0,ghc-8.4.2], sources: [hvr-ghc]}}
 
-    ## Test Lua versions
-    # Test system Lua 5.1
-    - env: GHCVER=8.0.2 CABALVER=1.24 LUAVER=lua-5.1.5
-      compiler: ": #GHC 8.0.2"
-      addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.2], sources: [hvr-ghc]}}
-    # Test system Lua 5.2
-    - env: GHCVER=8.0.2 CABALVER=1.24 LUAVER=lua-5.2.4
-      compiler: ": #GHC 8.0.2"
-      addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.2], sources: [hvr-ghc]}}
+    ## Test system Lua
     # Test system Lua 5.3
     - env: GHCVER=8.0.2 CABALVER=1.24 LUAVER=lua-5.3.4
       compiler: ": #GHC 8.0.2"
       addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.2], sources: [hvr-ghc]}}
-    # Test GHC 7.10 and LuaJIT
-    - env: GHCVER=7.10.3 CABALVER=1.22 LUAVER=luajit
-      compiler: ": #GHC 7.10.3"
-      addons: {apt: {packages: [cabal-install-1.22,ghc-7.10.3], sources: [hvr-ghc]}}
-    # Test GHC 8.4 and LuaJIT
-    - env: GHCVER=8.4.2 CABALVER=2.0 LUAVER=luajit
-      compiler: ": #GHC 8.4.2"
-      addons: {apt: {packages: [cabal-install-2.0,ghc-8.4.2], sources: [hvr-ghc]}}
 
   # mark build as successful as soon as all required successes are in.
   fast_finish: true
@@ -76,30 +60,6 @@ script:
           CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS -fsystem-lua"
           CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS --extra-include-dirs=${HOME}/usr/include"
           CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS --extra-lib-dirs=${HOME}/usr/lib"
-          ;;
-      (luajit):
-          # Install LuaJIT
-          export LUAJIT_VERSION=2.0.4
-          wget http://luajit.org/download/LuaJIT-${LUAJIT_VERSION}.tar.gz
-          tar -xf LuaJIT-${LUAJIT_VERSION}.tar.gz
-          cd LuaJIT-${LUAJIT_VERSION}
-          sed -i 's/^TARGET_CC= $(STATIC_CC)/TARGET_CC= $(DYNAMIC_CC)/g' src/Makefile
-          make
-          make install PREFIX=${HOME}/usr
-          cd ..
-
-          # Compile and link using system-wide LuaJIT
-          CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS -fluajit"
-          CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS --extra-include-dirs=${HOME}/usr/include/luajit-2.0"
-          CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS --extra-lib-dirs=${HOME}/usr/lib"
-          ;;
-    esac
-    case "$LUAVER" in
-      (lua-5.1*):
-          CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS -flua501"
-          ;;
-      (lua-5.2*):
-          CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS -flua502"
           ;;
     esac
   - export LD_LIBRARY_PATH=${HOME}/usr/lib:$LD_LIBRARY_PATH

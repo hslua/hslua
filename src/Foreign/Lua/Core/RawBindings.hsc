@@ -70,11 +70,9 @@ foreign import ccall "lua.h lua_close"
 --------------------------------------------------------------------------------
 -- * Basic stack manipulation
 
-#if LUA_VERSION_NUMBER >= 502
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_absindex lua_absindex>
 foreign import ccall unsafe "lua.h lua_absindex"
   lua_absindex :: LuaState -> StackIndex -> IO StackIndex
-#endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_gettop lua_gettop>
 foreign import ccall unsafe "lua.h lua_gettop"
@@ -88,11 +86,9 @@ foreign import ccall SAFTY "lua.h lua_settop"
 foreign import ccall SAFTY "lua.h lua_pushvalue"
   lua_pushvalue :: LuaState -> StackIndex -> IO ()
 
-#if LUA_VERSION_NUMBER >= 503
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_copy lua_copy>
 foreign import ccall SAFTY "lua.h lua_copy"
   lua_copy :: LuaState -> StackIndex -> StackIndex -> IO ()
-#endif
 
 -- | See <https://www.lua.org/manual/5.2/manual.html#lua_remove lua_remove>
 foreign import capi SAFTY "lua.h lua_remove"
@@ -141,21 +137,12 @@ foreign import ccall SAFTY "lua.h lua_typename"
   lua_typename :: LuaState -> TypeCode -> IO CString
 
 -- lua_compare is unsafe (might cause a longjmp), use hslua_compare instead.
-#if LUA_VERSION_NUM >= 502
+
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_compare \
 -- @lua_compare@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_compare"
   hslua_compare :: LuaState -> StackIndex -> StackIndex -> CInt
                 -> IO (Failable LuaBool)
-#else
--- | See <https://www.lua.org/manual/5.1/manual.html#lua_equal lua_equal>
-foreign import ccall "lua.h lua_equal"
-  lua_equal :: LuaState -> StackIndex -> StackIndex -> IO LuaBool
-
--- | See <https://www.lua.org/manual/5.1/manual.html#lua_lessthan lua_lessthan>
-foreign import ccall "lua.h lua_lessthan"
-  lua_lessthan :: LuaState -> StackIndex -> StackIndex -> IO LuaBool
-#endif
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawequal lua_rawequal>
 foreign import ccall SAFTY "lua.h lua_rawequal"
@@ -172,7 +159,6 @@ foreign import capi SAFTY "lua.h lua_toboolean"
 foreign import ccall SAFTY "lua.h lua_tocfunction"
   lua_tocfunction :: LuaState -> StackIndex -> IO CFunction
 
-#if LUA_VERSION_NUMBER >= 502
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tointegerx lua_tointegerx>
 foreign import ccall SAFTY "lua.h lua_tointegerx"
   lua_tointegerx :: LuaState -> StackIndex -> Ptr LuaBool -> IO LuaInteger
@@ -180,7 +166,6 @@ foreign import ccall SAFTY "lua.h lua_tointegerx"
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tonumberx lua_tonumberx>
 foreign import ccall SAFTY "lua.h lua_tonumberx"
   lua_tonumberx :: LuaState -> StackIndex -> Ptr LuaBool -> IO LuaNumber
-#endif
 
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_tointeger lua_tointeger>
 foreign import capi SAFTY "lua.h lua_tointeger"
@@ -211,15 +196,9 @@ foreign import ccall SAFTY "lua.h lua_touserdata"
 -- Object size
 --
 
-#if LUA_VERSION_NUMBER >= 502
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawlen lua_rawlen>
 foreign import ccall SAFTY "lua.h lua_rawlen"
   lua_rawlen :: LuaState -> StackIndex -> IO CSize
-#else
--- | See <https://www.lua.org/manual/5.1/manual.html#lua_objlen lua_objlen>
-foreign import ccall SAFTY "lua.h lua_objlen"
-  lua_objlen :: LuaState -> StackIndex -> IO CSize
-#endif
 
 
 --------------------------------------------------------------------------------
@@ -351,17 +330,10 @@ foreign import capi "lua.h lua_pcall"
   lua_pcall :: LuaState -> NumArgs -> NumResults -> StackIndex
             -> IO StatusCode
 
-#if LUA_VERSION_NUMBER >= 502
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_load lua_load>
 foreign import ccall safe "lua.h lua_load"
   lua_load :: LuaState -> LuaReader -> Ptr () -> CString -> CString
            -> IO StatusCode
-#else
--- | See <https://www.lua.org/manual/5.1/manual.html#lua_load lua_load>
-foreign import ccall safe "lua.h lua_load"
-  lua_load :: LuaState -> LuaReader -> Ptr () -> CString
-           -> IO StatusCode
-#endif
 
 -- currently unsupported:
 -- lua_dump

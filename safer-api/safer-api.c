@@ -75,7 +75,6 @@ int hslua_userdata_gc(lua_State *L)
 /*
 ** compare
 */
-#if LUA_VERSION_NUM >= 502
 int hslua__compare(lua_State *L)
 {
   int op = lua_tointeger(L, 3);
@@ -100,7 +99,6 @@ int hslua_compare(lua_State *L, int index1, int index2, int op)
   lua_pop(L, 1);
   return res;
 }
-#endif
 
 
 /*

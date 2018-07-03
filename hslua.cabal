@@ -58,18 +58,6 @@ flag export-dynamic
                         but renders loading of dynamic C libraries impossible.
   default:              True
 
-flag luajit
-  description:          Link with LuaJIT.  This implies flag system-lua as well.
-  default:              False
-
-flag lua501
-  description:          Build against lua 5.1.
-  default:              False
-
-flag lua502
-  description:          Build against lua 5.2.
-  default:              False
-
 flag use-pkgconfig
   description:          Build using pkg-config to discover library and include paths. This is only used with system-lua and luajit.
   default:              False
@@ -99,26 +87,13 @@ library
                       , CPP
                       , ForeignFunctionInterface
                       , LambdaCase
-  if flag(system-lua) || flag(luajit) || flag(lua501) || flag(lua502)
-    c-sources:          safer-api/safer-api.c
-    include-dirs:       safer-api
-    if flag(luajit)
-      if flag(use-pkgconfig)
-        pkgconfig-depends: luajit
-      else
-        Extra-libraries:  luajit-5.1
+  c-sources:            safer-api/safer-api.c
+  include-dirs:         safer-api
+  if flag(system-lua)
+    if flag(use-pkgconfig)
+      pkgconfig-depends: lua5.3
     else
-      if flag(use-pkgconfig)
-        if flag(lua501)
-          pkgconfig-depends: lua5.1
-        else
-          if flag(lua502)
-            pkgconfig-depends: lua5.2
-          else
-            pkgconfig-depends: lua5.3
-      else
-        Extra-libraries:  lua
-    if !flag(use-pkgconfig)
+      extra-libraries:  lua
       includes:         lua.h
   else
     c-sources:          lua-5.3.4/lapi.c
@@ -155,18 +130,7 @@ library
                       , lua-5.3.4/lutf8lib.c
                       , lua-5.3.4/loadlib.c
                       , lua-5.3.4/linit.c
-
-                      , safer-api/safer-api.c
     include-dirs:       lua-5.3.4
-                      , safer-api
-
-  if flag(lua501) || flag(luajit)
-    cpp-options:        -DLUA_VERSION_NUMBER=501
-  else
-    if flag(lua502)
-      cpp-options:      -DLUA_VERSION_NUMBER=502
-    else
-      cpp-options:      -DLUA_VERSION_NUMBER=503
 
   if os(linux)
     cc-options:         "-DLUA_USE_LINUX"

@@ -38,10 +38,6 @@ module Foreign.Lua.Core.Constants
   , registryindex
   , refnil
   , noref
-#if LUA_VERSION_NUMBER < 502
-  , environindex
-  , globalsindex
-#endif
   ) where
 
 import Foreign.Lua.Core.Types
@@ -66,15 +62,3 @@ refnil = #{const LUA_REFNIL}
 -- | Value signaling that no reference was found.
 noref :: Int
 noref = #{const LUA_NOREF}
-
-#if LUA_VERSION_NUMBER < 502
--- | Alias for C constant @LUA_ENVIRONINDEX@. See
--- <https://www.lua.org/manual/5.1/#3.3 pseudo-indices>.
-environindex :: StackIndex
-environindex = StackIndex $ #{const LUA_ENVIRONINDEX}
-
--- | Alias for C constant @LUA_GLOBALSINDEX@. See
--- <https://www.lua.org/manual/5.1/#3.3 pseudo-indices>.
-globalsindex :: StackIndex
-globalsindex = StackIndex $ #{const LUA_GLOBALSINDEX}
-#endif

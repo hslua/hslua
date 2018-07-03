@@ -4,9 +4,7 @@ int hslua_call_hs(lua_State *L);
 
 int hslua_userdata_gc(lua_State *L);
 
-#if LUA_VERSION_NUM >= 502
 int hslua_compare(lua_State *L, int index1, int index2, int op);
-#endif
 
 int hslua_concat(lua_State *L, int n);
 

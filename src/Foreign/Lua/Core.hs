@@ -357,16 +357,7 @@ wrapHaskellFunction = do
 -- | Converts the acceptable index @idx@ into an equivalent absolute index (that
 -- is, one that does not depend on the stack top).
 absindex :: StackIndex -> Lua StackIndex
-#if LUA_VERSION_NUMBER >= 502
 absindex = liftLua1 lua_absindex
-#else
-absindex idx =
-  if idx > 0 || ispseudo idx
-  then return idx
-  else fmap (\top -> top + 1 + idx) gettop
- where
-  ispseudo = (<= registryindex)
-#endif
 
 -- |  Calls a function.
 --
@@ -451,17 +442,8 @@ close = lua_close
 -- This is a wrapper function of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_compare lua_compare>.
 compare :: StackIndex -> StackIndex -> RelationalOperator -> Lua Bool
-#if LUA_VERSION_NUMBER >= 502
 compare idx1 idx2 relOp = boolFromFailable =<< do
   liftLua $ \l -> hslua_compare l idx1 idx2 (fromRelationalOperator relOp)
-#else
-compare idx1 idx2 op = liftLua $ \l ->
-  case op of
-    EQ -> fromLuaBool <$> lua_equal l idx1 idx2
-    LT -> fromLuaBool <$> lua_lessthan l idx1 idx2
-    LE -> (||) <$> (fromLuaBool <$> lua_equal l idx1 idx2)
-               <*> (fromLuaBool <$> lua_lessthan l idx1 idx2)
-#endif
 
 -- | Concatenates the @n@ values at the top of the stack, pops them, and leaves
 -- the result at the top. If @n@ is 1, the result is the single value on the
@@ -482,14 +464,7 @@ concat n = throwOnError =<< liftLua (`hslua_concat` n)
 -- See also <https://www.lua.org/manual/5.3/manual.html#lua_copy lua_copy> in
 -- the lua manual.
 copy :: StackIndex -> StackIndex -> Lua ()
-#if LUA_VERSION_NUMBER >= 503
 copy fromidx toidx = liftLua $ \l -> lua_copy l fromidx toidx
-#else
-copy fromidx toidx = do
-  pushvalue fromidx
-  remove toidx
-  insert toidx
-#endif
 
 -- | Creates a new empty table and pushes it onto the stack. Parameter narr is a
 -- hint for how many elements the table will have as a sequence; parameter nrec
@@ -770,15 +745,9 @@ lessthan index1 index2 = compare index1 index2 LT
 -- messages and in debug information (see
 -- <https://www.lua.org/manual/5.1/manual.html#3.8 §3.8>).
 load :: LuaReader -> Ptr () -> String -> Lua Status
-#if LUA_VERSION_NUMBER >= 502
 load reader data' name = liftLua $ \l ->
   withCString name $ \namePtr ->
   toStatus <$> lua_load l reader data' namePtr nullPtr
-#else
-load reader data' name = liftLua $ \l ->
-  withCString name $ \namePtr ->
-  toStatus <$> lua_load l reader data' namePtr
-#endif
 
 -- | Loads a ByteString as a Lua chunk.
 --
@@ -1090,11 +1059,7 @@ rawgeti k m = liftLua $ \l -> lua_rawgeti l k m
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawlen lua_rawlen>.
 rawlen :: StackIndex -> Lua Int
-#if LUA_VERSION_NUMBER >= 502
 rawlen idx = liftLua $ \l -> fromIntegral <$> lua_rawlen l idx
-#else
-rawlen idx = liftLua $ \l -> fromIntegral <$> lua_objlen l idx
-#endif
 
 -- | Similar to @'settable'@, but does a raw assignment (i.e., without
 -- metamethods).
@@ -1269,20 +1234,12 @@ tointeger n = liftLua $ \l -> lua_tointeger l n
 
 -- | Like @'tointeger'@, but returns @Nothing@ if the conversion failed
 tointegerx :: StackIndex -> Lua (Maybe LuaInteger)
-#if LUA_VERSION_NUMBER >= 502
 tointegerx n = liftLua $ \l -> alloca $ \bptr -> do
   res <- lua_tointegerx l n bptr
   isNum <- fromLuaBool <$> F.peek bptr
   if isNum
     then return $ Just res
     else return $ Nothing
-#else
-tointegerx n = do
-  isNum <- isnumber n
-  if isNum
-    then Just <$> tointeger n
-    else return Nothing
-#endif
 
 -- | Converts the Lua value at the given index to the C type lua_Number. The Lua
 -- value must be a number or a string convertible to a number; otherwise,
@@ -1294,20 +1251,12 @@ tonumber n = liftLua $ \l -> lua_tonumber l n
 
 -- | Like @'tonumber'@, but returns @Nothing@ if the conversion failed
 tonumberx :: StackIndex -> Lua (Maybe LuaNumber)
-#if LUA_VERSION_NUMBER >= 502
 tonumberx n = liftLua $ \l -> alloca $ \bptr -> do
   res <- lua_tonumberx l n bptr
   isNum <- fromLuaBool <$> F.peek bptr
   if isNum
     then return $ Just res
     else return $ Nothing
-#else
-tonumberx n = do
-  isNum <- isnumber n
-  if isNum
-    then Just <$> tonumber n
-    else return Nothing
-#endif
 
 -- | Converts the value at the given index to a generic C pointer (void*). The
 -- value can be a userdata, a table, a thread, or a function; otherwise,
@@ -1372,8 +1321,4 @@ unref idx r = liftLua $ \l ->
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_upvalueindex lua_upvalueindex>.
 upvalueindex :: StackIndex -> StackIndex
-#if LUA_VERSION_NUMBER >= 502
 upvalueindex i = registryindex - i
-#else
-upvalueindex i = globalsindex - i
-#endif
