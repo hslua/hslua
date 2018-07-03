@@ -24,7 +24,9 @@ THE SOFTWARE.
 module Test.HsLua.Util
   ( assertLuaBool
   , pushLuaExpr
+  , shouldBeErrorMessageOf
   , shouldBeResultOf
+  , shouldHoldForResultOf
   , (=:)
   , (?:)
   ) where
@@ -44,6 +46,24 @@ shouldBeResultOf expected luaOp = do
     Left (LuaException msg) -> assertFailure $ "Lua operation failed with "
                                ++ "message: '" ++ msg ++ "'"
     Right res -> res @?= expected
+
+shouldBeErrorMessageOf :: Show a => String -> Lua a -> Assertion
+shouldBeErrorMessageOf expectedErrMsg luaOp = do
+  errOrRes <- runLuaEither luaOp
+  case errOrRes of
+    Left (LuaException msg) -> msg @?= expectedErrMsg
+    Right res ->
+      assertFailure ("Lua operation succeeded unexpectedly and returned "
+                     ++ show res)
+
+shouldHoldForResultOf :: Show a => (a -> Bool) -> Lua a -> Assertion
+shouldHoldForResultOf predicate luaOp = do
+  errOrRes <- runLuaEither luaOp
+  case errOrRes of
+    Left (LuaException msg) -> assertFailure $ "Lua operation failed with "
+                               ++ "message: '" ++ msg ++ "'"
+    Right res -> assertBool ("predicate doesn't hold for " ++ show res)
+                            (predicate res)
 
 assertLuaBool :: Lua Bool -> Assertion
 assertLuaBool luaOp = assertBool "" =<< runLua luaOp

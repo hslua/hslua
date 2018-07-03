@@ -442,6 +442,11 @@ foreign import capi "lauxlib.h luaL_loadfile"
 foreign import capi SAFTY "lauxlib.h luaL_loadbuffer"
   luaL_loadbuffer :: LuaState -> Ptr CChar -> CSize -> CString -> IO StatusCode
 
+-- | See <https://www.lua.org/manual/5.3/manual.html#luaL_tolstring luaL_tolstring>
+foreign import ccall safe "safer-api.h hsluaL_tolstring"
+  hsluaL_tolstring :: LuaState -> StackIndex -> Ptr CSize -> IO (Ptr CChar)
+
+
 --------------------------------------------------------------------------------
 -- * Error transformation (Haskell to Lua)
 foreign import ccall "safer-api.h &hslua_call_hs"

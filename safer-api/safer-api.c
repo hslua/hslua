@@ -267,3 +267,30 @@ int hslua_next(lua_State *L, int index)
   /* success */
   return (lua_gettop(L) - oldsize + 1); /* correct for popped value */
 }
+
+
+/*
+** Auxiliary Library
+*/
+
+/*
+** tolstring'
+*/
+int hsluaL__tolstring(lua_State *L)
+{
+  luaL_tolstring(L, 1, NULL);
+  return 1;
+}
+
+const char *hsluaL_tolstring(lua_State *L, int index, size_t *len)
+{
+  lua_pushvalue(L, index);
+  lua_pushcfunction(L, hsluaL__tolstring);
+  lua_insert(L, -2);
+  int res = lua_pcall(L, 1, 1, 0);
+  if (res != 0) {
+    /* error */
+    return NULL;
+  }
+  return lua_tolstring(L, -1, len);
+}

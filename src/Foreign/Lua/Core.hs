@@ -182,6 +182,7 @@ module Foreign.Lua.Core (
   , dostring
   , dofile
   , newmetatable
+  , tostring'
   , ref
   , unref
   -- * Error handling
@@ -1277,6 +1278,22 @@ tostring n = liftLua $ \l -> alloca $ \lenPtr -> do
   cstr <- lua_tolstring l n lenPtr
   cstrLen <- F.peek lenPtr
   B.packCStringLen (cstr, fromIntegral cstrLen)
+
+-- | Converts any Lua value at the given index to a @'ByteString'@ in a
+-- reasonable format. The resulting string is pushed onto the stack and also
+-- returned by the function.
+--
+-- If the value has a metatable with a @__tostring@ field, then @tolstring'@
+-- calls the corresponding metamethod with the value as argument, and uses the
+-- result of the call as its result.
+tostring' :: StackIndex -> Lua B.ByteString
+tostring' n = liftLua $ \l -> alloca $ \lenPtr -> do
+  cstr <- hsluaL_tolstring l n lenPtr
+  if cstr == nullPtr
+    then runLuaWith l throwTopMessageAsError
+    else do
+      cstrLen <- F.peek lenPtr
+      B.packCStringLen (cstr, fromIntegral cstrLen)
 
 -- | Converts the value at the given index to a Lua thread (represented as
 -- lua_State*). This value must be a thread; otherwise, the function returns

@@ -40,7 +40,8 @@ import Control.Monad (forM_)
 import Data.Monoid ((<>))
 import Foreign.Lua as Lua
 import Test.HsLua.Arbitrary ()
-import Test.HsLua.Util ((?:), (=:), shouldBeResultOf, pushLuaExpr)
+import Test.HsLua.Util ( (?:), (=:), shouldBeErrorMessageOf, shouldBeResultOf
+                       , shouldHoldForResultOf, pushLuaExpr )
 import Test.QuickCheck (Property, (.&&.))
 import Test.QuickCheck.Monadic (assert, monadicIO, run)
 import Test.Tasty (TestTree, testGroup)
@@ -48,7 +49,10 @@ import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
 import Test.Tasty.QuickCheck (testProperty)
 
 import qualified Prelude
+import qualified Data.ByteString as BS
 import qualified Foreign.Lua.Core.RawBindings as LuaRaw
+import qualified Foreign.Marshal as Foreign
+import qualified Foreign.Ptr as Foreign
 
 
 -- | Specifications for Attributes parsing functions.
@@ -190,6 +194,46 @@ tests = testGroup "Haskell version of the C API"
       liftIO . runLuaWith co $ do
         liftIO . assertEqual "yielding will put thread status to Yield" Yield
           =<< status
+
+  , testGroup "auxiliary functions"
+    [ testGroup "tostring'"
+      [ "integers are converted in base10" =:
+        "5" `shouldBeResultOf` do
+          pushinteger 5
+          tostring' stackTop
+
+      , "a nil value is converted into the literal string 'nil'" =:
+        "nil" `shouldBeResultOf` do
+          pushnil
+          tostring' stackTop
+
+      , "strings are returned verbatim" =:
+        "Hello\NULWorld" `shouldBeResultOf` do
+          pushstring "Hello\NULWorld"
+          tostring' stackTop
+
+      , "string for userdata shows the pointer value" =:
+        ("userdata: 0x" `BS.isPrefixOf`) `shouldHoldForResultOf` do
+          l <- luaState
+          liftIO . Foreign.alloca $ \ptr ->
+            runLuaWith l (pushlightuserdata (ptr :: Foreign.Ptr Int))
+          tostring' stackTop
+
+      , "string is also pushed to the stack" =:
+        "true" `shouldBeResultOf` do
+          pushboolean True
+          _ <- tostring' stackTop
+          tostring stackTop  -- note the use of tostring instead of tostring'
+
+      , "errors during metamethod execution are caught" =:
+        "'__tostring' must return a string" `shouldBeErrorMessageOf` do
+          -- create a table with a faulty `__tostring` metamethod
+          let mt = "{__tostring = function() return nil end }"
+          let tbl = "return setmetatable({}, " <> mt <> ")"
+          openlibs <* dostring tbl
+          tostring' stackTop
+      ]
+    ]
 
   , testGroup "loading"
     [ testGroup "loadstring"
