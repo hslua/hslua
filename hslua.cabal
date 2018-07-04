@@ -59,8 +59,8 @@ flag export-dynamic
   default:              True
 
 flag pkg-config
-  description:          Build using pkg-config to discover library and include
-                        paths. This is only used with system-lua.
+  description:          Use @pkg-config@ to discover library and include paths.
+                        Setting this flag implies `system-lua`.
 
   default:              False
 
@@ -91,7 +91,7 @@ library
                       , LambdaCase
   c-sources:            safer-api/safer-api.c
   include-dirs:         safer-api
-  if flag(system-lua)
+  if flag(system-lua) || flag(pkg-config)
     if flag(pkg-config)
       pkgconfig-depends: lua5.3
     else
