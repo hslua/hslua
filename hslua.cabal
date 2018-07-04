@@ -58,8 +58,10 @@ flag export-dynamic
                         but renders loading of dynamic C libraries impossible.
   default:              True
 
-flag use-pkgconfig
-  description:          Build using pkg-config to discover library and include paths. This is only used with system-lua and luajit.
+flag pkg-config
+  description:          Build using pkg-config to discover library and include
+                        paths. This is only used with system-lua.
+
   default:              False
 
 library
@@ -90,7 +92,7 @@ library
   c-sources:            safer-api/safer-api.c
   include-dirs:         safer-api
   if flag(system-lua)
-    if flag(use-pkgconfig)
+    if flag(pkg-config)
       pkgconfig-depends: lua5.3
     else
       extra-libraries:  lua

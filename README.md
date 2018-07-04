@@ -112,8 +112,8 @@ The following cabal build flags are supported:
 - `system-lua`: Use the locally installed Lua version instead of the version
   shipped as part of HsLua.
 
-- `use-pkgconfig`: Use `pkg-config` to discover library and include paths. This
-  is used only when the `system-lua` flag is set or implied.
+- `pkg-config`: Use *pkg-config* to discover library and include paths. This
+  is used only when the `system-lua` flag is set.
 
 - `allow-unsafe-gc`: Allow optimizations which make Lua's garbage collection
   potentially unsafe; haskell finalizers must be handled with extreme care. This
