@@ -21,10 +21,9 @@ used everywhere from servers over games and desktop applications up to security
 software and embedded devices. This package provides Haskell bindings to Lua,
 enable coders to embed the language into their programs, making them scriptable.
 
-HsLua ships with batteries included and includes the most recent Lua version.
-However, cabal flags make it easy to swap this out in favor of a Lua version
-already installed on the host system. It supports the versions 5.1, 5.2, 5.3,
-and LuaJIT.
+HsLua ships with batteries included and includes the most recent Lua version
+(i.e., Lua 5.3.4). Cabal flags make it easy to compile against a system-wide Lua
+installation.
 
 
 Interacting with Lua
@@ -84,7 +83,7 @@ Conversion between Haskell and Lua values is governed by two type classes:
 
 ``` haskell
 -- | A value that can be read from the Lua stack.
-class FromLuaStack a where
+class Retrievable a where
   -- | Check if at index @n@ there is a convertible Lua value and
   --   if so return it.  Throws a @'LuaException'@ otherwise.
   peek :: StackIndex -> Lua a
@@ -102,7 +101,7 @@ class Pushable a where
 
 Many basic data types (except for numeric types, see the FAQ) have instances for
 these type classes. New instances can be defined for custom types using the
-functions in `Foreign.Lua.Api` (also exported in `Foreign.Lua`).
+functions in `Foreign.Lua.Core` (also exported in `Foreign.Lua`).
 
 
 Build flags
@@ -116,12 +115,6 @@ The following cabal build flags are supported:
 - `use-pkgconfig`: Use `pkg-config` to discover library and include paths. This
   is used only when the `system-lua` flag is set or implied.
 
-- `lua501`: Build against Lua 5.1; this implies the flag `system-lua` as well.
-
-- `lua502`: Build against Lua 5.2; this implies the flag `system-lua` as well.
-
-- `luajit`: Build against LuaJIT; this implies the flag `system-lua` as well.
-
 - `allow-unsafe-gc`: Allow optimizations which make Lua's garbage collection
   potentially unsafe; haskell finalizers must be handled with extreme care. This
   is *enabled* per default, as this is rarely a problem in practice.
@@ -134,44 +127,44 @@ The following cabal build flags are supported:
 ### Example: using a different lua version
 
 To use a system-wide installed Lua/LuaJIT when linking hslua as a dependency,
-build/install your package using `--constraint="hslua +system-lua"` or for
-LuaJIT: `--constraint="hslua +luajit"`. For example, you can install Pandoc with
-hslua that uses system-wide LuaJIT like this:
+build/install your package using `--constraint="hslua +system-lua"`. For
+example, you can install Pandoc with hslua that uses system-wide Lua like this:
 
 ``` sh
-cabal install pandoc --constraint="hslua +system-lua +luajit"
+cabal install pandoc --constraint="hslua +system-lua"
 ```
 
 or with stack:
 
 ``` sh
-stack install pandoc --flag=hslua:luajit
+stack install pandoc --flag=hslua:system-lua
 ```
 
 
-FAQ
+Q&A
 ---
 
-**Is anybody using this?** Absolutely. E.g., [Pandoc](https://pandoc.org), the
-universal document converter, is written in Haskell and includes a Lua
-interpreter, enabling programmatic modifications of documents via Lua.
-Furthermore, custom output formats can be defined via Lua scripts. This has been
-used in [pandoc-scholar](https://github.com/pandoc-scholar/pandoc-scholar)
-([paper](https://peerj.com/articles/cs-112/)) to allow for semantically enriched
-scholarly articles.
+- **Can I see some examples?** Basic examples are available in the
+    [*hslua-examples*](https://github.com/hslua/hslua-examples) repository.
 
-**Where are the coroutine related functions?** Yielding from a coroutine works
-via `longjmp`, which plays very badly with Haskell's RTS. Tests to get
-coroutines working with HsLua were unsuccessful. No coroutine related functions
-are exported from the default module for that reason. However, raw bindings to
-the C API functions are still provided in `Foreign.Lua.RawBindings`. If you get
-coroutines to work, or just believe that there should be wrapper functions for
-other reasons, we'd love to hear from you.
+    A big project build with hslua is [Pandoc](https://pandoc.org), the
+    universal document converter. It is written in Haskell and includes a Lua
+    interpreter, enabling programmatic modifications of documents via Lua.
+    Furthermore, custom output formats can be defined via Lua scripts.
 
-**Why are there no predefined stack instances for default numerical types?**
-HsLua defines instances for the `FromLuaStack` and `Pushable` type-classes
-only if the following law holds: `return x == push x *> peek x`. Lua can be
-compiled with customized number types, making it impossible to verify the
-correctness of the above equation. Furthermore, instances for numerical types
-can be based on those of LuaInteger and LuaNumber and are easy to write.
-Therefor hslua doesn't provide any such instances.
+- **Where are the coroutine related functions?** Yielding from a coroutine works
+    via `longjmp`, which plays very badly with Haskell's RTS. Tests to get
+    coroutines working with HsLua were unsuccessful. No coroutine related
+    functions are exported from the default module for that reason. Pull
+    requests intended to fix this are very welcome.
+
+- **Why are there no predefined stack instances for default numerical types?**
+    HsLua defines instances for the `Retrievable` and `Pushable` type-classes
+    only if the following law holds: `return x == push x *> peek x`. Lua can be
+    configured during compilation to use longer or shorter number types, e.g. by
+    setting the 32-bits flag. This makes it impossible to verify the correctness
+    of the above equation for any fixed numeric Haskell type.
+
+    Instances for numerical types can be based on those of LuaInteger and
+    LuaNumber and are easy to write. Therefore, hslua doesn't provide any such
+    instances.
