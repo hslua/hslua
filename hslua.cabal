@@ -13,7 +13,7 @@ description:         The Foreign.Lua module is a wrapper of Lua language
 homepage:            https://github.com/hslua/hslua
 bug-reports:         https://github.com/hslua/hslua/issues
 license:             MIT
-license-file:        COPYRIGHT
+license-file:        LICENSE
 author:              Gracjan Polak, Ömer Sinan Ağacan
 maintainer:          albert+hslua@zeitkraut.de
 copyright:           © 2007–2012 Gracjan Polak
