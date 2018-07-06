@@ -57,13 +57,13 @@ import Foreign.Ptr (Ptr)
 import qualified Data.Set as Set
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
-import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString.Char8 as Char8
 import qualified Data.ByteString.Lazy as BL
 
 -- | Result returned when trying to get a value from the lua stack.
 data Result a
   = Success a
-  | Error [BS.ByteString]
+  | Error [ByteString]
   deriving (Eq, Functor, Show)
 
 instance Applicative Result where
@@ -82,7 +82,7 @@ instance Monad Result where
 force :: Result a -> Lua a
 force (Success x) = return x
 force (Error ctx) = throwLuaError .
-  mconcat $ map BS.unpack ctx
+  mconcat $ map Char8.unpack ctx
 
 -- | Use @test@ to check whether the value at stack index @n@ has the correct
 -- type and use @peekfn@ to convert it to a haskell value if possible. A
@@ -100,7 +100,7 @@ typeChecked expectedType test peekfn n = do
     else do
       actual <- ltype n >>= typename
       let msg = "Expected a " <> expectedType <> " but got a " <> actual
-      return (Error [BS.pack msg])
+      return (Error [Char8.pack msg])
 
 typeChecked' :: String
              -> (StackIndex -> Lua Bool)
@@ -118,7 +118,7 @@ class Retrievable a where
     res <- tryLua (peek n)
     case res of
       Right x -> return $ Success x
-      Left (LuaException err) -> return $ Error [BS.pack err]
+      Left (LuaException err) -> return $ Error [Char8.pack err]
 
   -- | Check if at index @n@ there is a convertible Lua value and if so return
   -- it.  Throws a @'LuaException'@ otherwise.
@@ -130,7 +130,7 @@ class Retrievable a where
 peekEither :: Retrievable a => StackIndex -> Lua (Either String a)
 peekEither idx = safePeek idx >>= \case
   Success x -> return $ Right x
-  Error msgs -> return . Left . mconcat $ map BS.unpack msgs
+  Error msgs -> return . Left . mconcat $ map Char8.unpack msgs
 
 instance Retrievable () where
   safePeek = typeChecked' "nil" isnil (const $ return ())
@@ -223,7 +223,7 @@ inContext ctx op = do
   res <- op
   case res of
     Success _ -> return res
-    Error msgs -> return $ Error (BS.pack ctx : msgs)
+    Error msgs -> return $ Error (Char8.pack ctx : msgs)
 
 --
 -- Tuples

@@ -36,7 +36,7 @@ import Test.HsLua.Util ((?:), pushLuaExpr)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
 
-import qualified Data.ByteString.Char8 as B
+import qualified Data.ByteString.Char8 as Char8
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 
@@ -123,7 +123,7 @@ tests = testGroup "lua integration tests"
 
     , testCase "ByteString should survive after GC/Lua destroyed" $ do
         (val, val') <- runLua $ do
-          let v = B.pack "ByteString should survive"
+          let v = Char8.pack "ByteString should survive"
           pushstring v
           v' <- tostring 1
           pop 1
@@ -132,9 +132,9 @@ tests = testGroup "lua integration tests"
         assertEqual "Popped a different value or pop failed" val val'
     , testCase "String with NUL byte should be pushed/popped correctly" $ do
         let str = "A\NULB"
-        str' <- runLua $ pushstring (B.pack str) *> tostring 1
+        str' <- runLua $ pushstring (Char8.pack str) *> tostring 1
         assertEqual "Popped string is different than what's pushed"
-          str (B.unpack str')
+          str (Char8.unpack str')
     ]
 
   , testGroup "luaopen_* functions" $ map (uncurry testOpen)

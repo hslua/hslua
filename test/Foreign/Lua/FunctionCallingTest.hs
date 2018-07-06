@@ -23,7 +23,6 @@ THE SOFTWARE.
 module Foreign.Lua.FunctionCallingTest (tests) where
 
 import Control.Monad (forM_)
-import Data.ByteString.Char8 (pack, unpack)
 import Foreign.Lua.Core
 import Foreign.Lua.Types (Result (Error, Success))
 import Foreign.Lua.FunctionCalling (callFunc, peek, registerHaskellFunction,
@@ -32,6 +31,7 @@ import Foreign.Lua.Util (runLua)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
 
+import Data.ByteString.Char8 as Char8
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
@@ -71,7 +71,7 @@ tests = testGroup "Interoperability"
             registerHaskellFunction "integerOp" integerOperation
             loadstring "return integerOp(23, true)" *> call 0 2
             err <- tostring (-1) <* pop 2 -- pop HSLUA_ERR
-            return (unpack err)
+            return (Char8.unpack err)
 
           errMsg = "Error during function call: could not read "
                    ++ "argument 2: Expected a number but got a boolean"
@@ -111,22 +111,22 @@ tests = testGroup "Interoperability"
       assertEqual "unexpected result" (Left (LuaException "foo")) =<<
       let luaOp = do
              openlibs
-             callFunc "assert" False (pack "foo") :: Lua (Result Bool)
+             callFunc "assert" False (Char8.pack "foo") :: Lua (Result Bool)
       in runLua (tryLua luaOp)
 
     , testCase "print the empty string via lua procedure" $
       assertEqual "raw equality test failed" (Success ()) =<<
-      runLua (openlibs *> callFunc "print" (pack ""))
+      runLua (openlibs *> callFunc "print" (Char8.pack ""))
 
     , testCase "failing lua procedure call" $
       assertEqual "unexpected result" (Left (LuaException "foo")) =<<
-      let luaOp = (openlibs *> callFunc "error" (pack "foo") :: Lua (Result ()))
+      let luaOp = (openlibs *> callFunc "error" (Char8.pack "foo") :: Lua (Result ()))
       in runLua (tryLua luaOp)
 
     , testCase "Error result when Lua-to-Haskell result conversion fails" $ do
         luaRes <- runLua $ do
           openlibs
-          callFunc "rawequal" (pack "a") () :: Lua (Result String)
+          callFunc "rawequal" (Char8.pack "a") () :: Lua (Result String)
         let msg = pack "Expected a string but got a boolean"
         assertEqual "raw equality test failed" (Error [msg]) luaRes
     ]

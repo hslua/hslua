@@ -268,6 +268,7 @@ import Prelude hiding (EQ, LT, compare, concat, error)
 import qualified Prelude
 
 import Control.Monad
+import Data.ByteString (ByteString)
 import Data.Maybe (fromMaybe)
 import Foreign.C
 import Foreign.Lua.Core.Constants
@@ -279,7 +280,7 @@ import Foreign.Ptr
 
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Unsafe as B
-import qualified Data.ByteString.Char8 as BC
+import qualified Data.ByteString.Char8 as Char8
 import qualified Foreign.Storable as F
 
 --
@@ -313,8 +314,8 @@ throwTopMessageAsError' msgMod = do
            TypeNil -> return "nil"
            TypeBoolean -> show <$> toboolean (-1)
            TypeLightUserdata -> showPointer
-           TypeNumber -> BC.unpack <$> tostring (-1)
-           TypeString -> BC.unpack <$> tostring (-1)
+           TypeNumber -> Char8.unpack <$> tostring (-1)
+           TypeString -> Char8.unpack <$> tostring (-1)
            TypeTable  -> tryTostringMetaMethod
            TypeFunction -> showPointer
            TypeThread -> showPointer
@@ -330,14 +331,14 @@ throwTopMessageAsError' msgMod = do
       then showPointer
       else do
         -- push getmetatable(t).__tostring
-        pushstring (BC.pack "__tostring") *> rawget (-2)
+        pushstring (Char8.pack "__tostring") *> rawget (-2)
         remove (-2)              -- remove metatable from stack
         isFn <- isfunction (-1)
         if isFn
           then do
             insert (-2)
             call 1 1
-            BC.unpack <$> tostring (-1)
+            Char8.unpack <$> tostring (-1)
           else pop 1 *> showPointer
 
 -- | Convert a Haskell function userdata object into a CFuntion. The userdata
@@ -755,7 +756,7 @@ load reader data' name = liftLua $ \l ->
 -- used for debug information and error messages.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadbuffer luaL_loadbuffer>.
-loadbuffer :: B.ByteString -> String -> Lua Status
+loadbuffer :: ByteString -> String -> Lua Status
 loadbuffer bs name = liftLua $ \l ->
   B.useAsCStringLen bs $ \(str, len) ->
   withCString name $ \namePtr ->
@@ -769,7 +770,7 @@ loadfile f = liftLua $ \l ->
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadstring>.
 loadstring :: String -> Lua Status
-loadstring str = loadbuffer (BC.pack str) (filter (/= '\NUL') str)
+loadstring str = loadbuffer (Char8.pack str) (filter (/= '\NUL') str)
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>.
 ltype :: StackIndex -> Lua Type
@@ -1007,7 +1008,7 @@ pushnumber = liftLua1 lua_pushnumber
 --
 -- See also: <https://www.lua.org/manual/5.3/manual.html#lua_pushstring \
 -- lua_pushstring>.
-pushstring :: B.ByteString -> Lua ()
+pushstring :: ByteString -> Lua ()
 pushstring s = liftLua $ \l ->
   B.unsafeUseAsCStringLen s $ \(sPtr, z) -> lua_pushlstring l sPtr (fromIntegral z)
 
@@ -1271,7 +1272,7 @@ topointer :: StackIndex -> Lua (Ptr ())
 topointer n = liftLua $ \l -> lua_topointer l n
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tostring lua_tostring>.
-tostring :: StackIndex -> Lua B.ByteString
+tostring :: StackIndex -> Lua ByteString
 tostring n = liftLua $ \l -> alloca $ \lenPtr -> do
   cstr <- lua_tolstring l n lenPtr
   cstrLen <- F.peek lenPtr
