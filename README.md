@@ -83,7 +83,7 @@ Conversion between Haskell and Lua values is governed by two type classes:
 
 ``` haskell
 -- | A value that can be read from the Lua stack.
-class Retrievable a where
+class Peekable a where
   -- | Check if at index @n@ there is a convertible Lua value and
   --   if so return it.  Throws a @'LuaException'@ otherwise.
   peek :: StackIndex -> Lua a
@@ -159,7 +159,7 @@ Q&A
     requests intended to fix this are very welcome.
 
 - **Why are there no predefined stack instances for default numerical types?**
-    HsLua defines instances for the `Retrievable` and `Pushable` type-classes
+    HsLua defines instances for the `Peekable` and `Pushable` type-classes
     only if the following law holds: `return x == push x *> peek x`. Lua can be
     configured during compilation to use longer or shorter number types, e.g. by
     setting the 32-bits flag. This makes it impossible to verify the correctness

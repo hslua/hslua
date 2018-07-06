@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
 {-|
-Module      :  Foreign.Lua.Types.RetrievableTest
+Module      :  Foreign.Lua.Types.PeekableTest
 Copyright   :  © 2017-2018 Albert Krewinkel
 License     :  MIT
 
@@ -30,7 +30,7 @@ Portability :  portable
 
 Test for the conversion of lua values to haskell values.
 -}
-module Foreign.Lua.Types.RetrievableTest (tests) where
+module Foreign.Lua.Types.PeekableTest (tests) where
 
 import Foreign.Lua
 
@@ -40,7 +40,7 @@ import Test.HsLua.Util (pushLuaExpr)
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
-tests = testGroup "Retrievable"
+tests = testGroup "Peekable"
   [ testCase "receives basic values from the stack" $ do
       assertEqual "true was not read" True =<< runLua
         (loadstring "return true" *> call 0 1 *> peek (-1))

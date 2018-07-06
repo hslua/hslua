@@ -31,9 +31,9 @@ Portability : ForeignFunctionInterface, GeneralizedNewtypeDeriving,
 Types for working with Lua.
 -}
 module Foreign.Lua.Types
-  ( module Foreign.Lua.Types.Retrievable
+  ( module Foreign.Lua.Types.Peekable
   , module Foreign.Lua.Types.Pushable
   ) where
 
-import Foreign.Lua.Types.Retrievable
+import Foreign.Lua.Types.Peekable
 import Foreign.Lua.Types.Pushable

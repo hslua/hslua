@@ -27,7 +27,7 @@ THE SOFTWARE.
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
-Module      : Foreign.Lua.Types.Retrievable
+Module      : Foreign.Lua.Types.Peekable
 Copyright   : © 2007–2012 Gracjan Polak,
                 2012–2016 Ömer Sinan Ağacan,
                 2017-2018 Albert Krewinkel
@@ -38,8 +38,8 @@ Portability : FlexibleInstances, ScopedTypeVariables
 
 Sending haskell objects to the lua stack.
 -}
-module Foreign.Lua.Types.Retrievable
-  ( Retrievable (..)
+module Foreign.Lua.Types.Peekable
+  ( Peekable (..)
   , peekEither
   , pairsFromTable
   , toList
@@ -110,7 +110,7 @@ typeChecked' expectedType test peekfn =
   typeChecked expectedType test (fmap return . peekfn)
 
 -- | A value that can be read from the Lua stack.
-class Retrievable a where
+class Peekable a where
   -- | Returns either the value at index @n@ of the Lua stack or a error
   -- message.
   safePeek :: StackIndex -> Lua (Result a)
@@ -127,56 +127,56 @@ class Retrievable a where
 
 -- | Try to convert the value at the given stack index to a haskell value.
 -- Returns @Left@ with an error message on failure.
-peekEither :: Retrievable a => StackIndex -> Lua (Either String a)
+peekEither :: Peekable a => StackIndex -> Lua (Either String a)
 peekEither idx = safePeek idx >>= \case
   Success x -> return $ Right x
   Error msgs -> return . Left . mconcat $ map Char8.unpack msgs
 
-instance Retrievable () where
+instance Peekable () where
   safePeek = typeChecked' "nil" isnil (const $ return ())
 
-instance Retrievable LuaInteger where
+instance Peekable LuaInteger where
   safePeek = typeChecked' "number" isnumber tointeger
 
-instance Retrievable LuaNumber where
+instance Peekable LuaNumber where
   safePeek = typeChecked' "number" isnumber tonumber
 
-instance Retrievable ByteString where
+instance Peekable ByteString where
   safePeek = typeChecked' "string" isstring tostring
 
-instance Retrievable Bool where
+instance Peekable Bool where
   safePeek = typeChecked' "boolean" isboolean toboolean
 
-instance Retrievable CFunction where
+instance Peekable CFunction where
   safePeek = typeChecked' "C function" iscfunction tocfunction
 
-instance Retrievable (Ptr a) where
+instance Peekable (Ptr a) where
   safePeek = typeChecked' "user data" isuserdata touserdata
 
-instance Retrievable LuaState where
+instance Peekable LuaState where
   safePeek = typeChecked' "LuaState (i.e., a thread)" isthread tothread
 
-instance Retrievable T.Text where
+instance Peekable T.Text where
   safePeek = fmap (fmap T.decodeUtf8) . safePeek
 
-instance Retrievable BL.ByteString where
+instance Peekable BL.ByteString where
   safePeek = fmap (fmap BL.fromStrict) . safePeek
 
-instance {-# OVERLAPS #-} Retrievable [Char] where
+instance {-# OVERLAPS #-} Peekable [Char] where
   safePeek = fmap (fmap T.unpack) . safePeek
 
-instance Retrievable a => Retrievable [a] where
+instance Peekable a => Peekable [a] where
   safePeek = typeChecked "table" istable toList
 
-instance (Ord a, Retrievable a, Retrievable b) => Retrievable (Map a b) where
+instance (Ord a, Peekable a, Peekable b) => Peekable (Map a b) where
   safePeek idx = fmap fromList <$> pairsFromTable idx
 
-instance (Ord a, Retrievable a) => Retrievable (Set a) where
+instance (Ord a, Peekable a) => Peekable (Set a) where
   safePeek idx =
     fmap (Set.fromList . map fst . filter snd) <$> pairsFromTable idx
 
 -- | Read a table into a list
-toList :: Retrievable a => StackIndex -> Lua (Result [a])
+toList :: Peekable a => StackIndex -> Lua (Result [a])
 toList n = inContext "Could not read list: " $
   go . enumFromTo 1 . fromIntegral =<< rawlen n
  where
@@ -188,7 +188,7 @@ toList n = inContext "Could not read list: " $
       Error msgs -> return (Error msgs)
 
 -- | Read a table into a list of pairs.
-pairsFromTable :: (Retrievable a, Retrievable b)
+pairsFromTable :: (Peekable a, Peekable b)
                => StackIndex -> Lua (Result [(a, b)])
 pairsFromTable idx =
   inContext "Could not read key-value pairs: " $ do
@@ -206,7 +206,7 @@ pairsFromTable idx =
 
 -- | Get the next key-value pair from a table. Assumes the last key to be on the
 -- top of the stack and the table at the given index @idx@.
-nextPair :: (Retrievable a, Retrievable b)
+nextPair :: (Peekable a, Peekable b)
          => StackIndex -> Lua (Maybe (Result (a, b)))
 nextPair idx = do
   hasNext <- next idx
@@ -229,14 +229,14 @@ inContext ctx op = do
 -- Tuples
 --
 
-instance (Retrievable a, Retrievable b) => Retrievable (a, b) where
+instance (Peekable a, Peekable b) => Peekable (a, b) where
   safePeek idx = do
     a <- rawgeti idx 1 *> safePeek (-1) <* pop 1
     b <- rawgeti idx 2 *> safePeek (-1) <* pop 1
     return $ (,) <$> a <*> b
 
-instance (Retrievable a, Retrievable b, Retrievable c) =>
-         Retrievable (a, b, c)
+instance (Peekable a, Peekable b, Peekable c) =>
+         Peekable (a, b, c)
  where
   safePeek idx = do
     pushvalue idx
@@ -246,8 +246,8 @@ instance (Retrievable a, Retrievable b, Retrievable c) =>
     pop 4
     return $ (,,) <$> a <*> b <*> c
 
-instance (Retrievable a, Retrievable b, Retrievable c, Retrievable d) =>
-         Retrievable (a, b, c, d)
+instance (Peekable a, Peekable b, Peekable c, Peekable d) =>
+         Peekable (a, b, c, d)
  where
   safePeek idx = do
     pushvalue idx
@@ -258,9 +258,9 @@ instance (Retrievable a, Retrievable b, Retrievable c, Retrievable d) =>
     pop 5
     return $ (,,,) <$> a <*> b <*> c <*> d
 
-instance (Retrievable a, Retrievable b, Retrievable c,
-          Retrievable d, Retrievable e) =>
-         Retrievable (a, b, c, d, e)
+instance (Peekable a, Peekable b, Peekable c,
+          Peekable d, Peekable e) =>
+         Peekable (a, b, c, d, e)
  where
   safePeek idx = do
     pushvalue idx
@@ -272,9 +272,9 @@ instance (Retrievable a, Retrievable b, Retrievable c,
     pop 6
     return $ (,,,,) <$> a <*> b <*> c <*> d <*> e
 
-instance (Retrievable a, Retrievable b, Retrievable c,
-          Retrievable d, Retrievable e, Retrievable f) =>
-         Retrievable (a, b, c, d, e, f)
+instance (Peekable a, Peekable b, Peekable c,
+          Peekable d, Peekable e, Peekable f) =>
+         Peekable (a, b, c, d, e, f)
  where
   safePeek idx = do
     pushvalue idx
@@ -287,9 +287,9 @@ instance (Retrievable a, Retrievable b, Retrievable c,
     pop 7
     return $ (,,,,,) <$> a <*> b <*> c <*> d <*> e <*> f
 
-instance (Retrievable a, Retrievable b, Retrievable c, Retrievable d,
-          Retrievable e, Retrievable f, Retrievable g) =>
-         Retrievable (a, b, c, d, e, f, g)
+instance (Peekable a, Peekable b, Peekable c, Peekable d,
+          Peekable e, Peekable f, Peekable g) =>
+         Peekable (a, b, c, d, e, f, g)
  where
   safePeek idx = do
     pushvalue idx
@@ -303,9 +303,9 @@ instance (Retrievable a, Retrievable b, Retrievable c, Retrievable d,
     pop 8
     return $ (,,,,,,) <$> a <*> b <*> c <*> d <*> e <*> f <*> g
 
-instance (Retrievable a, Retrievable b, Retrievable c, Retrievable d,
-          Retrievable e, Retrievable f, Retrievable g, Retrievable h) =>
-         Retrievable (a, b, c, d, e, f, g, h)
+instance (Peekable a, Peekable b, Peekable c, Peekable d,
+          Peekable e, Peekable f, Peekable g, Peekable h) =>
+         Peekable (a, b, c, d, e, f, g, h)
  where
   safePeek idx = do
     pushvalue idx
@@ -321,7 +321,7 @@ instance (Retrievable a, Retrievable b, Retrievable c, Retrievable d,
     return $ (,,,,,,,) <$> a <*> b <*> c <*> d <*> e <*> f <*> g <*> h
 
 -- | Helper function to get the nth table value
-getTableIndex :: Retrievable b => LuaInteger -> Lua (Result b)
+getTableIndex :: Peekable b => LuaInteger -> Lua (Result b)
 getTableIndex key = do
   let idx = nthFromTop (fromIntegral key)
   rawgeti idx key

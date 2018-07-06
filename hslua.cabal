@@ -79,7 +79,7 @@ library
                      , Foreign.Lua.Core.Types
                      , Foreign.Lua.FunctionCalling
                      , Foreign.Lua.Types
-                     , Foreign.Lua.Types.Retrievable
+                     , Foreign.Lua.Types.Peekable
                      , Foreign.Lua.Types.Pushable
                      , Foreign.Lua.Util
   build-depends:       base       >= 4.8    && < 5
@@ -180,7 +180,7 @@ test-suite test-hslua
                      , Foreign.Lua.CoreTest
                      , Foreign.Lua.FunctionCallingTest
                      , Foreign.Lua.TypesTest
-                     , Foreign.Lua.Types.RetrievableTest
+                     , Foreign.Lua.Types.PeekableTest
                      , Foreign.Lua.Types.PushableTest
                      , Foreign.Lua.UtilTest
                      , Test.HsLua.Arbitrary

@@ -114,7 +114,7 @@ raiseError e = do
 -- would be the likely result.
 newtype Optional a = Optional { fromOptional :: Maybe a }
 
-instance Retrievable a => Retrievable (Optional a) where
+instance Peekable a => Peekable (Optional a) where
   safePeek idx = do
     noValue <- isnoneornil idx
     if noValue
