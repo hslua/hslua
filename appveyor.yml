@@ -6,7 +6,7 @@ environment:
     - STACK_VERSION: "windows-i386"
       STACK_ROOT: "c:\\sr32"
       STACK: "%STACK_ROOT%\\stack.exe"
-      STACK_FLAGS: "--flag hslua:lua_32bits"
+      STACK_FLAGS: ""
     - STACK_VERSION: "windows-x86_64"
       STACK_ROOT: "c:\\sr64"
       STACK: "%STACK_ROOT%\\stack.exe"
