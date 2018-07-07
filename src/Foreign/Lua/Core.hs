@@ -266,7 +266,6 @@ module Foreign.Lua.Core (
   ) where
 
 import Prelude hiding (EQ, LT, compare, concat, error)
-import qualified Prelude
 
 import Control.Monad
 import Data.ByteString (ByteString)
@@ -310,37 +309,9 @@ throwTopMessageAsError = throwTopMessageAsError' id
 
 throwTopMessageAsError' :: (String -> String) -> Lua a
 throwTopMessageAsError' msgMod = do
-  ty <- ltype (-1)
-  msg <- case ty of
-           TypeNil -> return "nil"
-           TypeBoolean -> show <$> toboolean (-1)
-           TypeLightUserdata -> showPointer
-           TypeNumber -> Char8.unpack <$> tostring (-1)
-           TypeString -> Char8.unpack <$> tostring (-1)
-           TypeTable  -> tryTostringMetaMethod
-           TypeFunction -> showPointer
-           TypeThread -> showPointer
-           TypeUserdata -> showPointer
-           TypeNone -> Prelude.error "Error while receiving the error message!"
-  pop 1
-  throwLuaError (msgMod msg)
- where
-  showPointer = show <$> topointer (-1)
-  tryTostringMetaMethod = do
-    hasMT <- getmetatable (-1)
-    if not hasMT
-      then showPointer
-      else do
-        -- push getmetatable(t).__tostring
-        pushstring (Char8.pack "__tostring") *> rawget (-2)
-        remove (-2)              -- remove metatable from stack
-        isFn <- isfunction (-1)
-        if isFn
-          then do
-            insert (-2)
-            call 1 1
-            Char8.unpack <$> tostring (-1)
-          else pop 1 *> showPointer
+  msg <- tostring' stackTop
+  pop 2 -- remove error and error string pushed by tostring'
+  throwLuaError (msgMod (Char8.unpack msg))
 
 -- | Convert a Haskell function userdata object into a CFuntion. The userdata
 -- object must be at the top of the stack. Errors signaled via @'error'@ are
