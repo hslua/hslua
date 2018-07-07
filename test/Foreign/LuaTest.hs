@@ -123,7 +123,7 @@ tests = testGroup "lua integration tests"
 
     , testCase "ByteString should survive after GC/Lua destroyed" $ do
         (val, val') <- runLua $ do
-          let v = Char8.pack "ByteString should survive"
+          let v = "ByteString should survive"
           pushstring v
           v' <- tostring 1
           pop 1
@@ -213,14 +213,14 @@ tests = testGroup "lua integration tests"
 
     , testCase "calling a function that errors throws exception" $
       let msg = "error message"
-          luaCode = "return error('" ++ msg ++ "')"
-          err =  "[string \"" ++ luaCode ++ "\"]:1: " ++ msg
+          luaCode = "return error('" <> msg <> "')"
+          err =  "[string \"" <> luaCode <> "\"]:1: " <> msg
           errTest x = x == (Left (LuaException msg)) || -- LuaJIT
                       x == (Left (LuaException err))    -- default Lua
       in assertBool "problem in error" . errTest =<<
       (runLuaEither $ do
           openbase
-          res <- loadstring luaCode
+          res <- loadstring (Char8.unpack luaCode)
           when (res == OK) $ call 0 0)
     ]
   ]

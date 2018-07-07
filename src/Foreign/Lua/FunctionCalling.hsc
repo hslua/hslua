@@ -23,6 +23,7 @@ THE SOFTWARE.
 -}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
 Module      : Foreign.Lua.FunctionCalling
@@ -52,6 +53,7 @@ module Foreign.Lua.FunctionCalling
   ) where
 
 import Control.Monad (when)
+import Data.Monoid ((<>))
 import Foreign.C (CInt (..))
 import Foreign.Lua.Core
 import Foreign.Lua.Types
@@ -59,7 +61,7 @@ import Foreign.Lua.Util (getglobal', raiseError)
 import Foreign.Ptr (castPtr, freeHaskellFunPtr)
 import Foreign.StablePtr (deRefStablePtr, newStablePtr)
 
-import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString.Char8 as Char8
 import qualified Foreign.Storable as F
 
 -- | Type of raw haskell functions that can be made into 'CFunction's.
@@ -88,8 +90,8 @@ instance (Peekable a, ToHaskellFunction b) =>
       getArg = safePeek narg >>= \case
         Success x -> return x
         Error msg -> throwLuaError $ "could not read argument "
-                     ++ show (fromStackIndex narg) ++ ": "
-                     ++ mconcat (map BS.unpack msg)
+                     <> Char8.pack (show (fromStackIndex narg)) <> ": "
+                     <> mconcat msg
 
 -- | Convert a Haskell function to Lua function. Any Haskell function
 -- can be converted provided that:

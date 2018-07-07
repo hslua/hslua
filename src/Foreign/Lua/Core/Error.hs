@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
 {-# LANGUAGE DeriveDataTypeable         #-}
+{-# LANGUAGE OverloadedStrings          #-}
 {-# OPTIONS_GHC -fno-warn-orphans       #-}
 {-|
 Module      : Foreign.Lua.Core.Error
@@ -42,20 +43,23 @@ module Foreign.Lua.Core.Error
 import Control.Applicative (Alternative (..))
 import Control.Exception (Exception)
 import Control.Monad.Catch (catch, throwM, try)
+import Data.ByteString (ByteString)
 import Data.Typeable (Typeable)
 import Foreign.Lua.Core.Types (Lua)
 
+import qualified Data.ByteString.Char8 as Char8
+
 -- | Exceptions raised by Lua-related operations.
-data LuaException = LuaException String
+newtype LuaException = LuaException ByteString
   deriving (Eq, Typeable)
 
 instance Show LuaException where
-  show (LuaException err) = err
+  show (LuaException err) = Char8.unpack err
 
 instance Exception LuaException
 
 -- | Raise a @'LuaException'@ containing the given error message.
-throwLuaError :: String -> Lua a
+throwLuaError :: ByteString -> Lua a
 throwLuaError = throwM . LuaException
 {-# INLINABLE throwLuaError #-}
 
@@ -65,7 +69,7 @@ catchLuaError = catch
 {-# INLINABLE catchLuaError #-}
 
 -- | Catch @'LuaException'@, alter the error message and rethrow.
-modifyLuaError :: Lua a -> (String -> String) -> Lua a
+modifyLuaError :: Lua a -> (ByteString -> ByteString) -> Lua a
 modifyLuaError luaOp modifier =
   luaOp `catchLuaError` \(LuaException msg) -> throwLuaError (modifier msg)
 {-# INLINABLE modifyLuaError #-}

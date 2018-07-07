@@ -19,6 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
+{-# LANGUAGE OverloadedStrings #-}
 {-| Tests for utility types and functions
 -}
 module Foreign.Lua.UtilTest (tests) where
@@ -26,26 +27,27 @@ module Foreign.Lua.UtilTest (tests) where
 import Foreign.Lua
 import Test.HsLua.Util ((=:), shouldBeResultOf, shouldBeErrorMessageOf)
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit (assertEqual, testCase)
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
 tests = testGroup "Utilities"
-  [ testCase "Optional return the value if it exists" . runLua $ do
-      push "Moin"
-      liftIO . assertEqual "Optional value should equal pushed value" (Just "Moin")
-        =<< fmap fromOptional (peek stackTop)
+  [ "Optional return the value if it exists" =:
+    (Just "Moin" :: Maybe String) `shouldBeResultOf` do
+      push ("Moin" :: String)
+      fromOptional <$> peek stackTop
 
-  , testCase "Optional can deal with missing values" . runLua $ do
+  , "Optional can deal with nil values" =:
+    (Nothing :: Maybe String) `shouldBeResultOf` do
       pushnil
-      liftIO . assertEqual "Peeking nil should return Nothing" Nothing
-        =<< fmap fromOptional (peek stackTop :: Lua (Optional String))
-      liftIO . assertEqual "Inexistant indices should be accepted" Nothing
-        =<< fmap fromOptional (peek (nthFromBottom 9) :: Lua (Optional String))
+      fromOptional <$> peek stackTop
+
+  , "Optional can deal with nonexistent (none) values" =:
+    Nothing `shouldBeResultOf` do
+      fmap fromOptional (peek (nthFromBottom 200) :: Lua (Optional String))
 
   , "raiseError causes a Lua error" =:
     "test error message" `shouldBeErrorMessageOf` do
-      pushHaskellFunction (raiseError "test error message")
+      pushHaskellFunction (raiseError ("test error message" :: String))
       call 0 0
       return ()
   ]

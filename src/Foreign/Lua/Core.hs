@@ -290,7 +290,7 @@ throwTopMessageAsError :: Lua a
 throwTopMessageAsError = do
   msg <- tostring' stackTop
   pop 2 -- remove error and error string pushed by tostring'
-  throwLuaError (Char8.unpack msg)
+  throwLuaError msg
 
 
 -- | Convert from Failable to target type, throwing an error if the value

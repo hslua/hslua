@@ -81,8 +81,7 @@ instance Monad Result where
 -- error.
 force :: Result a -> Lua a
 force (Success x) = return x
-force (Error ctx) = throwLuaError .
-  mconcat $ map Char8.unpack ctx
+force (Error ctx) = throwLuaError (mconcat ctx)
 
 -- | Use @test@ to check whether the value at stack index @n@ has the correct
 -- type and use @peekfn@ to convert it to a haskell value if possible. A
@@ -118,7 +117,7 @@ class Peekable a where
     res <- tryLua (peek n)
     case res of
       Right x -> return $ Success x
-      Left (LuaException err) -> return $ Error [Char8.pack err]
+      Left (LuaException err) -> return $ Error [err]
 
   -- | Check if at index @n@ there is a convertible Lua value and if so return
   -- it.  Throws a @'LuaException'@ otherwise.

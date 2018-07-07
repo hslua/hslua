@@ -19,6 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
+{-# LANGUAGE OverloadedStrings #-}
 -- | Tests that lua functions can be called from haskell and vice versa.
 module Foreign.Lua.FunctionCallingTest (tests) where
 
@@ -87,7 +88,7 @@ tests = testGroup "Interoperability"
         peek stackTop <* pop 1
 
     , "Error in Haskell function is converted into Lua error" =:
-      (False, "Error during function call: foo") `shouldBeResultOf` do
+      (False, "Error during function call: foo" :: String) `shouldBeResultOf` do
         openlibs
         pushHaskellFunction (throwLuaError "foo" :: Lua ())
         setglobal "throw_foo"
