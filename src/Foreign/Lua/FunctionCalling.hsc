@@ -144,6 +144,22 @@ registerHaskellFunction n f = do
   pushHaskellFunction f
   setglobal n
 
+
+-- | Convert callable userdata at top of stack into a CFunction, translating
+-- errors to Lua errors.
+foreign import ccall "safer-api.h &hslua_call_hs"
+  hslua_call_hs_ptr :: CFunction
+
+-- | Convert a Haskell function userdata object into a CFuntion. The userdata
+-- object must be at the top of the stack. Errors signaled via @'error'@ are
+-- converted to lua errors.
+wrapHaskellFunction :: Lua ()
+wrapHaskellFunction = do
+  t <- ltype (-1)
+  case t of
+    TypeUserdata -> pushcclosure hslua_call_hs_ptr 1
+    _ -> throwLuaError "Need HaskellImportedFunction to create a CFunction."
+
 -- | Pushes Haskell function as a callable userdata.
 -- All values created will be garbage collected. Use as:
 --
@@ -154,7 +170,9 @@ registerHaskellFunction n f = do
 -- use an error code of (-1) to the same effect. Push
 -- error message as the sole return value.
 pushHaskellFunction :: ToHaskellFunction a => a -> Lua ()
-pushHaskellFunction = pushPreCFunction . flip runLuaWith . toHaskellFunction
+pushHaskellFunction hsFn = do
+  pushPreCFunction . flip runLuaWith $ toHaskellFunction hsFn
+  wrapHaskellFunction
 
 -- | Converts a pre C function to a Lua function and pushes it to the stack.
 --

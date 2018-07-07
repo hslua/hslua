@@ -24,6 +24,7 @@ THE SOFTWARE.
 module Foreign.Lua.UtilTest (tests) where
 
 import Foreign.Lua
+import Test.HsLua.Util ((=:), shouldBeResultOf, shouldBeErrorMessageOf)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
 
@@ -42,13 +43,9 @@ tests = testGroup "Utilities"
       liftIO . assertEqual "Inexistant indices should be accepted" Nothing
         =<< fmap fromOptional (peek (nthFromBottom 9) :: Lua (Optional String))
 
-  , testCase "raiseError causes a Lua error" $ do
-      let msg = "error message"
-      let luaOp = do
-            pushHaskellFunction (raiseError msg)
-            wrapHaskellFunction
-            call 0 0
-            return ()
-      assertEqual "An error should be raised" (Left (LuaException msg))
-        =<< runLuaEither luaOp
+  , "raiseError causes a Lua error" =:
+    "test error message" `shouldBeErrorMessageOf` do
+      pushHaskellFunction (raiseError "test error message")
+      call 0 0
+      return ()
   ]

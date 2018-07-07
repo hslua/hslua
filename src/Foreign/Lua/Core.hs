@@ -259,9 +259,7 @@ module Foreign.Lua.Core (
   , throwLuaError
   , modifyLuaError
   , tryLua
-  -- * Helper functions
   , throwTopMessageAsError
-  , wrapHaskellFunction
   ) where
 
 import Prelude hiding (EQ, LT, compare, concat, error)
@@ -311,16 +309,6 @@ throwOnError = fromFailable (const ())
 -- value indicates that an error had happened.
 boolFromFailable :: Failable LuaBool -> Lua Bool
 boolFromFailable = fmap fromLuaBool . fromFailable LuaBool
-
--- | Convert a Haskell function userdata object into a CFuntion. The userdata
--- object must be at the top of the stack. Errors signaled via @'error'@ are
--- converted to lua errors.
-wrapHaskellFunction :: Lua ()
-wrapHaskellFunction = do
-  t <- ltype (-1)
-  case t of
-    TypeUserdata -> pushcclosure hslua_call_hs_ptr 1
-    _ -> throwLuaError "Need HaskellImportedFunction to create a CFunction."
 
 --
 -- API functions

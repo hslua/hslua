@@ -28,6 +28,7 @@ import Foreign.Lua.Types (Result (Error, Success))
 import Foreign.Lua.FunctionCalling (callFunc, peek, registerHaskellFunction,
                                     pushHaskellFunction)
 import Foreign.Lua.Util (runLua)
+import Test.HsLua.Util ((=:), shouldBeResultOf)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
 
@@ -77,29 +78,21 @@ tests = testGroup "Interoperability"
                    ++ "argument 2: Expected a number but got a boolean"
       in assertEqual "Unexpected result" errMsg =<< runLua (catchLuaError luaOp (return . show))
 
-    , testCase "convert haskell function to c function" $
-      let luaOp :: Lua LuaInteger
-          luaOp = do
-            pushHaskellFunction integerOperation
-            wrapHaskellFunction
-            pushinteger 71
-            pushinteger 107
-            call 2 1
-            peek (-1) <* pop 1
-      in assertEqual "Unexpected result" 100 =<< runLua luaOp
+    , "Haskell functions are converted to C functions" =:
+      (100 :: LuaInteger) `shouldBeResultOf` do
+        pushHaskellFunction integerOperation
+        pushinteger 71
+        pushinteger 107
+        call 2 1
+        peek stackTop <* pop 1
 
-    , testCase "Error in Haskell function is converted into Lua error" $
-      let luaOp :: Lua (Bool, String)
-          luaOp = do
-            openlibs
-            pushHaskellFunction (throwLuaError "foo" :: Lua ())
-            wrapHaskellFunction
-            setglobal "throw_foo"
-            loadstring "return pcall(throw_foo)" *> call 0 2
-            (,) <$> peek (-2) <*> peek (-1)
-
-          errMsg = "Error during function call: foo"
-      in assertEqual "Unexpected result" (False, errMsg) =<< runLua luaOp
+    , "Error in Haskell function is converted into Lua error" =:
+      (False, "Error during function call: foo") `shouldBeResultOf` do
+        openlibs
+        pushHaskellFunction (throwLuaError "foo" :: Lua ())
+        setglobal "throw_foo"
+        loadstring "return pcall(throw_foo)" *> call 0 2
+        (,) <$> peek (nthFromTop 2) <*> peek (nthFromTop 1)
     ]
 
   , testGroup "call lua function from haskell"
