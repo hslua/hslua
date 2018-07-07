@@ -261,7 +261,6 @@ module Foreign.Lua.Core (
   , tryLua
   -- * Helper functions
   , throwTopMessageAsError
-  , throwTopMessageAsError'
   , wrapHaskellFunction
   ) where
 
@@ -287,6 +286,15 @@ import qualified Foreign.Storable as F
 -- Helper functions
 --
 
+-- | Convert the object at the top of the stack into a string and throw it as a
+-- @'LuaException'@.
+throwTopMessageAsError :: Lua a
+throwTopMessageAsError = do
+  msg <- tostring' stackTop
+  pop 2 -- remove error and error string pushed by tostring'
+  throwLuaError (Char8.unpack msg)
+
+
 -- | Convert from Failable to target type, throwing an error if the value
 -- indicates a failure.
 fromFailable :: (CInt -> a) -> Failable a -> Lua a
@@ -303,15 +311,6 @@ throwOnError = fromFailable (const ())
 -- value indicates that an error had happened.
 boolFromFailable :: Failable LuaBool -> Lua Bool
 boolFromFailable = fmap fromLuaBool . fromFailable LuaBool
-
-throwTopMessageAsError :: Lua a
-throwTopMessageAsError = throwTopMessageAsError' id
-
-throwTopMessageAsError' :: (String -> String) -> Lua a
-throwTopMessageAsError' msgMod = do
-  msg <- tostring' stackTop
-  pop 2 -- remove error and error string pushed by tostring'
-  throwLuaError (msgMod (Char8.unpack msg))
 
 -- | Convert a Haskell function userdata object into a CFuntion. The userdata
 -- object must be at the top of the stack. Errors signaled via @'error'@ are
