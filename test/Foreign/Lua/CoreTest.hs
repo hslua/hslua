@@ -49,7 +49,9 @@ import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
 import Test.Tasty.QuickCheck (testProperty)
 
 import qualified Prelude
-import qualified Data.ByteString as BS
+import qualified Data.ByteString as B
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 import qualified Foreign.Lua.Core.RawBindings as LuaRaw
 import qualified Foreign.Marshal as Foreign
 import qualified Foreign.Ptr as Foreign
@@ -172,6 +174,14 @@ tests = testGroup "Haskell version of the C API"
       rawgeti stackTop 1 -- first field
       tostring stackTop
 
+  , testGroup "get functions (Lua to stack)"
+    [ "unicode characters in field name are ok" =:
+      True `shouldBeResultOf` do
+        pushLuaExpr "{['\xE2\x9A\x94'] = true}"
+        getfield stackTop (T.encodeUtf8 (T.pack "⚔"))
+        toboolean stackTop
+    ]
+
   , "can push and receive a thread" ?: do
       luaSt <- luaState
       isMain <- pushthread
@@ -214,7 +224,7 @@ tests = testGroup "Haskell version of the C API"
           tostring' stackTop
 
       , "string for userdata shows the pointer value" =:
-        ("userdata: 0x" `BS.isPrefixOf`) `shouldHoldForResultOf` do
+        ("userdata: 0x" `B.isPrefixOf`) `shouldHoldForResultOf` do
           l <- luaState
           liftIO . Foreign.alloca $ \ptr ->
             runLuaWith l (pushlightuserdata (ptr :: Foreign.Ptr Int))
