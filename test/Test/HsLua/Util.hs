@@ -32,6 +32,7 @@ module Test.HsLua.Util
   ) where
 
 import Data.ByteString (ByteString)
+import Data.Monoid ((<>))
 import Foreign.Lua ( Lua, LuaException (..), runLua, runLuaEither, loadstring
                    , call, multret)
 import Test.Tasty (TestTree)
@@ -39,8 +40,8 @@ import Test.Tasty.HUnit (Assertion, assertBool, assertFailure, testCase, (@?=))
 
 import qualified Data.ByteString.Char8 as Char8
 
-pushLuaExpr :: String -> Lua ()
-pushLuaExpr expr = loadstring ("return " ++ expr) *> call 0 multret
+pushLuaExpr :: ByteString -> Lua ()
+pushLuaExpr expr = loadstring ("return " <> expr) *> call 0 multret
 
 shouldBeResultOf :: (Eq a, Show a) => a -> Lua a -> Assertion
 shouldBeResultOf expected luaOp = do

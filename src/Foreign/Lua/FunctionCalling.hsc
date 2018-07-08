@@ -53,6 +53,7 @@ module Foreign.Lua.FunctionCalling
   ) where
 
 import Control.Monad (when)
+import Data.ByteString (ByteString)
 import Data.Monoid ((<>))
 import Foreign.C (CInt (..))
 import Foreign.Lua.Core
@@ -121,7 +122,7 @@ freeCFunction = liftIO . freeHaskellFunPtr
 
 -- | Helper class used to make lua functions useable from haskell
 class LuaCallFunc a where
-  callFunc' :: String -> Lua () -> NumArgs -> a
+  callFunc' :: ByteString -> Lua () -> NumArgs -> a
 
 instance Peekable a => LuaCallFunc (Lua (Result a)) where
   callFunc' fnName pushArgs nargs = do
@@ -137,11 +138,11 @@ instance (Pushable a, LuaCallFunc b) => LuaCallFunc (a -> b) where
 -- | Call a Lua function. Use as:
 --
 -- > v <- callfunc "proc" "abc" (1::Int) (5.0::Double)
-callFunc :: (LuaCallFunc a) => String -> a
+callFunc :: (LuaCallFunc a) => ByteString -> a
 callFunc f = callFunc' f (return ()) 0
 
 -- | Imports a Haskell function and registers it at global name.
-registerHaskellFunction :: ToHaskellFunction a => String -> a -> Lua ()
+registerHaskellFunction :: ToHaskellFunction a => ByteString -> a -> Lua ()
 registerHaskellFunction n f = do
   pushHaskellFunction f
   setglobal n

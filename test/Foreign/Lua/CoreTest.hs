@@ -187,7 +187,8 @@ tests = testGroup "Haskell version of the C API"
   , testCase "thread status" . runLua $ do
       status >>= liftIO . assertEqual "base status should be OK" OK
       openlibs
-      getglobal' "coroutine.resume"
+      getglobal "coroutine"
+      getfield stackTop "resume"
       pushLuaExpr "coroutine.create(function() coroutine.yield(9) end)"
       co <- tothread stackTop
       call 1 0

@@ -25,6 +25,7 @@ THE SOFTWARE.
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
 Module      : Foreign.Lua.Types.Peekable
@@ -87,7 +88,7 @@ force (Error ctx) = throwLuaError (mconcat ctx)
 -- type and use @peekfn@ to convert it to a haskell value if possible. A
 -- successfully received value is wrapped using the @'Success'@ constructor,
 -- while a type mismatch results in an @Error@ with the given error message.
-typeChecked :: String
+typeChecked :: ByteString
             -> (StackIndex -> Lua Bool)
             -> (StackIndex -> Lua (Result a))
             -> StackIndex
@@ -99,9 +100,9 @@ typeChecked expectedType test peekfn n = do
     else do
       actual <- ltype n >>= typename
       let msg = "Expected a " <> expectedType <> " but got a " <> actual
-      return (Error [Char8.pack msg])
+      return (Error [msg])
 
-typeChecked' :: String
+typeChecked' :: ByteString
              -> (StackIndex -> Lua Bool)
              -> (StackIndex -> Lua a)
              -> StackIndex -> Lua (Result a)

@@ -220,7 +220,7 @@ tests = testGroup "lua integration tests"
       in assertBool "problem in error" . errTest =<<
       (runLuaEither $ do
           openbase
-          res <- loadstring (Char8.unpack luaCode)
+          res <- loadstring luaCode
           when (res == OK) $ call 0 0)
     ]
   ]

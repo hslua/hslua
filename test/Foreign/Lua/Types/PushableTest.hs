@@ -34,11 +34,11 @@ Test for the interoperability between haskell and lua.
 module Foreign.Lua.Types.PushableTest (tests) where
 
 import Data.ByteString (ByteString)
-import Data.Monoid ((<>))
 import Foreign.Lua
 import Foreign.StablePtr (castStablePtrToPtr, freeStablePtr, newStablePtr)
 
 import Test.HsLua.Arbitrary ()
+import Test.HsLua.Util (pushLuaExpr)
 import Test.QuickCheck (Property)
 import Test.QuickCheck.Instances ()
 import Test.QuickCheck.Monadic (monadicIO, run, assert)
@@ -101,11 +101,11 @@ tests = testGroup "Pushable"
 
 -- | Takes a message, haskell value, and a representation of that value as lua
 -- string, assuming that the pushed values are equal within lua.
-assertLuaEqual :: Pushable a => String -> a -> String -> Assertion
+assertLuaEqual :: Pushable a => String -> a -> ByteString -> Assertion
 assertLuaEqual msg x lit = assertBool msg =<< runLua
-  (loadstring ("return " <> lit) *> call 0 1
+   (pushLuaExpr lit
    *> push x
-   *> equal (-1) (-2))
+   *> equal (nthFromTop 1) (nthFromTop 2))
 
 prop_pushIncrStackSizeByOne :: Pushable a => a -> Property
 prop_pushIncrStackSizeByOne x = monadicIO $ do

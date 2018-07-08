@@ -41,10 +41,12 @@ module Foreign.Lua.Util
   ) where
 
 import Control.Exception (bracket, try)
-import Data.List (groupBy)
+import Data.ByteString (ByteString)
+import Data.Char (ord)
 import Foreign.Lua.Core
 import Foreign.Lua.Types
 
+import qualified Data.ByteString as B
 import qualified Foreign.Lua.Core as Lua
 
 -- | Run lua computation using the default HsLua state as starting point. Raised
@@ -64,7 +66,7 @@ runLuaEither = try . runLua
 -- > getglobal' "math.sin"
 --
 -- will return the function @sin@ in package @math@.
-getglobal' :: String -> Lua ()
+getglobal' :: ByteString -> Lua ()
 getglobal' = getnested . splitdot
 
 -- | Like @setglobal@, but knows about packages and nested tables. E.g.
@@ -73,7 +75,7 @@ getglobal' = getnested . splitdot
 -- > setglobal' "mypackage.version"
 --
 -- All tables and fields, except for the last field, must exist.
-setglobal' :: String -> Lua ()
+setglobal' :: ByteString -> Lua ()
 setglobal' s =
   case reverse (splitdot s) of
     [] ->
@@ -82,22 +84,24 @@ setglobal' s =
       setglobal s
     (lastField : xs) -> do
       getnested (reverse xs)
-      pushvalue (-2)
-      setfield (-2) lastField
+      pushvalue (nthFromTop 2)
+      setfield (nthFromTop 2) lastField
       pop 1
 
 -- | Gives the list of the longest substrings not containing dots.
-splitdot :: String -> [String]
-splitdot = filter (/= ".") . groupBy (\a b -> a /= '.' && b /= '.')
+splitdot :: ByteString -> [ByteString]
+splitdot = filter (/= (B.singleton dot)) .
+           B.groupBy (\a b -> a /= dot && b /= dot)
+  where dot = fromIntegral (ord '.')
 
 -- | Pushes the value described by the strings to the stack; where the first
 -- value is the name of a global variable and the following strings are the
 -- field values in nested tables.
-getnested :: [String] -> Lua ()
+getnested :: [ByteString] -> Lua ()
 getnested [] = return ()
 getnested (x:xs) = do
   getglobal x
-  mapM_ (\a -> getfield (-1) a *> remove (-2)) xs
+  mapM_ (\a -> getfield stackTop a *> remove (nthFromTop 2)) xs
 
 -- | Raise a Lua error, using the given value as the error object. This must be
 -- the return value of a function which has been wrapped with

@@ -310,6 +310,9 @@ throwOnError = fromFailable (const ())
 boolFromFailable :: Failable LuaBool -> Lua Bool
 boolFromFailable = fmap fromLuaBool . fromFailable LuaBool
 
+hsluaErrorRegistryField :: ByteString
+hsluaErrorRegistryField = Char8.pack "HSLUA_ERR"
+
 --
 -- API functions
 --
@@ -443,15 +446,16 @@ createtable narr nrec = liftLua $ \l ->
 --
 -- Returns @'OK'@ on success, or an error if either loading of the string or
 -- calling of the thunk failed.
-dostring :: String -> Lua Status
+dostring :: ByteString -> Lua Status
 dostring s = do
   loadRes <- loadstring s
   if loadRes == OK
     then pcall 0 multret Nothing
     else return loadRes
 
--- | Loads and runs the given file.
-dofile :: FilePath -> Lua Status
+-- | Loads and runs the given file. Note that the filepath is interpreted by
+-- Lua, not Haskell.
+dofile :: ByteString -> Lua Status
 dofile fp = do
   loadRes <- loadfile fp
   if loadRes == OK
@@ -473,7 +477,7 @@ equal index1 index2 = compare index1 index2 EQ
 -- [Error handling in hslua](#g:1) for details)
 error :: Lua NumResults
 error = do
-  getfield registryindex "HSLUA_ERR"
+  getfield registryindex hsluaErrorRegistryField
   insert (-2)
   return 2
 
@@ -521,9 +525,9 @@ gc what data' = liftLua $ \l ->
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getfield lua_getfield>.
-getfield :: StackIndex -> String -> Lua ()
+getfield :: StackIndex -> ByteString -> Lua ()
 getfield i s = throwOnError =<< liftLua
-  (\l -> withCString s (hslua_getfield l i))
+  (\l -> B.useAsCString s (hslua_getfield l i))
 
 -- | Pushes onto the stack the value of the global @name@.
 --
@@ -531,9 +535,9 @@ getfield i s = throwOnError =<< liftLua
 --
 -- Wrapper of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getglobal lua_getglobal>.
-getglobal :: String -> Lua ()
+getglobal :: ByteString -> Lua ()
 getglobal name = throwOnError =<<
-  liftLua (withCString name . hslua_getglobal)
+  liftLua (B.useAsCString name . hslua_getglobal)
 
 -- | If the value at the given index has a metatable, the function pushes that
 -- metatable onto the stack and returns @True@. Otherwise, the function returns
@@ -704,9 +708,9 @@ lessthan index1 index2 = compare index1 index2 LT
 -- The chunkname argument gives a name to the chunk, which is used for error
 -- messages and in debug information (see
 -- <https://www.lua.org/manual/5.1/manual.html#3.8 §3.8>).
-load :: LuaReader -> Ptr () -> String -> Lua Status
+load :: LuaReader -> Ptr () -> ByteString -> Lua Status
 load reader data' name = liftLua $ \l ->
-  withCString name $ \namePtr ->
+  B.useAsCString name $ \namePtr ->
   toStatus <$> lua_load l reader data' namePtr nullPtr
 
 -- | Loads a ByteString as a Lua chunk.
@@ -715,21 +719,23 @@ load reader data' name = liftLua $ \l ->
 -- used for debug information and error messages.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadbuffer luaL_loadbuffer>.
-loadbuffer :: ByteString -> String -> Lua Status
+loadbuffer :: ByteString -- ^ Program to load
+           -> ByteString -- ^ chunk name
+           -> Lua Status
 loadbuffer bs name = liftLua $ \l ->
   B.useAsCStringLen bs $ \(str, len) ->
-  withCString name $ \namePtr ->
+  B.useAsCString name $ \namePtr ->
   toStatus <$> luaL_loadbuffer l str (fromIntegral len) namePtr
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadfile luaL_loadfile>.
-loadfile :: String -> Lua Status
+loadfile :: ByteString -> Lua Status
 loadfile f = liftLua $ \l ->
-  withCString f $ \fPtr ->
+  B.useAsCString f $ \fPtr ->
   toStatus <$> luaL_loadfile l fPtr
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadstring>.
-loadstring :: String -> Lua Status
-loadstring str = loadbuffer (Char8.pack str) (filter (/= '\NUL') str)
+loadstring :: ByteString -> Lua Status
+loadstring str = loadbuffer str (B.filter (/= 0) str) -- null-byte less name
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>.
 ltype :: StackIndex -> Lua Type
@@ -746,9 +752,9 @@ ltype idx = toType <$> liftLua (flip lua_type idx)
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#luaL_newmetatable luaL_newmetatable>.
-newmetatable :: String -> Lua Bool
+newmetatable :: ByteString -> Lua Bool
 newmetatable tname = liftLua $ \l ->
-  fromLuaBool <$> withCString tname (luaL_newmetatable l)
+  fromLuaBool <$> B.useAsCString tname (luaL_newmetatable l)
 
 -- | Creates a new Lua state. It calls @'lua_newstate'@ with an allocator based
 -- on the standard C @realloc@ function and then sets a panic function (see
@@ -763,7 +769,7 @@ newstate = do
   l <- luaL_newstate
   runLuaWith l $ do
     createtable 0 0
-    setfield registryindex "HSLUA_ERR"
+    setfield registryindex hsluaErrorRegistryField
     return l
 
 -- | Creates a new empty table and pushes it onto the stack. It is equivalent to
@@ -1060,7 +1066,7 @@ ref t = liftLua $ \l -> fromIntegral <$> luaL_ref l t
 -- | Sets the C function @f@ as the new value of global @name@.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_register lua_register>.
-register :: String -> CFunction -> Lua ()
+register :: ByteString -> CFunction -> Lua ()
 register name f = do
     pushcfunction f
     setglobal name
@@ -1093,9 +1099,9 @@ replace n = liftLua $ \l ->  lua_replace l n
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_setfield lua_setfield>.
-setfield :: StackIndex -> String -> Lua ()
+setfield :: StackIndex -> ByteString -> Lua ()
 setfield i s = throwOnError =<<
-  liftLua (\l -> withCString s (hslua_setfield l i))
+  liftLua (\l -> B.useAsCString s (hslua_setfield l i))
 
 -- | Pops a value from the stack and sets it as the new value of global @name@.
 --
@@ -1103,9 +1109,9 @@ setfield i s = throwOnError =<<
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_setglobal lua_setglobal>.
-setglobal :: String -> Lua ()
+setglobal :: ByteString -> Lua ()
 setglobal s = throwOnError =<<
-  liftLua (withCString s . hslua_setglobal)
+  liftLua (B.useAsCString s . hslua_setglobal)
 
 -- | Pops a table from the stack and sets it as the new metatable for the value
 -- at the given index.
@@ -1276,9 +1282,9 @@ touserdata n = liftLua $ \l -> lua_touserdata l n
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_typename lua_typename>.
-typename :: Type -> Lua String
+typename :: Type -> Lua ByteString
 typename tp = liftLua $ \l ->
-  lua_typename l (fromType tp) >>= peekCString
+  lua_typename l (fromType tp) >>= B.unsafePackCString
 
 -- | Releases reference @'ref'@ from the table at index @idx@ (see @'ref'@). The
 -- entry is removed from the table, so that the referred object can be
