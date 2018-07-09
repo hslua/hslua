@@ -9,7 +9,7 @@ int hslua_compare(lua_State *L, int index1, int index2, int op);
 
 int hslua_concat(lua_State *L, int n);
 
-int hslua_getglobal(lua_State *L, const char *name);
+int hslua_getglobal(lua_State *L, const char *name, size_t len);
 
 int hslua_gettable(lua_State *L, int index);
 

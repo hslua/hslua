@@ -538,8 +538,9 @@ getfield i s = do
 -- Wrapper of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getglobal lua_getglobal>.
 getglobal :: ByteString -> Lua ()
-getglobal name = throwOnError =<<
-  liftLua (B.useAsCString name . hslua_getglobal)
+getglobal name = throwOnError <=< liftLua $ \l ->
+  B.unsafeUseAsCStringLen name $ \(namePtr, len) ->
+  hslua_getglobal l namePtr (fromIntegral len)
 
 -- | If the value at the given index has a metatable, the function pushes that
 -- metatable onto the stack and returns @True@. Otherwise, the function returns

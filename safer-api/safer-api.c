@@ -123,20 +123,16 @@ int hslua_concat(lua_State *L, int n)
 */
 int hslua__getglobal(lua_State *L)
 {
-  const char *name = lua_tostring(L, 1);
-#if LUA_VERSION_NUM >= 502
-  lua_getglobal(L, name);
-#else
-  lua_getfield(L, LUA_GLOBALSINDEX, name);
-#endif
+  lua_gettable(L, 1);
   return 1;
 }
 
-int hslua_getglobal(lua_State *L, const char *name)
+int hslua_getglobal(lua_State *L, const char *name, size_t len)
 {
   lua_pushcfunction(L, hslua__getglobal);
-  lua_pushlstring(L, name, strlen(name));
-  return -lua_pcall(L, 1, 1, 0);
+  lua_pushglobaltable(L);
+  lua_pushlstring(L, name, len);
+  return -lua_pcall(L, 2, 1, 0);
 }
 
 

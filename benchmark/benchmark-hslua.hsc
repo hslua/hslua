@@ -86,6 +86,10 @@ setfield_oldBench =
         setfield_old Lua.stackTop "foo"
   in luaBench "setfield_old" setupTableWithFooField setfieldFoo
 
+getglobalBench :: Benchmark
+getglobalBench =
+  luaBench "getglobal" setupTableWithFooField (Lua.getglobal "foo")
+
 main :: IO ()
 main = do
   defaultMain
@@ -93,6 +97,7 @@ main = do
     , getlfieldBench
     , setfieldBench
     , setfield_oldBench
+    , getglobalBench
     ]
 
 instance NFData Lua.LuaState
