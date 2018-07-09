@@ -1116,8 +1116,9 @@ setfield i s = do
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_setglobal lua_setglobal>.
 setglobal :: ByteString -> Lua ()
-setglobal s = throwOnError =<<
-  liftLua (B.useAsCString s . hslua_setglobal)
+setglobal name = throwOnError <=< liftLua $ \l ->
+  B.unsafeUseAsCStringLen name $ \(namePtr, nameLen) ->
+  hslua_setglobal l namePtr (fromIntegral nameLen)
 
 -- | Pops a table from the stack and sets it as the new metatable for the value
 -- at the given index.

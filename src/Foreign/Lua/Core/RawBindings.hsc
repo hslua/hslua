@@ -307,7 +307,7 @@ foreign import ccall SAFTY "lua.h lua_setmetatable"
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_setglobal \
 -- @lua_setglobal@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_setglobal"
-  hslua_setglobal :: LuaState -> CString -> IO (Failable ())
+  hslua_setglobal :: LuaState -> CString -> CSize -> IO (Failable ())
 
 
 --------------------------------------------------------------------------------

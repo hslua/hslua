@@ -13,7 +13,7 @@ int hslua_getglobal(lua_State *L, const char *name, size_t len);
 
 int hslua_gettable(lua_State *L, int index);
 
-int hslua_setglobal(lua_State *L, const char *k);
+int hslua_setglobal(lua_State *L, const char *k, size_t len);
 
 int hslua_settable(lua_State *L, int index);
 

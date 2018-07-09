@@ -160,22 +160,22 @@ int hslua_gettable(lua_State *L, int index)
 */
 int hslua__setglobal(lua_State *L)
 {
-  const char *name = lua_tostring(L, 2);
+  /* index 1: value */
+  /* index 2: the global table */
+  /* index 3: key */
   lua_pushvalue(L, 1);
-#if LUA_VERSION_NUM >= 502
-  lua_setglobal(L, name);
-#else
-  lua_setfield(L, LUA_GLOBALSINDEX, name);
-#endif
+  lua_settable(L, 2);
   return 0;
 }
 
-int hslua_setglobal(lua_State *L, const char *name)
+int hslua_setglobal(lua_State *L, const char *name, size_t len)
 {
-  lua_pushlstring(L, name, strlen(name));
+  /* we expect the new value to be at the top of the stack */
+  lua_pushglobaltable(L);
+  lua_pushlstring(L, name, len);
   lua_pushcfunction(L, hslua__setglobal);
-  lua_insert(L, -3);
-  return -lua_pcall(L, 2, 0, 0);
+  lua_insert(L, -4);
+  return -lua_pcall(L, 3, 0, 0);
 }
 
 

@@ -91,14 +91,14 @@ getglobalBench =
   luaBench "getglobal" setupTableWithFooField (Lua.getglobal "foo")
 
 main :: IO ()
-main = do
-  defaultMain
-    [ getfieldBench
-    , getlfieldBench
-    , setfieldBench
-    , setfield_oldBench
-    , getglobalBench
-    ]
+main = defaultMain
+  [ getfieldBench
+  , getlfieldBench
+  , setfieldBench
+  , setfield_oldBench
+  , getglobalBench
+  , luaBench "setglobal" (Lua.pushboolean True) (Lua.setglobal "foo")
+  ]
 
 instance NFData Lua.LuaState
 
