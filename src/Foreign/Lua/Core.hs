@@ -526,8 +526,10 @@ gc what data' = liftLua $ \l ->
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getfield lua_getfield>.
 getfield :: StackIndex -> ByteString -> Lua ()
-getfield i s = throwOnError =<< liftLua
-  (\l -> B.useAsCString s (hslua_getfield l i))
+getfield i s = do
+  absidx <- absindex i
+  pushstring s
+  gettable absidx
 
 -- | Pushes onto the stack the value of the global @name@.
 --

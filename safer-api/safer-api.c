@@ -119,26 +119,6 @@ int hslua_concat(lua_State *L, int n)
 
 
 /*
-** getfield
-*/
-int hslua__getfield(lua_State *L)
-{
-  const char *k = lua_tostring(L, 2);
-  lua_getfield(L, 1, k);
-  return 1;
-}
-
-int hslua_getfield(lua_State *L, int index, const char *k)
-{
-  lua_pushvalue(L, index);
-  lua_pushlstring(L, k, strlen(k));
-  lua_pushcfunction(L, hslua__getfield);
-  lua_insert(L, -3);
-  return -lua_pcall(L, 2, 1, 0);
-}
-
-
-/*
 ** getglobal
 */
 int hslua__getglobal(lua_State *L)

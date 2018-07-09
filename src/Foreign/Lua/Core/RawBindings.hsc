@@ -243,20 +243,15 @@ foreign import ccall SAFTY "lua.h lua_pushthread"
 --------------------------------------------------------------------------------
 -- * Get functions
 
--- lua_gettable is unsafe, use hslua_gettable instead.
--- lua_getfield is unsafe, use hslua_getfield instead.
--- lua_getglobal is unsafe, use hslua_getglobal instead.
--- lua_getfenv (5.1 only) is not supported.
+-- + lua_gettable is unsafe, use hslua_gettable instead.
+-- + lua_getglobal is unsafe, use hslua_getglobal instead.
+-- + lua_getfield is unsafe, we build something equivallent using pushlstring and
+--   gettable.
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_gettable \
 -- @lua_gettable@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_gettable"
   hslua_gettable :: LuaState -> StackIndex -> IO (Failable ())
-
--- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_getfield \
--- @lua_getfield@> which catches any @longjmp@s.
-foreign import ccall "safer-api.h hslua_getfield"
-  hslua_getfield :: LuaState -> StackIndex -> CString -> IO (Failable ())
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawget lua_rawget>
 foreign import ccall SAFTY "lua.h lua_rawget"
