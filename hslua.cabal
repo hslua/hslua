@@ -199,3 +199,17 @@ test-suite test-hslua
                      , tasty                >= 0.11
                      , tasty-hunit          >= 0.9
                      , tasty-quickcheck     >= 0.8
+
+benchmark benchmark-hslua
+  type:                exitcode-stdio-1.0
+  main-is:             benchmark-hslua.hs
+  hs-source-dirs:      benchmark
+  default-language:    Haskell2010
+  build-depends:       hslua
+                     , base                 >= 4.8
+                     , bytestring           >= 0.10.2 && < 0.11
+                     , criterion            >= 1.0    && < 1.5
+                     , deepseq              >= 1.4.1  && < 1.5
+  c-sources:           benchmark/benchmark-functions.c
+  include-dirs:        benchmark
+                     , lua-5.3.4

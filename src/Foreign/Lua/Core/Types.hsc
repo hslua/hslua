@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
+{-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE StandaloneDeriving         #-}
 {-|
@@ -80,6 +81,7 @@ import Data.Int (#{type LUA_INTEGER})
 import Foreign.C (CChar, CInt, CSize)
 import Foreign.Ptr (FunPtr, Ptr)
 import Foreign.Storable (Storable)
+import GHC.Generics (Generic)
 
 #include "lua.h"
 -- required only for LUA_ERRFILE
@@ -123,7 +125,7 @@ runLuaWith l s = runReaderT (unLua s) l
 -- accessible through this structure.
 --
 -- Synonym for @lua_State *@. See <https://www.lua.org/manual/5.3/#lua_State lua_State>.
-newtype LuaState = LuaState (Ptr ()) deriving (Eq)
+newtype LuaState = LuaState (Ptr ()) deriving (Eq, Generic)
 
 -- |  Type for C functions.
 --
