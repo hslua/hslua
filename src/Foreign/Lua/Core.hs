@@ -708,18 +708,20 @@ lessthan index1 index2 = compare index1 index2 LT
 -- (see @'LuaReader'@). The data argument is an opaque value passed to the
 -- reader function.
 --
--- The chunkname argument gives a name to the chunk, which is used for error
+-- The @chunkname@ argument gives a name to the chunk, which is used for error
 -- messages and in debug information (see
--- <https://www.lua.org/manual/5.1/manual.html#3.8 §3.8>).
+-- <https://www.lua.org/manual/5.3/manual.html#4.9 §4.9>). Note that the
+-- @chunkname@ is used as a C string, so it may not contain null-bytes.
 load :: LuaReader -> Ptr () -> ByteString -> Lua Status
-load reader data' name = liftLua $ \l ->
-  B.useAsCString name $ \namePtr ->
+load reader data' chunkname = liftLua $ \l ->
+  B.useAsCString chunkname $ \namePtr ->
   toStatus <$> lua_load l reader data' namePtr nullPtr
 
 -- | Loads a ByteString as a Lua chunk.
 --
 -- This function returns the same results as @'load'@. @name@ is the chunk name,
--- used for debug information and error messages.
+-- used for debug information and error messages. Note that @name@ is used as a
+-- C string, so it may not contain null-bytes.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadbuffer luaL_loadbuffer>.
 loadbuffer :: ByteString -- ^ Program to load
@@ -752,6 +754,9 @@ ltype idx = toType <$> liftLua (flip lua_type idx)
 --
 -- In both cases pushes onto the stack the final value associated with @tname@ in
 -- the registry.
+--
+-- The value of @tname@ is used as a C string and hence must not contain null
+-- bytes.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#luaL_newmetatable luaL_newmetatable>.
