@@ -35,44 +35,53 @@ module Foreign.Lua.Types.PeekableTest (tests) where
 
 import Foreign.Lua
 
+import Test.HsLua.Util ( (=:), (?:), pushLuaExpr, shouldBeResultOf
+                       , shouldBeErrorMessageOf )
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit (assertEqual, testCase)
-import Test.HsLua.Util (pushLuaExpr)
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
 tests = testGroup "Peekable"
-  [ testCase "receives basic values from the stack" $ do
-      assertEqual "true was not read" True =<< runLua
-        (loadstring "return true" *> call 0 1 *> peek (-1))
-      assertEqual "5 was not read" (5 :: LuaInteger) =<< runLua
-        (loadstring "return 5" *> call 0 1 *> peek (-1))
+  [ "boolean true can be peeked" ?: do
+      pushLuaExpr "true"
+      peek stackTop
 
-  , testCase "returns an error if the types don't match" $ do
-      let boolNum = "Expected a boolean but got a number"
-      assertEqual "error messsage mismatched" (Left boolNum) =<< runLua
-        (loadstring "return 5" *> call 0 1 *> peekEither (-1) :: Lua (Either String Bool))
-      let numBoolExcept = LuaException "Expected a number but got a boolean"
-      assertEqual "error message mismatched" (Left numBoolExcept) =<< runLua
-        (tryLua $ dostring "return true" *> (peek (-1) :: Lua LuaInteger))
+  , "integer can be peeked" =:
+    (5 :: LuaInteger) `shouldBeResultOf` do
+      pushnumber 5.0
+      peek stackTop
 
-  , testCase "list cannot be read if a list element fails" $ do
-      let err = "Could not read list: Expected a number but got a boolean"
-      assertEqual "error message mismatched" (Left err) =<< runLua
-        (loadstring "return {1, 5, 23, true, 42}" *> call 0 1
-         *> peekEither (-1) :: Lua (Either String [LuaInteger]))
+  , testGroup "error handling"
+    [ "error is thrown if number is given instead of boolean" =:
+      "Expected a boolean but got a number" `shouldBeErrorMessageOf` do
+        pushnumber 5
+        peek stackTop :: Lua Bool
 
-  , testCase "stack is unchanged if getting a list fails" . runLua $ do
-      liftIO . assertEqual "there should be no element on the stack" 0
-        =<< gettop
-      pushLuaExpr "{1, 1, 2, 3, 5, 8}"
-      _ <- tryLua (toList stackTop >>= force :: Lua [Bool])
-      liftIO . assertEqual "there should be exactly one element on the stack" 1
-        =<< gettop
+    , "error is thrown if boolean is given insead of number" =:
+      "Expected a number but got a boolean" `shouldBeErrorMessageOf` do
+        pushboolean False
+        peek stackTop :: Lua LuaNumber
 
-  , testCase "stack is unchanged if getting key-value pairs fails" . runLua $ do
-      pushLuaExpr "{{foo = 'bar', baz = 5}}"
-      _ <- tryLua (pairsFromTable stackTop >>= force :: Lua [(String, String)])
-      liftIO . assertEqual "there should be no element on the stack" 1
-        =<< gettop
+    , "list cannot be read if a peeking at list element fails" =:
+      "Could not read list: Expected a number but got a boolean"
+      `shouldBeErrorMessageOf` do
+        pushLuaExpr "{1, 5, 23, true, 42}"
+        peek stackTop :: Lua [LuaNumber]
+
+    , "stack is unchanged if getting a list fails" =:
+      0 `shouldBeResultOf` do
+        pushLuaExpr "{true, 1, 1, 2, 3, 5, 8}"
+        topBefore <- gettop
+        _ <- toList stackTop :: Lua (Result [Bool])
+        topAfter <- gettop
+        return (topAfter - topBefore)
+
+    , "stack is unchanged if getting key-value pairs fails" =:
+      0 `shouldBeResultOf` do
+        pushLuaExpr "{{foo = 'bar', baz = false}}"
+        topBefore <- gettop
+        _ <- pairsFromTable stackTop :: Lua (Result [(String, String)])
+        topAfter <- gettop
+        return (topAfter - topBefore)
+    ]
   ]
