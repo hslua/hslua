@@ -71,12 +71,28 @@ getlfieldBench =
   let getlfieldFoo = getlfield Lua.stackTop "foo"
   in luaBench "getlfield" setupTableWithFooField getlfieldFoo
 
+-- * Benchmark setfield
+setfieldBench :: Benchmark
+setfieldBench =
+  let setfieldFoo = do
+        Lua.pushboolean True
+        Lua.setfield (Lua.nthFromTop 2) "foo"
+  in luaBench "setfield" setupTableWithFooField setfieldFoo
+
+setfield_oldBench :: Benchmark
+setfield_oldBench =
+  let setfieldFoo = do
+        Lua.pushboolean True
+        setfield_old Lua.stackTop "foo"
+  in luaBench "setfield_old" setupTableWithFooField setfieldFoo
 
 main :: IO ()
 main = do
   defaultMain
     [ getfieldBench
     , getlfieldBench
+    , setfieldBench
+    , setfield_oldBench
     ]
 
 instance NFData Lua.LuaState
@@ -86,10 +102,19 @@ instance NFData Lua.LuaState
 
 -- | Getting a string field with lua_pushlstring and lua_gettable
 foreign import ccall "safer-api.h hslua_getlfield"
-  hslua_getlfield :: LuaState -> StackIndex -> CString -> CSize
-                  -> IO CInt
+  hslua_getlfield :: LuaState -> StackIndex -> CString -> CSize -> IO CInt
 
 getlfield :: StackIndex -> ByteString -> Lua CInt
-getlfield i s = (\f -> Lua.luaState >>= Lua.liftIO . f)
-  (\l -> B.unsafeUseAsCStringLen s $ \(strPtr, len) ->
-      hslua_getlfield l i strPtr (fromIntegral len))
+getlfield i s = do
+  l <- Lua.luaState
+  Lua.liftIO $ B.unsafeUseAsCStringLen s $ \(strPtr, len) ->
+    hslua_getlfield l i strPtr (fromIntegral len)
+
+-- | Getting a string field with lua_pushlstring and lua_gettable
+foreign import ccall "safer-api.h hslua_setfield"
+  hslua_setfield :: LuaState -> StackIndex -> CString -> IO CInt
+
+setfield_old :: StackIndex -> ByteString -> Lua CInt
+setfield_old i s = do
+  l <- Lua.luaState
+  Lua.liftIO $ B.useAsCString s (hslua_setfield l i)

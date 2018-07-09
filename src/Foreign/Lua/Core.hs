@@ -1102,8 +1102,11 @@ replace n = liftLua $ \l ->  lua_replace l n
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_setfield lua_setfield>.
 setfield :: StackIndex -> ByteString -> Lua ()
-setfield i s = throwOnError =<<
-  liftLua (\l -> B.useAsCString s (hslua_setfield l i))
+setfield i s = do
+  absidx <- absindex i
+  pushstring s
+  insert (nthFromTop 2)
+  settable absidx
 
 -- | Pops a value from the stack and sets it as the new value of global @name@.
 --

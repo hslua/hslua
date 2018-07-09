@@ -292,11 +292,6 @@ foreign import ccall "safer-api.h hslua_getglobal"
 foreign import ccall "safer-api.h hslua_settable"
   hslua_settable :: LuaState -> StackIndex -> IO (Failable ())
 
--- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_setfield \
--- @lua_setfield@> which catches any @longjmp@s.
-foreign import ccall "safer-api.h hslua_setfield"
-  hslua_setfield :: LuaState -> StackIndex -> CString -> IO (Failable ())
-
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawset lua_rawset>
 foreign import ccall SAFTY "lua.h lua_rawset"
   lua_rawset :: LuaState -> StackIndex -> IO ()

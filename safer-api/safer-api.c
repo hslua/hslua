@@ -160,27 +160,6 @@ int hslua_gettable(lua_State *L, int index)
 
 
 /*
-** setfield
-*/
-int hslua__setfield(lua_State *L)
-{
-  const char *k = lua_tostring(L, 3);
-  lua_pushvalue(L, 1);
-  lua_setfield(L, 2, k);
-  return 0;
-}
-
-int hslua_setfield(lua_State *L, int index, const char *k)
-{
-  lua_pushvalue(L, index);
-  lua_pushlstring(L, k, strlen(k));
-  lua_pushcfunction(L, hslua__setfield);
-  lua_insert(L, -4);
-  return -lua_pcall(L, 3, 0, 0);
-}
-
-
-/*
 ** setglobal
 */
 int hslua__setglobal(lua_State *L)
@@ -209,9 +188,9 @@ int hslua_setglobal(lua_State *L, const char *name)
 */
 int hslua__settable(lua_State *L)
 {
-  lua_pushvalue(L, 1);
-  lua_pushvalue(L, 2);
-  lua_settable(L, 3);
+  lua_pushvalue(L, 1); /* key */
+  lua_pushvalue(L, 2); /* value */
+  lua_settable(L, 3);  /* table is the third argument */
   return 0;
 }
 
