@@ -61,42 +61,17 @@ setupTableWithFooField = do
   Lua.pushstring "foo"
   Lua.setfield (Lua.nthFromTop 2) "bar"
 
-getfieldBench :: Benchmark
-getfieldBench =
-  let getFooField = Lua.getfield Lua.stackTop "foo"
-  in luaBench "getfield" setupTableWithFooField getFooField
-
-getlfieldBench :: Benchmark
-getlfieldBench =
-  let getlfieldFoo = getlfield Lua.stackTop "foo"
-  in luaBench "getlfield" setupTableWithFooField getlfieldFoo
-
--- * Benchmark setfield
-setfieldBench :: Benchmark
-setfieldBench =
-  let setfieldFoo = do
-        Lua.pushboolean True
-        Lua.setfield (Lua.nthFromTop 2) "foo"
-  in luaBench "setfield" setupTableWithFooField setfieldFoo
-
-setfield_oldBench :: Benchmark
-setfield_oldBench =
-  let setfieldFoo = do
-        Lua.pushboolean True
-        setfield_old Lua.stackTop "foo"
-  in luaBench "setfield_old" setupTableWithFooField setfieldFoo
-
-getglobalBench :: Benchmark
-getglobalBench =
-  luaBench "getglobal" setupTableWithFooField (Lua.getglobal "foo")
-
 main :: IO ()
 main = defaultMain
-  [ getfieldBench
-  , getlfieldBench
-  , setfieldBench
-  , setfield_oldBench
-  , getglobalBench
+  [ luaBench "getfield" setupTableWithFooField (Lua.getfield Lua.stackTop "foo")
+  , luaBench "getlfield" setupTableWithFooField (getlfield Lua.stackTop "foo")
+  , luaBench "setfield"
+             (Lua.newtable *> Lua.pushboolean True)
+             (Lua.setfield (Lua.nthFromTop 2) "foo")
+  , luaBench "setfield_old"
+             (Lua.newtable *> Lua.pushboolean True)
+             (setfield_old (Lua.nthFromTop 2) "foo")
+  , luaBench "getglobal" (return ()) (Lua.getglobal "foo")
   , luaBench "setglobal" (Lua.pushboolean True) (Lua.setglobal "foo")
   , luaBench "setraw"
              (Lua.newtable *> Lua.pushstring "foo" *> Lua.pushboolean True)
