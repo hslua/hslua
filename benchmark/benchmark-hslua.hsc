@@ -98,6 +98,9 @@ main = defaultMain
   , setfield_oldBench
   , getglobalBench
   , luaBench "setglobal" (Lua.pushboolean True) (Lua.setglobal "foo")
+  , luaBench "setraw"
+             (Lua.newtable *> Lua.pushstring "foo" *> Lua.pushboolean True)
+             (Lua.rawset (Lua.nthFromTop 3))
   ]
 
 instance NFData Lua.LuaState
