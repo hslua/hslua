@@ -130,7 +130,7 @@ tests = testGroup "Haskell version of the C API"
       pushcfunction LuaRaw.lua_open_debug_ptr
       liftIO . assertBool "not recognized as CFunction" =<< iscfunction (-1)
       liftIO . assertEqual "CFunction changed after receiving it from the stack"
-        LuaRaw.lua_open_debug_ptr =<< tocfunction (-1)
+        (Just LuaRaw.lua_open_debug_ptr) =<< tocfunction (-1)
 
   , testGroup "getting values"
     [ testGroup "tointeger"

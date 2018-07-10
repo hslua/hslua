@@ -167,7 +167,7 @@ instance Peekable Bool where
   safePeek = typeChecked' "boolean" isboolean toboolean
 
 instance Peekable CFunction where
-  safePeek = typeChecked' "C function" iscfunction tocfunction
+  safePeek = reportValueOnFailure "C function" tocfunction
 
 instance Peekable (Ptr a) where
   safePeek = reportValueOnFailure "userdata" touserdata

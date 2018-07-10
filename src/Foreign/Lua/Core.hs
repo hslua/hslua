@@ -1188,12 +1188,15 @@ toboolean :: StackIndex -> Lua Bool
 toboolean n = liftLua $ \l -> fromLuaBool <$> lua_toboolean l n
 
 -- | Converts a value at the given index to a C function. That value must be a C
--- function; otherwise, returns @nullPtr@.
+-- function; otherwise, returns @Nothing@.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_tocfunction lua_tocfunction>.
-tocfunction :: StackIndex -> Lua CFunction
-tocfunction n = liftLua $ \l -> lua_tocfunction l n
+tocfunction :: StackIndex -> Lua (Maybe CFunction)
+tocfunction n = liftLua $ \l -> do
+  fnPtr <- lua_tocfunction l n
+  return (if fnPtr == nullFunPtr then Nothing else Just fnPtr)
+
 
 -- | Converts the Lua value at the given acceptable index to the signed integral
 -- type @'lua_Integer'@. The Lua value must be an integer, a number or a string
