@@ -173,7 +173,7 @@ instance Peekable (Ptr a) where
   safePeek = reportValueOnFailure "userdata" touserdata
 
 instance Peekable LuaState where
-  safePeek = typeChecked' "LuaState (i.e., a thread)" isthread tothread
+  safePeek = reportValueOnFailure "LuaState (i.e., a thread)" tothread
 
 instance Peekable T.Text where
   safePeek = fmap (fmap T.decodeUtf8) . safePeek

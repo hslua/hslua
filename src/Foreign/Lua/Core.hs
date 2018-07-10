@@ -1267,12 +1267,16 @@ tostring' n = liftLua $ \l -> alloca $ \lenPtr -> do
 
 -- | Converts the value at the given index to a Lua thread (represented as
 -- lua_State*). This value must be a thread; otherwise, the function returns
--- @LuaState nullPtr@.
+-- @Nothing@.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_tothread lua_tothread>.
-tothread :: StackIndex -> Lua LuaState
-tothread n = liftLua $ \l -> lua_tothread l n
+tothread :: StackIndex -> Lua (Maybe LuaState)
+tothread n = liftLua $ \l -> do
+  thread@(LuaState ptr) <- lua_tothread l n
+  if ptr == nullPtr
+    then return Nothing
+    else return (Just thread)
 
 -- | If the value at the given index is a full userdata, returns its block
 -- address. If the value is a light userdata, returns its pointer. Otherwise,

@@ -221,9 +221,9 @@ tests = testGroup "Haskell version of the C API"
       getglobal "coroutine"
       getfield stackTop "resume"
       pushLuaExpr "coroutine.create(function() coroutine.yield(9) end)"
-      co <- tothread stackTop
+      (Just contThread) <- tothread stackTop
       call 1 0
-      liftIO . runLuaWith co $ do
+      liftIO . runLuaWith contThread $ do
         liftIO . assertEqual "yielding will put thread status to Yield" Yield
           =<< status
 
