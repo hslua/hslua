@@ -158,7 +158,10 @@ instance Peekable LuaNumber where
   safePeek = reportValueOnFailure "number" tonumber
 
 instance Peekable ByteString where
-  safePeek = typeChecked' "string" isstring tostring
+  safePeek = reportValueOnFailure "string" $ \idx -> do
+    -- copy value, as tostring converts numbers to strings *in-place*.
+    pushvalue idx
+    tostring stackTop <* pop 1
 
 instance Peekable Bool where
   safePeek = typeChecked' "boolean" isboolean toboolean

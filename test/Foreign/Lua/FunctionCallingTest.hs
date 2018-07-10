@@ -24,6 +24,7 @@ THE SOFTWARE.
 module Foreign.Lua.FunctionCallingTest (tests) where
 
 import Control.Monad (forM_)
+import Data.Maybe (fromMaybe)
 import Foreign.Lua.Core
 import Foreign.Lua.Types (Result (Error, Success))
 import Foreign.Lua.FunctionCalling (callFunc, peek, registerHaskellFunction,
@@ -73,7 +74,7 @@ tests = testGroup "Interoperability"
             registerHaskellFunction "integerOp" integerOperation
             loadstring "return integerOp(23, true)" *> call 0 2
             err <- tostring (-1) <* pop 2 -- pop HSLUA_ERR
-            return (Char8.unpack err)
+            return (Char8.unpack (fromMaybe "" err))
 
           errMsg = "Error during function call: could not read "
                    ++ "argument 2: Expected a integer but got a boolean"

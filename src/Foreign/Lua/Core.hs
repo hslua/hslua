@@ -1239,11 +1239,15 @@ topointer :: StackIndex -> Lua (Ptr ())
 topointer n = liftLua $ \l -> lua_topointer l n
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tostring lua_tostring>.
-tostring :: StackIndex -> Lua ByteString
-tostring n = liftLua $ \l -> alloca $ \lenPtr -> do
-  cstr <- lua_tolstring l n lenPtr
-  cstrLen <- F.peek lenPtr
-  B.packCStringLen (cstr, fromIntegral cstrLen)
+tostring :: StackIndex -> Lua (Maybe ByteString)
+tostring n = liftLua $ \l ->
+  alloca $ \lenPtr -> do
+    cstr <- lua_tolstring l n lenPtr
+    if cstr == nullPtr
+      then return Nothing
+      else do
+      cstrLen <- F.peek lenPtr
+      Just <$> B.packCStringLen (cstr, fromIntegral cstrLen)
 
 -- | Converts any Lua value at the given index to a @'ByteString'@ in a
 -- reasonable format. The resulting string is pushed onto the stack and also

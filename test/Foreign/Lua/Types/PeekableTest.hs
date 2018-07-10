@@ -50,6 +50,11 @@ tests = testGroup "Peekable"
       pushnumber 5.0
       peek stackTop
 
+  , "list of numbers can be retrieved as pair of strings" =:
+    [("1", "2"), ("2", "4"), ("3", "8"), ("4", "16")] `shouldBeResultOf` do
+      pushLuaExpr "{2, 4, 8, 16}"
+      pairsFromTable stackTop >>= force :: Lua [(String, String)]
+
   , testGroup "error handling"
     [ "error is thrown if number is given instead of boolean" =:
       "Expected a boolean but got a number" `shouldBeErrorMessageOf` do

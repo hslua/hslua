@@ -133,39 +133,60 @@ tests = testGroup "Haskell version of the C API"
         LuaRaw.lua_open_debug_ptr =<< tocfunction (-1)
 
   , testGroup "getting values"
-    [ "tointeger returns numbers verbatim" =:
-      Just 149 `shouldBeResultOf` do
-        pushLuaExpr "149"
-        tointeger (-1)
+    [ testGroup "tointeger"
+      [ "tointeger returns numbers verbatim" =:
+        Just 149 `shouldBeResultOf` do
+          pushLuaExpr "149"
+          tointeger (-1)
 
-    , "tointeger accepts strings coercible to integers" =:
-      Just 451 `shouldBeResultOf` do
-        pushLuaExpr "'451'"
-        tointeger (-1)
+      , "tointeger accepts strings coercible to integers" =:
+        Just 451 `shouldBeResultOf` do
+          pushLuaExpr "'451'"
+          tointeger (-1)
 
-    , "tointeger returns Nothing when given a boolean" =:
-      Nothing `shouldBeResultOf` do
-        pushLuaExpr "true"
-        tointeger (-1)
+      , "tointeger returns Nothing when given a boolean" =:
+        Nothing `shouldBeResultOf` do
+          pushLuaExpr "true"
+          tointeger (-1)
+      ]
 
-    , "tonumber returns numbers verbatim" =:
-      Just 14.9 `shouldBeResultOf` do
-        pushLuaExpr "14.9"
-        tonumber (-1)
+    , testGroup "tonumber"
+      [ "tonumber returns numbers verbatim" =:
+        Just 14.9 `shouldBeResultOf` do
+          pushLuaExpr "14.9"
+          tonumber (-1)
 
-    , "tonumber accepts strings as numbers" =:
-      Just 42.23 `shouldBeResultOf` do
-        pushLuaExpr "'42.23'"
-        tonumber (-1)
+      , "tonumber accepts strings as numbers" =:
+        Just 42.23 `shouldBeResultOf` do
+          pushLuaExpr "'42.23'"
+          tonumber (-1)
 
-    , "tonumber returns Nothing when given a boolean" =:
-      Nothing `shouldBeResultOf` do
-        pushLuaExpr "true"
-        tonumber (-1)
+      , "tonumber returns Nothing when given a boolean" =:
+        Nothing `shouldBeResultOf` do
+          pushLuaExpr "true"
+          tonumber (-1)
+      ]
+
+    , testGroup "tostring"
+      [ "get a string" =:
+        (Just "a string") `shouldBeResultOf` do
+          pushLuaExpr "'a string'"
+          tostring stackTop
+
+      , "get a number as string" =:
+        (Just "17.0") `shouldBeResultOf` do
+          pushnumber 17
+          tostring stackTop
+
+      , "fail when looking at a boolean" =:
+        Nothing `shouldBeResultOf` do
+          pushboolean True
+          tostring stackTop
+      ]
     ]
 
   , "setting and getting a global works" =:
-    "Moin" `shouldBeResultOf` do
+    (Just "Moin") `shouldBeResultOf` do
       pushLuaExpr "{'Moin', Hello = 'World'}"
       setglobal "hamburg"
 
@@ -231,7 +252,7 @@ tests = testGroup "Haskell version of the C API"
           tostring' stackTop
 
       , "string is also pushed to the stack" =:
-        "true" `shouldBeResultOf` do
+        (Just "true") `shouldBeResultOf` do
           pushboolean True
           _ <- tostring' stackTop
           tostring stackTop  -- note the use of tostring instead of tostring'
@@ -275,7 +296,7 @@ tests = testGroup "Haskell version of the C API"
         OK `shouldBeResultOf` loadbuffer "return '\NUL'" "test"
 
       , "loading a string containing NUL should be correct" =:
-        "\NUL" `shouldBeResultOf` do
+        (Just "\NUL") `shouldBeResultOf` do
           _ <- loadbuffer "return '\NUL'" "test"
           call 0 1
           tostring stackTop
