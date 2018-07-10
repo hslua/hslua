@@ -43,7 +43,7 @@ module Foreign.Lua.Types.Peekable
   ( Peekable (..)
   , peekEither
   , pairsFromTable
-  , toList
+  , safePeekList
   , Result (..)
   , force
   ) where
@@ -185,7 +185,7 @@ instance {-# OVERLAPS #-} Peekable [Char] where
   safePeek = fmap (fmap T.unpack) . safePeek
 
 instance Peekable a => Peekable [a] where
-  safePeek = typeChecked "table" istable toList
+  safePeek = typeChecked "table" istable safePeekList
 
 instance (Ord a, Peekable a, Peekable b) => Peekable (Map a b) where
   safePeek idx = fmap fromList <$> pairsFromTable idx
@@ -195,8 +195,9 @@ instance (Ord a, Peekable a) => Peekable (Set a) where
     fmap (Set.fromList . map fst . filter snd) <$> pairsFromTable idx
 
 -- | Read a table into a list
-toList :: Peekable a => StackIndex -> Lua (Result [a])
-toList n = inContext "Could not read list: " $
+safePeekList :: Peekable a => StackIndex -> Lua (Result [a])
+safePeekList n =
+  inContext "Could not read list: " $
   go . enumFromTo 1 . fromIntegral =<< rawlen n
  where
   go [] = return (Success [])

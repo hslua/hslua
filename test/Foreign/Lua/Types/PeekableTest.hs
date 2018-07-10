@@ -92,7 +92,7 @@ tests = testGroup "Peekable"
       0 `shouldBeResultOf` do
         pushLuaExpr "{true, 1, 1, 2, 3, 5, 8}"
         topBefore <- gettop
-        _ <- toList stackTop :: Lua (Result [Bool])
+        _ <- safePeekList stackTop :: Lua (Result [Bool])
         topAfter <- gettop
         return (topAfter - topBefore)
 
