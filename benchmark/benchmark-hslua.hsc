@@ -84,7 +84,7 @@ instance NFData Lua.LuaState
 -- Functions for comparison
 
 -- | Getting a string field with lua_pushlstring and lua_gettable
-foreign import ccall "safer-api.h hslua_getlfield"
+foreign import ccall "hslua_getlfield"
   hslua_getlfield :: LuaState -> StackIndex -> CString -> CSize -> IO CInt
 
 getlfield :: StackIndex -> ByteString -> Lua CInt
@@ -94,7 +94,7 @@ getlfield i s = do
     hslua_getlfield l i strPtr (fromIntegral len)
 
 -- | Getting a string field with lua_pushlstring and lua_gettable
-foreign import ccall "safer-api.h hslua_setfield"
+foreign import ccall "hslua_setfield"
   hslua_setfield :: LuaState -> StackIndex -> CString -> IO CInt
 
 setfield_old :: StackIndex -> ByteString -> Lua CInt

@@ -262,6 +262,7 @@ import Prelude hiding (EQ, LT, compare, concat, error)
 
 import Control.Monad
 import Data.ByteString (ByteString)
+import Data.Monoid ((<>))
 import Data.Maybe (fromMaybe)
 import Foreign.C
 import Foreign.Lua.Core.Constants
@@ -306,8 +307,19 @@ throwOnError = fromFailable (const ())
 boolFromFailable :: Failable LuaBool -> Lua Bool
 boolFromFailable = fmap fromLuaBool . fromFailable LuaBool
 
+-- | Registry field under which the special HsLua error indicator is stored.
 hsluaErrorRegistryField :: ByteString
 hsluaErrorRegistryField = Char8.pack "HSLUA_ERR"
+
+-- | Execute an action only if the given index is a table. Throw an error otherwise.
+ensureTable :: StackIndex -> (LuaState -> IO ()) -> Lua ()
+ensureTable idx ioOp = do
+  isTbl <- istable idx
+  if isTbl
+    then liftLua ioOp
+    else do
+      tyName <- ltype idx >>= typename
+      throwLuaError (Char8.pack "table expected, got " <> tyName)
 
 --
 -- API functions
@@ -1005,7 +1017,7 @@ rawequal idx1 idx2 = liftLua $ \l ->
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawget lua_rawget>.
 rawget :: StackIndex -> Lua ()
-rawget n = liftLua $ \l -> lua_rawget l n
+rawget n = ensureTable n (\l -> lua_rawget l n)
 
 -- | Pushes onto the stack the value @t[n]@, where @t@ is the table at the given
 -- index. The access is raw, that is, it does not invoke the @__index@
@@ -1014,7 +1026,7 @@ rawget n = liftLua $ \l -> lua_rawget l n
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawgeti lua_rawgeti>.
 rawgeti :: StackIndex -> LuaInteger -> Lua ()
-rawgeti k m = liftLua $ \l -> lua_rawgeti l k m
+rawgeti k n = ensureTable k (\l -> lua_rawgeti l k n)
 
 -- | Returns the raw "length" of the value at the given index: for strings, this
 -- is the string length; for tables, this is the result of the length operator
@@ -1032,7 +1044,7 @@ rawlen idx = liftLua $ \l -> fromIntegral <$> lua_rawlen l idx
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawset lua_rawset>.
 rawset :: StackIndex -> Lua ()
-rawset n = liftLua $ \l -> lua_rawset l n
+rawset n = ensureTable n (\l -> lua_rawset l n)
 
 -- | Does the equivalent of @t[i] = v@, where @t@ is the table at the given
 -- index and @v@ is the value at the top of the stack.
@@ -1043,7 +1055,7 @@ rawset n = liftLua $ \l -> lua_rawset l n
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawseti lua_rawseti>.
 rawseti :: StackIndex -> LuaInteger -> Lua ()
-rawseti k m = liftLua $ \l -> lua_rawseti l k m
+rawseti k m = ensureTable k (\l -> lua_rawseti l k m)
 
 -- | Creates and returns a reference, in the table at index @t@, for the object
 -- at the top of the stack (and pops the object).
