@@ -247,7 +247,7 @@ inContext ctx op = do
 --
 
 instance (Peekable a, Peekable b) => Peekable (a, b) where
-  safePeek idx = do
+  safePeek = typeChecked "table" istable $ \idx -> do
     a <- rawgeti idx 1 *> safePeek (-1) <* pop 1
     b <- rawgeti idx 2 *> safePeek (-1) <* pop 1
     return $ (,) <$> a <*> b
@@ -255,7 +255,7 @@ instance (Peekable a, Peekable b) => Peekable (a, b) where
 instance (Peekable a, Peekable b, Peekable c) =>
          Peekable (a, b, c)
  where
-  safePeek idx = do
+  safePeek = typeChecked "table" istable $ \idx -> do
     pushvalue idx
     a <- getTableIndex 1
     b <- getTableIndex 2
@@ -266,7 +266,7 @@ instance (Peekable a, Peekable b, Peekable c) =>
 instance (Peekable a, Peekable b, Peekable c, Peekable d) =>
          Peekable (a, b, c, d)
  where
-  safePeek idx = do
+  safePeek = typeChecked "table" istable $ \idx -> do
     pushvalue idx
     a <- getTableIndex 1
     b <- getTableIndex 2
@@ -279,7 +279,7 @@ instance (Peekable a, Peekable b, Peekable c,
           Peekable d, Peekable e) =>
          Peekable (a, b, c, d, e)
  where
-  safePeek idx = do
+  safePeek = typeChecked "table" istable $ \idx -> do
     pushvalue idx
     a <- getTableIndex 1
     b <- getTableIndex 2
@@ -293,7 +293,7 @@ instance (Peekable a, Peekable b, Peekable c,
           Peekable d, Peekable e, Peekable f) =>
          Peekable (a, b, c, d, e, f)
  where
-  safePeek idx = do
+  safePeek = typeChecked "table" istable $ \idx -> do
     pushvalue idx
     a <- getTableIndex 1
     b <- getTableIndex 2
@@ -308,7 +308,7 @@ instance (Peekable a, Peekable b, Peekable c, Peekable d,
           Peekable e, Peekable f, Peekable g) =>
          Peekable (a, b, c, d, e, f, g)
  where
-  safePeek idx = do
+  safePeek = typeChecked "table" istable $ \idx -> do
     pushvalue idx
     a <- getTableIndex 1
     b <- getTableIndex 2
@@ -324,7 +324,7 @@ instance (Peekable a, Peekable b, Peekable c, Peekable d,
           Peekable e, Peekable f, Peekable g, Peekable h) =>
          Peekable (a, b, c, d, e, f, g, h)
  where
-  safePeek idx = do
+  safePeek = typeChecked "table" istable $ \idx -> do
     pushvalue idx
     a <- getTableIndex 1
     b <- getTableIndex 2
