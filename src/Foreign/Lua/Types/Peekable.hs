@@ -102,14 +102,8 @@ typeChecked expectedType test peekfn n = do
       let msg = "Expected a " <> expectedType <> " but got a " <> actual
       return (Error [msg])
 
-typeChecked' :: ByteString
-             -> (StackIndex -> Lua Bool)
-             -> (StackIndex -> Lua a)
-             -> StackIndex -> Lua (Result a)
-typeChecked' expectedType test peekfn =
-  typeChecked expectedType test (fmap return . peekfn)
-
-
+-- | Report the expected and actual type of the value under the given index if
+-- conversion failed.
 reportValueOnFailure :: ByteString
                      -> (StackIndex -> Lua (Maybe a))
                      -> StackIndex -> Lua (Result a)
@@ -117,13 +111,16 @@ reportValueOnFailure expected peekMb idx = do
   res <- peekMb idx
   case res of
     (Just x) -> return (Success x)
-    Nothing -> typeMismatchError expected idx
+    Nothing -> do
+      actual <- ltype idx >>= typename
+      mismatchError expected actual
 
-typeMismatchError :: ByteString -> StackIndex -> Lua (Result a)
-typeMismatchError expectedType idx = do
-  actual <- ltype idx >>= typename
-  let msg = "Expected a " <> expectedType <> " but got a " <> actual
+-- | Return a Result error containing a message about the assertion failure.
+mismatchError :: ByteString -> ByteString -> Lua (Result a)
+mismatchError expected actual = do
+  let msg = "Expected a " <> expected <> " but got a " <> actual
   return (Error [msg])
+
 
 -- | A value that can be read from the Lua stack.
 class Peekable a where
@@ -149,7 +146,9 @@ peekEither idx = safePeek idx >>= \case
   Error msgs -> return . Left . mconcat $ map Char8.unpack msgs
 
 instance Peekable () where
-  safePeek = typeChecked' "nil" isnil (const $ return ())
+  safePeek = reportValueOnFailure "nil" $ \idx -> do
+    isNil <- isnil idx
+    return (if isNil then Just () else Nothing)
 
 instance Peekable LuaInteger where
   safePeek = reportValueOnFailure "integer" tointeger
@@ -185,7 +184,7 @@ instance {-# OVERLAPS #-} Peekable [Char] where
   safePeek = fmap (fmap T.unpack) . safePeek
 
 instance Peekable a => Peekable [a] where
-  safePeek = typeChecked "table" istable safePeekList
+  safePeek = safePeekList
 
 instance (Ord a, Peekable a, Peekable b) => Peekable (Map a b) where
   safePeek idx = fmap fromList <$> pairsFromTable idx
@@ -196,33 +195,31 @@ instance (Ord a, Peekable a) => Peekable (Set a) where
 
 -- | Read a table into a list
 safePeekList :: Peekable a => StackIndex -> Lua (Result [a])
-safePeekList n =
-  inContext "Could not read list: " $
-  go . enumFromTo 1 . fromIntegral =<< rawlen n
- where
-  go [] = return (Success [])
-  go (i : is) = do
-    ret <- rawgeti n i *> safePeek (nthFromTop 1) <* pop 1
-    case ret of
-      Success x -> fmap (x:) <$> go is
-      Error msgs -> return (Error msgs)
+safePeekList = typeChecked "table" istable $ \idx -> do
+  let elementsAt [] = return (Success [])
+      elementsAt (i : is) = do
+        ret <- rawgeti idx i *> safePeek (nthFromTop 1) <* pop 1
+        case ret of
+          Success x -> fmap (x:) <$> elementsAt is
+          Error msgs -> return (Error msgs)
+  listLength <- fromIntegral <$> rawlen idx
+  inContext "Could not read list: " (elementsAt [1..listLength])
 
 -- | Read a table into a list of pairs.
 pairsFromTable :: (Peekable a, Peekable b)
                => StackIndex -> Lua (Result [(a, b)])
-pairsFromTable idx =
+pairsFromTable = typeChecked "table" istable $ \idx -> do
+  let remainingPairs = do
+        res <- nextPair (if idx < 0 then idx - 1 else idx)
+        case res of
+          Nothing -> return (Success [])
+          Just (Success a)  -> fmap (a:) <$> remainingPairs
+          Just (Error msgs) -> do
+            pop 1  -- drop remaining key from stack
+            return (Error msgs)
   inContext "Could not read key-value pairs: " $ do
     pushnil
     remainingPairs
- where
-  remainingPairs = do
-    res <- nextPair (if idx < 0 then idx - 1 else idx)
-    case res of
-      Nothing -> return (Success [])
-      Just (Success a)  -> fmap (a:) <$> remainingPairs
-      Just (Error msgs) -> do
-        pop 1  -- drop remaining key from stack
-        return (Error msgs)
 
 -- | Get the next key-value pair from a table. Assumes the last key to be on the
 -- top of the stack and the table at the given index @idx@.
