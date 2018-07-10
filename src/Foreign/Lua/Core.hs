@@ -1276,12 +1276,16 @@ tothread n = liftLua $ \l -> lua_tothread l n
 
 -- | If the value at the given index is a full userdata, returns its block
 -- address. If the value is a light userdata, returns its pointer. Otherwise,
--- returns @nullPtr@.
+-- returns @Nothing@..
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_touserdata lua_touserdata>.
-touserdata :: StackIndex -> Lua (Ptr a)
-touserdata n = liftLua $ \l -> lua_touserdata l n
+touserdata :: StackIndex -> Lua (Maybe (Ptr a))
+touserdata n = liftLua $ \l -> do
+  ptr <- lua_touserdata l n
+  if ptr == nullPtr
+    then return Nothing
+    else return (Just ptr)
 
 -- | Returns the name of the type encoded by the value @tp@, which must be one
 -- the values returned by @'ltype'@.

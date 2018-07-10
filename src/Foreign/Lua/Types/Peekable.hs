@@ -170,7 +170,7 @@ instance Peekable CFunction where
   safePeek = typeChecked' "C function" iscfunction tocfunction
 
 instance Peekable (Ptr a) where
-  safePeek = typeChecked' "user data" isuserdata touserdata
+  safePeek = reportValueOnFailure "userdata" touserdata
 
 instance Peekable LuaState where
   safePeek = typeChecked' "LuaState (i.e., a thread)" isthread tothread
