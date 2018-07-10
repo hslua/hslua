@@ -164,7 +164,7 @@ instance Peekable ByteString where
     tostring stackTop <* pop 1
 
 instance Peekable Bool where
-  safePeek = typeChecked' "boolean" isboolean toboolean
+  safePeek = fmap return . toboolean
 
 instance Peekable CFunction where
   safePeek = reportValueOnFailure "C function" tocfunction

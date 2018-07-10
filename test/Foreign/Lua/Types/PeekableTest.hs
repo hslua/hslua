@@ -33,6 +33,7 @@ Test for the conversion of lua values to haskell values.
 -}
 module Foreign.Lua.Types.PeekableTest (tests) where
 
+import Data.ByteString (ByteString)
 import Foreign.Lua
 import Test.HsLua.Util ( (=:), (?:), pushLuaExpr, shouldBeResultOf
                        , shouldBeErrorMessageOf )
@@ -41,9 +42,19 @@ import Test.Tasty (TestTree, testGroup)
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
 tests = testGroup "Peekable"
-  [ "boolean true can be peeked" ?: do
-      pushLuaExpr "true"
-      peek stackTop
+  [ testGroup "Bool"
+    ["literal true is truthy" ?: do
+        pushLuaExpr "true"
+        peek stackTop
+
+    , "0 as a non-nil value is truthy" ?: do
+        pushnumber 0
+        peek stackTop
+
+    , "nil is falsy" ?: do
+        pushnil
+        not <$> peek stackTop
+    ]
 
   , "integer can be peeked" =:
     (5 :: LuaInteger) `shouldBeResultOf` do
@@ -56,10 +67,10 @@ tests = testGroup "Peekable"
       pairsFromTable stackTop >>= force :: Lua [(String, String)]
 
   , testGroup "error handling"
-    [ "error is thrown if number is given instead of boolean" =:
-      "Expected a boolean but got a number" `shouldBeErrorMessageOf` do
-        pushnumber 5
-        peek stackTop :: Lua Bool
+    [ "error is thrown if boolean is given instead of stringy value" =:
+      "Expected a string but got a boolean" `shouldBeErrorMessageOf` do
+        pushboolean False
+        peek stackTop :: Lua ByteString
 
     , "floating point numbers cannot be peeked as integer" =:
       "Expected a integer but got a number" `shouldBeErrorMessageOf` do
