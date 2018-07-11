@@ -105,9 +105,7 @@ module Foreign.Lua.Core (
   , toboolean
   , tocfunction
   , tointeger
-  , tointegerx
   , tonumber
-  , tonumberx
   , topointer
   , tostring
   , tothread
@@ -1190,46 +1188,41 @@ toboolean :: StackIndex -> Lua Bool
 toboolean n = liftLua $ \l -> fromLuaBool <$> lua_toboolean l n
 
 -- | Converts a value at the given index to a C function. That value must be a C
--- function; otherwise, returns @nullPtr@.
+-- function; otherwise, returns @Nothing@.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_tocfunction lua_tocfunction>.
-tocfunction :: StackIndex -> Lua CFunction
-tocfunction n = liftLua $ \l -> lua_tocfunction l n
+tocfunction :: StackIndex -> Lua (Maybe CFunction)
+tocfunction n = liftLua $ \l -> do
+  fnPtr <- lua_tocfunction l n
+  return (if fnPtr == nullFunPtr then Nothing else Just fnPtr)
+
 
 -- | Converts the Lua value at the given acceptable index to the signed integral
 -- type @'lua_Integer'@. The Lua value must be an integer, a number or a string
 -- convertible to an integer (see
 -- <https://www.lua.org/manual/5.3/manual.html#3.4.3 §3.4.3> of the Lua 5.3
--- Reference Manual); otherwise, @tointeger@ returns 0.
+-- Reference Manual); otherwise, @tointeger@ returns @Nothing@.
 --
 -- If the number is not an integer, it is truncated in some non-specified way.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_tointeger lua_tointeger>.
-tointeger :: StackIndex -> Lua LuaInteger
-tointeger n = liftLua $ \l -> lua_tointeger l n
-
--- | Like @'tointeger'@, but returns @Nothing@ if the conversion failed
-tointegerx :: StackIndex -> Lua (Maybe LuaInteger)
-tointegerx n = liftLua $ \l -> alloca $ \bptr -> do
-  res <- lua_tointegerx l n bptr
-  isNum <- fromLuaBool <$> F.peek bptr
+tointeger :: StackIndex -> Lua (Maybe LuaInteger)
+tointeger n = liftLua $ \l -> alloca $ \boolPtr -> do
+  res <- lua_tointegerx l n boolPtr
+  isNum <- fromLuaBool <$> F.peek boolPtr
   if isNum
     then return $ Just res
     else return $ Nothing
 
 -- | Converts the Lua value at the given index to the C type lua_Number. The Lua
 -- value must be a number or a string convertible to a number; otherwise,
--- @tonumber@ returns 0.
+-- @tonumber@ returns @'Nothing'@.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_tonumber lua_tonumber>.
-tonumber :: StackIndex -> Lua LuaNumber
-tonumber n = liftLua $ \l -> lua_tonumber l n
-
--- | Like @'tonumber'@, but returns @Nothing@ if the conversion failed
-tonumberx :: StackIndex -> Lua (Maybe LuaNumber)
-tonumberx n = liftLua $ \l -> alloca $ \bptr -> do
+tonumber :: StackIndex -> Lua (Maybe LuaNumber)
+tonumber n = liftLua $ \l -> alloca $ \bptr -> do
   res <- lua_tonumberx l n bptr
   isNum <- fromLuaBool <$> F.peek bptr
   if isNum
@@ -1249,11 +1242,15 @@ topointer :: StackIndex -> Lua (Ptr ())
 topointer n = liftLua $ \l -> lua_topointer l n
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tostring lua_tostring>.
-tostring :: StackIndex -> Lua ByteString
-tostring n = liftLua $ \l -> alloca $ \lenPtr -> do
-  cstr <- lua_tolstring l n lenPtr
-  cstrLen <- F.peek lenPtr
-  B.packCStringLen (cstr, fromIntegral cstrLen)
+tostring :: StackIndex -> Lua (Maybe ByteString)
+tostring n = liftLua $ \l ->
+  alloca $ \lenPtr -> do
+    cstr <- lua_tolstring l n lenPtr
+    if cstr == nullPtr
+      then return Nothing
+      else do
+      cstrLen <- F.peek lenPtr
+      Just <$> B.packCStringLen (cstr, fromIntegral cstrLen)
 
 -- | Converts any Lua value at the given index to a @'ByteString'@ in a
 -- reasonable format. The resulting string is pushed onto the stack and also
@@ -1273,21 +1270,29 @@ tostring' n = liftLua $ \l -> alloca $ \lenPtr -> do
 
 -- | Converts the value at the given index to a Lua thread (represented as
 -- lua_State*). This value must be a thread; otherwise, the function returns
--- @LuaState nullPtr@.
+-- @Nothing@.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_tothread lua_tothread>.
-tothread :: StackIndex -> Lua LuaState
-tothread n = liftLua $ \l -> lua_tothread l n
+tothread :: StackIndex -> Lua (Maybe LuaState)
+tothread n = liftLua $ \l -> do
+  thread@(LuaState ptr) <- lua_tothread l n
+  if ptr == nullPtr
+    then return Nothing
+    else return (Just thread)
 
 -- | If the value at the given index is a full userdata, returns its block
 -- address. If the value is a light userdata, returns its pointer. Otherwise,
--- returns @nullPtr@.
+-- returns @Nothing@..
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_touserdata lua_touserdata>.
-touserdata :: StackIndex -> Lua (Ptr a)
-touserdata n = liftLua $ \l -> lua_touserdata l n
+touserdata :: StackIndex -> Lua (Maybe (Ptr a))
+touserdata n = liftLua $ \l -> do
+  ptr <- lua_touserdata l n
+  if ptr == nullPtr
+    then return Nothing
+    else return (Just ptr)
 
 -- | Returns the name of the type encoded by the value @tp@, which must be one
 -- the values returned by @'ltype'@.

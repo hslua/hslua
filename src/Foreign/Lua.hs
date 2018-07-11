@@ -42,7 +42,7 @@ module Foreign.Lua (
   , Result (..)
   , force
   , peekEither
-  , toList
+  , safePeekList
   , pairsFromTable
   -- * Pushing values to Lua stack (Haskell → Lua)
   , Pushable (..)

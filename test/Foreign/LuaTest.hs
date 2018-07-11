@@ -91,7 +91,7 @@ tests = testGroup "lua integration tests"
       pushstring v
       setglobal' "berlin.neighborhood"
       v' <- getglobal' "berlin.neighborhood" *> tostring (-1)
-      return (v == v')
+      return (Just v == v')
 
   , testCase "table reading" .
     runLua $ do
@@ -118,8 +118,8 @@ tests = testGroup "lua integration tests"
         let val = T.pack "öçşiğüİĞı"
         val' <- runLua $ do
           pushstring (T.encodeUtf8 val)
-          T.decodeUtf8 `fmap` tostring 1
-        assertEqual "Popped a different value or pop failed" val val'
+          fmap T.decodeUtf8 `fmap` tostring 1
+        assertEqual "Popped a different value or pop failed" (Just val) val'
 
     , testCase "ByteString should survive after GC/Lua destroyed" $ do
         (val, val') <- runLua $ do
@@ -127,14 +127,14 @@ tests = testGroup "lua integration tests"
           pushstring v
           v' <- tostring 1
           pop 1
-          return (v, v')
+          return (Just v, v')
         performMajorGC
         assertEqual "Popped a different value or pop failed" val val'
     , testCase "String with NUL byte should be pushed/popped correctly" $ do
         let str = "A\NULB"
         str' <- runLua $ pushstring (Char8.pack str) *> tostring 1
         assertEqual "Popped string is different than what's pushed"
-          str (Char8.unpack str')
+          (Just str) (Char8.unpack <$> str')
     ]
 
   , testGroup "luaopen_* functions" $ map (uncurry testOpen)

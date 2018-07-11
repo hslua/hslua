@@ -43,7 +43,7 @@ module Foreign.Lua.Types.Peekable
   ( Peekable (..)
   , peekEither
   , pairsFromTable
-  , toList
+  , safePeekList
   , Result (..)
   , force
   ) where
@@ -93,21 +93,29 @@ typeChecked :: ByteString
             -> (StackIndex -> Lua (Result a))
             -> StackIndex
             -> Lua (Result a)
-typeChecked expectedType test peekfn n = do
-  v <- test n
-  if v
-    then peekfn n
-    else do
-      actual <- ltype n >>= typename
-      let msg = "Expected a " <> expectedType <> " but got a " <> actual
-      return (Error [msg])
+typeChecked expectedType test peekfn idx = do
+  v <- test idx
+  if v then peekfn idx else mismatchError expectedType idx
 
-typeChecked' :: ByteString
-             -> (StackIndex -> Lua Bool)
-             -> (StackIndex -> Lua a)
-             -> StackIndex -> Lua (Result a)
-typeChecked' expectedType test peekfn =
-  typeChecked expectedType test (fmap return . peekfn)
+-- | Report the expected and actual type of the value under the given index if
+-- conversion failed.
+reportValueOnFailure :: ByteString
+                     -> (StackIndex -> Lua (Maybe a))
+                     -> StackIndex -> Lua (Result a)
+reportValueOnFailure expected peekMb idx = do
+  res <- peekMb idx
+  case res of
+    (Just x) -> return (Success x)
+    Nothing -> mismatchError expected idx
+
+-- | Return a Result error containing a message about the assertion failure.
+mismatchError :: ByteString -> StackIndex -> Lua (Result a)
+mismatchError expected idx = do
+  actualType <- ltype idx >>= typename
+  actualValue <- tostring' idx <* pop 1
+  let msg = "expected " <> expected
+          <> ", got '" <> actualValue <> "' (" <> actualType <> ")"
+  return (Error [msg])
 
 -- | A value that can be read from the Lua stack.
 class Peekable a where
@@ -133,28 +141,33 @@ peekEither idx = safePeek idx >>= \case
   Error msgs -> return . Left . mconcat $ map Char8.unpack msgs
 
 instance Peekable () where
-  safePeek = typeChecked' "nil" isnil (const $ return ())
+  safePeek = reportValueOnFailure "nil" $ \idx -> do
+    isNil <- isnil idx
+    return (if isNil then Just () else Nothing)
 
 instance Peekable LuaInteger where
-  safePeek = typeChecked' "number" isnumber tointeger
+  safePeek = reportValueOnFailure "integer" tointeger
 
 instance Peekable LuaNumber where
-  safePeek = typeChecked' "number" isnumber tonumber
+  safePeek = reportValueOnFailure "number" tonumber
 
 instance Peekable ByteString where
-  safePeek = typeChecked' "string" isstring tostring
+  safePeek = reportValueOnFailure "string" $ \idx -> do
+    -- copy value, as tostring converts numbers to strings *in-place*.
+    pushvalue idx
+    tostring stackTop <* pop 1
 
 instance Peekable Bool where
-  safePeek = typeChecked' "boolean" isboolean toboolean
+  safePeek = fmap return . toboolean
 
 instance Peekable CFunction where
-  safePeek = typeChecked' "C function" iscfunction tocfunction
+  safePeek = reportValueOnFailure "C function" tocfunction
 
 instance Peekable (Ptr a) where
-  safePeek = typeChecked' "user data" isuserdata touserdata
+  safePeek = reportValueOnFailure "userdata" touserdata
 
 instance Peekable LuaState where
-  safePeek = typeChecked' "LuaState (i.e., a thread)" isthread tothread
+  safePeek = reportValueOnFailure "LuaState (i.e., a thread)" tothread
 
 instance Peekable T.Text where
   safePeek = fmap (fmap T.decodeUtf8) . safePeek
@@ -166,7 +179,7 @@ instance {-# OVERLAPS #-} Peekable [Char] where
   safePeek = fmap (fmap T.unpack) . safePeek
 
 instance Peekable a => Peekable [a] where
-  safePeek = typeChecked "table" istable toList
+  safePeek = safePeekList
 
 instance (Ord a, Peekable a, Peekable b) => Peekable (Map a b) where
   safePeek idx = fmap fromList <$> pairsFromTable idx
@@ -176,33 +189,32 @@ instance (Ord a, Peekable a) => Peekable (Set a) where
     fmap (Set.fromList . map fst . filter snd) <$> pairsFromTable idx
 
 -- | Read a table into a list
-toList :: Peekable a => StackIndex -> Lua (Result [a])
-toList n = inContext "Could not read list: " $
-  go . enumFromTo 1 . fromIntegral =<< rawlen n
- where
-  go [] = return (Success [])
-  go (i : is) = do
-    ret <- rawgeti n i *> safePeek (nthFromTop 1) <* pop 1
-    case ret of
-      Success x -> fmap (x:) <$> go is
-      Error msgs -> return (Error msgs)
+safePeekList :: Peekable a => StackIndex -> Lua (Result [a])
+safePeekList = typeChecked "table" istable $ \idx -> do
+  let elementsAt [] = return (Success [])
+      elementsAt (i : is) = do
+        ret <- rawgeti idx i *> safePeek (nthFromTop 1) <* pop 1
+        case ret of
+          Success x -> fmap (x:) <$> elementsAt is
+          Error msgs -> return (Error msgs)
+  listLength <- fromIntegral <$> rawlen idx
+  inContext "Could not read list: " (elementsAt [1..listLength])
 
 -- | Read a table into a list of pairs.
 pairsFromTable :: (Peekable a, Peekable b)
                => StackIndex -> Lua (Result [(a, b)])
-pairsFromTable idx =
+pairsFromTable = typeChecked "table" istable $ \idx -> do
+  let remainingPairs = do
+        res <- nextPair (if idx < 0 then idx - 1 else idx)
+        case res of
+          Nothing -> return (Success [])
+          Just (Success a)  -> fmap (a:) <$> remainingPairs
+          Just (Error msgs) -> do
+            pop 1  -- drop remaining key from stack
+            return (Error msgs)
   inContext "Could not read key-value pairs: " $ do
     pushnil
     remainingPairs
- where
-  remainingPairs = do
-    res <- nextPair (if idx < 0 then idx - 1 else idx)
-    case res of
-      Nothing -> return (Success [])
-      Just (Success a)  -> fmap (a:) <$> remainingPairs
-      Just (Error msgs) -> do
-        pop 1  -- drop remaining key from stack
-        return (Error msgs)
 
 -- | Get the next key-value pair from a table. Assumes the last key to be on the
 -- top of the stack and the table at the given index @idx@.
@@ -230,7 +242,7 @@ inContext ctx op = do
 --
 
 instance (Peekable a, Peekable b) => Peekable (a, b) where
-  safePeek idx = do
+  safePeek = typeChecked "table" istable $ \idx -> do
     a <- rawgeti idx 1 *> safePeek (-1) <* pop 1
     b <- rawgeti idx 2 *> safePeek (-1) <* pop 1
     return $ (,) <$> a <*> b
@@ -238,7 +250,7 @@ instance (Peekable a, Peekable b) => Peekable (a, b) where
 instance (Peekable a, Peekable b, Peekable c) =>
          Peekable (a, b, c)
  where
-  safePeek idx = do
+  safePeek = typeChecked "table" istable $ \idx -> do
     pushvalue idx
     a <- getTableIndex 1
     b <- getTableIndex 2
@@ -249,7 +261,7 @@ instance (Peekable a, Peekable b, Peekable c) =>
 instance (Peekable a, Peekable b, Peekable c, Peekable d) =>
          Peekable (a, b, c, d)
  where
-  safePeek idx = do
+  safePeek = typeChecked "table" istable $ \idx -> do
     pushvalue idx
     a <- getTableIndex 1
     b <- getTableIndex 2
@@ -262,7 +274,7 @@ instance (Peekable a, Peekable b, Peekable c,
           Peekable d, Peekable e) =>
          Peekable (a, b, c, d, e)
  where
-  safePeek idx = do
+  safePeek = typeChecked "table" istable $ \idx -> do
     pushvalue idx
     a <- getTableIndex 1
     b <- getTableIndex 2
@@ -276,7 +288,7 @@ instance (Peekable a, Peekable b, Peekable c,
           Peekable d, Peekable e, Peekable f) =>
          Peekable (a, b, c, d, e, f)
  where
-  safePeek idx = do
+  safePeek = typeChecked "table" istable $ \idx -> do
     pushvalue idx
     a <- getTableIndex 1
     b <- getTableIndex 2
@@ -291,7 +303,7 @@ instance (Peekable a, Peekable b, Peekable c, Peekable d,
           Peekable e, Peekable f, Peekable g) =>
          Peekable (a, b, c, d, e, f, g)
  where
-  safePeek idx = do
+  safePeek = typeChecked "table" istable $ \idx -> do
     pushvalue idx
     a <- getTableIndex 1
     b <- getTableIndex 2
@@ -307,7 +319,7 @@ instance (Peekable a, Peekable b, Peekable c, Peekable d,
           Peekable e, Peekable f, Peekable g, Peekable h) =>
          Peekable (a, b, c, d, e, f, g, h)
  where
-  safePeek idx = do
+  safePeek = typeChecked "table" istable $ \idx -> do
     pushvalue idx
     a <- getTableIndex 1
     b <- getTableIndex 2

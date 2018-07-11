@@ -24,6 +24,7 @@ THE SOFTWARE.
 module Foreign.Lua.FunctionCallingTest (tests) where
 
 import Control.Monad (forM_)
+import Data.Maybe (fromMaybe)
 import Foreign.Lua.Core
 import Foreign.Lua.Types (Result (Error, Success))
 import Foreign.Lua.FunctionCalling (callFunc, peek, registerHaskellFunction,
@@ -37,7 +38,7 @@ import Data.ByteString.Char8 as Char8
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
-tests = testGroup "Interoperability"
+tests = testGroup "FunctionCalling"
   [ testGroup "call haskell functions from lua" $
     let integerOperation :: LuaInteger -> LuaInteger -> Lua LuaInteger
         integerOperation i1 i2 =
@@ -73,10 +74,10 @@ tests = testGroup "Interoperability"
             registerHaskellFunction "integerOp" integerOperation
             loadstring "return integerOp(23, true)" *> call 0 2
             err <- tostring (-1) <* pop 2 -- pop HSLUA_ERR
-            return (Char8.unpack err)
+            return (Char8.unpack (fromMaybe "" err))
 
           errMsg = "Error during function call: could not read "
-                   ++ "argument 2: Expected a number but got a boolean"
+                   ++ "argument 2: expected integer, got 'true' (boolean)"
       in assertEqual "Unexpected result" errMsg =<< runLua (catchLuaError luaOp (return . show))
 
     , "Haskell functions are converted to C functions" =:
@@ -121,7 +122,7 @@ tests = testGroup "Interoperability"
         luaRes <- runLua $ do
           openlibs
           callFunc "rawequal" (Char8.pack "a") () :: Lua (Result String)
-        let msg = pack "Expected a string but got a boolean"
+        let msg = pack "expected string, got 'false' (boolean)"
         assertEqual "raw equality test failed" (Error [msg]) luaRes
     ]
 

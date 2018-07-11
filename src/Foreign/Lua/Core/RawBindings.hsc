@@ -167,14 +167,6 @@ foreign import ccall SAFTY "lua.h lua_tointegerx"
 foreign import ccall SAFTY "lua.h lua_tonumberx"
   lua_tonumberx :: LuaState -> StackIndex -> Ptr LuaBool -> IO LuaNumber
 
--- | See <https://www.lua.org/manual/5.1/manual.html#lua_tointeger lua_tointeger>
-foreign import capi SAFTY "lua.h lua_tointeger"
-  lua_tointeger :: LuaState -> StackIndex -> IO LuaInteger
-
--- | See <https://www.lua.org/manual/5.1/manual.html#lua_tonumber lua_tonumber>
-foreign import capi SAFTY "lua.h lua_tonumber"
-  lua_tonumber :: LuaState -> StackIndex -> IO LuaNumber
-
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tolstring lua_tolstring>
 foreign import ccall SAFTY "lua.h lua_tolstring"
   lua_tolstring :: LuaState -> StackIndex -> Ptr CSize -> IO (Ptr CChar)

@@ -2,7 +2,35 @@
 
 ### 1.0.0 (unreleased)
 
-- Add stack instance for Data.Set.Set.
+- Added stack instance for Data.Set.Set.
+- The `Result` type is used to indicate that a computation can fail. Exceptions
+  are still used when the alternative would impact ergonomics too much.
+- Haskell functions pushed with `pushHaskellFunction` can now be garbage
+  collected by Lua without having to call back into Haskell. The callback into
+  Haskell by the GC had previously caused programs to hang in some situations.
+- Renamed:
+  + module *Foreign.Lua.Api* was renamed to *Foreign.Lua.Core*;
+  + function *Foreign.Lua.lerror* was renamed to *Foreign.Lua.error*;
+  + typeclass *ToLuaStack* was renamed to *Pushable*;
+  + typeclass *FromLuaStack* was renamed to *Peekable*;
+  + cabal flag *use-pkgconfig* was renamed to *pkg-config* (which is the flag
+    name used by other projects such a zlib).
+- Updated type signatures:
+  + return value of `lua_newuserdata` is *CSize* (was *CInt*);
+  + table index parameter in `rawgeti` and `rawseti` must be of type
+    *LuaInteger*, but were of type *Int*;
+  + the number of upvalues passed to `pushcclosure` must be of type *NumArgs*;
+  + `Lua.error` has type *Lua NumResults*, simplifying its use in
+    HaskellFunctions;
+  + functions now require *ByteString* instead of *String*, avoiding the
+    encoding to depend on the systm locale – it also forces the user to think
+    about text encoding.
+- Removed:
+  + support for Lua versions before 5.3 has been dropped;
+  + support for GHC 7.8 has been dropped;
+  + `wrapHaskellFunction` is made internal and no longer exported.
+- Many internal improvements and additions such as a benchmarking suite, code
+  cleanups, better tests, etc.
 
 ### 0.9.5.{1,2}
 

@@ -98,7 +98,7 @@ tests = testGroup "Haskell version of the C API"
         =<< absindex registryindex
 
   , "gettable gets a table value" =:
-    13.37 `shouldBeResultOf` do
+    Just 13.37 `shouldBeResultOf` do
       pushLuaExpr "{sum = 13.37}"
       pushstring "sum"
       gettable (nthFromTop 2)
@@ -130,42 +130,63 @@ tests = testGroup "Haskell version of the C API"
       pushcfunction LuaRaw.lua_open_debug_ptr
       liftIO . assertBool "not recognized as CFunction" =<< iscfunction (-1)
       liftIO . assertEqual "CFunction changed after receiving it from the stack"
-        LuaRaw.lua_open_debug_ptr =<< tocfunction (-1)
+        (Just LuaRaw.lua_open_debug_ptr) =<< tocfunction (-1)
 
   , testGroup "getting values"
-    [ "tointegerx returns numbers verbatim" =:
-      Just 149 `shouldBeResultOf` do
-        pushLuaExpr "149"
-        tointegerx (-1)
+    [ testGroup "tointeger"
+      [ "tointeger returns numbers verbatim" =:
+        Just 149 `shouldBeResultOf` do
+          pushLuaExpr "149"
+          tointeger (-1)
 
-    , "tointegerx accepts strings coercible to integers" =:
-      Just 451 `shouldBeResultOf` do
-        pushLuaExpr "'451'"
-        tointegerx (-1)
+      , "tointeger accepts strings coercible to integers" =:
+        Just 451 `shouldBeResultOf` do
+          pushLuaExpr "'451'"
+          tointeger (-1)
 
-    , "tointegerx returns Nothing when given a boolean" =:
-      Nothing `shouldBeResultOf` do
-        pushLuaExpr "true"
-        tointegerx (-1)
+      , "tointeger returns Nothing when given a boolean" =:
+        Nothing `shouldBeResultOf` do
+          pushLuaExpr "true"
+          tointeger (-1)
+      ]
 
-    , "tonumberx returns numbers verbatim" =:
-      Just 14.9 `shouldBeResultOf` do
-        pushLuaExpr "14.9"
-        tonumberx (-1)
+    , testGroup "tonumber"
+      [ "tonumber returns numbers verbatim" =:
+        Just 14.9 `shouldBeResultOf` do
+          pushLuaExpr "14.9"
+          tonumber (-1)
 
-    , "tonumberx accepts strings as numbers" =:
-      Just 42.23 `shouldBeResultOf` do
-        pushLuaExpr "'42.23'"
-        tonumberx (-1)
+      , "tonumber accepts strings as numbers" =:
+        Just 42.23 `shouldBeResultOf` do
+          pushLuaExpr "'42.23'"
+          tonumber (-1)
 
-    , "tonumberx returns Nothing when given a boolean" =:
-      Nothing `shouldBeResultOf` do
-        pushLuaExpr "true"
-        tonumberx (-1)
+      , "tonumber returns Nothing when given a boolean" =:
+        Nothing `shouldBeResultOf` do
+          pushLuaExpr "true"
+          tonumber (-1)
+      ]
+
+    , testGroup "tostring"
+      [ "get a string" =:
+        (Just "a string") `shouldBeResultOf` do
+          pushLuaExpr "'a string'"
+          tostring stackTop
+
+      , "get a number as string" =:
+        (Just "17.0") `shouldBeResultOf` do
+          pushnumber 17
+          tostring stackTop
+
+      , "fail when looking at a boolean" =:
+        Nothing `shouldBeResultOf` do
+          pushboolean True
+          tostring stackTop
+      ]
     ]
 
   , "setting and getting a global works" =:
-    "Moin" `shouldBeResultOf` do
+    (Just "Moin") `shouldBeResultOf` do
       pushLuaExpr "{'Moin', Hello = 'World'}"
       setglobal "hamburg"
 
@@ -200,9 +221,9 @@ tests = testGroup "Haskell version of the C API"
       getglobal "coroutine"
       getfield stackTop "resume"
       pushLuaExpr "coroutine.create(function() coroutine.yield(9) end)"
-      co <- tothread stackTop
+      (Just contThread) <- tothread stackTop
       call 1 0
-      liftIO . runLuaWith co $ do
+      liftIO . runLuaWith contThread $ do
         liftIO . assertEqual "yielding will put thread status to Yield" Yield
           =<< status
 
@@ -231,7 +252,7 @@ tests = testGroup "Haskell version of the C API"
           tostring' stackTop
 
       , "string is also pushed to the stack" =:
-        "true" `shouldBeResultOf` do
+        (Just "true") `shouldBeResultOf` do
           pushboolean True
           _ <- tostring' stackTop
           tostring stackTop  -- note the use of tostring instead of tostring'
@@ -275,7 +296,7 @@ tests = testGroup "Haskell version of the C API"
         OK `shouldBeResultOf` loadbuffer "return '\NUL'" "test"
 
       , "loading a string containing NUL should be correct" =:
-        "\NUL" `shouldBeResultOf` do
+        (Just "\NUL") `shouldBeResultOf` do
           _ <- loadbuffer "return '\NUL'" "test"
           call 0 1
           tostring stackTop
