@@ -68,22 +68,22 @@ tests = testGroup "Peekable"
 
   , testGroup "error handling"
     [ "error is thrown if boolean is given instead of stringy value" =:
-      "Expected a string but got a boolean" `shouldBeErrorMessageOf` do
+      "expected string, got 'false' (boolean)" `shouldBeErrorMessageOf` do
         pushboolean False
         peek stackTop :: Lua ByteString
 
     , "floating point numbers cannot be peeked as integer" =:
-      "Expected a integer but got a number" `shouldBeErrorMessageOf` do
+      "expected integer, got '23.1' (number)" `shouldBeErrorMessageOf` do
         pushnumber 23.1
         peek stackTop :: Lua LuaInteger
 
     , "booleans cannot be retrieved as numbers" =:
-      "Expected a number but got a boolean" `shouldBeErrorMessageOf` do
+      "expected number, got 'false' (boolean)" `shouldBeErrorMessageOf` do
         pushboolean False
         peek stackTop :: Lua LuaNumber
 
     , "list cannot be read if a peeking at list element fails" =:
-      "Could not read list: Expected a number but got a boolean"
+      "Could not read list: expected number, got 'true' (boolean)"
       `shouldBeErrorMessageOf` do
         pushLuaExpr "{1, 5, 23, true, 42}"
         peek stackTop :: Lua [LuaNumber]

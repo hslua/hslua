@@ -93,14 +93,9 @@ typeChecked :: ByteString
             -> (StackIndex -> Lua (Result a))
             -> StackIndex
             -> Lua (Result a)
-typeChecked expectedType test peekfn n = do
-  v <- test n
-  if v
-    then peekfn n
-    else do
-      actual <- ltype n >>= typename
-      let msg = "Expected a " <> expectedType <> " but got a " <> actual
-      return (Error [msg])
+typeChecked expectedType test peekfn idx = do
+  v <- test idx
+  if v then peekfn idx else mismatchError expectedType idx
 
 -- | Report the expected and actual type of the value under the given index if
 -- conversion failed.
@@ -111,16 +106,16 @@ reportValueOnFailure expected peekMb idx = do
   res <- peekMb idx
   case res of
     (Just x) -> return (Success x)
-    Nothing -> do
-      actual <- ltype idx >>= typename
-      mismatchError expected actual
+    Nothing -> mismatchError expected idx
 
 -- | Return a Result error containing a message about the assertion failure.
-mismatchError :: ByteString -> ByteString -> Lua (Result a)
-mismatchError expected actual = do
-  let msg = "Expected a " <> expected <> " but got a " <> actual
+mismatchError :: ByteString -> StackIndex -> Lua (Result a)
+mismatchError expected idx = do
+  actualType <- ltype idx >>= typename
+  actualValue <- tostring' idx <* pop 1
+  let msg = "expected " <> expected
+          <> ", got '" <> actualValue <> "' (" <> actualType <> ")"
   return (Error [msg])
-
 
 -- | A value that can be read from the Lua stack.
 class Peekable a where

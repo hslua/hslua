@@ -38,7 +38,7 @@ import Data.ByteString.Char8 as Char8
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
-tests = testGroup "Interoperability"
+tests = testGroup "FunctionCalling"
   [ testGroup "call haskell functions from lua" $
     let integerOperation :: LuaInteger -> LuaInteger -> Lua LuaInteger
         integerOperation i1 i2 =
@@ -77,7 +77,7 @@ tests = testGroup "Interoperability"
             return (Char8.unpack (fromMaybe "" err))
 
           errMsg = "Error during function call: could not read "
-                   ++ "argument 2: Expected a integer but got a boolean"
+                   ++ "argument 2: expected integer, got 'true' (boolean)"
       in assertEqual "Unexpected result" errMsg =<< runLua (catchLuaError luaOp (return . show))
 
     , "Haskell functions are converted to C functions" =:
@@ -122,7 +122,7 @@ tests = testGroup "Interoperability"
         luaRes <- runLua $ do
           openlibs
           callFunc "rawequal" (Char8.pack "a") () :: Lua (Result String)
-        let msg = pack "Expected a string but got a boolean"
+        let msg = pack "expected string, got 'false' (boolean)"
         assertEqual "raw equality test failed" (Error [msg]) luaRes
     ]
 
