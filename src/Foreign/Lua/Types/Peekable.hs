@@ -136,10 +136,10 @@ class Peekable a where
 
 -- | Try to convert the value at the given stack index to a haskell value.
 -- Returns @Left@ with an error message on failure.
-peekEither :: Peekable a => StackIndex -> Lua (Either String a)
-peekEither idx = safePeek idx >>= \case
-  Success x -> return $ Right x
-  Error msgs -> return . Left . mconcat $ map Char8.unpack msgs
+peekEither :: Peekable a => StackIndex -> Lua (Either ByteString a)
+peekEither idx = safePeek idx >>= return . \case
+  Success x -> Right x
+  Error msgs -> Left (mconcat msgs)
 
 instance Peekable () where
   safePeek = reportValueOnFailure "nil" $ \idx -> do
