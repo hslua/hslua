@@ -56,15 +56,20 @@ tests = testGroup "Peekable"
         not <$> peek stackTop
     ]
 
-  , "integer can be peeked" =:
-    (5 :: LuaInteger) `shouldBeResultOf` do
-      pushnumber 5.0
-      peek stackTop
+  , testGroup "LuaInteger"
+    [ "integer can be peeked" =:
+      (5 :: LuaInteger) `shouldBeResultOf` do
+        pushnumber 5.0
+        peek stackTop
+    ]
 
-  , "list of numbers can be retrieved as pair of strings" =:
-    [("1", "2"), ("2", "4"), ("3", "8"), ("4", "16")] `shouldBeResultOf` do
-      pushLuaExpr "{2, 4, 8, 16}"
-      pairsFromTable stackTop >>= force :: Lua [(String, String)]
+  , testGroup "safePeekKeyValuePairs"
+    [ "`next` is not confused when peeking at number keys as strings" =:
+      -- list of numbers can be retrieved as pair of strings
+      [("1", "2"), ("2", "4"), ("3", "8"), ("4", "16")] `shouldBeResultOf` do
+        pushLuaExpr "{2, 4, 8, 16}"
+        safePeekKeyValuePairs stackTop >>= force :: Lua [(String, String)]
+    ]
 
   , testGroup "peekEither"
     [ "return right result on success" =:
@@ -113,7 +118,7 @@ tests = testGroup "Peekable"
       0 `shouldBeResultOf` do
         pushLuaExpr "{{foo = 'bar', baz = false}}"
         topBefore <- gettop
-        _ <- pairsFromTable stackTop :: Lua (Result [(String, String)])
+        _ <- safePeekKeyValuePairs stackTop :: Lua (Result [(String, String)])
         topAfter <- gettop
         return (topAfter - topBefore)
     ]

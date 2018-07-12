@@ -42,7 +42,7 @@ Sending haskell objects to the lua stack.
 module Foreign.Lua.Types.Peekable
   ( Peekable (..)
   , peekEither
-  , pairsFromTable
+  , safePeekKeyValuePairs
   , safePeekList
   , Result (..)
   , force
@@ -183,11 +183,11 @@ instance Peekable a => Peekable [a] where
   safePeek = safePeekList
 
 instance (Ord a, Peekable a, Peekable b) => Peekable (Map a b) where
-  safePeek idx = fmap fromList <$> pairsFromTable idx
+  safePeek idx = fmap fromList <$> safePeekKeyValuePairs idx
 
 instance (Ord a, Peekable a) => Peekable (Set a) where
-  safePeek idx =
-    fmap (Set.fromList . map fst . filter snd) <$> pairsFromTable idx
+  safePeek idx = -- All keys with non-nil values are in the set
+    fmap (Set.fromList . map fst . filter snd) <$> safePeekKeyValuePairs idx
 
 -- | Read a table into a list
 safePeekList :: Peekable a => StackIndex -> Lua (Result [a])
@@ -202,9 +202,9 @@ safePeekList = typeChecked "table" istable $ \idx -> do
   inContext "Could not read list: " (elementsAt [1..listLength])
 
 -- | Read a table into a list of pairs.
-pairsFromTable :: (Peekable a, Peekable b)
-               => StackIndex -> Lua (Result [(a, b)])
-pairsFromTable = typeChecked "table" istable $ \idx -> do
+safePeekKeyValuePairs :: (Peekable a, Peekable b)
+                      => StackIndex -> Lua (Result [(a, b)])
+safePeekKeyValuePairs = typeChecked "table" istable $ \idx -> do
   let remainingPairs = do
         res <- nextPair (if idx < 0 then idx - 1 else idx)
         case res of
