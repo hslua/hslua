@@ -24,13 +24,13 @@ THE SOFTWARE.
 module Foreign.Lua.FunctionCallingTest (tests) where
 
 import Control.Monad (forM_)
-import Data.Maybe (fromMaybe)
 import Foreign.Lua.Core
 import Foreign.Lua.Types (Result (Error, Success))
 import Foreign.Lua.FunctionCalling (callFunc, peek, registerHaskellFunction,
                                     pushHaskellFunction)
 import Foreign.Lua.Util (runLua)
-import Test.HsLua.Util ((=:), shouldBeResultOf)
+import Test.HsLua.Util ( (=:), pushLuaExpr, shouldBeErrorMessageOf
+                       , shouldBeResultOf )
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
 
@@ -68,17 +68,11 @@ tests = testGroup "FunctionCalling"
             peek (-1) <* pop 1
       in assertEqual "Unexpected result" 0 =<< runLua luaOp
 
-    , testCase "argument type errors are propagated" $
-      let luaOp :: Lua String
-          luaOp = do
+    , "argument type errors are propagated" =:
+       ("Error during function call: could not read argument 2: "
+        <> "expected integer, got 'true' (boolean)") `shouldBeErrorMessageOf` do
             registerHaskellFunction "integerOp" integerOperation
-            loadstring "return integerOp(23, true)" *> call 0 2
-            err <- tostring (-1) <* pop 2 -- pop HSLUA_ERR
-            return (Char8.unpack (fromMaybe "" err))
-
-          errMsg = "Error during function call: could not read "
-                   ++ "argument 2: expected integer, got 'true' (boolean)"
-      in assertEqual "Unexpected result" errMsg =<< runLua (catchLuaError luaOp (return . show))
+            pushLuaExpr "integerOp(23, true)"
 
     , "Haskell functions are converted to C functions" =:
       (100 :: LuaInteger) `shouldBeResultOf` do

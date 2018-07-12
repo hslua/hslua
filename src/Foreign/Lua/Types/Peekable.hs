@@ -59,6 +59,7 @@ import qualified Data.Set as Set
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.ByteString.Char8 as Char8
+import qualified Data.ByteString.UTF8 as UTF8 (toString)
 import qualified Data.ByteString.Lazy as BL
 
 -- | Result returned when trying to get a value from the lua stack.
@@ -176,7 +177,7 @@ instance Peekable BL.ByteString where
   safePeek = fmap (fmap BL.fromStrict) . safePeek
 
 instance {-# OVERLAPS #-} Peekable [Char] where
-  safePeek = fmap (fmap T.unpack) . safePeek
+  safePeek = fmap (fmap UTF8.toString) . safePeek
 
 instance Peekable a => Peekable [a] where
   safePeek = safePeekList
@@ -230,12 +231,12 @@ nextPair idx = do
       return . Just $ (,) <$> k <*> v
     else return Nothing
 
-inContext :: String -> Lua (Result a) -> Lua (Result a)
+inContext :: ByteString -> Lua (Result a) -> Lua (Result a)
 inContext ctx op = do
   res <- op
   case res of
     Success _ -> return res
-    Error msgs -> return $ Error (Char8.pack ctx : msgs)
+    Error msgs -> return $ Error (ctx : msgs)
 
 --
 -- Tuples

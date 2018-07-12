@@ -48,6 +48,7 @@ import Data.Set (Set)
 import Foreign.Lua.Core
 import Foreign.Ptr (Ptr)
 
+import qualified Data.ByteString.UTF8 as UTF8
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.ByteString.Lazy as BL
@@ -86,7 +87,7 @@ instance Pushable BL.ByteString where
   push = push . BL.toStrict
 
 instance {-# OVERLAPS #-} Pushable [Char] where
-  push = push . T.pack
+  push = push . UTF8.fromString
 
 instance Pushable a => Pushable [a] where
   push = pushList

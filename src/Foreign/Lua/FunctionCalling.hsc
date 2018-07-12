@@ -104,8 +104,8 @@ instance (Peekable a, ToHaskellFunction b) =>
 -- Any Haskell exception will be converted to a string and returned
 -- as Lua error.
 toHaskellFunction :: ToHaskellFunction a => a -> HaskellFunction
-toHaskellFunction a = toHsFun 1 a `catchLuaError` \err ->
-  raiseError ("Error during function call: " ++ show err)
+toHaskellFunction a = toHsFun 1 a `catchLuaError` \(LuaException msg) ->
+  raiseError ("Error during function call: " <> msg)
 
 -- | Create new foreign Lua function. Function created can be called
 -- by Lua engine. Remeber to free the pointer with @freecfunction@.
