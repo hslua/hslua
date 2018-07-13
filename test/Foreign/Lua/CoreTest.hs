@@ -104,13 +104,10 @@ tests = testGroup "Haskell version of the C API"
       gettable (nthFromTop 2)
       tonumber stackTop
 
-  , "strlen, objlen, and rawlen all behave the same" =:
-    (7, 7, 7) `shouldBeResultOf` do
+  , "rawlen gives the length of a list" =:
+    7 `shouldBeResultOf` do
       pushLuaExpr "{1, 1, 2, 3, 5, 8, 13}"
-      rlen <- rawlen (-1)
-      olen <- objlen (-1)
-      slen <- strlen (-1)
-      return (rlen, olen, slen)
+      rawlen stackTop
 
   , testGroup "Type checking"
     [ "isfunction" ?: do
@@ -169,12 +166,12 @@ tests = testGroup "Haskell version of the C API"
 
     , testGroup "tostring"
       [ "get a string" =:
-        (Just "a string") `shouldBeResultOf` do
+        Just "a string" `shouldBeResultOf` do
           pushLuaExpr "'a string'"
           tostring stackTop
 
       , "get a number as string" =:
-        (Just "17.0") `shouldBeResultOf` do
+        Just "17.0" `shouldBeResultOf` do
           pushnumber 17
           tostring stackTop
 
@@ -186,7 +183,7 @@ tests = testGroup "Haskell version of the C API"
     ]
 
   , "setting and getting a global works" =:
-    (Just "Moin") `shouldBeResultOf` do
+    Just "Moin" `shouldBeResultOf` do
       pushLuaExpr "{'Moin', Hello = 'World'}"
       setglobal "hamburg"
 
@@ -252,7 +249,7 @@ tests = testGroup "Haskell version of the C API"
           tostring' stackTop
 
       , "string is also pushed to the stack" =:
-        (Just "true") `shouldBeResultOf` do
+        Just "true" `shouldBeResultOf` do
           pushboolean True
           _ <- tostring' stackTop
           tostring stackTop  -- note the use of tostring instead of tostring'
@@ -296,7 +293,7 @@ tests = testGroup "Haskell version of the C API"
         OK `shouldBeResultOf` loadbuffer "return '\NUL'" "test"
 
       , "loading a string containing NUL should be correct" =:
-        (Just "\NUL") `shouldBeResultOf` do
+        Just "\NUL" `shouldBeResultOf` do
           _ <- loadbuffer "return '\NUL'" "test"
           call 0 1
           tostring stackTop

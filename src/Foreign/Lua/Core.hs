@@ -110,9 +110,7 @@ module Foreign.Lua.Core (
   , tostring
   , tothread
   , touserdata
-  , objlen
   , rawlen
-  , strlen
   -- ** Comparison and arithmetic functions
   , RelationalOperator (..)
   , fromRelationalOperator
@@ -806,11 +804,6 @@ newuserdata = liftLua1 lua_newuserdata . fromIntegral
 next :: StackIndex -> Lua Bool
 next idx = boolFromFailable =<< liftLua (\l -> hslua_next l idx)
 
-{-# DEPRECATED objlen "Use rawlen instead." #-}
--- | Obsolete alias for @'rawlen'@.
-objlen :: StackIndex -> Lua Int
-objlen = rawlen
-
 -- | Opens all standard Lua libraries into the current state.
 --
 -- See also:
@@ -1172,11 +1165,6 @@ settop = liftLua1 lua_settop
 status :: Lua Status
 status = liftLua $ fmap toStatus . lua_status
 
-{-# DEPRECATED strlen "Use rawlen instead." #-}
--- | Compatibility alias for rawlen
-strlen :: StackIndex -> Lua Int
-strlen = rawlen
-
 -- | Converts the Lua value at the given index to a haskell boolean value. Like
 -- all tests in Lua, @toboolean@ returns @True@ for any Lua value different from
 -- @false@ and @nil@; otherwise it returns @False@. (If you want to accept only
@@ -1197,7 +1185,6 @@ tocfunction n = liftLua $ \l -> do
   fnPtr <- lua_tocfunction l n
   return (if fnPtr == nullFunPtr then Nothing else Just fnPtr)
 
-
 -- | Converts the Lua value at the given acceptable index to the signed integral
 -- type @'lua_Integer'@. The Lua value must be an integer, a number or a string
 -- convertible to an integer (see
@@ -1212,9 +1199,7 @@ tointeger :: StackIndex -> Lua (Maybe LuaInteger)
 tointeger n = liftLua $ \l -> alloca $ \boolPtr -> do
   res <- lua_tointegerx l n boolPtr
   isNum <- fromLuaBool <$> F.peek boolPtr
-  if isNum
-    then return $ Just res
-    else return $ Nothing
+  return (if isNum then Just res else Nothing)
 
 -- | Converts the Lua value at the given index to the C type lua_Number. The Lua
 -- value must be a number or a string convertible to a number; otherwise,
@@ -1225,9 +1210,7 @@ tonumber :: StackIndex -> Lua (Maybe LuaNumber)
 tonumber n = liftLua $ \l -> alloca $ \bptr -> do
   res <- lua_tonumberx l n bptr
   isNum <- fromLuaBool <$> F.peek bptr
-  if isNum
-    then return $ Just res
-    else return $ Nothing
+  return (if isNum then Just res else Nothing)
 
 -- | Converts the value at the given index to a generic C pointer (void*). The
 -- value can be a userdata, a table, a thread, or a function; otherwise,
