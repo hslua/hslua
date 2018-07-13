@@ -24,6 +24,7 @@ THE SOFTWARE.
 module Foreign.Lua.FunctionCallingTest (tests) where
 
 import Control.Monad (forM_)
+import Data.Monoid ((<>))
 import Foreign.Lua.Core
 import Foreign.Lua.Types (Result (Error, Success))
 import Foreign.Lua.FunctionCalling (callFunc, peek, registerHaskellFunction,
