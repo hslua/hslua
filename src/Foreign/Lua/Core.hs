@@ -735,17 +735,41 @@ loadbuffer bs name = liftLua $ \l ->
   B.useAsCString name $ \namePtr ->
   toStatus <$> luaL_loadbuffer l str (fromIntegral len) namePtr
 
--- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadfile luaL_loadfile>.
-loadfile :: ByteString -> Lua Status
-loadfile f = liftLua $ \l ->
-  B.useAsCString f $ \fPtr ->
+-- | Loads a file as a Lua chunk. This function uses @lua_load@ (see @'load'@)
+-- to load the chunk in the file named filename. The first line in the file is
+-- ignored if it starts with a @#@.
+--
+-- The string mode works as in function @'load'@.
+--
+-- This function returns the same results as @'load'@, but it has an extra error
+-- code @'ErrFile'@ for file-related errors (e.g., it cannot open or read the
+-- file).
+--
+-- As @'load'@, this function only loads the chunk; it does not run it.
+--
+-- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadfile luaL_loadfile>.
+loadfile :: ByteString -- ^ filename
+         -> Lua Status
+loadfile filename = liftLua $ \l ->
+  B.useAsCString filename $ \fPtr ->
   toStatus <$> luaL_loadfile l fPtr
 
--- | See <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadstring>.
+-- | Loads a string as a Lua chunk. This function uses @lua_load@ to load the
+-- chunk in the given ByteString. The given string may not contain any NUL
+-- characters.
+--
+-- This function returns the same results as @lua_load@ (see @'load'@).
+--
+-- Also as @'load'@, this function only loads the chunk; it does not run it.
+--
+-- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadstring>.
 loadstring :: ByteString -> Lua Status
-loadstring str = loadbuffer str (B.filter (/= 0) str) -- null-byte less name
+loadstring str = loadbuffer str str
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>.
+-- | Returns the type of the value in the given valid index, or @'TypeNone'@ for
+-- a non-valid (but acceptable) index.
+--
+-- See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>.
 ltype :: StackIndex -> Lua Type
 ltype idx = toType <$> liftLua (flip lua_type idx)
 
@@ -1231,7 +1255,13 @@ tonumber n = liftLua $ \l -> alloca $ \bptr -> do
 topointer :: StackIndex -> Lua (Ptr ())
 topointer n = liftLua $ \l -> lua_topointer l n
 
--- | See <https://www.lua.org/manual/5.3/manual.html#lua_tostring lua_tostring>.
+-- | Converts the Lua value at the given index to a @'ByteString'@. The Lua
+-- value must be a string or a number; otherwise, the function returns
+-- @'Nothing'@. If the value is a number, then @'tostring'@ also changes the
+-- actual value in the stack to a string. (This change confuses @'next'@ when
+-- @'tostring'@ is applied to keys during a table traversal.)
+--
+-- See <https://www.lua.org/manual/5.3/manual.html#lua_tolstring lua_tolstring>.
 tostring :: StackIndex -> Lua (Maybe ByteString)
 tostring n = liftLua $ \l ->
   alloca $ \lenPtr -> do
