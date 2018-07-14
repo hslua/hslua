@@ -58,8 +58,8 @@ module Foreign.Lua (
   , pushHaskellFunction
   , registerHaskellFunction
   -- * Utility functions and types
-  , runLua
-  , runLuaEither
+  , run
+  , runEither
   , getglobal'
   , setglobal'
   , raiseError

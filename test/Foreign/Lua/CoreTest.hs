@@ -43,7 +43,7 @@ import Test.HsLua.Arbitrary ()
 import Test.HsLua.Util ( (?:), (=:), shouldBeErrorMessageOf, shouldBeResultOf
                        , shouldHoldForResultOf, pushLuaExpr )
 import Test.QuickCheck (Property, (.&&.))
-import Test.QuickCheck.Monadic (assert, monadicIO, run)
+import Test.QuickCheck.Monadic (assert, monadicIO)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
 import Test.Tasty.QuickCheck (testProperty)
@@ -55,6 +55,7 @@ import qualified Data.Text.Encoding as T
 import qualified Foreign.Lua.Core.RawBindings as LuaRaw
 import qualified Foreign.Marshal as Foreign
 import qualified Foreign.Ptr as Foreign
+import qualified Test.QuickCheck.Monadic as QCMonadic
 
 
 -- | Specifications for Attributes parsing functions.
@@ -88,7 +89,7 @@ tests = testGroup "Haskell version of the C API"
         return (movedEl == 9 && newTop == 8)
     ]
 
-  , testCase "absindex" . runLua $ do
+  , testCase "absindex" . run $ do
       pushLuaExpr "1, 2, 3, 4"
       liftIO . assertEqual "index from bottom doesn't change" (nthFromBottom 3)
         =<< absindex (nthFromBottom 3)
@@ -123,7 +124,7 @@ tests = testGroup "Haskell version of the C API"
         (&&) <$> isnoneornil 500 <*> isnoneornil (-1)
     ]
 
-  , testCase "CFunction handling" . runLua $ do
+  , testCase "CFunction handling" . run $ do
       pushcfunction LuaRaw.lua_open_debug_ptr
       liftIO . assertBool "not recognized as CFunction" =<< iscfunction (-1)
       liftIO . assertEqual "CFunction changed after receiving it from the stack"
@@ -212,7 +213,7 @@ tests = testGroup "Haskell version of the C API"
       luaSt2 <- liftIO newstate
       return (luaSt1 /= luaSt2)
 
-  , testCase "thread status" . runLua $ do
+  , testCase "thread status" . run $ do
       status >>= liftIO . assertEqual "base status should be OK" OK
       openlibs
       getglobal "coroutine"
@@ -220,7 +221,7 @@ tests = testGroup "Haskell version of the C API"
       pushLuaExpr "coroutine.create(function() coroutine.yield(9) end)"
       (Just contThread) <- tothread stackTop
       call 1 0
-      liftIO . runLuaWith contThread $ do
+      liftIO . runWith contThread $ do
         liftIO . assertEqual "yielding will put thread status to Yield" Yield
           =<< status
 
@@ -245,7 +246,7 @@ tests = testGroup "Haskell version of the C API"
         ("userdata: 0x" `B.isPrefixOf`) `shouldHoldForResultOf` do
           l <- luaState
           liftIO . Foreign.alloca $ \ptr ->
-            runLuaWith l (pushlightuserdata (ptr :: Foreign.Ptr Int))
+            runWith l (pushlightuserdata (ptr :: Foreign.Ptr Int))
           tostring' stackTop
 
       , "string is also pushed to the stack" =:
@@ -354,7 +355,7 @@ tests = testGroup "Haskell version of the C API"
         pcall 0 0 (Just (nthFromTop 2))
     ]
 
-  , testCase "garbage collection" . runLua $
+  , testCase "garbage collection" . run $
       -- test that gc can be called with all constructors of type GCCONTROL.
       forM_ [GCSTOP .. GCSETSTEPMUL] $ \what -> (gc what 23)
 
@@ -365,7 +366,7 @@ tests = testGroup "Haskell version of the C API"
     ]
 
   , testProperty "lessthan works" $ \n1 n2 -> monadicIO $ do
-      luaCmp <- run . runLua $ do
+      luaCmp <- QCMonadic.run . run $ do
         push (n2 :: Lua.Number)
         push (n1 :: Lua.Number)
         lessthan (-1) (-2) <* pop 2
@@ -377,9 +378,9 @@ tests = testGroup "Haskell version of the C API"
       in Prelude.compare n1 n2 == Prelude.compare lt1 lt2
 
   , testCase "boolean values are correct" $ do
-      trueIsCorrect <- runLua $
+      trueIsCorrect <- run $
         pushboolean True *> dostring "return true" *> rawequal (-1) (-2)
-      falseIsCorrect <- runLua $
+      falseIsCorrect <- run $
         pushboolean False *> dostring "return false" *> rawequal (-1) (-2)
       assertBool "LuaBool true is not equal to Lua's true" trueIsCorrect
       assertBool "LuaBool false is not equal to Lua's false" falseIsCorrect
@@ -387,7 +388,7 @@ tests = testGroup "Haskell version of the C API"
   , testCase "functions can throw a table as error message" $ do
       let mt = "{__tostring = function (e) return e.error_code end}"
       let err = "error(setmetatable({error_code = 23}," <> mt <> "))"
-      res <- runLua . tryLua $ openbase *> loadstring err *> call 0 0
+      res <- run . tryLua $ openbase *> loadstring err *> call 0 0
       assertEqual "wrong error message" (Left (Lua.Exception "23")) res
 
   , testCase "handling table errors won't leak" $ do
@@ -399,7 +400,7 @@ tests = testGroup "Haskell version of the C API"
             _ <- tryLua $ loadstring err *> call 0 0
             newtop <- gettop
             return (newtop - oldtop)
-      res <- runLua luaOp
+      res <- run luaOp
       assertEqual "error handling leaks values to the stack" 0 res
   ]
 
@@ -409,7 +410,7 @@ compareWith op luaOp n = compareLT .&&. compareEQ .&&. compareGT
  where
   compareLT :: Property
   compareLT = monadicIO  $ do
-    luaCmp <- run . runLua $ do
+    luaCmp <- QCMonadic.run . run $ do
       push $ n - 1
       push n
       compare (-2) (-1) luaOp
@@ -417,7 +418,7 @@ compareWith op luaOp n = compareLT .&&. compareEQ .&&. compareGT
 
   compareEQ :: Property
   compareEQ = monadicIO  $ do
-    luaCmp <- run . runLua $ do
+    luaCmp <- QCMonadic.run . run $ do
       push n
       push n
       compare (-2) (-1) luaOp
@@ -425,7 +426,7 @@ compareWith op luaOp n = compareLT .&&. compareEQ .&&. compareGT
 
   compareGT :: Property
   compareGT = monadicIO $ do
-    luaRes <- run . runLua $ do
+    luaRes <- QCMonadic.run . run $ do
       push $ n + 1
       push n
       compare (-2) (-1) luaOp

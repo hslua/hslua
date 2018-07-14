@@ -31,7 +31,7 @@ import Foreign.Lua as Lua
 import Test.HsLua.Arbitrary ()
 import Test.QuickCheck
 import Test.QuickCheck.Instances ()
-import Test.QuickCheck.Monadic
+import Test.QuickCheck.Monadic as QCMonadic
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck (testProperty)
 
@@ -122,11 +122,11 @@ tests = testGroup "peek and push are well behaved"
 
 prop_roundtripEqual :: (Eq a, Peekable a, Pushable a) => a -> Property
 prop_roundtripEqual x = monadicIO $ do
-  y <- run $ roundtrip x
+  y <- QCMonadic.run $ roundtrip x
   assert (x == y)
 
 roundtrip :: (Peekable a, Pushable a) => a -> IO a
-roundtrip x = runLua $ do
+roundtrip x = Lua.run $ do
   push x
   peek (-1)
 
@@ -135,7 +135,7 @@ roundtrip x = runLua $ do
 prop_stackPushingPulling :: (Show t, Eq t, Pushable t, Peekable t) => t -> Property
 prop_stackPushingPulling t = monadicIO $ do
   -- Init Lua state
-  l <- run newstate
+  l <- QCMonadic.run newstate
   -- Get an ascending list of small (1-100) positive integers
   -- These are the indices at which we will push the value to be tested
   -- Note that duplicate values don't matter so we don't need to guard against that
@@ -143,20 +143,20 @@ prop_stackPushingPulling t = monadicIO $ do
   let indices = map getPositive indices'
   let nItems = (if null indices then 0 else last indices) :: Lua.Integer
   -- Make sure there's enough room in the stack
-  assert =<< run (runLuaWith l $ checkstack (fromIntegral nItems))
+  assert =<< QCMonadic.run (runWith l $ checkstack (fromIntegral nItems))
   -- Push elements
-  run $ forM_ [1..nItems] $ \n ->
-    runLuaWith l $
+  QCMonadic.run $ forM_ [1..nItems] $ \n ->
+    runWith l $
     if n `elem` indices
       then push t
       else push n
   -- Check that the stack size is the same as the total number of pushed items
-  stackSize <- run $ runLuaWith l gettop
+  stackSize <- QCMonadic.run $ runWith l gettop
   assert $ fromStackIndex stackSize == fromIntegral nItems
   -- Peek all items
-  vals <- run $ forM indices $ runLuaWith l . peek . StackIndex . fromIntegral
+  vals <- QCMonadic.run $ forM indices $ runWith l . peek . StackIndex . fromIntegral
   -- Check that the stack size did not change after peeking
-  newStackSize <- run $ runLuaWith l gettop
+  newStackSize <- QCMonadic.run $ runWith l gettop
   assert $ stackSize == newStackSize
   -- Check that we were able to peek at all pushed elements
   forM_ vals $ assert . (== t)

@@ -41,7 +41,7 @@ however, are not caught and will cause the host program to terminate.
 module Foreign.Lua.Core (
   -- * Lua Computations
     Lua (..)
-  , runLuaWith
+  , runWith
   , liftIO
   , luaState
   -- * Lua API types
@@ -778,7 +778,7 @@ newmetatable tname = liftLua $ \l ->
 newstate :: IO Lua.State
 newstate = do
   l <- luaL_newstate
-  runLuaWith l $ do
+  runWith l $ do
     createtable 0 0
     setfield registryindex hsluaErrorRegistryField
     return l
@@ -1253,7 +1253,7 @@ tostring' :: StackIndex -> Lua B.ByteString
 tostring' n = liftLua $ \l -> alloca $ \lenPtr -> do
   cstr <- hsluaL_tolstring l n lenPtr
   if cstr == nullPtr
-    then runLuaWith l throwTopMessageAsError
+    then runWith l throwTopMessageAsError
     else do
       cstrLen <- F.peek lenPtr
       B.packCStringLen (cstr, fromIntegral cstrLen)

@@ -34,7 +34,7 @@ Test for the interoperability between haskell and lua.
 module Foreign.Lua.Types.PushableTest (tests) where
 
 import Data.ByteString (ByteString)
-import Foreign.Lua as Lua
+import Foreign.Lua (Pushable (push), gettop, equal, nthFromTop)
 import Foreign.StablePtr (castStablePtrToPtr, freeStablePtr, newStablePtr)
 
 import Test.HsLua.Arbitrary ()
@@ -45,6 +45,8 @@ import Test.QuickCheck.Monadic (monadicIO, run, assert)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (Assertion, assertBool, testCase)
 import Test.Tasty.QuickCheck (testProperty)
+
+import qualified Foreign.Lua as Lua
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
@@ -77,12 +79,12 @@ tests = testGroup "Pushable"
 
     , testCase "Pointer is pushed as light userdata" $
       let luaOp = do
-            stblPtr <- liftIO $ newStablePtr (Just "5" :: Maybe String)
+            stblPtr <- Lua.liftIO $ newStablePtr (Just "5" :: Maybe String)
             push (castStablePtrToPtr stblPtr)
-            res <- islightuserdata (-1)
-            liftIO $ freeStablePtr (stblPtr)
+            res <- Lua.islightuserdata (-1)
+            Lua.liftIO $ freeStablePtr stblPtr
             return res
-      in assertBool "pointers must become light userdata" =<< runLua luaOp
+      in assertBool "pointers must become light userdata" =<< Lua.run luaOp
     ]
 
   , testGroup "pushing a value increases stack size by one"
@@ -102,12 +104,12 @@ tests = testGroup "Pushable"
 -- | Takes a message, haskell value, and a representation of that value as lua
 -- string, assuming that the pushed values are equal within lua.
 assertLuaEqual :: Pushable a => String -> a -> ByteString -> Assertion
-assertLuaEqual msg x lit = assertBool msg =<< runLua
+assertLuaEqual msg x lit = assertBool msg =<< Lua.run
    (pushLuaExpr lit
    *> push x
    *> equal (nthFromTop 1) (nthFromTop 2))
 
 prop_pushIncrStackSizeByOne :: Pushable a => a -> Property
 prop_pushIncrStackSizeByOne x = monadicIO $ do
-  (oldSize, newSize) <- run $ runLua ((,) <$> gettop <*> (push x *> gettop))
+  (oldSize, newSize) <- run $ Lua.run ((,) <$> gettop <*> (push x *> gettop))
   assert (newSize == succ oldSize)

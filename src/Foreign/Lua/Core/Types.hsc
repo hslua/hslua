@@ -43,7 +43,7 @@ module Foreign.Lua.Core.Types
   , liftLua
   , liftLua1
   , luaState
-  , runLuaWith
+  , runWith
   , GCCONTROL (..)
   , Type (..)
   , TypeCode (..)
@@ -116,8 +116,8 @@ luaState = ask
 
 -- | Run lua computation with custom lua state. Errors are left unhandled, the
 -- caller of this function is responsible to catch lua errors.
-runLuaWith :: State -> Lua a -> IO a
-runLuaWith l s = runReaderT (unLua s) l
+runWith :: State -> Lua a -> IO a
+runWith l s = runReaderT (unLua s) l
 
 -- | An opaque structure that points to a thread and indirectly (through the
 -- thread) to the whole state of a Lua interpreter. The Lua library is fully

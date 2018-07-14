@@ -110,7 +110,7 @@ toHaskellFunction a = toHsFun 1 a `catchLuaError` \(Lua.Exception msg) ->
 -- | Create new foreign Lua function. Function created can be called
 -- by Lua engine. Remeber to free the pointer with @freecfunction@.
 newCFunction :: ToHaskellFunction a => a -> Lua CFunction
-newCFunction = liftIO . mkWrapper . flip runLuaWith . toHaskellFunction
+newCFunction = liftIO . mkWrapper . flip runWith . toHaskellFunction
 
 -- | Turn a @'PreCFunction'@ into an actual @'CFunction'@.
 foreign import ccall "wrapper"
@@ -174,7 +174,7 @@ wrapHaskellFunction = do
 -- error message as the sole return value.
 pushHaskellFunction :: ToHaskellFunction a => a -> Lua ()
 pushHaskellFunction hsFn = do
-  pushPreCFunction . flip runLuaWith $ toHaskellFunction hsFn
+  pushPreCFunction . flip runWith $ toHaskellFunction hsFn
   wrapHaskellFunction
 
 -- | Converts a pre C function to a Lua function and pushes it to the stack.
@@ -206,7 +206,7 @@ foreign import ccall "&hslua_userdata_gc"
 -- as a C function and then re-imported in order to get a C function pointer.
 hslua_call_wrapped_hs_fun :: Lua.State -> IO NumResults
 hslua_call_wrapped_hs_fun l = do
-  ptr <- runLuaWith l $ peek 1 <* remove 1
+  ptr <- runWith l $ peek 1 <* remove 1
   stableptr <- F.peek (castPtr ptr)
   f <- deRefStablePtr stableptr
   f l

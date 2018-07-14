@@ -43,7 +43,7 @@ import qualified Data.Text.Encoding as T
 tests :: TestTree
 tests = testGroup "lua integration tests"
   [ testCase "print version" .
-    runLua $ do
+    run $ do
       openlibs
       getglobal "assert"
       push ("Hello from " :: ByteString)
@@ -52,7 +52,7 @@ tests = testGroup "lua integration tests"
       call 1 0
 
   , testCase "functions stored in / retrieved from registry" .
-    runLua $ do
+    run $ do
       pushLuaExpr "function() return 2 end, function() return 1 end"
       idx1 <- ref registryindex
       idx2 <- ref registryindex
@@ -93,7 +93,7 @@ tests = testGroup "lua integration tests"
       return (Just v == v')
 
   , testCase "table reading" .
-    runLua $ do
+    run $ do
       openbase
       let tableStr = "{firstname = 'Jane', surname = 'Doe'}"
       pushLuaExpr $ "setmetatable(" <> tableStr <> ", {'yup'})"
@@ -115,13 +115,13 @@ tests = testGroup "lua integration tests"
   , testGroup "Getting strings to and from the stack"
     [ testCase "unicode ByteString" $ do
         let val = T.pack "öçşiğüİĞı"
-        val' <- runLua $ do
+        val' <- run $ do
           pushstring (T.encodeUtf8 val)
           fmap T.decodeUtf8 `fmap` tostring 1
         assertEqual "Popped a different value or pop failed" (Just val) val'
 
     , testCase "ByteString should survive after GC/Lua destroyed" $ do
-        (val, val') <- runLua $ do
+        (val, val') <- run $ do
           let v = "ByteString should survive"
           pushstring v
           v' <- tostring 1
@@ -131,7 +131,7 @@ tests = testGroup "lua integration tests"
         assertEqual "Popped a different value or pop failed" val val'
     , testCase "String with NUL byte should be pushed/popped correctly" $ do
         let str = "A\NULB"
-        str' <- runLua $ pushstring (Char8.pack str) *> tostring 1
+        str' <- run $ pushstring (Char8.pack str) *> tostring 1
         assertEqual "Popped string is different than what's pushed"
           (Just str) (Char8.unpack <$> str')
     ]
@@ -159,7 +159,7 @@ tests = testGroup "lua integration tests"
               then peek (-1)
               else throwLuaError "Error in words function."
       in assertEqual "greeting function failed"
-          (Right ["Caffeine", "induced", "nonsense"]) =<< runLuaEither comp
+          (Right ["Caffeine", "induced", "nonsense"]) =<< runEither comp
 
     , testCase "pushing a C closure to and calling it from Lua" $
       -- Closures would usually be defined on the Haskell side, unless the
@@ -180,35 +180,35 @@ tests = testGroup "lua integration tests"
             peek (-1)
 
       in assertEqual "greeting function failed" (Right "Hello, World!") =<<
-         runLuaEither comp
+         runEither comp
     ]
 
   , testGroup "error handling"
     [ testCase "lua errors are caught" $
       assertBool "error was not intercepted" . isLeft =<<
-      runLuaEither (push True *> peek (-1) :: Lua String)
+      runEither (push True *> peek (-1) :: Lua String)
 
     , testCase "error-less code gives in 'Right' result" $
       assertBool "error was not intercepted" . isRight =<<
-      runLuaEither (push True *> peek (-1) :: Lua Bool)
+      runEither (push True *> peek (-1) :: Lua Bool)
 
     , testCase "catching lua errors within the lua type" $
       assertBool "No error was thrown" . isLeft
-        =<< (runLua $ tryLua (throwLuaError "test"))
+        =<< (run $ tryLua (throwLuaError "test"))
 
     , testCase "second alternative is used when first fails" $
       assertEqual "alternative failed" (Right True) =<<
-      runLuaEither (throwLuaError "test" <|> return True)
+      runEither (throwLuaError "test" <|> return True)
 
     , testCase "Applicative.empty implementation throws an exception" $
-      assertBool "empty doesn't throw" . isLeft =<< runLuaEither empty
+      assertBool "empty doesn't throw" . isLeft =<< runEither empty
 
     , testCase "catching error of a failing meta method" $
       assertBool "compuation was expected to fail" . isLeft =<<
       let comp = do
             pushLuaExpr "setmetatable({}, {__index = error})"
             getfield (-1) "foo" :: Lua ()
-      in runLuaEither comp
+      in runEither comp
 
     , "calling a function that errors throws exception" =:
       "[string \"return error('error message')\"]:1: error message"
@@ -224,13 +224,13 @@ tests = testGroup "lua integration tests"
 testOpen :: String -> Lua () -> TestTree
 testOpen lib openfn = testCase ("open" ++ lib) $
   assertBool "opening the library failed" =<<
-  runLua (openfn *> istable (-1))
+  run (openfn *> istable (-1))
 
 testOpenBase :: [TestTree]
 testOpenBase = (:[]) .
   testCase "openbase" $
   assertBool "loading base didn't push the expected number of tables" =<<
-  (runLua $ do
+  (run $ do
     -- openbase returns one table in lua 5.2 and later, but two in 5.1
     openbase
     getglobal "_VERSION"

@@ -33,7 +33,7 @@ module Test.HsLua.Util
 
 import Data.ByteString (ByteString)
 import Data.Monoid ((<>))
-import Foreign.Lua ( Lua, runLua, runLuaEither, loadstring, call, multret)
+import Foreign.Lua ( Lua, run, runEither, loadstring, call, multret)
 import Test.Tasty (TestTree)
 import Test.Tasty.HUnit (Assertion, assertBool, assertFailure, testCase, (@?=))
 
@@ -45,7 +45,7 @@ pushLuaExpr expr = loadstring ("return " <> expr) *> call 0 multret
 
 shouldBeResultOf :: (Eq a, Show a) => a -> Lua a -> Assertion
 shouldBeResultOf expected luaOp = do
-  errOrRes <- runLuaEither luaOp
+  errOrRes <- runEither luaOp
   case errOrRes of
     Left (Lua.Exception msg) -> assertFailure $ "Lua operation failed with "
                                 ++ "message: '" ++ Char8.unpack msg ++ "'"
@@ -53,7 +53,7 @@ shouldBeResultOf expected luaOp = do
 
 shouldBeErrorMessageOf :: Show a => ByteString -> Lua a -> Assertion
 shouldBeErrorMessageOf expectedErrMsg luaOp = do
-  errOrRes <- runLuaEither luaOp
+  errOrRes <- runEither luaOp
   case errOrRes of
     Left (Lua.Exception msg) -> msg @?= expectedErrMsg
     Right res ->
@@ -62,7 +62,7 @@ shouldBeErrorMessageOf expectedErrMsg luaOp = do
 
 shouldHoldForResultOf :: Show a => (a -> Bool) -> Lua a -> Assertion
 shouldHoldForResultOf predicate luaOp = do
-  errOrRes <- runLuaEither luaOp
+  errOrRes <- runEither luaOp
   case errOrRes of
     Left (Lua.Exception msg) -> assertFailure $ "Lua operation failed with "
                                 ++ "message: '" ++ (Char8.unpack msg) ++ "'"
@@ -70,7 +70,7 @@ shouldHoldForResultOf predicate luaOp = do
                             (predicate res)
 
 assertLuaBool :: Lua Bool -> Assertion
-assertLuaBool luaOp = assertBool "" =<< runLua luaOp
+assertLuaBool luaOp = assertBool "" =<< run luaOp
 
 infix  3 =:
 (=:) :: String -> Assertion -> TestTree
@@ -82,4 +82,4 @@ infixr 3 ?:
 
 luaTestBool :: String -> Lua Bool -> TestTree
 luaTestBool msg luaOp = testCase msg $
-  assertBool "Lua operation returned false" =<< runLua luaOp
+  assertBool "Lua operation returned false" =<< run luaOp

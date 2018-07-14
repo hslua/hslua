@@ -34,8 +34,8 @@ HsLua utility functions.
 module Foreign.Lua.Util
   ( getglobal'
   , setglobal'
-  , runLua
-  , runLuaEither
+  , run
+  , runEither
   , raiseError
   , Optional (Optional, fromOptional)
   ) where
@@ -52,14 +52,14 @@ import qualified Foreign.Lua.Core as Lua
 -- | Run lua computation using the default HsLua state as starting point. Raised
 -- exceptions are passed through; error handling is the responsibility of the
 -- caller.
-runLua :: Lua a -> IO a
-runLua = (newstate `bracket` close) . flip runLuaWith
+run :: Lua a -> IO a
+run = (newstate `bracket` close) . flip runWith
 
 -- | Run the given Lua computation; exceptions raised in haskell code are
 -- caught, but other exceptions (user exceptions raised in haskell, unchecked
 -- type errors, etc.) are passed through.
-runLuaEither :: Lua a -> IO (Either Lua.Exception a)
-runLuaEither = try . runLua
+runEither :: Lua a -> IO (Either Lua.Exception a)
+runEither = try . run
 
 -- | Like @getglobal@, but knows about packages and nested tables. E.g.
 --
