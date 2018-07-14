@@ -3,3 +3,4 @@
 .stack-work
 *.hi
 *.o
+/.ghc.environment.*
