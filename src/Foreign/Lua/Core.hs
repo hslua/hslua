@@ -46,11 +46,6 @@ module Foreign.Lua.Core (
   , luaState
   -- * Lua API types
   , CFunction
-  , LuaBool (..)
-  , false
-  , true
-  , fromLuaBool
-  , toLuaBool
   , Lua.Integer (..)
   , Lua.Number (..)
   , StackIndex (..)
