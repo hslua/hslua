@@ -65,13 +65,13 @@ import Foreign.StablePtr (deRefStablePtr, newStablePtr)
 import qualified Data.ByteString.Char8 as Char8
 import qualified Foreign.Storable as F
 
--- | Type of raw haskell functions that can be made into 'CFunction's.
+-- | Type of raw Haskell functions that can be made into 'CFunction's.
 type PreCFunction = Lua.State -> IO NumResults
 
 -- | Haskell function that can be called from Lua.
 type HaskellFunction = Lua NumResults
 
--- | Operations and functions that can be pushed to the lua stack. This is a
+-- | Operations and functions that can be pushed to the Lua stack. This is a
 -- helper function not intended to be used directly. Use the
 -- @'toHaskellFunction'@ wrapper instead.
 class ToHaskellFunction a where
@@ -169,9 +169,7 @@ wrapHaskellFunction = do
 -- > pushHaskellFunction myfun
 -- > setglobal "myfun"
 --
--- You are not allowed to use @lua_error@ anywhere, but
--- use an error code of (-1) to the same effect. Push
--- error message as the sole return value.
+-- Error conditions should be indicated by raising a @'Lua.Exception'@.
 pushHaskellFunction :: ToHaskellFunction a => a -> Lua ()
 pushHaskellFunction hsFn = do
   pushPreCFunction . flip runWith $ toHaskellFunction hsFn
