@@ -58,7 +58,6 @@ import Foreign.Ptr (Ptr)
 import qualified Data.Set as Set
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
-import qualified Data.ByteString.UTF8 as UTF8 (toString)
 import qualified Data.ByteString.Lazy as BL
 
 -- | Result returned when trying to get a value from the lua stack.
@@ -176,7 +175,7 @@ instance Peekable BL.ByteString where
   safePeek = fmap (fmap BL.fromStrict) . safePeek
 
 instance {-# OVERLAPS #-} Peekable [Char] where
-  safePeek = fmap (fmap UTF8.toString) . safePeek
+  safePeek = fmap (fmap T.unpack) . safePeek
 
 instance Peekable a => Peekable [a] where
   safePeek = safePeekList

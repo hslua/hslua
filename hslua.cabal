@@ -89,7 +89,6 @@ library
                      , fail                 >= 4.9    && < 5
                      , mtl                  >= 2.2    && < 2.3
                      , text                 >= 1.0    && < 1.3
-                     , utf8-string          >= 1.0    && < 1.1
   hs-source-dirs:      src
   default-language:    Haskell2010
   ghc-options:         -Wall
@@ -193,7 +192,6 @@ test-suite test-hslua
                      , fail                 >= 4.9    && < 5
                      , mtl                  >= 2.2    && < 2.3
                      , text                 >= 1.0    && < 1.3
-                     , utf8-string          >= 1.0    && < 1.1
                      -- for testing
                      , hslua
                      , QuickCheck           >= 2.7
