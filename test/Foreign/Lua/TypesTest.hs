@@ -27,7 +27,7 @@ import Control.Monad (forM, forM_)
 import Data.ByteString (ByteString)
 import Data.Map (Map)
 import Data.Set (Set)
-import Foreign.Lua
+import Foreign.Lua as Lua
 import Test.HsLua.Arbitrary ()
 import Test.QuickCheck
 import Test.QuickCheck.Instances ()
@@ -48,10 +48,10 @@ tests = testGroup "peek and push are well behaved"
       (prop_roundtripEqual :: Bool -> Property)
 
     , testProperty "lua numbers (i.e., doubles) remain equal under push/peek"
-      (prop_roundtripEqual :: LuaNumber -> Property)
+      (prop_roundtripEqual :: Lua.Number -> Property)
 
     , testProperty "lua integers remain equal under push/peek"
-      (prop_roundtripEqual :: LuaInteger -> Property)
+      (prop_roundtripEqual :: Lua.Integer -> Property)
 
     , testProperty "bytestring remain equal under push/peek"
       (prop_roundtripEqual :: ByteString -> Property)
@@ -63,7 +63,7 @@ tests = testGroup "peek and push are well behaved"
       (prop_roundtripEqual :: [Bool] -> Property)
 
     , testProperty "lists of lua integers remain equal under push/peek"
-      (prop_roundtripEqual :: [LuaInteger] -> Property)
+      (prop_roundtripEqual :: [Lua.Integer] -> Property)
 
     , testProperty "lists of bytestrings remain equal under push/peek"
       (prop_roundtripEqual :: [ByteString] -> Property)
@@ -71,29 +71,29 @@ tests = testGroup "peek and push are well behaved"
     , testProperty "text"
       (prop_roundtripEqual :: T.Text -> Property)
 
-    , testProperty "map of strings to LuaNumber"
-      (prop_roundtripEqual :: Map String LuaNumber -> Property)
+    , testProperty "map of strings to Lua.Number"
+      (prop_roundtripEqual :: Map String Lua.Number -> Property)
 
     , testProperty "set of strings"
-      (prop_roundtripEqual :: Set LuaNumber -> Property)
+      (prop_roundtripEqual :: Set Lua.Number -> Property)
 
     , testGroup "tuples"
-      [ testProperty "pair of LuaNumbers"
-        (prop_roundtripEqual :: (LuaNumber, LuaNumber) -> Property)
-      , testProperty "triple of LuaNumbers"
-        (prop_roundtripEqual :: (LuaNumber, LuaNumber, LuaNumber) -> Property)
-      , testProperty "quadruple of LuaNumbers"
+      [ testProperty "pair of Lua.Numbers"
+        (prop_roundtripEqual :: (Lua.Number, Lua.Number) -> Property)
+      , testProperty "triple of Lua.Numbers"
+        (prop_roundtripEqual :: (Lua.Number, Lua.Number, Lua.Number) -> Property)
+      , testProperty "quadruple of Lua.Numbers"
         (prop_roundtripEqual
-         :: (LuaNumber, LuaNumber, LuaNumber, LuaNumber) -> Property)
-      , testProperty "quintuple of LuaNumbers"
+         :: (Lua.Number, Lua.Number, Lua.Number, Lua.Number) -> Property)
+      , testProperty "quintuple of Lua.Numbers"
         (prop_roundtripEqual
-         :: (LuaNumber, LuaNumber, LuaNumber, LuaNumber, LuaNumber) -> Property)
-      , testProperty "hextuple of Text, LuaNumbers and Booleans"
+         :: (Lua.Number, Lua.Number, Lua.Number, Lua.Number, Lua.Number) -> Property)
+      , testProperty "hextuple of Text, Lua.Numbers and Booleans"
         (prop_roundtripEqual
-         :: (Bool, LuaNumber, T.Text, Bool, LuaNumber, LuaNumber) -> Property)
-      , testProperty "septuple of Text, LuaNumber and Booleans"
+         :: (Bool, Lua.Number, T.Text, Bool, Lua.Number, Lua.Number) -> Property)
+      , testProperty "septuple of Text, Lua.Number and Booleans"
         (prop_roundtripEqual
-         :: (T.Text, Bool, LuaNumber, Bool, Bool, LuaNumber, Bool) -> Property)
+         :: (T.Text, Bool, Lua.Number, Bool, Bool, Lua.Number, Bool) -> Property)
       , testProperty "octuple of Strings and Booleans"
         (prop_roundtripEqual
          :: (Bool, String, Bool, Bool, String, Bool, Bool, String) -> Property)
@@ -104,15 +104,15 @@ tests = testGroup "peek and push are well behaved"
     [ testProperty "can push/pop booleans"
       (prop_stackPushingPulling :: Bool       -> Property)
     , testProperty "can push/pop lua integers"
-      (prop_stackPushingPulling :: LuaInteger -> Property)
+      (prop_stackPushingPulling :: Lua.Integer -> Property)
     , testProperty "can push/pop lua numbers"
-      (prop_stackPushingPulling :: LuaNumber  -> Property)
+      (prop_stackPushingPulling :: Lua.Number  -> Property)
     , testProperty "can push/pop bytestrings"
       (prop_stackPushingPulling :: ByteString -> Property)
     , testProperty "can push/pop lists of booleans"
       (prop_stackPushingPulling :: [Bool]     -> Property)
-    , testProperty "can push/pop lists of LuaIntegers"
-      (prop_stackPushingPulling :: [LuaInteger] -> Property)
+    , testProperty "can push/pop lists of Lua.Integers"
+      (prop_stackPushingPulling :: [Lua.Integer] -> Property)
     , testProperty "can push/pop lists of bytestrings"
       (prop_stackPushingPulling :: [ByteString] -> Property)
     , testProperty "can push/pop set of bytestrings"
@@ -141,7 +141,7 @@ prop_stackPushingPulling t = monadicIO $ do
   -- Note that duplicate values don't matter so we don't need to guard against that
   Ordered indices' <- pick arbitrary
   let indices = map getPositive indices'
-  let nItems = (if null indices then 0 else last indices) :: LuaInteger
+  let nItems = (if null indices then 0 else last indices) :: Lua.Integer
   -- Make sure there's enough room in the stack
   assert =<< run (runLuaWith l $ checkstack (fromIntegral nItems))
   -- Push elements

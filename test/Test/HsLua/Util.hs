@@ -33,11 +33,11 @@ module Test.HsLua.Util
 
 import Data.ByteString (ByteString)
 import Data.Monoid ((<>))
-import Foreign.Lua ( Lua, LuaException (..), runLua, runLuaEither, loadstring
-                   , call, multret)
+import Foreign.Lua ( Lua, runLua, runLuaEither, loadstring, call, multret)
 import Test.Tasty (TestTree)
 import Test.Tasty.HUnit (Assertion, assertBool, assertFailure, testCase, (@?=))
 
+import qualified Foreign.Lua as Lua
 import qualified Data.ByteString.Char8 as Char8
 
 pushLuaExpr :: ByteString -> Lua ()
@@ -47,15 +47,15 @@ shouldBeResultOf :: (Eq a, Show a) => a -> Lua a -> Assertion
 shouldBeResultOf expected luaOp = do
   errOrRes <- runLuaEither luaOp
   case errOrRes of
-    Left (LuaException msg) -> assertFailure $ "Lua operation failed with "
-                               ++ "message: '" ++ Char8.unpack msg ++ "'"
+    Left (Lua.Exception msg) -> assertFailure $ "Lua operation failed with "
+                                ++ "message: '" ++ Char8.unpack msg ++ "'"
     Right res -> res @?= expected
 
 shouldBeErrorMessageOf :: Show a => ByteString -> Lua a -> Assertion
 shouldBeErrorMessageOf expectedErrMsg luaOp = do
   errOrRes <- runLuaEither luaOp
   case errOrRes of
-    Left (LuaException msg) -> msg @?= expectedErrMsg
+    Left (Lua.Exception msg) -> msg @?= expectedErrMsg
     Right res ->
       assertFailure ("Lua operation succeeded unexpectedly and returned "
                      ++ show res)
@@ -64,8 +64,8 @@ shouldHoldForResultOf :: Show a => (a -> Bool) -> Lua a -> Assertion
 shouldHoldForResultOf predicate luaOp = do
   errOrRes <- runLuaEither luaOp
   case errOrRes of
-    Left (LuaException msg) -> assertFailure $ "Lua operation failed with "
-                               ++ "message: '" ++ (Char8.unpack msg) ++ "'"
+    Left (Lua.Exception msg) -> assertFailure $ "Lua operation failed with "
+                                ++ "message: '" ++ (Char8.unpack msg) ++ "'"
     Right res -> assertBool ("predicate doesn't hold for " ++ show res)
                             (predicate res)
 

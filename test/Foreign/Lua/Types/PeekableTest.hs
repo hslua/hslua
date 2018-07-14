@@ -34,7 +34,7 @@ Test for the conversion of lua values to haskell values.
 module Foreign.Lua.Types.PeekableTest (tests) where
 
 import Data.ByteString (ByteString)
-import Foreign.Lua
+import Foreign.Lua as Lua
 import Test.HsLua.Util ( (=:), (?:), pushLuaExpr, shouldBeResultOf
                        , shouldBeErrorMessageOf )
 import Test.Tasty (TestTree, testGroup)
@@ -56,9 +56,9 @@ tests = testGroup "Peekable"
         not <$> peek stackTop
     ]
 
-  , testGroup "LuaInteger"
+  , testGroup "Lua.Integer"
     [ "integer can be peeked" =:
-      (5 :: LuaInteger) `shouldBeResultOf` do
+      (5 :: Lua.Integer) `shouldBeResultOf` do
         pushnumber 5.0
         peek stackTop
     ]
@@ -73,7 +73,7 @@ tests = testGroup "Peekable"
 
   , testGroup "peekEither"
     [ "return right result on success" =:
-      (Right (5 :: LuaInteger)) `shouldBeResultOf` do
+      (Right (5 :: Lua.Integer)) `shouldBeResultOf` do
         pushinteger 5
         peekEither stackTop
 
@@ -81,7 +81,7 @@ tests = testGroup "Peekable"
       (Left "Could not read list: expected integer, got 'false' (boolean)")
       `shouldBeResultOf` do
         pushLuaExpr "{1, false}"
-        peekEither stackTop :: Lua (Either ByteString [LuaInteger])
+        peekEither stackTop :: Lua (Either ByteString [Lua.Integer])
     ]
 
   , testGroup "error handling"
@@ -93,18 +93,18 @@ tests = testGroup "Peekable"
     , "floating point numbers cannot be peeked as integer" =:
       "expected integer, got '23.1' (number)" `shouldBeErrorMessageOf` do
         pushnumber 23.1
-        peek stackTop :: Lua LuaInteger
+        peek stackTop :: Lua Lua.Integer
 
     , "booleans cannot be retrieved as numbers" =:
       "expected number, got 'false' (boolean)" `shouldBeErrorMessageOf` do
         pushboolean False
-        peek stackTop :: Lua LuaNumber
+        peek stackTop :: Lua Lua.Number
 
     , "list cannot be read if a peeking at list element fails" =:
       "Could not read list: expected number, got 'true' (boolean)"
       `shouldBeErrorMessageOf` do
         pushLuaExpr "{1, 5, 23, true, 42}"
-        peek stackTop :: Lua [LuaNumber]
+        peek stackTop :: Lua [Lua.Number]
 
     , "stack is unchanged if getting a list fails" =:
       0 `shouldBeResultOf` do

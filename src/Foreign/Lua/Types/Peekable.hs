@@ -52,7 +52,7 @@ import Data.ByteString (ByteString)
 import Data.Map (Map, fromList)
 import Data.Set (Set)
 import Data.Monoid ((<>))
-import Foreign.Lua.Core
+import Foreign.Lua.Core as Lua
 import Foreign.Ptr (Ptr)
 
 import qualified Data.Set as Set
@@ -125,10 +125,10 @@ class Peekable a where
     res <- tryLua (peek n)
     case res of
       Right x -> return $ Success x
-      Left (LuaException err) -> return $ Error [err]
+      Left (Lua.Exception err) -> return $ Error [err]
 
   -- | Check if at index @n@ there is a convertible Lua value and if so return
-  -- it.  Throws a @'LuaException'@ otherwise.
+  -- it.  Throws a @'Lua.Exception'@ otherwise.
   peek :: StackIndex -> Lua a
   peek n = safePeek n >>= force
 
@@ -144,10 +144,10 @@ instance Peekable () where
     isNil <- isnil idx
     return (if isNil then Just () else Nothing)
 
-instance Peekable LuaInteger where
+instance Peekable Lua.Integer where
   safePeek = reportValueOnFailure "integer" tointeger
 
-instance Peekable LuaNumber where
+instance Peekable Lua.Number where
   safePeek = reportValueOnFailure "number" tonumber
 
 instance Peekable ByteString where
@@ -165,8 +165,8 @@ instance Peekable CFunction where
 instance Peekable (Ptr a) where
   safePeek = reportValueOnFailure "userdata" touserdata
 
-instance Peekable LuaState where
-  safePeek = reportValueOnFailure "LuaState (i.e., a thread)" tothread
+instance Peekable Lua.State where
+  safePeek = reportValueOnFailure "Lua state (i.e., a thread)" tothread
 
 instance Peekable T.Text where
   safePeek = fmap (fmap T.decodeUtf8) . safePeek
@@ -332,7 +332,7 @@ instance (Peekable a, Peekable b, Peekable c, Peekable d,
     return $ (,,,,,,,) <$> a <*> b <*> c <*> d <*> e <*> f <*> g <*> h
 
 -- | Helper function to get the nth table value
-getTableIndex :: Peekable b => LuaInteger -> Lua (Result b)
+getTableIndex :: Peekable b => Lua.Integer -> Lua (Result b)
 getTableIndex key = do
   let idx = nthFromTop (fromIntegral key)
   rawgeti idx key

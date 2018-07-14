@@ -33,7 +33,7 @@ Portability : DeriveDataTypeable
 Lua exceptions and exception handling.
 -}
 module Foreign.Lua.Core.Error
-  ( LuaException (..)
+  ( Exception (..)
   , catchLuaError
   , throwLuaError
   , modifyLuaError
@@ -41,45 +41,45 @@ module Foreign.Lua.Core.Error
   ) where
 
 import Control.Applicative (Alternative (..))
-import Control.Exception (Exception)
 import Control.Monad.Catch (catch, throwM, try)
 import Data.ByteString (ByteString)
 import Data.Typeable (Typeable)
 import Foreign.Lua.Core.Types (Lua)
 
+import qualified Control.Exception as E
 import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Encoding
 import qualified Data.Text.Encoding.Error as TextError
 
 -- | Exceptions raised by Lua-related operations.
-newtype LuaException = LuaException ByteString
+newtype Exception = Exception ByteString
   deriving (Eq, Typeable)
 
-instance Show LuaException where
-  show (LuaException msg) = "Lua exception: " ++
+instance Show Exception where
+  show (Exception msg) = "Lua exception: " ++
     Text.unpack (Encoding.decodeUtf8With TextError.lenientDecode msg)
 
-instance Exception LuaException
+instance E.Exception Exception
 
 -- | Raise a @'LuaException'@ containing the given error message.
 throwLuaError :: ByteString -> Lua a
-throwLuaError = throwM . LuaException
+throwLuaError = throwM . Exception
 {-# INLINABLE throwLuaError #-}
 
 -- | Catch a @'LuaException'@.
-catchLuaError :: Lua a -> (LuaException -> Lua a) -> Lua a
+catchLuaError :: Lua a -> (Exception -> Lua a) -> Lua a
 catchLuaError = catch
 {-# INLINABLE catchLuaError #-}
 
 -- | Catch @'LuaException'@, alter the error message and rethrow.
 modifyLuaError :: Lua a -> (ByteString -> ByteString) -> Lua a
 modifyLuaError luaOp modifier =
-  luaOp `catchLuaError` \(LuaException msg) -> throwLuaError (modifier msg)
+  luaOp `catchLuaError` \(Exception msg) -> throwLuaError (modifier msg)
 {-# INLINABLE modifyLuaError #-}
 
 -- | Return either the result of a Lua computation or, if an exception was
 -- thrown, the error.
-tryLua :: Lua a -> Lua (Either LuaException a)
+tryLua :: Lua a -> Lua (Either Exception a)
 tryLua = try
 {-# INLINABLE tryLua #-}
 

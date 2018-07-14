@@ -51,8 +51,8 @@ module Foreign.Lua.Core (
   , true
   , fromLuaBool
   , toLuaBool
-  , LuaInteger (..)
-  , LuaNumber (..)
+  , Lua.Integer (..)
+  , Lua.Number (..)
   , StackIndex (..)
   , nthFromBottom
   , nthFromTop
@@ -68,7 +68,7 @@ module Foreign.Lua.Core (
   , refnil
   , upvalueindex
   -- ** State manipulation
-  , LuaState (..)
+  , Lua.State (..)
   , newstate
   , close
   -- ** Basic stack manipulation
@@ -250,7 +250,7 @@ module Foreign.Lua.Core (
   -- NOTE: If you're loading a hslua program compiled to a dynamic library from
   -- a Lua program, you need to set @HSLUA_ERR@ in the registry to any unique
   -- value manually, after creating the Lua state.
-  , LuaException (..)
+  , Exception (..)
   , catchLuaError
   , throwLuaError
   , modifyLuaError
@@ -268,7 +268,7 @@ import Foreign.C
 import Foreign.Lua.Core.Constants
 import Foreign.Lua.Core.Error
 import Foreign.Lua.Core.RawBindings
-import Foreign.Lua.Core.Types
+import Foreign.Lua.Core.Types as Lua
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 
@@ -312,7 +312,7 @@ hsluaErrorRegistryField :: ByteString
 hsluaErrorRegistryField = Char8.pack "HSLUA_ERR"
 
 -- | Execute an action only if the given index is a table. Throw an error otherwise.
-ensureTable :: StackIndex -> (LuaState -> IO ()) -> Lua ()
+ensureTable :: StackIndex -> (Lua.State -> IO ()) -> Lua ()
 ensureTable idx ioOp = do
   isTbl <- istable idx
   if isTbl
@@ -395,7 +395,7 @@ checkstack n = liftLua $ \l -> fromLuaBool <$> lua_checkstack l (fromIntegral n)
 --
 -- This is a wrapper function of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_close lua_close>.
-close :: LuaState -> IO ()
+close :: Lua.State -> IO ()
 close = lua_close
 
 -- | Compares two Lua values. Returns @True@ if the value at index @idx1@
@@ -713,14 +713,14 @@ lessthan index1 index2 = compare index1 index2 LT
 -- it accordingly (see program luac).
 --
 -- The @'load'@ function uses a user-supplied reader function to read the chunk
--- (see @'LuaReader'@). The data argument is an opaque value passed to the
+-- (see @'Lua.Reader'@). The data argument is an opaque value passed to the
 -- reader function.
 --
 -- The @chunkname@ argument gives a name to the chunk, which is used for error
 -- messages and in debug information (see
 -- <https://www.lua.org/manual/5.3/manual.html#4.9 §4.9>). Note that the
 -- @chunkname@ is used as a C string, so it may not contain null-bytes.
-load :: LuaReader -> Ptr () -> ByteString -> Lua Status
+load :: Lua.Reader -> Ptr () -> ByteString -> Lua Status
 load reader data' chunkname = liftLua $ \l ->
   B.useAsCString chunkname $ \namePtr ->
   toStatus <$> lua_load l reader data' namePtr nullPtr
@@ -780,7 +780,7 @@ newmetatable tname = liftLua $ \l ->
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#luaL_newstate luaL_newstate>.
-newstate :: IO LuaState
+newstate :: IO Lua.State
 newstate = do
   l <- luaL_newstate
   runLuaWith l $ do
@@ -950,7 +950,7 @@ pushcfunction f = pushcclosure f 0
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_pushinteger lua_pushinteger>.
-pushinteger :: LuaInteger -> Lua ()
+pushinteger :: Lua.Integer -> Lua ()
 pushinteger = liftLua1 lua_pushinteger
 
 -- |  Pushes a light userdata onto the stack.
@@ -975,7 +975,7 @@ pushnil = liftLua lua_pushnil
 -- | Pushes a float with the given value onto the stack.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_pushnumber lua_pushnumber>.
-pushnumber :: LuaNumber -> Lua ()
+pushnumber :: Lua.Number -> Lua ()
 pushnumber = liftLua1 lua_pushnumber
 
 -- | Pushes the zero-terminated string pointed to by s onto the stack. Lua makes
@@ -1025,7 +1025,7 @@ rawget n = ensureTable n (\l -> lua_rawget l n)
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawgeti lua_rawgeti>.
-rawgeti :: StackIndex -> LuaInteger -> Lua ()
+rawgeti :: StackIndex -> Lua.Integer -> Lua ()
 rawgeti k n = ensureTable k (\l -> lua_rawgeti l k n)
 
 -- | Returns the raw "length" of the value at the given index: for strings, this
@@ -1054,7 +1054,7 @@ rawset n = ensureTable n (\l -> lua_rawset l n)
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawseti lua_rawseti>.
-rawseti :: StackIndex -> LuaInteger -> Lua ()
+rawseti :: StackIndex -> Lua.Integer -> Lua ()
 rawseti k m = ensureTable k (\l -> lua_rawseti l k m)
 
 -- | Creates and returns a reference, in the table at index @t@, for the object
@@ -1207,7 +1207,7 @@ tocfunction n = liftLua $ \l -> do
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_tointeger lua_tointeger>.
-tointeger :: StackIndex -> Lua (Maybe LuaInteger)
+tointeger :: StackIndex -> Lua (Maybe Lua.Integer)
 tointeger n = liftLua $ \l -> alloca $ \boolPtr -> do
   res <- lua_tointegerx l n boolPtr
   isNum <- fromLuaBool <$> F.peek boolPtr
@@ -1218,7 +1218,7 @@ tointeger n = liftLua $ \l -> alloca $ \boolPtr -> do
 -- @tonumber@ returns @'Nothing'@.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_tonumber lua_tonumber>.
-tonumber :: StackIndex -> Lua (Maybe LuaNumber)
+tonumber :: StackIndex -> Lua (Maybe Lua.Number)
 tonumber n = liftLua $ \l -> alloca $ \bptr -> do
   res <- lua_tonumberx l n bptr
   isNum <- fromLuaBool <$> F.peek bptr
@@ -1269,9 +1269,9 @@ tostring' n = liftLua $ \l -> alloca $ \lenPtr -> do
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_tothread lua_tothread>.
-tothread :: StackIndex -> Lua (Maybe LuaState)
+tothread :: StackIndex -> Lua (Maybe Lua.State)
 tothread n = liftLua $ \l -> do
-  thread@(LuaState ptr) <- lua_tothread l n
+  thread@(Lua.State ptr) <- lua_tothread l n
   if ptr == nullPtr
     then return Nothing
     else return (Just thread)

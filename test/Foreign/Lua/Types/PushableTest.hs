@@ -34,7 +34,7 @@ Test for the interoperability between haskell and lua.
 module Foreign.Lua.Types.PushableTest (tests) where
 
 import Data.ByteString (ByteString)
-import Foreign.Lua
+import Foreign.Lua as Lua
 import Foreign.StablePtr (castStablePtrToPtr, freeStablePtr, newStablePtr)
 
 import Test.HsLua.Arbitrary ()
@@ -55,14 +55,14 @@ tests = testGroup "Pushable"
         True
         "true"
 
-    , testCase "LuaNumbers can be pushed correctly" $
-      assertLuaEqual "5::LuaNumber was not pushed"
-        (5 :: LuaNumber)
+    , testCase "Lua.Numbers can be pushed correctly" $
+      assertLuaEqual "5::Lua.Number was not pushed"
+        (5 :: Lua.Number)
         "5"
 
-    , testCase "LuaIntegers can be pushed correctly" $
-      assertLuaEqual "42::LuaInteger was not pushed"
-        (42 :: LuaInteger)
+    , testCase "Lua.Integers can be pushed correctly" $
+      assertLuaEqual "42::Lua.Integer was not pushed"
+        (42 :: Lua.Integer)
         "42"
 
     , testCase "ByteStrings can be pushed correctly" $
@@ -86,10 +86,10 @@ tests = testGroup "Pushable"
     ]
 
   , testGroup "pushing a value increases stack size by one"
-    [ testProperty "LuaInteger"
-      (prop_pushIncrStackSizeByOne :: LuaInteger -> Property)
-    , testProperty "LuaNumber"
-      (prop_pushIncrStackSizeByOne :: LuaNumber -> Property)
+    [ testProperty "Lua.Integer"
+      (prop_pushIncrStackSizeByOne :: Lua.Integer -> Property)
+    , testProperty "Lua.Number"
+      (prop_pushIncrStackSizeByOne :: Lua.Number -> Property)
     , testProperty "ByteString"
       (prop_pushIncrStackSizeByOne :: ByteString -> Property)
     , testProperty "String"

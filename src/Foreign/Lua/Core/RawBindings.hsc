@@ -36,7 +36,7 @@ Haskell bindings to lua C API functions.
 module Foreign.Lua.Core.RawBindings where
 
 import Foreign.C
-import Foreign.Lua.Core.Types
+import Foreign.Lua.Core.Types as Lua
 import Foreign.Ptr
 
 #include "safer-api.h"
@@ -62,7 +62,7 @@ import Foreign.Ptr
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_close lua_close>
 foreign import ccall "lua.h lua_close"
-  lua_close :: LuaState -> IO ()
+  lua_close :: Lua.State -> IO ()
 
 -- lua_newthread is currently not supported.
 
@@ -72,39 +72,39 @@ foreign import ccall "lua.h lua_close"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_absindex lua_absindex>
 foreign import ccall unsafe "lua.h lua_absindex"
-  lua_absindex :: LuaState -> StackIndex -> IO StackIndex
+  lua_absindex :: Lua.State -> StackIndex -> IO StackIndex
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_gettop lua_gettop>
 foreign import ccall unsafe "lua.h lua_gettop"
-  lua_gettop :: LuaState -> IO StackIndex
+  lua_gettop :: Lua.State -> IO StackIndex
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_settop lua_settop>
 foreign import ccall SAFTY "lua.h lua_settop"
-  lua_settop :: LuaState -> StackIndex -> IO ()
+  lua_settop :: Lua.State -> StackIndex -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushvalue lua_pushvalue>
 foreign import ccall SAFTY "lua.h lua_pushvalue"
-  lua_pushvalue :: LuaState -> StackIndex -> IO ()
+  lua_pushvalue :: Lua.State -> StackIndex -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_copy lua_copy>
 foreign import ccall SAFTY "lua.h lua_copy"
-  lua_copy :: LuaState -> StackIndex -> StackIndex -> IO ()
+  lua_copy :: Lua.State -> StackIndex -> StackIndex -> IO ()
 
 -- | See <https://www.lua.org/manual/5.2/manual.html#lua_remove lua_remove>
 foreign import capi SAFTY "lua.h lua_remove"
-  lua_remove :: LuaState -> StackIndex -> IO ()
+  lua_remove :: Lua.State -> StackIndex -> IO ()
 
 -- | See <https://www.lua.org/manual/5.2/manual.html#lua_insert lua_insert>
 foreign import capi SAFTY "lua.h lua_insert"
-  lua_insert :: LuaState -> StackIndex -> IO ()
+  lua_insert :: Lua.State -> StackIndex -> IO ()
 
 -- | See <https://www.lua.org/manual/5.2/manual.html#lua_replace lua_replace>
 foreign import capi SAFTY "lua.h lua_replace"
-  lua_replace :: LuaState -> StackIndex -> IO ()
+  lua_replace :: Lua.State -> StackIndex -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_checkstack lua_checkstack>
 foreign import capi SAFTY "lua.h lua_checkstack"
-  lua_checkstack :: LuaState -> StackIndex -> IO LuaBool
+  lua_checkstack :: Lua.State -> StackIndex -> IO LuaBool
 
 -- lua_xmove is currently not supported.
 
@@ -114,74 +114,74 @@ foreign import capi SAFTY "lua.h lua_checkstack"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_isnumber lua_isnumber>
 foreign import ccall SAFTY "lua.h lua_isnumber"
-  lua_isnumber :: LuaState -> StackIndex -> IO LuaBool
+  lua_isnumber :: Lua.State -> StackIndex -> IO LuaBool
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_isstring lua_isstring>
 foreign import ccall SAFTY "lua.h lua_isstring"
-  lua_isstring :: LuaState -> StackIndex -> IO LuaBool
+  lua_isstring :: Lua.State -> StackIndex -> IO LuaBool
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_iscfunction lua_iscfunction>
 foreign import ccall SAFTY "lua.h lua_iscfunction"
-  lua_iscfunction :: LuaState -> StackIndex -> IO LuaBool
+  lua_iscfunction :: Lua.State -> StackIndex -> IO LuaBool
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_isuserdata lua_isuserdata>
 foreign import ccall SAFTY "lua.h lua_isuserdata"
-  lua_isuserdata :: LuaState -> StackIndex -> IO LuaBool
+  lua_isuserdata :: Lua.State -> StackIndex -> IO LuaBool
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>
 foreign import ccall SAFTY "lua.h lua_type"
-  lua_type :: LuaState -> StackIndex -> IO TypeCode
+  lua_type :: Lua.State -> StackIndex -> IO TypeCode
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_typename lua_typename>
 foreign import ccall SAFTY "lua.h lua_typename"
-  lua_typename :: LuaState -> TypeCode -> IO CString
+  lua_typename :: Lua.State -> TypeCode -> IO CString
 
 -- lua_compare is unsafe (might cause a longjmp), use hslua_compare instead.
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_compare \
 -- @lua_compare@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_compare"
-  hslua_compare :: LuaState -> StackIndex -> StackIndex -> CInt
+  hslua_compare :: Lua.State -> StackIndex -> StackIndex -> CInt
                 -> IO (Failable LuaBool)
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawequal lua_rawequal>
 foreign import ccall SAFTY "lua.h lua_rawequal"
-  lua_rawequal :: LuaState -> StackIndex -> StackIndex -> IO LuaBool
+  lua_rawequal :: Lua.State -> StackIndex -> StackIndex -> IO LuaBool
 
 --
 -- Type coercion
 --
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_toboolean lua_toboolean>
 foreign import capi SAFTY "lua.h lua_toboolean"
-  lua_toboolean :: LuaState -> StackIndex -> IO LuaBool
+  lua_toboolean :: Lua.State -> StackIndex -> IO LuaBool
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tocfunction lua_tocfunction>
 foreign import ccall SAFTY "lua.h lua_tocfunction"
-  lua_tocfunction :: LuaState -> StackIndex -> IO CFunction
+  lua_tocfunction :: Lua.State -> StackIndex -> IO CFunction
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tointegerx lua_tointegerx>
 foreign import ccall SAFTY "lua.h lua_tointegerx"
-  lua_tointegerx :: LuaState -> StackIndex -> Ptr LuaBool -> IO LuaInteger
+  lua_tointegerx :: Lua.State -> StackIndex -> Ptr LuaBool -> IO Lua.Integer
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tonumberx lua_tonumberx>
 foreign import ccall SAFTY "lua.h lua_tonumberx"
-  lua_tonumberx :: LuaState -> StackIndex -> Ptr LuaBool -> IO LuaNumber
+  lua_tonumberx :: Lua.State -> StackIndex -> Ptr LuaBool -> IO Lua.Number
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tolstring lua_tolstring>
 foreign import ccall SAFTY "lua.h lua_tolstring"
-  lua_tolstring :: LuaState -> StackIndex -> Ptr CSize -> IO (Ptr CChar)
+  lua_tolstring :: Lua.State -> StackIndex -> Ptr CSize -> IO (Ptr CChar)
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_topointer lua_topointer>
 foreign import ccall SAFTY "lua.h lua_topointer"
-  lua_topointer :: LuaState -> StackIndex -> IO (Ptr ())
+  lua_topointer :: Lua.State -> StackIndex -> IO (Ptr ())
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_tothread lua_tothread>
 foreign import ccall SAFTY "lua.h lua_tothread"
-  lua_tothread :: LuaState -> StackIndex -> IO LuaState
+  lua_tothread :: Lua.State -> StackIndex -> IO Lua.State
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_touserdata lua_touserdata>
 foreign import ccall SAFTY "lua.h lua_touserdata"
-  lua_touserdata :: LuaState -> StackIndex -> IO (Ptr a)
+  lua_touserdata :: Lua.State -> StackIndex -> IO (Ptr a)
 
 
 --
@@ -190,7 +190,7 @@ foreign import ccall SAFTY "lua.h lua_touserdata"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawlen lua_rawlen>
 foreign import ccall SAFTY "lua.h lua_rawlen"
-  lua_rawlen :: LuaState -> StackIndex -> IO CSize
+  lua_rawlen :: Lua.State -> StackIndex -> IO CSize
 
 
 --------------------------------------------------------------------------------
@@ -198,38 +198,38 @@ foreign import ccall SAFTY "lua.h lua_rawlen"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushnil lua_pushnil>
 foreign import ccall SAFTY "lua.h lua_pushnil"
-  lua_pushnil :: LuaState -> IO ()
+  lua_pushnil :: Lua.State -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushnumber lua_pushnumber>
 foreign import ccall SAFTY "lua.h lua_pushnumber"
-  lua_pushnumber :: LuaState -> LuaNumber -> IO ()
+  lua_pushnumber :: Lua.State -> Lua.Number -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushinteger lua_pushinteger>
 foreign import ccall SAFTY "lua.h lua_pushinteger"
-  lua_pushinteger :: LuaState -> LuaInteger -> IO ()
+  lua_pushinteger :: Lua.State -> Lua.Integer -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushlstring lua_pushlstring>
 foreign import ccall SAFTY "lua.h lua_pushlstring"
-  lua_pushlstring :: LuaState -> Ptr CChar -> CSize -> IO ()
+  lua_pushlstring :: Lua.State -> Ptr CChar -> CSize -> IO ()
 
 -- lua_pushstring is currently not supported. It's difficult to use in a haskell
 -- context.
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushcclosure lua_pushcclosure>
 foreign import ccall SAFTY "lua.h lua_pushcclosure"
-  lua_pushcclosure :: LuaState -> CFunction -> NumArgs -> IO ()
+  lua_pushcclosure :: Lua.State -> CFunction -> NumArgs -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushboolean lua_pushboolean>
 foreign import ccall SAFTY "lua.h lua_pushboolean"
-  lua_pushboolean :: LuaState -> LuaBool -> IO ()
+  lua_pushboolean :: Lua.State -> LuaBool -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushlightuserdata lua_pushlightuserdata>
 foreign import ccall SAFTY "lua.h lua_pushlightuserdata"
-  lua_pushlightuserdata :: LuaState -> Ptr a -> IO ()
+  lua_pushlightuserdata :: Lua.State -> Ptr a -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushthread lua_pushthread>
 foreign import ccall SAFTY "lua.h lua_pushthread"
-  lua_pushthread :: LuaState -> IO CInt
+  lua_pushthread :: Lua.State -> IO CInt
 
 
 --------------------------------------------------------------------------------
@@ -243,32 +243,32 @@ foreign import ccall SAFTY "lua.h lua_pushthread"
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_gettable \
 -- @lua_gettable@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_gettable"
-  hslua_gettable :: LuaState -> StackIndex -> IO (Failable ())
+  hslua_gettable :: Lua.State -> StackIndex -> IO (Failable ())
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawget lua_rawget>
 foreign import ccall SAFTY "lua.h lua_rawget"
-  lua_rawget :: LuaState -> StackIndex -> IO ()
+  lua_rawget :: Lua.State -> StackIndex -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawgeti lua_rawgeti>
 foreign import ccall SAFTY "lua.h lua_rawgeti"
-  lua_rawgeti :: LuaState -> StackIndex -> LuaInteger -> IO ()
+  lua_rawgeti :: Lua.State -> StackIndex -> Lua.Integer -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_createtable lua_createtable>
 foreign import ccall SAFTY "lua.h lua_createtable"
-  lua_createtable :: LuaState -> CInt -> CInt -> IO ()
+  lua_createtable :: Lua.State -> CInt -> CInt -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_newuserdata lua_newuserdata>
 foreign import ccall SAFTY "lua.h lua_newuserdata"
-  lua_newuserdata :: LuaState -> CSize -> IO (Ptr ())
+  lua_newuserdata :: Lua.State -> CSize -> IO (Ptr ())
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_getmetatable lua_getmetatable>
 foreign import ccall SAFTY "lua.h lua_getmetatable"
-  lua_getmetatable :: LuaState -> StackIndex -> IO LuaBool
+  lua_getmetatable :: Lua.State -> StackIndex -> IO LuaBool
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_getglobal \
 -- @lua_getglobal@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_getglobal"
-  hslua_getglobal :: LuaState -> CString -> CSize -> IO (Failable ())
+  hslua_getglobal :: Lua.State -> CString -> CSize -> IO (Failable ())
 
 
 --------------------------------------------------------------------------------
@@ -282,24 +282,24 @@ foreign import ccall "safer-api.h hslua_getglobal"
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_settable \
 -- @lua_settable@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_settable"
-  hslua_settable :: LuaState -> StackIndex -> IO (Failable ())
+  hslua_settable :: Lua.State -> StackIndex -> IO (Failable ())
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawset lua_rawset>
 foreign import ccall SAFTY "lua.h lua_rawset"
-  lua_rawset :: LuaState -> StackIndex -> IO ()
+  lua_rawset :: Lua.State -> StackIndex -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawseti lua_rawseti>
 foreign import ccall SAFTY "lua.h lua_rawseti"
-  lua_rawseti :: LuaState -> StackIndex -> LuaInteger -> IO ()
+  lua_rawseti :: Lua.State -> StackIndex -> Lua.Integer -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_setmetatable lua_setmetatable>
 foreign import ccall SAFTY "lua.h lua_setmetatable"
-  lua_setmetatable :: LuaState -> StackIndex -> IO ()
+  lua_setmetatable :: Lua.State -> StackIndex -> IO ()
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_setglobal \
 -- @lua_setglobal@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_setglobal"
-  hslua_setglobal :: LuaState -> CString -> CSize -> IO (Failable ())
+  hslua_setglobal :: Lua.State -> CString -> CSize -> IO (Failable ())
 
 
 --------------------------------------------------------------------------------
@@ -309,12 +309,12 @@ foreign import ccall "safer-api.h hslua_setglobal"
 
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_pcall lua_pcall>
 foreign import capi "lua.h lua_pcall"
-  lua_pcall :: LuaState -> NumArgs -> NumResults -> StackIndex
+  lua_pcall :: Lua.State -> NumArgs -> NumResults -> StackIndex
             -> IO StatusCode
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_load lua_load>
 foreign import ccall safe "lua.h lua_load"
-  lua_load :: LuaState -> LuaReader -> Ptr () -> CString -> CString
+  lua_load :: Lua.State -> Lua.Reader -> Ptr () -> CString -> CString
            -> IO StatusCode
 
 -- currently unsupported:
@@ -328,7 +328,7 @@ foreign import ccall safe "lua.h lua_load"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_status lua_status>
 foreign import ccall unsafe "lua.h lua_status"
-  lua_status :: LuaState -> IO StatusCode
+  lua_status :: Lua.State -> IO StatusCode
 
 
 ------------------------------------------------------------------------------
@@ -336,7 +336,7 @@ foreign import ccall unsafe "lua.h lua_status"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_gc lua_gc>
 foreign import ccall "lua.h lua_gc"
-  lua_gc :: LuaState -> CInt -> CInt -> IO CInt
+  lua_gc :: Lua.State -> CInt -> CInt -> IO CInt
 
 
 ------------------------------------------------------------------------------
@@ -349,12 +349,12 @@ foreign import ccall "lua.h lua_gc"
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_next \
 -- @lua_next@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_next"
-  hslua_next :: LuaState -> StackIndex -> IO (Failable LuaBool)
+  hslua_next :: Lua.State -> StackIndex -> IO (Failable LuaBool)
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_concat \
 -- @lua_concat@> which catches any @longjmp@s.
 foreign import ccall "safer-api.h hslua_concat"
-  hslua_concat :: LuaState -> NumArgs -> IO (Failable ())
+  hslua_concat :: Lua.State -> NumArgs -> IO (Failable ())
 
 
 ------------------------------------------------------------------------------
@@ -362,7 +362,7 @@ foreign import ccall "safer-api.h hslua_concat"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_openlibs luaL_openlibs>
 foreign import ccall unsafe "lualib.h luaL_openlibs"
-  luaL_openlibs :: LuaState -> IO ()
+  luaL_openlibs :: Lua.State -> IO ()
 
 -- | Point to function opening the base library.
 foreign import ccall unsafe "lualib.h &luaopen_base"
@@ -402,28 +402,28 @@ foreign import ccall unsafe "lualib.h &luaopen_package"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_newstate luaL_newstate>
 foreign import ccall unsafe "lauxlib.h luaL_newstate"
-  luaL_newstate :: IO LuaState
+  luaL_newstate :: IO Lua.State
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_newmetatable luaL_newmetatable>
 foreign import ccall "lauxlib.h luaL_newmetatable"
-  luaL_newmetatable :: LuaState -> CString -> IO LuaBool
+  luaL_newmetatable :: Lua.State -> CString -> IO LuaBool
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_ref luaL_ref>
 foreign import ccall "lauxlib.h luaL_ref"
-  luaL_ref :: LuaState -> StackIndex -> IO CInt
+  luaL_ref :: Lua.State -> StackIndex -> IO CInt
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_unref luaL_unref>
 foreign import ccall "lauxlib.h luaL_unref"
-  luaL_unref :: LuaState -> StackIndex -> CInt -> IO ()
+  luaL_unref :: Lua.State -> StackIndex -> CInt -> IO ()
 
 -- | See <https://www.lua.org/manual/5.1/manual.html#luaL_loadfile luaL_loadfile>
 foreign import capi "lauxlib.h luaL_loadfile"
-  luaL_loadfile :: LuaState -> CString -> IO StatusCode
+  luaL_loadfile :: Lua.State -> CString -> IO StatusCode
 
 -- | See <https://www.lua.org/manual/5.1/manual.html#luaL_loadstring luaL_loadbuffer>
 foreign import capi SAFTY "lauxlib.h luaL_loadbuffer"
-  luaL_loadbuffer :: LuaState -> Ptr CChar -> CSize -> CString -> IO StatusCode
+  luaL_loadbuffer :: Lua.State -> Ptr CChar -> CSize -> CString -> IO StatusCode
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#luaL_tolstring luaL_tolstring>
 foreign import ccall safe "safer-api.h hsluaL_tolstring"
-  hsluaL_tolstring :: LuaState -> StackIndex -> Ptr CSize -> IO (Ptr CChar)
+  hsluaL_tolstring :: Lua.State -> StackIndex -> Ptr CSize -> IO (Ptr CChar)

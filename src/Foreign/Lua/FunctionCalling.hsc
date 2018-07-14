@@ -56,7 +56,7 @@ import Control.Monad (when)
 import Data.ByteString (ByteString)
 import Data.Monoid ((<>))
 import Foreign.C (CInt (..))
-import Foreign.Lua.Core
+import Foreign.Lua.Core as Lua
 import Foreign.Lua.Types
 import Foreign.Lua.Util (getglobal', raiseError)
 import Foreign.Ptr (castPtr, freeHaskellFunPtr)
@@ -66,7 +66,7 @@ import qualified Data.ByteString.Char8 as Char8
 import qualified Foreign.Storable as F
 
 -- | Type of raw haskell functions that can be made into 'CFunction's.
-type PreCFunction = LuaState -> IO NumResults
+type PreCFunction = Lua.State -> IO NumResults
 
 -- | Haskell function that can be called from Lua.
 type HaskellFunction = Lua NumResults
@@ -104,7 +104,7 @@ instance (Peekable a, ToHaskellFunction b) =>
 -- Any Haskell exception will be converted to a string and returned
 -- as Lua error.
 toHaskellFunction :: ToHaskellFunction a => a -> HaskellFunction
-toHaskellFunction a = toHsFun 1 a `catchLuaError` \(LuaException msg) ->
+toHaskellFunction a = toHsFun 1 a `catchLuaError` \(Lua.Exception msg) ->
   raiseError ("Error during function call: " <> msg)
 
 -- | Create new foreign Lua function. Function created can be called
@@ -204,7 +204,7 @@ foreign import ccall "&hslua_userdata_gc"
 
 -- | Call the Haskell function stored in the userdata. This function is exported
 -- as a C function and then re-imported in order to get a C function pointer.
-hslua_call_wrapped_hs_fun :: LuaState -> IO NumResults
+hslua_call_wrapped_hs_fun :: Lua.State -> IO NumResults
 hslua_call_wrapped_hs_fun l = do
   ptr <- runLuaWith l $ peek 1 <* remove 1
   stableptr <- F.peek (castPtr ptr)

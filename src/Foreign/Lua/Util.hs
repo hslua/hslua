@@ -58,7 +58,7 @@ runLua = (newstate `bracket` close) . flip runLuaWith
 -- | Run the given Lua computation; exceptions raised in haskell code are
 -- caught, but other exceptions (user exceptions raised in haskell, unchecked
 -- type errors, etc.) are passed through.
-runLuaEither :: Lua a -> IO (Either LuaException a)
+runLuaEither :: Lua a -> IO (Either Lua.Exception a)
 runLuaEither = try . runLua
 
 -- | Like @getglobal@, but knows about packages and nested tables. E.g.

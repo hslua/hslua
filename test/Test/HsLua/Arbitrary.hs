@@ -24,15 +24,16 @@ THE SOFTWARE.
 {-| Instances for QuickCheck's Arbitrary. -}
 module Test.HsLua.Arbitrary () where
 
-import Foreign.Lua (LuaInteger, LuaNumber(LuaNumber), Type)
+import Foreign.Lua (Type)
 import Test.QuickCheck (Arbitrary(arbitrary))
+import qualified Foreign.Lua as Lua
 import qualified Test.QuickCheck as QC
 
-instance Arbitrary LuaInteger where
+instance Arbitrary Lua.Integer where
   arbitrary = QC.arbitrarySizedIntegral
 
-instance Arbitrary LuaNumber where
-  arbitrary = LuaNumber <$> arbitrary
+instance Arbitrary Lua.Number where
+  arbitrary = Lua.Number <$> arbitrary
 
 instance Arbitrary Type where
   arbitrary = QC.arbitraryBoundedEnum

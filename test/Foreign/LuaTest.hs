@@ -26,13 +26,12 @@ module Foreign.LuaTest (tests) where
 import Prelude hiding (concat)
 
 import Control.Applicative ((<|>), empty)
-import Control.Monad (when)
 import Data.ByteString (ByteString)
 import Data.Either (isLeft, isRight)
 import Data.Monoid ((<>))
-import Foreign.Lua
+import Foreign.Lua as Lua
 import System.Mem (performMajorGC)
-import Test.HsLua.Util ((?:), pushLuaExpr)
+import Test.HsLua.Util ((=:), (?:), pushLuaExpr, shouldBeErrorMessageOf)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
 
@@ -63,12 +62,12 @@ tests = testGroup "lua integration tests"
       -- get functions from registry
       rawgeti registryindex (fromIntegral idx1)
       call 0 1
-      r1 <- peek (-1) :: Lua LuaInteger
+      r1 <- peek (-1) :: Lua Lua.Integer
       liftIO (assertEqual "received function returned wrong value" 1 r1)
 
       rawgeti registryindex (fromIntegral idx2)
       call 0 1
-      r2 <- peek (-1) :: Lua LuaInteger
+      r2 <- peek (-1) :: Lua Lua.Integer
       liftIO (assertEqual "received function returned wrong value" 2 r2)
 
       -- delete references
@@ -211,17 +210,11 @@ tests = testGroup "lua integration tests"
             getfield (-1) "foo" :: Lua ()
       in runLuaEither comp
 
-    , testCase "calling a function that errors throws exception" $
-      let msg = "error message"
-          luaCode = "return error('" <> msg <> "')"
-          err =  "[string \"" <> luaCode <> "\"]:1: " <> msg
-          errTest x = x == (Left (LuaException msg)) || -- LuaJIT
-                      x == (Left (LuaException err))    -- default Lua
-      in assertBool "problem in error" . errTest =<<
-      (runLuaEither $ do
-          openbase
-          res <- loadstring luaCode
-          when (res == OK) $ call 0 0)
+    , "calling a function that errors throws exception" =:
+      "[string \"return error('error message')\"]:1: error message"
+      `shouldBeErrorMessageOf` do
+        openbase
+        loadstring "return error('error message')" *> call 0 1
     ]
   ]
 

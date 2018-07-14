@@ -76,15 +76,15 @@ tests = testGroup "Haskell version of the C API"
     [ "inserts stack elements using negative indices" ?: do
         pushLuaExpr "1, 2, 3, 4, 5, 6, 7, 8, 9"
         insert (-6)
-        movedEl <- peek (-6) :: Lua LuaInteger
-        newTop <- peek (-1) :: Lua LuaInteger
+        movedEl <- peek (-6) :: Lua Lua.Integer
+        newTop <- peek (-1) :: Lua Lua.Integer
         return (movedEl == 9 && newTop == 8)
 
     , "inserts stack elements using negative indices" ?: do
         pushLuaExpr "1, 2, 3, 4, 5, 6, 7, 8, 9"
         insert 4
-        movedEl <- peek 4 :: Lua LuaInteger
-        newTop <- peek (-1) :: Lua LuaInteger
+        movedEl <- peek 4 :: Lua Lua.Integer
+        newTop <- peek (-1) :: Lua Lua.Integer
         return (movedEl == 9 && newTop == 8)
     ]
 
@@ -284,7 +284,7 @@ tests = testGroup "Haskell version of the C API"
         OK `shouldBeResultOf` dostring "return 1"
 
       , "top of the stack should be result of last computation" =:
-        (5 :: LuaInteger) `shouldBeResultOf`
+        (5 :: Lua.Integer) `shouldBeResultOf`
           (dostring "return (2+3)" *> peek (-1))
       ]
 
@@ -310,7 +310,7 @@ tests = testGroup "Haskell version of the C API"
         OK `shouldBeResultOf` loadfile "./test/lua/example.lua"
 
       , "example fib program should be loaded correctly" =:
-        (8 :: LuaInteger) `shouldBeResultOf` do
+        (8 :: Lua.Integer) `shouldBeResultOf` do
           loadfile "./test/lua/example.lua" *> call 0 0
           getglobal "fib"
           pushinteger 6
@@ -332,7 +332,7 @@ tests = testGroup "Haskell version of the C API"
         OK `shouldBeResultOf` dofile "./test/lua/example.lua"
 
       , "example fib program should be loaded correctly" =:
-        (21 :: LuaInteger) `shouldBeResultOf` do
+        (21 :: Lua.Integer) `shouldBeResultOf` do
           _ <- dofile "./test/lua/example.lua"
           getglobal "fib"
           pushinteger 8
@@ -366,8 +366,8 @@ tests = testGroup "Haskell version of the C API"
 
   , testProperty "lessthan works" $ \n1 n2 -> monadicIO $ do
       luaCmp <- run . runLua $ do
-        push (n2 :: LuaNumber)
-        push (n1 :: LuaNumber)
+        push (n2 :: Lua.Number)
+        push (n1 :: Lua.Number)
         lessthan (-1) (-2) <* pop 2
       assert $ luaCmp == (n1 < n2)
 
@@ -388,7 +388,7 @@ tests = testGroup "Haskell version of the C API"
       let mt = "{__tostring = function (e) return e.error_code end}"
       let err = "error(setmetatable({error_code = 23}," <> mt <> "))"
       res <- runLua . tryLua $ openbase *> loadstring err *> call 0 0
-      assertEqual "wrong error message" (Left (LuaException "23")) res
+      assertEqual "wrong error message" (Left (Lua.Exception "23")) res
 
   , testCase "handling table errors won't leak" $ do
       let mt = "{__tostring = function (e) return e.code end}"
@@ -403,8 +403,8 @@ tests = testGroup "Haskell version of the C API"
       assertEqual "error handling leaks values to the stack" 0 res
   ]
 
-compareWith :: (LuaInteger -> LuaInteger -> Bool)
-            -> RelationalOperator -> LuaInteger -> Property
+compareWith :: (Lua.Integer -> Lua.Integer -> Bool)
+            -> RelationalOperator -> Lua.Integer -> Property
 compareWith op luaOp n = compareLT .&&. compareEQ .&&. compareGT
  where
   compareLT :: Property

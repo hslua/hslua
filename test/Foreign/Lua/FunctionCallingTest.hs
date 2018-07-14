@@ -24,6 +24,7 @@ THE SOFTWARE.
 module Foreign.Lua.FunctionCallingTest (tests) where
 
 import Control.Monad (forM_)
+import Data.ByteString.Char8 as Char8
 import Data.Monoid ((<>))
 import Foreign.Lua.Core
 import Foreign.Lua.Types (Result (Error, Success))
@@ -35,25 +36,25 @@ import Test.HsLua.Util ( (=:), pushLuaExpr, shouldBeErrorMessageOf
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
 
-import Data.ByteString.Char8 as Char8
+import qualified Foreign.Lua as Lua
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
 tests = testGroup "FunctionCalling"
   [ testGroup "call haskell functions from lua" $
-    let integerOperation :: LuaInteger -> LuaInteger -> Lua LuaInteger
+    let integerOperation :: Lua.Integer -> Lua.Integer -> Lua Lua.Integer
         integerOperation i1 i2 =
           let (j1, j2) = (fromIntegral i1, fromIntegral i2)
-          in return $ fromIntegral (product [1..j1] `mod` j2 :: Integer)
+          in return $ fromIntegral (product [1..j1] `mod` j2 :: Prelude.Integer)
     in
     [ testCase "push haskell function to lua" $
-      let add :: Lua LuaInteger
+      let add :: Lua Lua.Integer
           add = do
             i1 <- peek (-1)
             i2 <- peek (-2)
             return (i1 + i2)
 
-          luaOp :: Lua LuaInteger
+          luaOp :: Lua Lua.Integer
           luaOp = do
             registerHaskellFunction "add" add
             loadstring "return add(23, 5)" *> call 0 1
@@ -62,7 +63,7 @@ tests = testGroup "FunctionCalling"
       in assertEqual "Unexpected result" 28 =<< runLua luaOp
 
     , testCase "push multi-argument haskell function to lua" $
-      let luaOp :: Lua LuaInteger
+      let luaOp :: Lua Lua.Integer
           luaOp = do
             registerHaskellFunction "integerOp" integerOperation
             loadstring "return integerOp(23, 42)" *> call 0 1
@@ -76,7 +77,7 @@ tests = testGroup "FunctionCalling"
             pushLuaExpr "integerOp(23, true)"
 
     , "Haskell functions are converted to C functions" =:
-      (100 :: LuaInteger) `shouldBeResultOf` do
+      (100 :: Lua.Integer) `shouldBeResultOf` do
         pushHaskellFunction integerOperation
         pushinteger 71
         pushinteger 107
@@ -95,10 +96,10 @@ tests = testGroup "FunctionCalling"
   , testGroup "call lua function from haskell"
     [ testCase "test equality within lua" $
       assertEqual "raw equality test failed" (Success True) =<<
-      runLua (openlibs *> callFunc "rawequal" (5 :: LuaInteger) (5.0 :: LuaNumber))
+      runLua (openlibs *> callFunc "rawequal" (5 :: Lua.Integer) (5.0 :: Lua.Number))
 
     , testCase "failing lua function call" $
-      assertEqual "unexpected result" (Left (LuaException "foo")) =<<
+      assertEqual "unexpected result" (Left (Lua.Exception "foo")) =<<
       let luaOp = do
              openlibs
              callFunc "assert" False (Char8.pack "foo") :: Lua (Result Bool)
@@ -109,7 +110,7 @@ tests = testGroup "FunctionCalling"
       runLua (openlibs *> callFunc "print" (Char8.pack ""))
 
     , testCase "failing lua procedure call" $
-      assertEqual "unexpected result" (Left (LuaException "foo")) =<<
+      assertEqual "unexpected result" (Left (Lua.Exception "foo")) =<<
       let luaOp = (openlibs *> callFunc "error" (Char8.pack "foo") :: Lua (Result ()))
       in runLua (tryLua luaOp)
 
@@ -125,8 +126,8 @@ tests = testGroup "FunctionCalling"
   -- collection.
   , testCase "function garbage collection" $
     assertEqual "problem while pushing many Haskell functions" () =<<
-      ( runLua $ forM_ [1..5000::LuaInteger] $ \n -> do
-         let fn :: LuaInteger -> Lua LuaInteger
+      ( runLua $ forM_ [1..5000::Lua.Integer] $ \n -> do
+         let fn :: Lua.Integer -> Lua Lua.Integer
              fn x = return (x + n)
          pushHaskellFunction fn
          pop 1

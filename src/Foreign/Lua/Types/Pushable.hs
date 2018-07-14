@@ -45,7 +45,7 @@ import Control.Monad (zipWithM_)
 import Data.ByteString (ByteString)
 import Data.Map (Map, toList)
 import Data.Set (Set)
-import Foreign.Lua.Core
+import Foreign.Lua.Core as Lua
 import Foreign.Ptr (Ptr)
 
 import qualified Data.Text as T
@@ -61,10 +61,10 @@ class Pushable a where
 instance Pushable () where
   push = const pushnil
 
-instance Pushable LuaInteger where
+instance Pushable Lua.Integer where
   push = pushinteger
 
-instance Pushable LuaNumber where
+instance Pushable Lua.Number where
   push = pushnumber
 
 instance Pushable ByteString where
@@ -193,7 +193,7 @@ instance (Pushable a, Pushable b, Pushable c, Pushable d,
     addRawInt 8 h
 
 -- | Set numeric key/value in table at the top of the stack.
-addRawInt :: Pushable a => LuaInteger -> a -> Lua ()
+addRawInt :: Pushable a => Lua.Integer -> a -> Lua ()
 addRawInt idx val = do
   push val
   rawseti (-2) idx

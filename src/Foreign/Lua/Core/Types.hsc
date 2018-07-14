@@ -38,8 +38,8 @@ The core Lua types, including mappings of Lua types to Haskell.
 -}
 module Foreign.Lua.Core.Types
   ( Lua (..)
-  , LuaState (..)
-  , LuaReader
+  , State (..)
+  , Reader
   , liftLua
   , liftLua1
   , luaState
@@ -56,8 +56,8 @@ module Foreign.Lua.Core.Types
   , true
   , fromLuaBool
   , toLuaBool
-  , LuaInteger (..)
-  , LuaNumber (..)
+  , Integer (..)
+  , Number (..)
   , StackIndex (..)
   , nthFromBottom
   , nthFromTop
@@ -73,7 +73,7 @@ module Foreign.Lua.Core.Types
   , Failable (..)
   ) where
 
-import Prelude hiding (EQ, LT)
+import Prelude hiding (Integer, EQ, LT)
 
 import Control.Monad.Catch (MonadCatch, MonadMask, MonadThrow)
 import Control.Monad.Reader (ReaderT (..), MonadReader, MonadIO, ask, liftIO)
@@ -90,7 +90,7 @@ import GHC.Generics (Generic)
 -- | A Lua computation. This is the base type used to run Lua programs of any
 -- kind. The Lua state is handled automatically, but can be retrieved via
 -- @'luaState'@.
-newtype Lua a = Lua { unLua :: ReaderT LuaState IO a }
+newtype Lua a = Lua { unLua :: ReaderT State IO a }
   deriving
     ( Applicative
     , Functor
@@ -98,25 +98,25 @@ newtype Lua a = Lua { unLua :: ReaderT LuaState IO a }
     , MonadCatch
     , MonadIO
     , MonadMask
-    , MonadReader LuaState
+    , MonadReader State
     , MonadThrow
     )
 
--- | Turn a function of typ @LuaState -> IO a@ into a monadic lua operation.
-liftLua :: (LuaState -> IO a) -> Lua a
+-- | Turn a function of typ @Lua.State -> IO a@ into a monadic lua operation.
+liftLua :: (State -> IO a) -> Lua a
 liftLua f = luaState >>= liftIO . f
 
--- | Turn a function of typ @LuaState -> a -> IO b@ into a monadic lua operation.
-liftLua1 :: (LuaState -> a -> IO b) -> a -> Lua b
+-- | Turn a function of typ @Lua.State -> a -> IO b@ into a monadic lua operation.
+liftLua1 :: (State -> a -> IO b) -> a -> Lua b
 liftLua1 f x = liftLua $ \l -> f l x
 
 -- | Get the lua state of this lua computation.
-luaState :: Lua LuaState
+luaState :: Lua State
 luaState = ask
 
 -- | Run lua computation with custom lua state. Errors are left unhandled, the
 -- caller of this function is responsible to catch lua errors.
-runLuaWith :: LuaState -> Lua a -> IO a
+runLuaWith :: State -> Lua a -> IO a
 runLuaWith l s = runReaderT (unLua s) l
 
 -- | An opaque structure that points to a thread and indirectly (through the
@@ -125,7 +125,7 @@ runLuaWith l s = runReaderT (unLua s) l
 -- accessible through this structure.
 --
 -- Synonym for @lua_State *@. See <https://www.lua.org/manual/5.3/#lua_State lua_State>.
-newtype LuaState = LuaState (Ptr ()) deriving (Eq, Generic)
+newtype State = State (Ptr ()) deriving (Eq, Generic)
 
 -- |  Type for C functions.
 --
@@ -142,7 +142,7 @@ newtype LuaState = LuaState (Ptr ()) deriving (Eq, Generic)
 -- can also return many results.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_CFunction lua_CFunction>.
-type CFunction = FunPtr (LuaState -> IO NumResults)
+type CFunction = FunPtr (State -> IO NumResults)
 
 -- | The reader function used by @'lua_load'@. Every time it needs another piece
 -- of the chunk, lua_load calls the reader, passing along its data parameter.
@@ -153,7 +153,7 @@ type CFunction = FunPtr (LuaState -> IO NumResults)
 -- size greater than zero.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_Reader lua_Reader>.
-type LuaReader = FunPtr (LuaState -> Ptr () -> Ptr CSize -> IO (Ptr CChar))
+type Reader = FunPtr (State -> Ptr () -> Ptr CSize -> IO (Ptr CChar))
 
 -- |  The type of integers in Lua.
 --
@@ -161,7 +161,7 @@ type LuaReader = FunPtr (LuaState -> Ptr () -> Ptr CSize -> IO (Ptr CChar))
 -- values in lua. (See @LUA_INT_TYPE@ in @luaconf.h@.)
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_Integer lua_Integer>.
-newtype LuaInteger = LuaInteger #{type LUA_INTEGER}
+newtype Integer = Integer #{type LUA_INTEGER}
   deriving (Enum, Eq, Integral, Num, Ord, Real, Show)
 
 -- |  The type of floats in Lua.
@@ -170,7 +170,7 @@ newtype LuaInteger = LuaInteger #{type LUA_INTEGER}
 -- single float or a long double. (See @LUA_FLOAT_TYPE@ in @luaconf.h@.)
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_Number lua_Number>.
-newtype LuaNumber = LuaNumber #{type LUA_NUMBER}
+newtype Number = Number #{type LUA_NUMBER}
   deriving (Eq, Floating, Fractional, Num, Ord, Real, RealFloat, RealFrac, Show)
 
 
@@ -215,7 +215,7 @@ data Type
   | TypeNil            -- ^ type of lua's @nil@ value
   | TypeBoolean        -- ^ type of lua booleans
   | TypeLightUserdata  -- ^ type of light userdata
-  | TypeNumber         -- ^ type of lua numbers. See @'LuaNumber'@
+  | TypeNumber         -- ^ type of lua numbers. See @'Lua.Number'@
   | TypeString         -- ^ type of lua string values
   | TypeTable          -- ^ type of lua tables
   | TypeFunction       -- ^ type of functions, either normal or @'CFunction'@
