@@ -42,7 +42,7 @@ module Foreign.Lua.Core.Types
   , Reader
   , liftLua
   , liftLua1
-  , luaState
+  , state
   , runWith
   , GCCONTROL (..)
   , Type (..)
@@ -89,7 +89,7 @@ import GHC.Generics (Generic)
 
 -- | A Lua computation. This is the base type used to run Lua programs of any
 -- kind. The Lua state is handled automatically, but can be retrieved via
--- @'luaState'@.
+-- @'state'@.
 newtype Lua a = Lua { unLua :: ReaderT State IO a }
   deriving
     ( Applicative
@@ -104,15 +104,15 @@ newtype Lua a = Lua { unLua :: ReaderT State IO a }
 
 -- | Turn a function of typ @Lua.State -> IO a@ into a monadic lua operation.
 liftLua :: (State -> IO a) -> Lua a
-liftLua f = luaState >>= liftIO . f
+liftLua f = state >>= liftIO . f
 
 -- | Turn a function of typ @Lua.State -> a -> IO b@ into a monadic lua operation.
 liftLua1 :: (State -> a -> IO b) -> a -> Lua b
 liftLua1 f x = liftLua $ \l -> f l x
 
 -- | Get the lua state of this lua computation.
-luaState :: Lua State
-luaState = ask
+state :: Lua State
+state = ask
 
 -- | Run lua computation with custom lua state. Errors are left unhandled, the
 -- caller of this function is responsible to catch lua errors.

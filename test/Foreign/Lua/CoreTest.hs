@@ -202,7 +202,7 @@ tests = testGroup "Haskell version of the C API"
     ]
 
   , "can push and receive a thread" ?: do
-      luaSt <- luaState
+      luaSt <- state
       isMain <- pushthread
       liftIO (assertBool "pushing the main thread should return True" isMain)
       luaSt' <- peek stackTop
@@ -244,7 +244,7 @@ tests = testGroup "Haskell version of the C API"
 
       , "string for userdata shows the pointer value" =:
         ("userdata: 0x" `B.isPrefixOf`) `shouldHoldForResultOf` do
-          l <- luaState
+          l <- state
           liftIO . Foreign.alloca $ \ptr ->
             runWith l (pushlightuserdata (ptr :: Foreign.Ptr Int))
           tostring' stackTop

@@ -43,7 +43,7 @@ module Foreign.Lua.Core (
     Lua (..)
   , runWith
   , liftIO
-  , luaState
+  , state
   -- * Lua API types
   , CFunction
   , Lua.Integer (..)
