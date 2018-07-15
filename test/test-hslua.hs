@@ -27,6 +27,7 @@ import qualified Foreign.Lua.FunctionCallingTest
 import qualified Foreign.Lua.TypesTest
 import qualified Foreign.Lua.Types.PeekableTest
 import qualified Foreign.Lua.Types.PushableTest
+import qualified Foreign.Lua.UserdataTests
 import qualified Foreign.Lua.UtilTest
 
 main :: IO ()
@@ -43,5 +44,6 @@ tests =
     , Foreign.Lua.Types.PeekableTest.tests
     , Foreign.Lua.Types.PushableTest.tests
     ]
+  , Foreign.Lua.UserdataTests.tests
   , Foreign.LuaTest.tests
   ]

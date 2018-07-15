@@ -81,6 +81,7 @@ library
                      , Foreign.Lua.Types
                      , Foreign.Lua.Types.Peekable
                      , Foreign.Lua.Types.Pushable
+                     , Foreign.Lua.Userdata
                      , Foreign.Lua.Util
   build-depends:       base                 >= 4.8    && < 5
                      , bytestring           >= 0.10.2 && < 0.11
@@ -182,6 +183,7 @@ test-suite test-hslua
                      , Foreign.Lua.TypesTest
                      , Foreign.Lua.Types.PeekableTest
                      , Foreign.Lua.Types.PushableTest
+                     , Foreign.Lua.UserdataTests
                      , Foreign.Lua.UtilTest
                      , Test.HsLua.Arbitrary
                      , Test.HsLua.Util
