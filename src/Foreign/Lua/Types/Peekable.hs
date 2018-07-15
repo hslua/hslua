@@ -46,6 +46,7 @@ module Foreign.Lua.Types.Peekable
   , safePeekList
   , Result (..)
   , force
+  , reportValueOnFailure
   ) where
 
 import Data.ByteString (ByteString)
@@ -116,14 +117,19 @@ mismatchError expected idx = do
           <> ", got '" <> actualValue <> "' (" <> actualType <> ")"
   return (Error [msg])
 
+-- | Try to convert the value at the given stack index to a haskell value.
+-- Returns @Left@ with an error message on failure.
+peekEither :: Peekable a => StackIndex -> Lua (Either ByteString a)
+peekEither idx = safePeek idx >>= return . \case
+  Success x -> Right x
+  Error msgs -> Left (mconcat msgs)
+
 -- | A value that can be read from the Lua stack.
 class Peekable a where
   -- | Returns either the value at index @n@ of the Lua stack or a error
   -- message.
   safePeek :: StackIndex -> Lua (Result a)
-  safePeek n = do
-    res <- tryLua (peek n)
-    case res of
+  safePeek n = tryLua (peek n) >>= \case
       Right x -> return $ Success x
       Left (Lua.Exception err) -> return $ Error [err]
 
@@ -131,13 +137,6 @@ class Peekable a where
   -- it.  Throws a @'Lua.Exception'@ otherwise.
   peek :: StackIndex -> Lua a
   peek n = safePeek n >>= force
-
--- | Try to convert the value at the given stack index to a haskell value.
--- Returns @Left@ with an error message on failure.
-peekEither :: Peekable a => StackIndex -> Lua (Either ByteString a)
-peekEither idx = safePeek idx >>= return . \case
-  Success x -> Right x
-  Error msgs -> Left (mconcat msgs)
 
 instance Peekable () where
   safePeek = reportValueOnFailure "nil" $ \idx -> do
