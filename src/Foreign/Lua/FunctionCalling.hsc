@@ -52,18 +52,17 @@ module Foreign.Lua.FunctionCalling
   , registerHaskellFunction
   ) where
 
-import Control.Monad (when)
 import Data.ByteString (ByteString)
 import Data.Monoid ((<>))
 import Foreign.C (CInt (..))
 import Foreign.Lua.Core as Lua
 import Foreign.Lua.Types
+import Foreign.Lua.Userdata ( ensureUserdataMetatable, pushAnyWithMetatable
+                            , toAnyWithName )
 import Foreign.Lua.Util (getglobal', raiseError)
-import Foreign.Ptr (castPtr, freeHaskellFunPtr)
-import Foreign.StablePtr (deRefStablePtr, newStablePtr)
+import Foreign.Ptr (freeHaskellFunPtr)
 
 import qualified Data.ByteString.Char8 as Char8
-import qualified Foreign.Storable as F
 
 -- | Type of raw Haskell functions that can be made into 'CFunction's.
 type PreCFunction = Lua.State -> IO NumResults
@@ -147,67 +146,49 @@ registerHaskellFunction n f = do
   pushHaskellFunction f
   setglobal n
 
-
--- | Convert callable userdata at top of stack into a CFunction, translating
--- errors to Lua errors.
-foreign import ccall "safer-api.h &hslua_call_hs"
-  hslua_call_hs_ptr :: CFunction
-
--- | Convert a Haskell function userdata object into a CFuntion. The userdata
--- object must be at the top of the stack. Errors signaled via @'error'@ are
--- converted to lua errors.
-wrapHaskellFunction :: Lua ()
-wrapHaskellFunction = do
-  t <- ltype (-1)
-  case t of
-    TypeUserdata -> pushcclosure hslua_call_hs_ptr 1
-    _ -> throwLuaError "Need HaskellImportedFunction to create a CFunction."
-
 -- | Pushes Haskell function as a callable userdata.
 -- All values created will be garbage collected. Use as:
 --
 -- > pushHaskellFunction myfun
 -- > setglobal "myfun"
 --
--- Error conditions should be indicated by raising a @'Lua.Exception'@.
+-- Error conditions should be indicated by raising a @'Lua.Exception'@
+-- or by returning the result of @'Lua.error'@.
 pushHaskellFunction :: ToHaskellFunction a => a -> Lua ()
 pushHaskellFunction hsFn = do
   pushPreCFunction . flip runWith $ toHaskellFunction hsFn
-  wrapHaskellFunction
+  -- Convert userdata object into a CFuntion.
+  pushcclosure hslua_call_hs_ptr 1
+
+-- | Convert callable userdata at top of stack into a CFunction, translating
+-- errors to Lua errors.  Use with @'pushcclosure'@.
+foreign import ccall "safer-api.h &hslua_call_hs"
+  hslua_call_hs_ptr :: CFunction
+
+hsLuaFunctionName :: ByteString
+hsLuaFunctionName = "HsLuaFunction"
 
 -- | Converts a pre C function to a Lua function and pushes it to the stack.
 --
 -- Pre C functions collect parameters from the stack and return
 -- a `CInt` that represents number of return values left in the stack.
 pushPreCFunction :: PreCFunction -> Lua ()
-pushPreCFunction f = do
-  stableptr <- liftIO $ newStablePtr f
-  p <- newuserdata (F.sizeOf stableptr)
-  liftIO $ F.poke (castPtr p) stableptr
-  v <- newmetatable "HaskellImportedFunction"
-  when v $ do
-    -- create new metatable, fill it with two entries __gc and __call
-    pushcfunction hslua_userdata_gc_ptr
-    setfield (-2) "__gc"
-    pushcfunction hslua_call_wrapped_hs_fun_ptr
-    setfield (-2) "__call"
-  setmetatable (-2)
-  return ()
-
--- | Function to free the stable pointer in a userdata, ensuring the Haskell
--- value can be garbage collected. This function does not call back into
--- Haskell, making is safe to call even from functions imported as unsafe.
-foreign import ccall "&hslua_userdata_gc"
-  hslua_userdata_gc_ptr :: CFunction
+pushPreCFunction f =
+  let pushMetatable = ensureUserdataMetatable hsLuaFunctionName $ do
+        -- ensure the userdata will be callable
+        pushcfunction hslua_call_wrapped_hs_fun_ptr
+        setfield (-2) "__call"
+  in pushAnyWithMetatable pushMetatable f
 
 -- | Call the Haskell function stored in the userdata. This function is exported
 -- as a C function and then re-imported in order to get a C function pointer.
 hslua_call_wrapped_hs_fun :: Lua.State -> IO NumResults
 hslua_call_wrapped_hs_fun l = do
-  ptr <- runWith l $ peek 1 <* remove 1
-  stableptr <- F.peek (castPtr ptr)
-  f <- deRefStablePtr stableptr
-  f l
+  mbFn <- runWith l (toAnyWithName stackBottom hsLuaFunctionName
+                     <* remove stackBottom)
+  case mbFn of
+    Nothing -> runWith l (raiseError ("Could not call function" :: ByteString))
+    Just fn -> fn l
 
 foreign export ccall hslua_call_wrapped_hs_fun :: PreCFunction
 foreign import ccall "&hslua_call_wrapped_hs_fun"
