@@ -46,7 +46,7 @@ tests = testGroup "Userdata"
       assertEqual "" "HSLUA_Data.Word.Word64" (metatableName (0 :: Word64))
     ]
 
-  , testGroup "pushAsUserdata"
+  , testGroup "pushAny"
     [ "metatable is named Dummy" =:
       (Just "HSLUA_Dummy") `shouldBeResultOf` do
         pushAny (Dummy 23 "Nichts ist wie es scheint")
@@ -58,6 +58,23 @@ tests = testGroup "Userdata"
       ("HSLUA_Dummy" `B.isPrefixOf`) `shouldHoldForResultOf` do
         pushAny (Dummy 23 "Nichts ist wie es scheint")
         Lua.tostring' Lua.stackTop
+    ]
+
+  , testGroup "toAny"
+    [ "get back pushed value" =:
+      Just (Dummy 0 "zero") `shouldBeResultOf` do
+        pushAny (Dummy 0 "zero")
+        toAny Lua.stackTop
+
+    , "fail on boolean" =:
+      (Nothing :: Maybe Dummy) `shouldBeResultOf` do
+        Lua.pushboolean False
+        toAny Lua.stackTop
+
+    , "fail on wrong userdata" =:
+      (Nothing :: Maybe Dummy) `shouldBeResultOf` do
+        pushAny (0 :: Word64)
+        toAny Lua.stackTop
     ]
 
   , testGroup "Peekable & Pushable"

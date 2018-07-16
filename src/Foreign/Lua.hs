@@ -44,9 +44,11 @@ module Foreign.Lua (
   , peekEither
   , safePeekList
   , safePeekKeyValuePairs
+  , safePeekAny
   -- * Pushing values to Lua stack (Haskell → Lua)
   , Pushable (..)
   , pushList
+  , pushAny
   -- * Calling Functions
   , PreCFunction
   , HaskellFunction
@@ -71,5 +73,6 @@ import Prelude hiding (compare, concat)
 import Foreign.Lua.Core
 import Foreign.Lua.FunctionCalling
 import Foreign.Lua.Types
+import Foreign.Lua.Userdata ( pushAny, safePeekAny )
 import Foreign.Lua.Util
 
