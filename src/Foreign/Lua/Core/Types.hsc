@@ -273,15 +273,9 @@ data RelationalOperator
 
 -- | Convert relation operator to its C representation.
 fromRelationalOperator :: RelationalOperator -> CInt
-#if LUA_VERSION_NUMBER >= 502
 fromRelationalOperator EQ = #{const LUA_OPEQ}
 fromRelationalOperator LT = #{const LUA_OPLT}
 fromRelationalOperator LE = #{const LUA_OPLE}
-#else
-fromRelationalOperator EQ = 0
-fromRelationalOperator LT = 1
-fromRelationalOperator LE = 2
-#endif
 {-# INLINABLE fromRelationalOperator #-}
 
 
@@ -304,19 +298,13 @@ data Status
 -- | Convert C integer constant to @'LuaStatus'@.
 toStatus :: StatusCode -> Status
 toStatus (StatusCode c) = case c of
-  -- LUA_OK is not defined in Lua 5.1
-  0                        -> OK
+  (#{const LUA_OK})        -> OK
   (#{const LUA_YIELD})     -> Yield
   (#{const LUA_ERRRUN})    -> ErrRun
   (#{const LUA_ERRSYNTAX}) -> ErrSyntax
   (#{const LUA_ERRMEM})    -> ErrMem
-  -- LUA_ERRGCMM did not exist in Lua 5.1; comes before LUA_ERRERR when defined
-#if LUA_VERSION_NUMBER >= 502
   (#{const LUA_ERRGCMM})   -> ErrGcmm
   (#{const LUA_ERRERR})    -> ErrErr
-#else
-  (#{const LUA_ERRERR})    -> ErrErr
-#endif
   (#{const LUA_ERRFILE})   -> ErrFile
   n -> error $ "Cannot convert (" ++ show n ++ ") to LuaStatus"
 {-# INLINABLE toStatus #-}
