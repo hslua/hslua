@@ -61,17 +61,17 @@ instance Show Exception where
 
 instance E.Exception Exception
 
--- | Raise a @'LuaException'@ containing the given error message.
+-- | Raise a Lua @'Exception'@ containing the given error message.
 throwLuaError :: ByteString -> Lua a
 throwLuaError = throwM . Exception
 {-# INLINABLE throwLuaError #-}
 
--- | Catch a @'LuaException'@.
+-- | Catch a Lua @'Exception'@.
 catchLuaError :: Lua a -> (Exception -> Lua a) -> Lua a
 catchLuaError = catch
 {-# INLINABLE catchLuaError #-}
 
--- | Catch @'LuaException'@, alter the error message and rethrow.
+-- | Catch Lua @'Exception'@, alter the error message and rethrow.
 modifyLuaError :: Lua a -> (ByteString -> ByteString) -> Lua a
 modifyLuaError luaOp modifier =
   luaOp `catchLuaError` \(Exception msg) -> throwLuaError (modifier msg)

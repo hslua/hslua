@@ -152,7 +152,7 @@ registerHaskellFunction n f = do
 -- > pushHaskellFunction myfun
 -- > setglobal "myfun"
 --
--- Error conditions should be indicated by raising a @'Lua.Exception'@
+-- Error conditions should be indicated by raising a Lua @'Lua.Exception'@
 -- or by returning the result of @'Lua.error'@.
 pushHaskellFunction :: ToHaskellFunction a => a -> Lua ()
 pushHaskellFunction hsFn = do

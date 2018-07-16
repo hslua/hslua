@@ -103,9 +103,7 @@ getnested (x:xs) = do
   getglobal x
   mapM_ (\a -> getfield stackTop a *> remove (nthFromTop 2)) xs
 
--- | Raise a Lua error, using the given value as the error object. This must be
--- the return value of a function which has been wrapped with
--- @'wrapHaskellFunction'@.
+-- | Raise a Lua error, using the given value as the error object.
 raiseError :: Pushable a => a -> Lua NumResults
 raiseError e = do
   push e
