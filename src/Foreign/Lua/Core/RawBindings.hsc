@@ -104,7 +104,7 @@ foreign import capi SAFTY "lua.h lua_replace"
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_checkstack lua_checkstack>
 foreign import capi SAFTY "lua.h lua_checkstack"
-  lua_checkstack :: Lua.State -> StackIndex -> IO LuaBool
+  lua_checkstack :: Lua.State -> CInt -> IO LuaBool
 
 -- lua_xmove is currently not supported.
 
