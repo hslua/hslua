@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <HsFFI.h>
-#include "safer-api.h"
-
+#include "error-conversion.h"
 
 /* *********************************************************************
  * Transforming Haskell errors to Lua errors

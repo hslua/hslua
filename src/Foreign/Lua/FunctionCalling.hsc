@@ -162,7 +162,7 @@ pushHaskellFunction hsFn = do
 
 -- | Convert callable userdata at top of stack into a CFunction, translating
 -- errors to Lua errors.  Use with @'pushcclosure'@.
-foreign import ccall "safer-api.h &hslua_call_hs"
+foreign import ccall "error-conversion.h &hslua_call_hs"
   hslua_call_hs_ptr :: CFunction
 
 hsLuaFunctionName :: ByteString

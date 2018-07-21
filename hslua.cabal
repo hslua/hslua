@@ -22,7 +22,7 @@ copyright:           © 2007–2012 Gracjan Polak
 category:            Foreign
 build-type:          Simple
 extra-source-files:  lua-5.3.4/*.h
-                     safer-api/safer-api.h
+                     cbits/error-conversion/*.h
                      README.md
                      CHANGELOG.md
                      test/lua/*.lua
@@ -102,8 +102,8 @@ library
                      , FlexibleContexts
                      , FlexibleInstances
                      , ScopedTypeVariables
-  c-sources:           safer-api/safer-api.c
-  include-dirs:        safer-api
+  c-sources:           cbits/error-conversion/error-conversion.c
+  include-dirs:        cbits/error-conversion
 
   if flag(system-lua) || flag(pkg-config)
     if flag(pkg-config)
