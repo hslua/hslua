@@ -28,7 +28,7 @@ import Criterion.Main
 import Criterion.Types (Config(..))
 import Data.ByteString (ByteString)
 import Foreign.C (CString (..), CSize (..), CInt (..))
-import Foreign.Lua (Lua, StackIndex, LuaState, runLua)
+import Foreign.Lua (Lua, StackIndex)
 
 import qualified Foreign.Lua as Lua
 import qualified Data.ByteString as B
@@ -44,15 +44,15 @@ luaBench :: NFData b
 luaBench name setupOp benchOp = do
   bench name .
     perRunEnvWithCleanup (setupLua setupOp) teardownLua $ \l ->
-      Lua.runLuaWith l benchOp
+      Lua.runWith l benchOp
 
-setupLua :: Lua a -> IO Lua.LuaState
+setupLua :: Lua a -> IO Lua.State
 setupLua setupOp = do
   l <- Lua.newstate
-  _ <- Lua.runLuaWith l setupOp
+  _ <- Lua.runWith l setupOp
   return l
 
-teardownLua :: Lua.LuaState -> IO ()
+teardownLua :: Lua.State -> IO ()
 teardownLua = Lua.close
 
 setupTableWithFooField :: Lua ()
@@ -78,26 +78,26 @@ main = defaultMain
              (Lua.rawset (Lua.nthFromTop 3))
   ]
 
-instance NFData Lua.LuaState
+instance NFData Lua.State
 
 
 -- Functions for comparison
 
 -- | Getting a string field with lua_pushlstring and lua_gettable
 foreign import ccall "hslua_getlfield"
-  hslua_getlfield :: LuaState -> StackIndex -> CString -> CSize -> IO CInt
+  hslua_getlfield :: Lua.State -> StackIndex -> CString -> CSize -> IO CInt
 
 getlfield :: StackIndex -> ByteString -> Lua CInt
 getlfield i s = do
-  l <- Lua.luaState
+  l <- Lua.state
   Lua.liftIO $ B.unsafeUseAsCStringLen s $ \(strPtr, len) ->
     hslua_getlfield l i strPtr (fromIntegral len)
 
 -- | Getting a string field with lua_pushlstring and lua_gettable
 foreign import ccall "hslua_setfield"
-  hslua_setfield :: LuaState -> StackIndex -> CString -> IO CInt
+  hslua_setfield :: Lua.State -> StackIndex -> CString -> IO CInt
 
 setfield_old :: StackIndex -> ByteString -> Lua CInt
 setfield_old i s = do
-  l <- Lua.luaState
+  l <- Lua.state
   Lua.liftIO $ B.useAsCString s (hslua_setfield l i)
