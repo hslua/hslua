@@ -10,20 +10,28 @@ cache:
 matrix:
   include:
     ## Test Compilers
-    # Test GHC 7.10
-    - env: GHCVER=7.10.3 CABALVER=1.22 LUAVER=default
+    # Test GHC 7.10.3
+    - env: GHCVER=7.10.3 LUAVER=default CABALVER=1.22
       compiler: ": #GHC 7.10.3"
       addons: {apt: {packages: [cabal-install-1.22,ghc-7.10.3], sources: [hvr-ghc]}}
-    # Test GHC 8.4.1
-    - env: GHCVER=8.4.2 CABALVER=2.0 LUAVER=default
+    # Test GHC 8.0.2
+    - env: GHCVER=8.0.2 LUAVER=default CABALVER=2.0
+      compiler: ": #GHC 8.0.2"
+      addons: {apt: {packages: [cabal-install-2.0,ghc-8.0.2], sources: [hvr-ghc]}}
+    # Test GHC 8.2.2
+    - env: GHCVER=8.2.2 LUAVER=default CABALVER=2.0
+      compiler: ": #GHC 8.2.2"
+      addons: {apt: {packages: [cabal-install-2.0,ghc-8.2.2], sources: [hvr-ghc]}}
+    # Test GHC 8.4.2
+    - env: GHCVER=8.4.2 LUAVER=default CABALVER=2.0
       compiler: ": #GHC 8.4.2"
       addons: {apt: {packages: [cabal-install-2.0,ghc-8.4.2], sources: [hvr-ghc]}}
 
     ## Test system Lua
     # Test system Lua 5.3
-    - env: GHCVER=8.0.2 CABALVER=1.24 LUAVER=lua-5.3.4
-      compiler: ": #GHC 8.0.2"
-      addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.2], sources: [hvr-ghc]}}
+    - env: GHCVER=8.4.2 LUAVER=lua-5.3.5 CABALVER=2.0
+      compiler: ": #GHC 8.4.2"
+      addons: {apt: {packages: [cabal-install-2.0,ghc-8.4.2], sources: [hvr-ghc]}}
 
   # mark build as successful as soon as all required successes are in.
   fast_finish: true
