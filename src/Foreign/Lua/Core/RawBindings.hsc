@@ -40,8 +40,6 @@ import Foreign.C
 import Foreign.Lua.Core.Types as Lua
 import Foreign.Ptr
 
-#include "error-conversion.h"
-
 ##ifdef ALLOW_UNSAFE_GC
 ##define SAFTY unsafe
 ##else
