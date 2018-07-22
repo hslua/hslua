@@ -243,7 +243,7 @@ tests = testGroup "Haskell version of the C API"
           tostring' stackTop
 
       , "string for userdata shows the pointer value" =:
-        ("userdata: 0x" `B.isPrefixOf`) `shouldHoldForResultOf` do
+        ("userdata: " `B.isPrefixOf`) `shouldHoldForResultOf` do
           l <- state
           liftIO . Foreign.alloca $ \ptr ->
             runWith l (pushlightuserdata (ptr :: Foreign.Ptr Int))

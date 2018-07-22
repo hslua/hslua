@@ -48,7 +48,7 @@ tests = testGroup "Userdata"
 
   , testGroup "pushAny"
     [ "metatable is named Dummy" =:
-      (Just "HSLUA_Dummy") `shouldBeResultOf` do
+      Just "HSLUA_Dummy" `shouldBeResultOf` do
         pushAny (Dummy 23 "Nichts ist wie es scheint")
         _ <- Lua.getmetatable Lua.stackTop
         Lua.getfield Lua.stackTop "__name"
