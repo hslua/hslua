@@ -70,7 +70,6 @@ module Foreign.Lua.Core.Types
   , Status (..)
   , StatusCode (..)
   , toStatus
-  , Failable (..)
   ) where
 
 import Prelude hiding (Integer, EQ, LT)
@@ -312,12 +311,6 @@ toStatus (StatusCode c) = case c of
 -- | Integer code used to signal the status of a thread or computation.
 -- See @'Status'@.
 newtype StatusCode = StatusCode CInt deriving Eq
-
--- | CInt value or an error, using the convention that value below zero indicate
--- an error. Values greater than zero are used verbatim. The phantom type is
--- used for additional type safety and gives the type into which the wrapped
--- CInt should be converted.
-newtype Failable a = Failable CInt
 
 
 --

@@ -259,7 +259,6 @@ import Control.Monad
 import Data.ByteString (ByteString)
 import Data.Monoid ((<>))
 import Data.Maybe (fromMaybe)
-import Foreign.C
 import Foreign.Lua.Core.Constants
 import Foreign.Lua.Core.Error
 import Foreign.Lua.Core.RawBindings
@@ -275,32 +274,6 @@ import qualified Foreign.Storable as F
 --
 -- Helper functions
 --
-
--- | Convert the object at the top of the stack into a string and throw it as a
--- @'Exception'@.
-throwTopMessageAsError :: Lua a
-throwTopMessageAsError = do
-  msg <- tostring' stackTop
-  pop 2 -- remove error and error string pushed by tostring'
-  throwLuaError msg
-
-
--- | Convert from Failable to target type, throwing an error if the value
--- indicates a failure.
-fromFailable :: (CInt -> a) -> Failable a -> Lua a
-fromFailable fromCInt (Failable x) =
-  if x < 0
-  then throwTopMessageAsError
-  else return (fromCInt x)
-
--- | Throw a lua error if the computation signaled a failure.
-throwOnError :: Failable () -> Lua ()
-throwOnError = fromFailable (const ())
-
--- | Convert lua boolean to Haskell Bool, throwing an exception if the return
--- value indicates that an error had happened.
-boolFromFailable :: Failable LuaBool -> Lua Bool
-boolFromFailable = fmap fromLuaBool . fromFailable LuaBool
 
 -- | Registry field under which the special HsLua error indicator is stored.
 hsluaErrorRegistryField :: ByteString
