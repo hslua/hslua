@@ -29,11 +29,9 @@ import Data.Monoid ((<>))
 import Foreign.Lua.Core
 import Foreign.Lua.FunctionCalling (callFunc, peek, registerHaskellFunction,
                                     pushHaskellFunction)
-import Foreign.Lua.Util (run)
 import Test.HsLua.Util ( (=:), pushLuaExpr, shouldBeErrorMessageOf
                        , shouldBeResultOf )
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit (assertEqual, testCase)
 
 import qualified Foreign.Lua as Lua
 
@@ -46,28 +44,22 @@ tests = testGroup "FunctionCalling"
           let (j1, j2) = (fromIntegral i1, fromIntegral i2)
           in return $ fromIntegral (product [1..j1] `mod` j2 :: Prelude.Integer)
     in
-    [ testCase "push haskell function to lua" $
-      let add :: Lua Lua.Integer
-          add = do
-            i1 <- peek (-1)
-            i2 <- peek (-2)
-            return (i1 + i2)
+    [ "push haskell function to lua" =:
+      (28 :: Lua.Integer) `shouldBeResultOf` do
+        let add :: Lua Lua.Integer
+            add = do
+              i1 <- peek (-1)
+              i2 <- peek (-2)
+              return (i1 + i2)
+        registerHaskellFunction "add" add
+        loadstring "return add(23, 5)" *> call 0 1
+        peek stackTop <* pop 1
 
-          luaOp :: Lua Lua.Integer
-          luaOp = do
-            registerHaskellFunction "add" add
-            loadstring "return add(23, 5)" *> call 0 1
-            peek (-1) <* pop 1
-
-      in assertEqual "Unexpected result" 28 =<< run luaOp
-
-    , testCase "push multi-argument haskell function to lua" $
-      let luaOp :: Lua Lua.Integer
-          luaOp = do
-            registerHaskellFunction "integerOp" integerOperation
-            loadstring "return integerOp(23, 42)" *> call 0 1
-            peek (-1) <* pop 1
-      in assertEqual "Unexpected result" 0 =<< run luaOp
+    , "push multi-argument haskell function to lua" =:
+      (0 :: Lua.Integer) `shouldBeResultOf` do
+        registerHaskellFunction "integerOp" integerOperation
+        loadstring "return integerOp(23, 42)" *> call 0 1
+        peek (-1) <* pop 1
 
     , "argument type errors are propagated" =:
        ("Error during function call: could not read argument 2: "
@@ -93,43 +85,41 @@ tests = testGroup "FunctionCalling"
     ]
 
   , testGroup "call lua function from haskell"
-    [ testCase "test equality within lua" $
-      assertEqual "raw equality test failed" True =<<
-      run (openlibs *> callFunc "rawequal" (5 :: Lua.Integer) (5.0 :: Lua.Number))
+    [ "test equality within lua" =:
+      True `shouldBeResultOf` do
+        openlibs
+        callFunc "rawequal" (5 :: Lua.Integer) (5.0 :: Lua.Number)
 
-    , testCase "failing lua function call" $
-      assertEqual "unexpected result" (Left (Lua.Exception "foo")) =<<
-      let luaOp = do
-             openlibs
-             callFunc "assert" False (Char8.pack "foo") :: Lua Bool
-      in run (tryLua luaOp)
+    , "failing lua function call" =:
+      "foo" `shouldBeErrorMessageOf` do
+        openlibs
+        callFunc "assert" False (Char8.pack "foo") :: Lua Bool
 
-    , testCase "print the empty string via lua procedure" $
-      assertEqual "raw equality test failed" () =<<
-      run (openlibs *> callFunc "print" (Char8.pack ""))
+    , "pack table via lua procedure" =:
+      (True, 23 :: Lua.Integer, "moin" :: ByteString) `shouldBeResultOf` do
+        openlibs
+        callFunc "table.pack" True (23 :: Lua.Integer) (Char8.pack "moin")
 
-    , testCase "failing lua procedure call" $
-      assertEqual "unexpected result" (Left (Lua.Exception "foo")) =<<
-      let luaOp = (openlibs *> callFunc "error" (Char8.pack "foo") :: Lua ())
-      in run (tryLua luaOp)
+    , "failing lua procedure call" =:
+      "foo" `shouldBeErrorMessageOf` do
+        openlibs
+        callFunc "error" (Char8.pack "foo") :: Lua ()
 
-    , testCase "Error result when Lua-to-Haskell result conversion fails" $ do
-        luaRes <- Lua.runEither $ do
+    , "Error when Lua-to-Haskell result conversion fails" =:
+      "expected string, got 'false' (boolean)" `shouldBeErrorMessageOf` do
           openlibs
           callFunc "rawequal" (Char8.pack "a") () :: Lua String
-        let msg = pack "expected string, got 'false' (boolean)"
-        assertEqual "raw equality test failed" (Left (Lua.Exception msg)) luaRes
     ]
 
   -- The following test case will hang if there's a problem with garbage
   -- collection.
-  , testCase "function garbage collection" $
-    assertEqual "problem while pushing many Haskell functions" () =<<
-      ( run $ forM_ [1..5000::Lua.Integer] $ \n -> do
-         let fn :: Lua.Integer -> Lua Lua.Integer
-             fn x = return (x + n)
-         pushHaskellFunction fn
-         pop 1
-         gc GCCOLLECT 0
-      )
+  , "function garbage collection" =:
+    () `shouldBeResultOf` do
+      let pushAndPopAdder n = do
+            let fn :: Lua.Integer -> Lua Lua.Integer
+                fn x = return (x + n)
+            pushHaskellFunction fn
+            pop 1
+      forM_ [1..5000::Lua.Integer] pushAndPopAdder
+      () <$ gc GCCOLLECT 0
   ]
