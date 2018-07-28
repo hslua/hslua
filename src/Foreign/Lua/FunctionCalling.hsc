@@ -123,12 +123,12 @@ freeCFunction = liftIO . freeHaskellFunPtr
 class LuaCallFunc a where
   callFunc' :: ByteString -> Lua () -> NumArgs -> a
 
-instance Peekable a => LuaCallFunc (Lua (Result a)) where
+instance Peekable a => LuaCallFunc (Lua a) where
   callFunc' fnName pushArgs nargs = do
     getglobal' fnName
     pushArgs
     call nargs 1
-    safePeek (-1) <* pop 1
+    peek (-1) <* pop 1
 
 instance (Pushable a, LuaCallFunc b) => LuaCallFunc (a -> b) where
   callFunc' fnName pushArgs nargs x =

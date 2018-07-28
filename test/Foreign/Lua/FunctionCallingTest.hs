@@ -27,7 +27,6 @@ import Control.Monad (forM_)
 import Data.ByteString.Char8 as Char8
 import Data.Monoid ((<>))
 import Foreign.Lua.Core
-import Foreign.Lua.Types (Result (Error, Success))
 import Foreign.Lua.FunctionCalling (callFunc, peek, registerHaskellFunction,
                                     pushHaskellFunction)
 import Foreign.Lua.Util (run)
@@ -95,31 +94,31 @@ tests = testGroup "FunctionCalling"
 
   , testGroup "call lua function from haskell"
     [ testCase "test equality within lua" $
-      assertEqual "raw equality test failed" (Success True) =<<
+      assertEqual "raw equality test failed" True =<<
       run (openlibs *> callFunc "rawequal" (5 :: Lua.Integer) (5.0 :: Lua.Number))
 
     , testCase "failing lua function call" $
       assertEqual "unexpected result" (Left (Lua.Exception "foo")) =<<
       let luaOp = do
              openlibs
-             callFunc "assert" False (Char8.pack "foo") :: Lua (Result Bool)
+             callFunc "assert" False (Char8.pack "foo") :: Lua Bool
       in run (tryLua luaOp)
 
     , testCase "print the empty string via lua procedure" $
-      assertEqual "raw equality test failed" (Success ()) =<<
+      assertEqual "raw equality test failed" () =<<
       run (openlibs *> callFunc "print" (Char8.pack ""))
 
     , testCase "failing lua procedure call" $
       assertEqual "unexpected result" (Left (Lua.Exception "foo")) =<<
-      let luaOp = (openlibs *> callFunc "error" (Char8.pack "foo") :: Lua (Result ()))
+      let luaOp = (openlibs *> callFunc "error" (Char8.pack "foo") :: Lua ())
       in run (tryLua luaOp)
 
     , testCase "Error result when Lua-to-Haskell result conversion fails" $ do
-        luaRes <- run $ do
+        luaRes <- Lua.runEither $ do
           openlibs
-          callFunc "rawequal" (Char8.pack "a") () :: Lua (Result String)
+          callFunc "rawequal" (Char8.pack "a") () :: Lua String
         let msg = pack "expected string, got 'false' (boolean)"
-        assertEqual "raw equality test failed" (Error [msg]) luaRes
+        assertEqual "raw equality test failed" (Left (Lua.Exception msg)) luaRes
     ]
 
   -- The following test case will hang if there's a problem with garbage
