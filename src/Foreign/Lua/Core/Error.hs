@@ -47,17 +47,14 @@ import Data.Typeable (Typeable)
 import Foreign.Lua.Core.Types (Lua)
 
 import qualified Control.Exception as E
-import qualified Data.Text as Text
-import qualified Data.Text.Encoding as Encoding
-import qualified Data.Text.Encoding.Error as TextError
+import qualified Foreign.Lua.Utf8 as Utf8
 
 -- | Exceptions raised by Lua-related operations.
 newtype Exception = Exception ByteString
   deriving (Eq, Typeable)
 
 instance Show Exception where
-  show (Exception msg) = "Lua exception: " ++
-    Text.unpack (Encoding.decodeUtf8With TextError.lenientDecode msg)
+  show (Exception msg) = "Lua exception: " ++ Utf8.toString msg
 
 instance E.Exception Exception
 

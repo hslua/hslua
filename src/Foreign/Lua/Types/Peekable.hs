@@ -58,8 +58,8 @@ import Foreign.Ptr (Ptr)
 
 import qualified Data.Set as Set
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as T
 import qualified Data.ByteString.Lazy as BL
+import qualified Foreign.Lua.Utf8 as Utf8
 
 -- | Result returned when trying to get a value from the lua stack.
 data Result a
@@ -168,13 +168,13 @@ instance Peekable Lua.State where
   safePeek = reportValueOnFailure "Lua state (i.e., a thread)" tothread
 
 instance Peekable T.Text where
-  safePeek = fmap (fmap T.decodeUtf8) . safePeek
+  safePeek = fmap (fmap Utf8.toText) . safePeek
 
 instance Peekable BL.ByteString where
   safePeek = fmap (fmap BL.fromStrict) . safePeek
 
 instance {-# OVERLAPS #-} Peekable [Char] where
-  safePeek = fmap (fmap T.unpack) . safePeek
+  safePeek = fmap (fmap Utf8.toString) . safePeek
 
 instance Peekable a => Peekable [a] where
   safePeek = safePeekList

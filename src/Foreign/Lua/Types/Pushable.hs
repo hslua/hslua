@@ -49,8 +49,8 @@ import Foreign.Lua.Core as Lua
 import Foreign.Ptr (Ptr)
 
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as T
 import qualified Data.ByteString.Lazy as BL
+import qualified Foreign.Lua.Utf8 as Utf8
 
 -- | A value that can be pushed to the Lua stack.
 class Pushable a where
@@ -80,13 +80,13 @@ instance Pushable (Ptr a) where
   push = pushlightuserdata
 
 instance Pushable T.Text where
-  push = push . T.encodeUtf8
+  push = push . Utf8.fromText
 
 instance Pushable BL.ByteString where
   push = push . BL.toStrict
 
 instance {-# OVERLAPS #-} Pushable [Char] where
-  push = push . T.pack
+  push = push . Utf8.fromString
 
 instance Pushable a => Pushable [a] where
   push = pushList
