@@ -47,18 +47,20 @@ module Foreign.Lua.Core.Auxiliary
   , unref
   ) where
 
+import Control.Exception (IOException, try)
 import Data.ByteString (ByteString)
 import Foreign.C (CChar, CInt (CInt), CSize (CSize), CString)
 import Foreign.Lua.Core.Constants (multret, registryindex)
 import Foreign.Lua.Core.Error (hsluaErrorRegistryField, throwTopMessageAsError)
-import Foreign.Lua.Core.Types ( Lua, StackIndex, Status, liftLua)
+import Foreign.Lua.Core.Types ( Lua, StackIndex, Status, liftLua, liftIO)
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 
 import qualified Data.ByteString as B
 import qualified Foreign.Lua.Core.Functions as Lua
 import qualified Foreign.Lua.Core.Types as Lua
-import qualified Foreign.Storable as F
+import qualified Foreign.Lua.Utf8 as Utf8
+import qualified Foreign.Storable as Storable
 
 ##ifdef ALLOW_UNSAFE_GC
 ##define SAFTY unsafe
@@ -82,8 +84,9 @@ dostring s = do
     else return loadRes
 
 -- | Loads and runs the given file. Note that the filepath is interpreted by
--- Lua, not Haskell.
-dofile :: ByteString -> Lua Status
+-- Haskell, not Lua. The resulting chunk is named using the UTF8 encoded
+-- filepath.
+dofile :: FilePath -> Lua Status
 dofile fp = do
   loadRes <- loadfile fp
   if loadRes == Lua.OK
@@ -122,15 +125,17 @@ foreign import capi SAFTY "lauxlib.h luaL_loadbuffer"
 --
 -- As @'load'@, this function only loads the chunk; it does not run it.
 --
+-- Note that the file is opened by Haskell, not Lua.
+--
 -- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadfile luaL_loadfile>.
-loadfile :: ByteString -- ^ filename
+loadfile :: FilePath -- ^ filename
          -> Lua Status
-loadfile filename = liftLua $ \l ->
-  B.useAsCString filename $ \fPtr ->
-  Lua.toStatus <$> luaL_loadfile l fPtr
-
-foreign import capi SAFTY "lauxlib.h luaL_loadfile"
-  luaL_loadfile :: Lua.State -> CString -> IO Lua.StatusCode
+loadfile fp =
+  liftIO (try (B.readFile fp) :: IO (Either IOException ByteString)) >>= \case
+    Right script -> loadbuffer script (Utf8.fromString fp)
+    Left e -> do
+      Lua.pushstring (Utf8.fromString (show e))
+      return Lua.ErrFile
 
 
 -- | Loads a string as a Lua chunk. This function uses @lua_load@ to load the
@@ -222,7 +227,7 @@ tostring' n = liftLua $ \l -> alloca $ \lenPtr -> do
   if cstr == nullPtr
     then Lua.runWith l throwTopMessageAsError
     else do
-      cstrLen <- F.peek lenPtr
+      cstrLen <- Storable.peek lenPtr
       B.packCStringLen (cstr, fromIntegral cstrLen)
 
 foreign import ccall safe "error-conversion.h hsluaL_tolstring"
