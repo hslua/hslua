@@ -1,7 +1,6 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
@@ -60,6 +59,7 @@ instance Monad Result where
 force :: Result a -> Lua a
 force (Success x) = return x
 force (Error ctx) = throwLuaError (mconcat ctx)
+{-# INLINABLE force #-}
 
 -- | Use @test@ to check whether the value at stack index @n@ has the correct
 -- type and use @peekfn@ to convert it to a haskell value if possible. A

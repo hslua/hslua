@@ -17,6 +17,8 @@ module Foreign.Lua.Util
   , runEither
   , raiseError
   , Optional (Optional, fromOptional)
+  -- * getting values
+  , popValue
   ) where
 
 import Control.Exception (bracket, try)
@@ -69,7 +71,7 @@ setglobal' s =
 
 -- | Gives the list of the longest substrings not containing dots.
 splitdot :: ByteString -> [ByteString]
-splitdot = filter (/= (B.singleton dot)) .
+splitdot = filter (/= B.singleton dot) .
            B.groupBy (\a b -> a /= dot && b /= dot)
   where dot = fromIntegral (ord '.')
 
@@ -105,3 +107,17 @@ instance Peekable a => Peekable (Optional a) where
 instance Pushable a => Pushable (Optional a) where
   push (Optional Nothing)  = pushnil
   push (Optional (Just x)) = push x
+
+
+--
+-- Getting Values
+--
+
+-- | Get, then pop the value at the top of the stack. The pop operation is
+-- executed even if the retrieval operation failed.
+popValue :: Peekable a => Lua a
+popValue = do
+  resOrError <- safePeek stackTop
+  Lua.pop 1
+  force resOrError
+{-# INLINABLE popValue #-}

@@ -66,6 +66,8 @@ module Foreign.Lua (
   , setglobal'
   , raiseError
   , Optional (Optional, fromOptional)
+  -- ** retrieving values
+  , popValue
   ) where
 
 import Prelude hiding (compare, concat)

@@ -25,8 +25,10 @@ THE SOFTWARE.
 module Foreign.Lua.UtilTest (tests) where
 
 import Foreign.Lua
-import Test.HsLua.Util ((=:), shouldBeResultOf, shouldBeErrorMessageOf)
+import Test.HsLua.Util ((?:), (=:), shouldBeResultOf, shouldBeErrorMessageOf)
 import Test.Tasty (TestTree, testGroup)
+
+import qualified Foreign.Lua as Lua
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
@@ -42,7 +44,7 @@ tests = testGroup "Utilities"
       fromOptional <$> peek stackTop
 
   , "Optional can deal with nonexistent (none) values" =:
-    Nothing `shouldBeResultOf` do
+    Nothing `shouldBeResultOf`
       fmap fromOptional (peek (nthFromBottom 200) :: Lua (Optional String))
 
   , "raiseError causes a Lua error" =:
@@ -50,4 +52,31 @@ tests = testGroup "Utilities"
       pushHaskellFunction (raiseError ("test error message" :: String))
       call 0 0
       return ()
+
+  , testGroup "popValue"
+    [ "value is retrieved and popped" =:
+      (-1, "ocean" :: String) `shouldBeResultOf` do
+        Lua.pushstring "ocean"
+        oldTop <- Lua.gettop
+        value <- Lua.popValue
+        newTop <- Lua.gettop
+        return (newTop - oldTop, value)
+
+    , "value is popped even on error" =:
+      (Left (-1) :: Either Lua.StackIndex Lua.Number) `shouldBeResultOf` do
+        Lua.pushstring "not a number"
+        oldTop <- Lua.gettop
+        value <- Lua.tryLua Lua.popValue
+        newTop <- Lua.gettop
+        let stackDiff = newTop - oldTop
+        return $ case value of
+          Left _ -> Left stackDiff
+          Right x -> Right x
+
+    , "error messages equals that of peek" ?: do
+        Lua.pushstring "not a number"
+        p1 <- Lua.tryLua (Lua.peek Lua.stackTop :: Lua Lua.Integer)
+        p2 <- Lua.tryLua (Lua.popValue :: Lua Lua.Integer)
+        return (p1 == p2)
+    ]
   ]
