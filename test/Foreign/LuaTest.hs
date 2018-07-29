@@ -51,29 +51,6 @@ tests = testGroup "lua integration tests"
       concat 2
       call 1 0
 
-  , testCase "functions stored in / retrieved from registry" .
-    run $ do
-      pushLuaExpr "function() return 2 end, function() return 1 end"
-      idx1 <- ref registryindex
-      idx2 <- ref registryindex
-      liftIO . assertBool "functions are removed from stack"
-        =<< fmap (TypeFunction /=) (ltype (-1))
-
-      -- get functions from registry
-      rawgeti registryindex (fromIntegral idx1)
-      call 0 1
-      r1 <- peek (-1) :: Lua Lua.Integer
-      liftIO (assertEqual "received function returned wrong value" 1 r1)
-
-      rawgeti registryindex (fromIntegral idx2)
-      call 0 1
-      r2 <- peek (-1) :: Lua Lua.Integer
-      liftIO (assertEqual "received function returned wrong value" 2 r2)
-
-      -- delete references
-      unref registryindex idx1
-      unref registryindex idx2
-
   , "getting a nested global works" ?: do
       pushLuaExpr "{greeting = 'Moin'}"
       setglobal "hamburg"

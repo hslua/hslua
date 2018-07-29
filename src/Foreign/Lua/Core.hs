@@ -25,19 +25,19 @@ module Foreign.Lua.Core (
   , CFunction
   , Lua.Integer (..)
   , Lua.Number (..)
+  -- ** Stack index
   , StackIndex (..)
   , nthFromBottom
   , nthFromTop
   , stackTop
   , stackBottom
+  -- ** Number of arguments and return values
   , NumArgs (..)
   , NumResults (..)
   -- * Lua API
   -- ** Constants and pseudo-indices
   , multret
   , registryindex
-  , noref
-  , refnil
   , upvalueindex
   -- ** State manipulation
   , Lua.State (..)
@@ -151,8 +151,15 @@ module Foreign.Lua.Core (
   , dofile
   , newmetatable
   , tostring'
+  -- ** References
+  , Reference (..)
   , ref
+  , getref
   , unref
+  , fromReference
+  , toReference
+  , noref
+  , refnil
   -- * Error handling
   -- | We are trying to keep error handling on the haskell side very simple and
   -- intuitive. However, when combined with error handling on the Lua side, it

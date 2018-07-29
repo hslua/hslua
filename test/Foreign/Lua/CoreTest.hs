@@ -263,6 +263,29 @@ tests = testGroup "Haskell version of the C API"
           openlibs <* dostring tbl
           tostring' stackTop
       ]
+
+    , testGroup "ref and unref"
+      [ "store nil value to registry" =:
+        Lua.RefNil `shouldBeResultOf` do
+          Lua.pushnil
+          Lua.ref Lua.registryindex
+
+      , "get referenced value from registry" =:
+        (Just "Berlin") `shouldBeResultOf` do
+          Lua.pushstring "Berlin"
+          cityref <- Lua.ref Lua.registryindex
+          Lua.pushnil -- dummy op
+          Lua.getref Lua.registryindex cityref
+          Lua.tostring Lua.stackTop
+
+      , "references become invalid after unref" =:
+        Nothing `shouldBeResultOf` do
+          Lua.pushstring "Heidelberg"
+          cityref <- Lua.ref Lua.registryindex
+          Lua.unref Lua.registryindex cityref
+          Lua.getref Lua.registryindex cityref
+          Lua.tostring Lua.stackTop
+      ]
     ]
 
   , testGroup "loading"

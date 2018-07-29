@@ -20,6 +20,8 @@ module Foreign.Lua.Core.Auxiliary
   , newmetatable
   , newstate
   , tostring'
+  -- * References
+  , getref
   , ref
   , unref
   ) where
@@ -29,7 +31,7 @@ import Data.ByteString (ByteString)
 import Foreign.C (CChar, CInt (CInt), CSize (CSize), CString)
 import Foreign.Lua.Core.Constants (multret, registryindex)
 import Foreign.Lua.Core.Error (hsluaErrorRegistryField, throwTopMessageAsError)
-import Foreign.Lua.Core.Types ( Lua, StackIndex, Status, liftLua, liftIO)
+import Foreign.Lua.Core.Types (Lua, Reference, StackIndex, Status, liftLua)
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 
@@ -70,6 +72,10 @@ dofile fp = do
     then Lua.pcall 0 multret Nothing
     else return loadRes
 
+-- | Push referenced value from the table at the given index.
+getref :: StackIndex -> Reference -> Lua ()
+getref idx ref' = Lua.rawgeti idx (fromIntegral (Lua.fromReference ref'))
+
 -- | Loads a ByteString as a Lua chunk.
 --
 -- This function returns the same results as @'load'@. @name@ is the chunk name,
@@ -107,12 +113,14 @@ foreign import capi SAFTY "lauxlib.h luaL_loadbuffer"
 -- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadfile luaL_loadfile>.
 loadfile :: FilePath -- ^ filename
          -> Lua Status
-loadfile fp =
-  liftIO (try (B.readFile fp) :: IO (Either IOException ByteString)) >>= \case
-    Right script -> loadbuffer script (Utf8.fromString fp)
-    Left e -> do
-      Lua.pushstring (Utf8.fromString (show e))
-      return Lua.ErrFile
+loadfile fp = Lua.liftIO contentOrError >>= \case
+  Right script -> loadbuffer script (Utf8.fromString fp)
+  Left e -> do
+    Lua.pushstring (Utf8.fromString (show e))
+    return Lua.ErrFile
+ where
+  contentOrError :: IO (Either IOException ByteString)
+  contentOrError = try (B.readFile fp)
 
 
 -- | Loads a string as a Lua chunk. This function uses @lua_load@ to load the
@@ -184,8 +192,8 @@ foreign import ccall unsafe "lauxlib.h luaL_newstate"
 -- reference returned by @'ref'@.
 --
 -- See also: <https://www.lua.org/manual/5.3/manual.html#luaL_ref luaL_ref>.
-ref :: StackIndex -> Lua Int
-ref t = liftLua $ \l -> fromIntegral <$> luaL_ref l t
+ref :: StackIndex -> Lua Reference
+ref t = liftLua $ \l -> Lua.toReference <$> luaL_ref l t
 
 foreign import ccall SAFTY "lauxlib.h luaL_ref"
   luaL_ref :: Lua.State -> StackIndex -> IO CInt
@@ -217,9 +225,11 @@ foreign import ccall safe "error-conversion.h hsluaL_tolstring"
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#luaL_unref luaL_unref>.
-unref :: StackIndex -> Int -> Lua ()
+unref :: StackIndex -- ^ idx
+      -> Reference  -- ^ ref
+      -> Lua ()
 unref idx r = liftLua $ \l ->
-  luaL_unref l idx (fromIntegral r)
+  luaL_unref l idx (Lua.fromReference r)
 
 foreign import ccall SAFTY "lauxlib.h luaL_unref"
   luaL_unref :: Lua.State -> StackIndex -> CInt -> IO ()
