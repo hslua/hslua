@@ -71,19 +71,6 @@ tests = testGroup "Peekable"
         safePeekKeyValuePairs stackTop >>= force :: Lua [(String, String)]
     ]
 
-  , testGroup "peekEither"
-    [ "return right result on success" =:
-      (Right (5 :: Lua.Integer)) `shouldBeResultOf` do
-        pushinteger 5
-        peekEither stackTop
-
-    , "return error message on failure" =:
-      (Left "Could not read list: expected integer, got 'false' (boolean)")
-      `shouldBeResultOf` do
-        pushLuaExpr "{1, false}"
-        peekEither stackTop :: Lua (Either ByteString [Lua.Integer])
-    ]
-
   , testGroup "error handling"
     [ "error is thrown if boolean is given instead of stringy value" =:
       "expected string, got 'false' (boolean)" `shouldBeErrorMessageOf` do

@@ -18,6 +18,7 @@ module Foreign.Lua.Util
   , raiseError
   , Optional (Optional, fromOptional)
   -- * getting values
+  , peekEither
   , popValue
   ) where
 
@@ -112,6 +113,13 @@ instance Pushable a => Pushable (Optional a) where
 --
 -- Getting Values
 --
+
+-- | Try to convert the value at the given stack index to a Haskell value.
+-- Returns @Left@ with an error message on failure.
+peekEither :: Peekable a => StackIndex -> Lua (Either ByteString a)
+peekEither idx = safePeek idx >>= return . \case
+  Success x -> Right x
+  Error msgs -> Left (mconcat msgs)
 
 -- | Get, then pop the value at the top of the stack. The pop operation is
 -- executed even if the retrieval operation failed.

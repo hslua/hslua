@@ -17,7 +17,6 @@ Sending haskell objects to the lua stack.
 -}
 module Foreign.Lua.Types.Peekable
   ( Peekable (..)
-  , peekEither
   , safePeekKeyValuePairs
   , safePeekList
   , Result (..)
@@ -93,13 +92,6 @@ mismatchError expected idx = do
   let msg = "expected " <> expected
           <> ", got '" <> actualValue <> "' (" <> actualType <> ")"
   return (Error [msg])
-
--- | Try to convert the value at the given stack index to a haskell value.
--- Returns @Left@ with an error message on failure.
-peekEither :: Peekable a => StackIndex -> Lua (Either ByteString a)
-peekEither idx = safePeek idx >>= return . \case
-  Success x -> Right x
-  Error msgs -> Left (mconcat msgs)
 
 -- | A value that can be read from the Lua stack.
 class Peekable a where

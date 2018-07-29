@@ -24,8 +24,10 @@ THE SOFTWARE.
 -}
 module Foreign.Lua.UtilTest (tests) where
 
+import Data.ByteString (ByteString)
 import Foreign.Lua
-import Test.HsLua.Util ((?:), (=:), shouldBeResultOf, shouldBeErrorMessageOf)
+import Test.HsLua.Util ( (?:), (=:), pushLuaExpr, shouldBeResultOf
+                       , shouldBeErrorMessageOf)
 import Test.Tasty (TestTree, testGroup)
 
 import qualified Foreign.Lua as Lua
@@ -52,6 +54,19 @@ tests = testGroup "Utilities"
       pushHaskellFunction (raiseError ("test error message" :: String))
       call 0 0
       return ()
+
+  , testGroup "peekEither"
+    [ "return right result on success" =:
+      Right (5 :: Lua.Integer) `shouldBeResultOf` do
+        pushinteger 5
+        peekEither stackTop
+
+    , "return error message on failure" =:
+      Left "Could not read list: expected integer, got 'false' (boolean)"
+      `shouldBeResultOf` do
+        pushLuaExpr "{1, false}"
+        peekEither stackTop :: Lua (Either ByteString [Lua.Integer])
+    ]
 
   , testGroup "popValue"
     [ "value is retrieved and popped" =:
