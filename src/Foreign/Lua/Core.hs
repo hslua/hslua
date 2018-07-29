@@ -255,6 +255,7 @@ module Foreign.Lua.Core (
 
 import Prelude hiding (EQ, LT, compare, concat, error)
 
+import Foreign.Lua.Core.Auxiliary
 import Foreign.Lua.Core.Constants
 import Foreign.Lua.Core.Error
 import Foreign.Lua.Core.Functions

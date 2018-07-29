@@ -62,10 +62,6 @@ import qualified Foreign.Storable as F
 -- Helper functions
 --
 
--- | Registry field under which the special HsLua error indicator is stored.
-hsluaErrorRegistryField :: ByteString
-hsluaErrorRegistryField = Char8.pack "HSLUA_ERR"
-
 -- | Execute an action only if the given index is a table. Throw an error otherwise.
 ensureTable :: StackIndex -> (Lua.State -> IO ()) -> Lua ()
 ensureTable idx ioOp = do
@@ -204,26 +200,6 @@ copy fromidx toidx = liftLua $ \l -> lua_copy l fromidx toidx
 createtable :: Int -> Int -> Lua ()
 createtable narr nrec = liftLua $ \l ->
   lua_createtable l (fromIntegral narr) (fromIntegral nrec)
-
--- | Loads and runs the given string.
---
--- Returns @'OK'@ on success, or an error if either loading of the string or
--- calling of the thunk failed.
-dostring :: ByteString -> Lua Status
-dostring s = do
-  loadRes <- loadstring s
-  if loadRes == OK
-    then pcall 0 multret Nothing
-    else return loadRes
-
--- | Loads and runs the given file. Note that the filepath is interpreted by
--- Lua, not Haskell.
-dofile :: ByteString -> Lua Status
-dofile fp = do
-  loadRes <- loadfile fp
-  if loadRes == OK
-    then pcall 0 multret Nothing
-    else return loadRes
 
 -- TODO: implement dump
 
@@ -480,92 +456,12 @@ load reader data' chunkname = liftLua $ \l ->
   B.useAsCString chunkname $ \namePtr ->
   toStatus <$> lua_load l reader data' namePtr nullPtr
 
--- | Loads a ByteString as a Lua chunk.
---
--- This function returns the same results as @'load'@. @name@ is the chunk name,
--- used for debug information and error messages. Note that @name@ is used as a
--- C string, so it may not contain null-bytes.
---
--- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadbuffer luaL_loadbuffer>.
-loadbuffer :: ByteString -- ^ Program to load
-           -> ByteString -- ^ chunk name
-           -> Lua Status
-loadbuffer bs name = liftLua $ \l ->
-  B.useAsCStringLen bs $ \(str, len) ->
-  B.useAsCString name $ \namePtr ->
-  toStatus <$> luaL_loadbuffer l str (fromIntegral len) namePtr
-
--- | Loads a file as a Lua chunk. This function uses @lua_load@ (see @'load'@)
--- to load the chunk in the file named filename. The first line in the file is
--- ignored if it starts with a @#@.
---
--- The string mode works as in function @'load'@.
---
--- This function returns the same results as @'load'@, but it has an extra error
--- code @'ErrFile'@ for file-related errors (e.g., it cannot open or read the
--- file).
---
--- As @'load'@, this function only loads the chunk; it does not run it.
---
--- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadfile luaL_loadfile>.
-loadfile :: ByteString -- ^ filename
-         -> Lua Status
-loadfile filename = liftLua $ \l ->
-  B.useAsCString filename $ \fPtr ->
-  toStatus <$> luaL_loadfile l fPtr
-
--- | Loads a string as a Lua chunk. This function uses @lua_load@ to load the
--- chunk in the given ByteString. The given string may not contain any NUL
--- characters.
---
--- This function returns the same results as @lua_load@ (see @'load'@).
---
--- Also as @'load'@, this function only loads the chunk; it does not run it.
---
--- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadstring>.
-loadstring :: ByteString -> Lua Status
-loadstring str = loadbuffer str str
-
 -- | Returns the type of the value in the given valid index, or @'TypeNone'@ for
 -- a non-valid (but acceptable) index.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>.
 ltype :: StackIndex -> Lua Type
 ltype idx = toType <$> liftLua (flip lua_type idx)
-
--- | If the registry already has the key tname, returns @False@. Otherwise,
--- creates a new table to be used as a metatable for userdata, adds to this new
--- table the pair @__name = tname@, adds to the registry the pair @[tname] = new
--- table@, and returns @True@. (The entry @__name@ is used by some
--- error-reporting functions.)
---
--- In both cases pushes onto the stack the final value associated with @tname@ in
--- the registry.
---
--- The value of @tname@ is used as a C string and hence must not contain null
--- bytes.
---
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#luaL_newmetatable luaL_newmetatable>.
-newmetatable :: ByteString -> Lua Bool
-newmetatable tname = liftLua $ \l ->
-  fromLuaBool <$> B.useAsCString tname (luaL_newmetatable l)
-
--- | Creates a new Lua state. It calls @'lua_newstate'@ with an allocator based
--- on the standard C @realloc@ function and then sets a panic function (see
--- <https://www.lua.org/manual/5.3/manual.html#4.6 §4.6> of the Lua 5.3
--- Reference Manual) that prints an error message to the standard error output
--- in case of fatal errors.
---
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#luaL_newstate luaL_newstate>.
-newstate :: IO Lua.State
-newstate = do
-  l <- luaL_newstate
-  runWith l $ do
-    createtable 0 0
-    setfield registryindex hsluaErrorRegistryField
-    return l
 
 -- | Creates a new empty table and pushes it onto the stack. It is equivalent to
 -- @createtable 0 0@.
@@ -836,23 +732,6 @@ rawset n = ensureTable n (\l -> lua_rawset l n)
 rawseti :: StackIndex -> Lua.Integer -> Lua ()
 rawseti k m = ensureTable k (\l -> lua_rawseti l k m)
 
--- | Creates and returns a reference, in the table at index @t@, for the object
--- at the top of the stack (and pops the object).
---
--- A reference is a unique integer key. As long as you do not manually add
--- integer keys into table @t@, @ref@ ensures the uniqueness of the key it
--- returns. You can retrieve an object referred by reference @r@ by calling
--- @rawgeti t r@. Function @'unref'@ frees a reference and its associated
--- object.
---
--- If the object at the top of the stack is nil, @'ref'@ returns the constant
--- @'refnil'@. The constant @'noref'@ is guaranteed to be different from any
--- reference returned by @'ref'@.
---
--- See also: <https://www.lua.org/manual/5.3/manual.html#luaL_ref luaL_ref>.
-ref :: StackIndex -> Lua Int
-ref t = liftLua $ \l -> fromIntegral <$> luaL_ref l t
-
 -- | Sets the C function @f@ as the new value of global @name@.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_register lua_register>.
@@ -1032,22 +911,6 @@ tostring n = liftLua $ \l ->
       cstrLen <- F.peek lenPtr
       Just <$> B.packCStringLen (cstr, fromIntegral cstrLen)
 
--- | Converts any Lua value at the given index to a @'ByteString'@ in a
--- reasonable format. The resulting string is pushed onto the stack and also
--- returned by the function.
---
--- If the value has a metatable with a @__tostring@ field, then @tolstring'@
--- calls the corresponding metamethod with the value as argument, and uses the
--- result of the call as its result.
-tostring' :: StackIndex -> Lua B.ByteString
-tostring' n = liftLua $ \l -> alloca $ \lenPtr -> do
-  cstr <- hsluaL_tolstring l n lenPtr
-  if cstr == nullPtr
-    then runWith l throwTopMessageAsError
-    else do
-      cstrLen <- F.peek lenPtr
-      B.packCStringLen (cstr, fromIntegral cstrLen)
-
 -- | Converts the value at the given index to a Lua thread (represented as
 -- lua_State*). This value must be a thread; otherwise, the function returns
 -- @Nothing@.
@@ -1082,16 +945,6 @@ touserdata n = liftLua $ \l -> do
 typename :: Type -> Lua ByteString
 typename tp = liftLua $ \l ->
   lua_typename l (fromType tp) >>= B.unsafePackCString
-
--- | Releases reference @'ref'@ from the table at index @idx@ (see @'ref'@). The
--- entry is removed from the table, so that the referred object can be
--- collected. The reference @'ref'@ is also freed to be used again.
---
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#luaL_unref luaL_unref>.
-unref :: StackIndex -> Int -> Lua ()
-unref idx r = liftLua $ \l ->
-  luaL_unref l idx (fromIntegral r)
 
 -- | Returns the pseudo-index that represents the @i@-th upvalue of the running
 -- function (see <https://www.lua.org/manual/5.3/manual.html#4.4 §4.4> of the

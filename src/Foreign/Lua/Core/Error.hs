@@ -44,6 +44,8 @@ module Foreign.Lua.Core.Error
   , fromFailable
   , throwOnError
   , boolFromFailable
+    -- * Signaling errors to Lua
+  , hsluaErrorRegistryField
   ) where
 
 import Control.Applicative (Alternative (..))
@@ -125,6 +127,10 @@ foreign import ccall safe "error-conversion.h hsluaL_tolstring"
 
 foreign import capi unsafe "lua.h lua_pop"
   lua_pop :: Lua.State -> CInt -> IO ()
+
+-- | Registry field under which the special HsLua error indicator is stored.
+hsluaErrorRegistryField :: ByteString
+hsluaErrorRegistryField = Char8.pack "HSLUA_ERR"
 
 --
 -- * Custom protocol to communicate with hslua C wrapper functions.
