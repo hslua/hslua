@@ -119,12 +119,14 @@ library
   ghc-options:         -Wall
                        -Wincomplete-record-updates
                        -Wnoncanonical-monad-instances
+                       -Wredundant-constraints
   if impl(ghc >= 8.2)
     ghc-options:         -Wcpp-undef
-  if impl(ghc >= 8.4)
-    ghc-options:         -Wincomplete-uni-patterns
-                         -Widentities
                          -Werror=missing-home-modules
+  if impl(ghc >= 8.4)
+    ghc-options:         -Widentities
+                         -Wincomplete-uni-patterns
+                         -Wpartial-fields
                          -fhide-source-paths
   default-extensions:  CApiFFI
                      , ForeignFunctionInterface
