@@ -47,7 +47,7 @@ ensureTable idx ioOp = do
     then liftLua ioOp
     else do
       tyName <- ltype idx >>= typename
-      throwLuaError (Char8.pack "table expected, got " <> tyName)
+      throwException (Char8.pack "table expected, got " <> tyName)
 
 --
 -- API functions
@@ -98,7 +98,7 @@ absindex = liftLua1 lua_absindex
 call :: NumArgs -> NumResults -> Lua ()
 call nargs nresults = do
   res <- pcall nargs nresults Nothing
-  when (res /= OK) throwTopMessageAsError
+  when (res /= OK) throwTopMessage
 
 -- | Ensures that the stack has space for at least @n@ extra slots (that is,
 -- that you can safely push up to @n@ values into it). It returns false if it

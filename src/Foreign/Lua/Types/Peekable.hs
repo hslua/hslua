@@ -57,7 +57,7 @@ instance Monad Result where
 -- error.
 force :: Result a -> Lua a
 force (Success x) = return x
-force (Error ctx) = throwLuaError (mconcat ctx)
+force (Error ctx) = throwException (mconcat ctx)
 {-# INLINABLE force #-}
 
 -- | Use @test@ to check whether the value at stack index @n@ has the correct
@@ -98,7 +98,7 @@ class Peekable a where
   -- | Returns either the value at index @n@ of the Lua stack or a error
   -- message.
   safePeek :: StackIndex -> Lua (Result a)
-  safePeek n = tryLua (peek n) >>= \case
+  safePeek n = try (peek n) >>= \case
       Right x -> return $ Success x
       Left (Lua.Exception err) -> return $ Error [err]
 

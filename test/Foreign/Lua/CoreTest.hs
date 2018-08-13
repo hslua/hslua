@@ -411,7 +411,7 @@ tests = testGroup "Haskell version of the C API"
   , testCase "functions can throw a table as error message" $ do
       let mt = "{__tostring = function (e) return e.error_code end}"
       let err = "error(setmetatable({error_code = 23}," <> mt <> "))"
-      res <- run . tryLua $ openbase *> loadstring err *> call 0 0
+      res <- run . try $ openbase *> loadstring err *> call 0 0
       assertEqual "wrong error message" (Left (Lua.Exception "23")) res
 
   , testCase "handling table errors won't leak" $ do
@@ -420,7 +420,7 @@ tests = testGroup "Haskell version of the C API"
       let luaOp = do
             openbase
             oldtop <- gettop
-            _ <- tryLua $ loadstring err *> call 0 0
+            _ <- try $ loadstring err *> call 0 0
             newtop <- gettop
             return (newtop - oldtop)
       res <- run luaOp

@@ -66,7 +66,7 @@ instance (Peekable a, ToHaskellFunction b) =>
      where
       getArg = safePeek narg >>= \case
         Success x -> return x
-        Error msg -> throwLuaError $ "could not read argument "
+        Error msg -> throwException $ "could not read argument "
                      <> Char8.pack (show (fromStackIndex narg)) <> ": "
                      <> mconcat msg
 
@@ -80,7 +80,7 @@ instance (Peekable a, ToHaskellFunction b) =>
 -- Any Haskell exception will be converted to a string and returned
 -- as Lua error.
 toHaskellFunction :: ToHaskellFunction a => a -> HaskellFunction
-toHaskellFunction a = toHsFun 1 a `catchLuaError` \(Lua.Exception msg) ->
+toHaskellFunction a = toHsFun 1 a `catchException` \(Lua.Exception msg) ->
   raiseError ("Error during function call: " <> msg)
 
 -- | Create new foreign Lua function. Function created can be called

@@ -30,7 +30,7 @@ import Control.Exception (IOException, try)
 import Data.ByteString (ByteString)
 import Foreign.C (CChar, CInt (CInt), CSize (CSize), CString)
 import Foreign.Lua.Core.Constants (multret, registryindex)
-import Foreign.Lua.Core.Error (hsluaErrorRegistryField, throwTopMessageAsError)
+import Foreign.Lua.Core.Error (hsluaErrorRegistryField, throwTopMessage)
 import Foreign.Lua.Core.Types (Lua, Reference, StackIndex, Status, liftLua)
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
@@ -210,7 +210,7 @@ tostring' :: StackIndex -> Lua B.ByteString
 tostring' n = liftLua $ \l -> alloca $ \lenPtr -> do
   cstr <- hsluaL_tolstring l n lenPtr
   if cstr == nullPtr
-    then Lua.runWith l throwTopMessageAsError
+    then Lua.runWith l throwTopMessage
     else do
       cstrLen <- Storable.peek lenPtr
       B.packCStringLen (cstr, fromIntegral cstrLen)

@@ -25,17 +25,18 @@ module Foreign.Lua.Util
 import Control.Exception (bracket, try)
 import Data.ByteString (ByteString)
 import Data.Char (ord)
-import Foreign.Lua.Core
-import Foreign.Lua.Types
+import Foreign.Lua.Core (Lua, NumResults, StackIndex)
+import Foreign.Lua.Types (Peekable, Pushable)
 
 import qualified Data.ByteString as B
 import qualified Foreign.Lua.Core as Lua
+import qualified Foreign.Lua.Types as Lua
 
 -- | Run lua computation using the default HsLua state as starting point. Raised
 -- exceptions are passed through; error handling is the responsibility of the
 -- caller.
 run :: Lua a -> IO a
-run = (newstate `bracket` close) . flip runWith
+run = (Lua.newstate `bracket` Lua.close) . flip Lua.runWith
 
 -- | Run the given Lua computation; exceptions raised in haskell code are
 -- caught, but other exceptions (user exceptions raised in haskell, unchecked
@@ -63,12 +64,12 @@ setglobal' s =
     [] ->
       return ()
     [_] ->
-      setglobal s
+      Lua.setglobal s
     (lastField : xs) -> do
       getnested (reverse xs)
-      pushvalue (nthFromTop 2)
-      setfield (nthFromTop 2) lastField
-      pop 1
+      Lua.pushvalue (Lua.nthFromTop 2)
+      Lua.setfield (Lua.nthFromTop 2) lastField
+      Lua.pop 1
 
 -- | Gives the list of the longest substrings not containing dots.
 splitdot :: ByteString -> [ByteString]
@@ -82,13 +83,13 @@ splitdot = filter (/= B.singleton dot) .
 getnested :: [ByteString] -> Lua ()
 getnested [] = return ()
 getnested (x:xs) = do
-  getglobal x
-  mapM_ (\a -> getfield stackTop a *> remove (nthFromTop 2)) xs
+  Lua.getglobal x
+  mapM_ (\a -> Lua.getfield Lua.stackTop a *> Lua.remove (Lua.nthFromTop 2)) xs
 
 -- | Raise a Lua error, using the given value as the error object.
 raiseError :: Pushable a => a -> Lua NumResults
 raiseError e = do
-  push e
+  Lua.push e
   Lua.error
 {-# INLINABLE raiseError #-}
 
@@ -100,14 +101,14 @@ newtype Optional a = Optional { fromOptional :: Maybe a }
 
 instance Peekable a => Peekable (Optional a) where
   safePeek idx = do
-    noValue <- isnoneornil idx
+    noValue <- Lua.isnoneornil idx
     if noValue
       then return . return $ Optional Nothing
-      else fmap (Optional . Just) <$> safePeek idx
+      else fmap (Optional . Just) <$> Lua.safePeek idx
 
 instance Pushable a => Pushable (Optional a) where
-  push (Optional Nothing)  = pushnil
-  push (Optional (Just x)) = push x
+  push (Optional Nothing)  = Lua.pushnil
+  push (Optional (Just x)) = Lua.push x
 
 
 --
@@ -117,15 +118,15 @@ instance Pushable a => Pushable (Optional a) where
 -- | Try to convert the value at the given stack index to a Haskell value.
 -- Returns @Left@ with an error message on failure.
 peekEither :: Peekable a => StackIndex -> Lua (Either ByteString a)
-peekEither idx = safePeek idx >>= return . \case
-  Success x -> Right x
-  Error msgs -> Left (mconcat msgs)
+peekEither idx = Lua.safePeek idx >>= return . \case
+  Lua.Success x -> Right x
+  Lua.Error msgs -> Left (mconcat msgs)
 
 -- | Get, then pop the value at the top of the stack. The pop operation is
 -- executed even if the retrieval operation failed.
 popValue :: Peekable a => Lua a
 popValue = do
-  resOrError <- safePeek stackTop
+  resOrError <- Lua.safePeek Lua.stackTop
   Lua.pop 1
-  force resOrError
+  Lua.force resOrError
 {-# INLINABLE popValue #-}

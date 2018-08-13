@@ -13,11 +13,11 @@ Lua exceptions and exception handling.
 -}
 module Foreign.Lua.Core.Error
   ( Exception (..)
-  , catchLuaError
-  , throwLuaError
-  , throwTopMessageAsError
-  , modifyLuaError
-  , tryLua
+  , catchException
+  , throwException
+  , modifyException
+  , throwTopMessage
+  , try
     -- * Helpers for hslua C wrapper functions.
   , Failable (..)
   , fromFailable
@@ -28,7 +28,6 @@ module Foreign.Lua.Core.Error
   ) where
 
 import Control.Applicative (Alternative (..))
-import Control.Monad.Catch (catch, throwM, try)
 import Data.ByteString (ByteString)
 import Data.Typeable (Typeable)
 import Foreign.C (CChar, CInt (CInt), CSize)
@@ -37,6 +36,7 @@ import Foreign.Ptr (Ptr, nullPtr)
 import Foreign.Lua.Core.Types (Lua, StackIndex, fromLuaBool)
 
 import qualified Control.Exception as E
+import qualified Control.Monad.Catch as Catch
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as Char8
 import qualified Foreign.Storable as Storable
@@ -53,38 +53,38 @@ instance Show Exception where
 instance E.Exception Exception
 
 -- | Raise a Lua @'Exception'@ containing the given error message.
-throwLuaError :: ByteString -> Lua a
-throwLuaError = throwM . Exception
-{-# INLINABLE throwLuaError #-}
+throwException :: ByteString -> Lua a
+throwException = Catch.throwM . Exception
+{-# INLINABLE throwException #-}
 
 -- | Catch a Lua @'Exception'@.
-catchLuaError :: Lua a -> (Exception -> Lua a) -> Lua a
-catchLuaError = catch
-{-# INLINABLE catchLuaError #-}
+catchException :: Lua a -> (Exception -> Lua a) -> Lua a
+catchException = Catch.catch
+{-# INLINABLE catchException #-}
 
 -- | Catch Lua @'Exception'@, alter the error message and rethrow.
-modifyLuaError :: Lua a -> (ByteString -> ByteString) -> Lua a
-modifyLuaError luaOp modifier =
-  luaOp `catchLuaError` \(Exception msg) -> throwLuaError (modifier msg)
-{-# INLINABLE modifyLuaError #-}
+modifyException :: Lua a -> (ByteString -> ByteString) -> Lua a
+modifyException luaOp modifier =
+  luaOp `catchException` \(Exception msg) -> throwException (modifier msg)
+{-# INLINABLE modifyException #-}
 
 -- | Return either the result of a Lua computation or, if an exception was
 -- thrown, the error.
-tryLua :: Lua a -> Lua (Either Exception a)
-tryLua = try
-{-# INLINABLE tryLua #-}
+try :: Lua a -> Lua (Either Exception a)
+try = Catch.try
+{-# INLINABLE try #-}
 
 instance Alternative Lua where
-  empty = throwLuaError "empty"
-  x <|> y = either (const y) return =<< tryLua x
+  empty = throwException "empty"
+  x <|> y = either (const y) return =<< try x
 
 -- | Convert the object at the top of the stack into a string and throw it as
 -- an @'Exception'@.
-throwTopMessageAsError :: Lua a
-throwTopMessageAsError = do
+throwTopMessage :: Lua a
+throwTopMessage = do
   l <- Lua.state
   msg <- Lua.liftIO (errorMessage l)
-  throwLuaError msg
+  throwException msg
 
 -- | Retrieve and pop the top object as an error message. This is very similar
 -- to tostring', but ensures that we don't recurse if getting the message
@@ -126,10 +126,10 @@ newtype Failable a = Failable CInt
 fromFailable :: (CInt -> a) -> Failable a -> Lua a
 fromFailable fromCInt (Failable x) =
   if x < 0
-  then throwTopMessageAsError
+  then throwTopMessage
   else return (fromCInt x)
 
--- | Throw a lua error if the computation signaled a failure.
+-- | Throw a Haskell exception if the computation signaled a failure.
 throwOnError :: Failable () -> Lua ()
 throwOnError = fromFailable (const ())
 

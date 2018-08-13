@@ -76,7 +76,7 @@ tests = testGroup "FunctionCalling"
     , "Error in Haskell function is converted into Lua error" =:
       (False, "Error during function call: foo" :: String) `shouldBeResultOf` do
         Lua.openlibs
-        Lua.pushHaskellFunction (Lua.throwLuaError "foo" :: Lua ())
+        Lua.pushHaskellFunction (Lua.throwException "foo" :: Lua ())
         Lua.setglobal "throw_foo"
         Lua.loadstring "return pcall(throw_foo)" *> Lua.call 0 2
         (,) <$> Lua.peek (Lua.nthFromTop 2) <*> Lua.peek (Lua.nthFromTop 1)

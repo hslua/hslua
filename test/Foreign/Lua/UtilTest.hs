@@ -81,7 +81,7 @@ tests = testGroup "Utilities"
       (Left (-1) :: Either Lua.StackIndex Lua.Number) `shouldBeResultOf` do
         Lua.pushstring "not a number"
         oldTop <- Lua.gettop
-        value <- Lua.tryLua Lua.popValue
+        value <- Lua.try Lua.popValue
         newTop <- Lua.gettop
         let stackDiff = newTop - oldTop
         return $ case value of
@@ -90,8 +90,8 @@ tests = testGroup "Utilities"
 
     , "error messages equals that of peek" ?: do
         Lua.pushstring "not a number"
-        p1 <- Lua.tryLua (Lua.peek Lua.stackTop :: Lua Lua.Integer)
-        p2 <- Lua.tryLua (Lua.popValue :: Lua Lua.Integer)
+        p1 <- Lua.try (Lua.peek Lua.stackTop :: Lua Lua.Integer)
+        p2 <- Lua.try (Lua.popValue :: Lua Lua.Integer)
         return (p1 == p2)
     ]
   ]

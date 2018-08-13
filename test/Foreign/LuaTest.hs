@@ -134,7 +134,7 @@ tests = testGroup "lua integration tests"
             freeCFunction fn
             if res == OK
               then peek (-1)
-              else throwLuaError "Error in words function."
+              else throwException "Error in words function."
       in assertEqual "greeting function failed"
           (Right ["Caffeine", "induced", "nonsense"]) =<< runEither comp
 
@@ -171,11 +171,11 @@ tests = testGroup "lua integration tests"
 
     , testCase "catching lua errors within the lua type" $
       assertBool "No error was thrown" . isLeft
-        =<< (run $ tryLua (throwLuaError "test"))
+        =<< (run $ try (throwException "test"))
 
     , testCase "second alternative is used when first fails" $
       assertEqual "alternative failed" (Right True) =<<
-      runEither (throwLuaError "test" <|> return True)
+      runEither (throwException "test" <|> return True)
 
     , testCase "Applicative.empty implementation throws an exception" $
       assertBool "empty doesn't throw" . isLeft =<< runEither empty
