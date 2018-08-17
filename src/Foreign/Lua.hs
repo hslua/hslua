@@ -31,8 +31,10 @@ Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta
 Portability : FlexibleInstances, ForeignFunctionInterface, ScopedTypeVariables
 
-Bindings, functions, and utilities enabling the integration of a lua interpreter
+Bindings, functions, and utilities enabling the integration of a Lua interpreter
 into a haskell project.
+
+Basic access to the Lua API is provided by '@Foreign.Lua.Core@'.
 -}
 module Foreign.Lua (
   -- * Core

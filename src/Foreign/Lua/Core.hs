@@ -8,12 +8,10 @@ Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta
 Portability : non-portable (depends on GHC)
 
-Monadic functions which operate within the Lua type.
-
-The functions in this module are mostly just thin wrappers around the respective
-C functions. However, C function which can throw an error are wrapped such that
-the error is converted into an @'Exception'@. Memory allocation errors,
-however, are not caught and will cause the host program to terminate.
+Core Lua API. This module provides thin wrappers around the respective functions
+of the Lua C API. C function which can throw an error are wrapped such that the
+error is converted into an @'Exception'@. However, memory allocation errors are
+not caught and will cause the host program to terminate.
 -}
 module Foreign.Lua.Core (
   -- * Lua Computations

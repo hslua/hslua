@@ -119,6 +119,7 @@ toAnyWithName idx name = do
       fmap Just . Lua.liftIO $
       Storable.peek (Ptr.castPtr udPtr) >>= StablePtr.deRefStablePtr
 
+-- | Retrieve Haskell data which was pushed to Lua as userdata.
 safePeekAny :: Data a => Lua.StackIndex -> Lua (Result a)
 safePeekAny idx = peek' undefined
  where
