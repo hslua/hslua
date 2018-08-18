@@ -6,7 +6,7 @@ Copyright   : © 2007–2012 Gracjan Polak,
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta
-Portability : portable
+Portability : non-portable (depends on GHC)
 
 HsLua utility functions.
 -}
@@ -28,6 +28,7 @@ import Data.Char (ord)
 import Foreign.Lua.Core (Lua, NumResults, StackIndex)
 import Foreign.Lua.Types (Peekable, Pushable)
 
+import qualified Control.Monad.Catch as Catch
 import qualified Data.ByteString as B
 import qualified Foreign.Lua.Core as Lua
 import qualified Foreign.Lua.Types as Lua
@@ -100,11 +101,11 @@ raiseError e = do
 newtype Optional a = Optional { fromOptional :: Maybe a }
 
 instance Peekable a => Peekable (Optional a) where
-  safePeek idx = do
+  peek idx = do
     noValue <- Lua.isnoneornil idx
     if noValue
-      then return . return $ Optional Nothing
-      else fmap (Optional . Just) <$> Lua.safePeek idx
+      then return $ Optional Nothing
+      else Optional . Just <$> Lua.peek idx
 
 instance Pushable a => Pushable (Optional a) where
   push (Optional Nothing)  = Lua.pushnil
@@ -118,15 +119,10 @@ instance Pushable a => Pushable (Optional a) where
 -- | Try to convert the value at the given stack index to a Haskell value.
 -- Returns @Left@ with an error message on failure.
 peekEither :: Peekable a => StackIndex -> Lua (Either ByteString a)
-peekEither idx = Lua.safePeek idx >>= return . \case
-  Lua.Success x -> Right x
-  Lua.Error msgs -> Left (mconcat msgs)
+peekEither idx = either (Left . Lua.exceptionMessage) Right <$> Lua.try (Lua.peek idx)
 
 -- | Get, then pop the value at the top of the stack. The pop operation is
 -- executed even if the retrieval operation failed.
 popValue :: Peekable a => Lua a
-popValue = do
-  resOrError <- Lua.safePeek Lua.stackTop
-  Lua.pop 1
-  Lua.force resOrError
+popValue = Lua.peek Lua.stackTop `Catch.finally` Lua.pop 1
 {-# INLINABLE popValue #-}

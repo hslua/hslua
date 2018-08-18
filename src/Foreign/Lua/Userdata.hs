@@ -33,7 +33,7 @@ module Foreign.Lua.Userdata
   , pushAnyWithMetatable
   , toAny
   , toAnyWithName
-  , safePeekAny
+  , peekAny
   , ensureUserdataMetatable
   , metatableName
   ) where
@@ -43,7 +43,7 @@ import Control.Monad (when)
 import Data.ByteString (ByteString)
 import Data.Data (Data, dataTypeName, dataTypeOf)
 import Foreign.Lua.Core (Lua)
-import Foreign.Lua.Types.Peekable (Result, reportValueOnFailure)
+import Foreign.Lua.Types.Peekable (reportValueOnFailure)
 
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as Char8
@@ -120,10 +120,10 @@ toAnyWithName idx name = do
       Storable.peek (Ptr.castPtr udPtr) >>= StablePtr.deRefStablePtr
 
 -- | Retrieve Haskell data which was pushed to Lua as userdata.
-safePeekAny :: Data a => Lua.StackIndex -> Lua (Result a)
-safePeekAny idx = peek' undefined
+peekAny :: Data a => Lua.StackIndex -> Lua a
+peekAny idx = peek' undefined
  where
-  peek' :: Data a => a -> Lua (Result a)
+  peek' :: Data a => a -> Lua a
   peek' x = reportValueOnFailure (Char8.pack (dataTypeName (dataTypeOf x)))
                                  toAny
                                  idx

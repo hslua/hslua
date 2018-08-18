@@ -39,6 +39,8 @@ import Test.HsLua.Util ( (=:), (?:), pushLuaExpr, shouldBeResultOf
                        , shouldBeErrorMessageOf )
 import Test.Tasty (TestTree, testGroup)
 
+import qualified Data.Set as Set
+
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
 tests = testGroup "Peekable"
@@ -63,12 +65,25 @@ tests = testGroup "Peekable"
         peek stackTop
     ]
 
-  , testGroup "safePeekKeyValuePairs"
+  , testGroup "peekKeyValuePairs"
     [ "`next` is not confused when peeking at number keys as strings" =:
       -- list of numbers can be retrieved as pair of strings
       [("1", "2"), ("2", "4"), ("3", "8"), ("4", "16")] `shouldBeResultOf` do
         pushLuaExpr "{2, 4, 8, 16}"
-        safePeekKeyValuePairs stackTop >>= force :: Lua [(String, String)]
+        peekKeyValuePairs stackTop :: Lua [(String, String)]
+
+    , "peek string pairs" =:
+      Set.fromList [("foo", "bar"), ("qux", "quux")] `shouldBeResultOf` do
+        pushLuaExpr "{foo = 'bar', qux = 'quux'}"
+        Set.fromList <$> (peekKeyValuePairs stackTop :: Lua [(String, String)])
+
+    , "stack is left unchanged" =:
+      0 `shouldBeResultOf` do
+        pushLuaExpr "{foo = 'bar', qux = 'quux'}"
+        topBefore <- gettop
+        _ <- peekKeyValuePairs stackTop :: Lua [(String, String)]
+        topAfter <- gettop
+        return (topAfter - topBefore)
     ]
 
   , testGroup "error handling"
@@ -97,15 +112,15 @@ tests = testGroup "Peekable"
       0 `shouldBeResultOf` do
         pushLuaExpr "{true, 1, 1, 2, 3, 5, 8}"
         topBefore <- gettop
-        _ <- safePeekList stackTop :: Lua (Result [Bool])
+        _ <- peekList stackTop :: Lua [Bool]
         topAfter <- gettop
         return (topAfter - topBefore)
 
     , "stack is unchanged if getting key-value pairs fails" =:
       0 `shouldBeResultOf` do
-        pushLuaExpr "{{foo = 'bar', baz = false}}"
+        pushLuaExpr "{foo = 'bar', baz = false}"
         topBefore <- gettop
-        _ <- safePeekKeyValuePairs stackTop :: Lua (Result [(String, String)])
+        _ <- try (peekKeyValuePairs stackTop :: Lua [(String, String)])
         topAfter <- gettop
         return (topAfter - topBefore)
     ]

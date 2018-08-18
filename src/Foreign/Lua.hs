@@ -29,7 +29,7 @@ Copyright   : © 2007–2012 Gracjan Polak,
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta
-Portability : FlexibleInstances, ForeignFunctionInterface, ScopedTypeVariables
+Portability : non-portable (depends on GHC)
 
 Bindings, functions, and utilities enabling the integration of a Lua interpreter
 into a haskell project.
@@ -41,12 +41,10 @@ module Foreign.Lua (
     module Foreign.Lua.Core
   -- * Receiving values from Lua stack (Lua → Haskell)
   , Peekable (..)
-  , Result (..)
-  , force
   , peekEither
-  , safePeekList
-  , safePeekKeyValuePairs
-  , safePeekAny
+  , peekList
+  , peekKeyValuePairs
+  , peekAny
   -- * Pushing values to Lua stack (Haskell → Lua)
   , Pushable (..)
   , pushList
@@ -77,6 +75,6 @@ import Prelude hiding (compare, concat)
 import Foreign.Lua.Core
 import Foreign.Lua.FunctionCalling
 import Foreign.Lua.Types
-import Foreign.Lua.Userdata ( pushAny, safePeekAny )
+import Foreign.Lua.Userdata ( pushAny, peekAny )
 import Foreign.Lua.Util
 

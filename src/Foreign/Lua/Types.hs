@@ -4,8 +4,7 @@ Copyright   : © 2017-2018 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta
-Portability : ForeignFunctionInterface, GeneralizedNewtypeDeriving,
-              StandaloneDeriving
+Portability : non-portable (depends on GHC)
 
 Types for working with Lua.
 -}

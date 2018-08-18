@@ -27,7 +27,7 @@ module Foreign.Lua.UserdataTests (tests) where
 import Data.Data (Data)
 import Data.Word (Word64)
 import Data.Typeable (Typeable)
-import Foreign.Lua.Userdata (metatableName, pushAny, safePeekAny, toAny)
+import Foreign.Lua.Userdata (metatableName, pushAny, peekAny, toAny)
 import Test.HsLua.Util ( (=:), shouldBeResultOf, shouldHoldForResultOf )
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual)
@@ -97,7 +97,7 @@ data Dummy = Dummy Int String
   deriving (Data, Eq, Show, Typeable)
 
 instance Lua.Peekable Dummy where
-  safePeek = safePeekAny
+  peek = peekAny
 
 instance Lua.Pushable Dummy where
   push = pushAny

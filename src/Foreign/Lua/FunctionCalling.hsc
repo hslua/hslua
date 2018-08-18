@@ -64,11 +64,9 @@ instance (Peekable a, ToHaskellFunction b) =>
          ToHaskellFunction (a -> b) where
   toHsFun narg f = getArg >>= toHsFun (narg + 1) . f
      where
-      getArg = safePeek narg >>= \case
-        Success x -> return x
-        Error msg -> throwException $ "could not read argument "
-                     <> Char8.pack (show (fromStackIndex narg)) <> ": "
-                     <> mconcat msg
+      getArg = peek narg `Lua.modifyException`
+        let argumentNumber = Char8.pack (show (fromStackIndex narg))
+        in (("could not read argument " <> argumentNumber <> ": ") <>)
 
 -- | Convert a Haskell function to Lua function. Any Haskell function
 -- can be converted provided that:

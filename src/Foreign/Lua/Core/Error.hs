@@ -44,7 +44,7 @@ import qualified Foreign.Lua.Core.Types as Lua
 import qualified Foreign.Lua.Utf8 as Utf8
 
 -- | Exceptions raised by Lua-related operations.
-newtype Exception = Exception ByteString
+newtype Exception = Exception { exceptionMessage :: ByteString}
   deriving (Eq, Typeable)
 
 instance Show Exception where
