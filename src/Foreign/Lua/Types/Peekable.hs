@@ -160,7 +160,7 @@ nextPair idx = do
     else return Nothing
 
 inContext :: ByteString -> Lua a -> Lua a
-inContext ctx = (`Lua.modifyException` (ctx <>))
+inContext ctx = Lua.withExceptionMessage (ctx <>)
 
 --
 -- Tuples

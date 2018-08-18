@@ -15,7 +15,7 @@ module Foreign.Lua.Core.Error
   ( Exception (..)
   , catchException
   , throwException
-  , modifyException
+  , withExceptionMessage
   , throwTopMessage
   , try
     -- * Helpers for hslua C wrapper functions.
@@ -62,11 +62,11 @@ catchException :: Lua a -> (Exception -> Lua a) -> Lua a
 catchException = Catch.catch
 {-# INLINABLE catchException #-}
 
--- | Catch Lua @'Exception'@, alter the error message and rethrow.
-modifyException :: Lua a -> (ByteString -> ByteString) -> Lua a
-modifyException luaOp modifier =
+-- | Catch Lua @'Exception'@, alter the message and rethrow.
+withExceptionMessage :: (ByteString -> ByteString) -> Lua a -> Lua a
+withExceptionMessage modifier luaOp =
   luaOp `catchException` \(Exception msg) -> throwException (modifier msg)
-{-# INLINABLE modifyException #-}
+{-# INLINABLE withExceptionMessage #-}
 
 -- | Return either the result of a Lua computation or, if an exception was
 -- thrown, the error.

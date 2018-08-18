@@ -229,7 +229,7 @@ module Foreign.Lua.Core (
   , Exception (..)
   , throwException
   , catchException
-  , modifyException
+  , withExceptionMessage
   , try
   , throwTopMessage
   ) where
