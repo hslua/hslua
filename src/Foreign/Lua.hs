@@ -44,6 +44,7 @@ module Foreign.Lua (
   , peekEither
   , peekList
   , peekKeyValuePairs
+  , peekRead
   , peekAny
   -- * Pushing values to Lua stack (Haskell → Lua)
   , Pushable (..)

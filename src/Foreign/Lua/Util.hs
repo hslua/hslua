@@ -19,6 +19,7 @@ module Foreign.Lua.Util
   , Optional (Optional, fromOptional)
   -- * getting values
   , peekEither
+  , peekRead
   , popValue
   ) where
 
@@ -27,11 +28,13 @@ import Data.ByteString (ByteString)
 import Data.Char (ord)
 import Foreign.Lua.Core (Lua, NumResults, StackIndex)
 import Foreign.Lua.Types (Peekable, Pushable)
+import Text.Read (readMaybe)
 
 import qualified Control.Monad.Catch as Catch
 import qualified Data.ByteString as B
 import qualified Foreign.Lua.Core as Lua
 import qualified Foreign.Lua.Types as Lua
+import qualified Foreign.Lua.Utf8 as Utf8
 
 -- | Run lua computation using the default HsLua state as starting point. Raised
 -- exceptions are passed through; error handling is the responsibility of the
@@ -115,6 +118,15 @@ instance Pushable a => Pushable (Optional a) where
 --
 -- Getting Values
 --
+
+-- | Get a value by retrieving a String from Lua, then using @'readMaybe'@ to
+-- convert the String into a Haskell value.
+peekRead :: Read a => StackIndex -> Lua a
+peekRead idx = do
+  s <- Lua.peek idx
+  case readMaybe s of
+    Just x -> return x
+    Nothing -> Lua.throwException (Utf8.fromString ("Could not read: " ++ s))
 
 -- | Try to convert the value at the given stack index to a Haskell value.
 -- Returns @Left@ with an error message on failure.
