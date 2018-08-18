@@ -36,11 +36,12 @@ import qualified Foreign.Lua.Core as Lua
 import qualified Foreign.Lua.Types as Lua
 import qualified Foreign.Lua.Utf8 as Utf8
 
--- | Run lua computation using the default HsLua state as starting point. Raised
--- exceptions are passed through; error handling is the responsibility of the
--- caller.
+-- | Run Lua computation using the default HsLua state as starting point.
+-- Exceptions are masked, thus avoiding some issues when using multiple threads.
+-- All exceptions are passed through; error handling is the responsibility of
+-- the caller.
 run :: Lua a -> IO a
-run = (Lua.newstate `bracket` Lua.close) . flip Lua.runWith
+run = (Lua.newstate `bracket` Lua.close) . flip Lua.runWith . Catch.mask_
 
 -- | Run the given Lua computation; exceptions raised in haskell code are
 -- caught, but other exceptions (user exceptions raised in haskell, unchecked
