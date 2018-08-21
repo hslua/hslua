@@ -25,9 +25,10 @@ THE SOFTWARE.
 module Foreign.Lua.UtilTest (tests) where
 
 import Data.ByteString (ByteString)
+import Data.Either (isLeft, isRight)
 import Foreign.Lua
 import Test.HsLua.Util ( (?:), (=:), pushLuaExpr, shouldBeResultOf
-                       , shouldBeErrorMessageOf)
+                       , shouldBeErrorMessageOf, shouldHoldForResultOf)
 import Test.Tasty (TestTree, testGroup)
 
 import qualified Foreign.Lua as Lua
@@ -54,6 +55,16 @@ tests = testGroup "Utilities"
       pushHaskellFunction (raiseError ("test error message" :: String))
       call 0 0
       return ()
+
+  , testGroup "runEither"
+    [ "Lua errors are caught" =:
+      isLeft `shouldHoldForResultOf`
+        liftIO (runEither (push True *> peek (-1) :: Lua String))
+
+    , "error-less code gives 'Right'" =:
+      isRight `shouldHoldForResultOf`
+        liftIO (runEither (push True *> peek (-1) :: Lua Bool))
+    ]
 
   , testGroup "peekEither"
     [ "return right result on success" =:

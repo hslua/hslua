@@ -25,13 +25,13 @@ module Foreign.LuaTest (tests) where
 
 import Prelude hiding (concat)
 
-import Control.Applicative ((<|>), empty)
 import Data.ByteString (ByteString)
-import Data.Either (isLeft, isRight)
+import Data.Either (isLeft)
 import Data.Monoid ((<>))
 import Foreign.Lua as Lua
 import System.Mem (performMajorGC)
-import Test.HsLua.Util ((=:), (?:), pushLuaExpr, shouldBeErrorMessageOf)
+import Test.HsLua.Util ( (=:), (?:), pushLuaExpr, shouldBeErrorMessageOf
+                       , shouldHoldForResultOf)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
 
@@ -114,7 +114,8 @@ tests = testGroup "lua integration tests"
     ]
 
   , testGroup "luaopen_* functions" $ map (uncurry testOpen)
-    [ ("debug", opendebug)
+    [ ("base", openbase)
+    , ("debug", opendebug)
     , ("io", openio)
     , ("math", openmath)
     , ("os", openos)
@@ -122,7 +123,6 @@ tests = testGroup "lua integration tests"
     , ("string", openstring)
     , ("table", opentable)
     ]
-  , testGroup "luaopen_base returns the right number of tables" testOpenBase
 
   , testGroup "C functions"
     [ testCase "Registering a C function and calling it from Lua" $
@@ -161,31 +161,12 @@ tests = testGroup "lua integration tests"
     ]
 
   , testGroup "error handling"
-    [ testCase "lua errors are caught" $
-      assertBool "error was not intercepted" . isLeft =<<
-      runEither (push True *> peek (-1) :: Lua String)
-
-    , testCase "error-less code gives in 'Right' result" $
-      assertBool "error was not intercepted" . isRight =<<
-      runEither (push True *> peek (-1) :: Lua Bool)
-
-    , testCase "catching lua errors within the lua type" $
-      assertBool "No error was thrown" . isLeft
-        =<< (run $ try (throwException "test"))
-
-    , testCase "second alternative is used when first fails" $
-      assertEqual "alternative failed" (Right True) =<<
-      runEither (throwException "test" <|> return True)
-
-    , testCase "Applicative.empty implementation throws an exception" $
-      assertBool "empty doesn't throw" . isLeft =<< runEither empty
-
-    , testCase "catching error of a failing meta method" $
-      assertBool "compuation was expected to fail" . isLeft =<<
+    [ "catching error of a failing meta method" =:
+      isLeft `shouldHoldForResultOf`
       let comp = do
             pushLuaExpr "setmetatable({}, {__index = error})"
             getfield (-1) "foo" :: Lua ()
-      in runEither comp
+      in try comp
 
     , "calling a function that errors throws exception" =:
       "[string \"return error('error message')\"]:1: error message"
@@ -202,16 +183,3 @@ testOpen :: String -> Lua () -> TestTree
 testOpen lib openfn = testCase ("open" ++ lib) $
   assertBool "opening the library failed" =<<
   run (openfn *> istable (-1))
-
-testOpenBase :: [TestTree]
-testOpenBase = (:[]) .
-  testCase "openbase" $
-  assertBool "loading base didn't push the expected number of tables" =<<
-  (run $ do
-    -- openbase returns one table in lua 5.2 and later, but two in 5.1
-    openbase
-    getglobal "_VERSION"
-    version <- peek (-1) <* pop 1
-    if version == ("Lua 5.1" :: ByteString)
-      then (&&) <$> istable (-1) <*> istable (-2)
-      else istable (-1))

@@ -53,6 +53,7 @@ import qualified Data.ByteString as B
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Foreign.Lua.Core.RawBindings as LuaRaw
+import qualified Foreign.Lua.Core.ErrorTests
 import qualified Foreign.Marshal as Foreign
 import qualified Foreign.Ptr as Foreign
 import qualified Test.QuickCheck.Monadic as QCMonadic
@@ -60,8 +61,9 @@ import qualified Test.QuickCheck.Monadic as QCMonadic
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
-tests = testGroup "Haskell version of the C API"
-  [ testGroup "copy"
+tests = testGroup "Core module"
+  [ Foreign.Lua.Core.ErrorTests.tests
+  , testGroup "copy"
     [ "copies stack elements using positive indices" ?: do
         pushLuaExpr "5, 4, 3, 2, 1"
         copy 4 3
