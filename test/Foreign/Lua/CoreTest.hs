@@ -276,7 +276,7 @@ tests = testGroup "Core module"
           Lua.ref Lua.registryindex
 
       , "get referenced value from registry" =:
-        (Just "Berlin") `shouldBeResultOf` do
+        Just "Berlin" `shouldBeResultOf` do
           Lua.pushstring "Berlin"
           cityref <- Lua.ref Lua.registryindex
           Lua.pushnil -- dummy op
@@ -385,7 +385,7 @@ tests = testGroup "Core module"
 
   , testCase "garbage collection" . run $
       -- test that gc can be called with all constructors of type GCCONTROL.
-      forM_ [GCSTOP .. GCSETSTEPMUL] $ \what -> (gc what 23)
+      forM_ [GCSTOP .. GCSETSTEPMUL] $ \what -> gc what 23
 
   , testGroup "compare"
     [ testProperty "identifies strictly smaller values" $ compareWith (<) Lua.LT

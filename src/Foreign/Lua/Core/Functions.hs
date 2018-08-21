@@ -438,7 +438,7 @@ load reader data' chunkname = liftLua $ \l ->
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>.
 ltype :: StackIndex -> Lua Type
-ltype idx = toType <$> liftLua (flip lua_type idx)
+ltype idx = toType <$> liftLua (`lua_type` idx)
 
 -- | Creates a new empty table and pushes it onto the stack. It is equivalent to
 -- @createtable 0 0@.

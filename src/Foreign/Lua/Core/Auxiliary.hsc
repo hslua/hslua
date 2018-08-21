@@ -88,8 +88,8 @@ loadbuffer :: ByteString -- ^ Program to load
            -> Lua Status
 loadbuffer bs name = liftLua $ \l ->
   B.useAsCStringLen bs $ \(str, len) ->
-  B.useAsCString name $ \namePtr ->
-  Lua.toStatus <$> luaL_loadbuffer l str (fromIntegral len) namePtr
+  B.useAsCString name
+    (fmap Lua.toStatus . luaL_loadbuffer l str (fromIntegral len))
 
 foreign import capi SAFTY "lauxlib.h luaL_loadbuffer"
   luaL_loadbuffer :: Lua.State -> Ptr CChar -> CSize -> CString

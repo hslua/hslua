@@ -65,7 +65,7 @@ shouldHoldForResultOf predicate luaOp = do
   errOrRes <- runEither luaOp
   case errOrRes of
     Left (Lua.Exception msg) -> assertFailure $ "Lua operation failed with "
-                                ++ "message: '" ++ (Char8.unpack msg) ++ "'"
+                                ++ "message: '" ++ Char8.unpack msg ++ "'"
     Right res -> assertBool ("predicate doesn't hold for " ++ show res)
                             (predicate res)
 

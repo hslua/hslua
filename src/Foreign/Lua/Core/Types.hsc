@@ -1,6 +1,5 @@
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE StandaloneDeriving         #-}
 {-|
 Module      : Foreign.Lua.Core.Types
 Copyright   : © 2007–2012 Gracjan Polak,
@@ -228,16 +227,16 @@ fromType tp = TypeCode $ case tp of
 -- | Convert numerical code to lua type.
 toType :: TypeCode -> Type
 toType (TypeCode c) = case c of
-  (#{const LUA_TNONE})          -> TypeNone
-  (#{const LUA_TNIL})           -> TypeNil
-  (#{const LUA_TBOOLEAN})       -> TypeBoolean
-  (#{const LUA_TLIGHTUSERDATA}) -> TypeLightUserdata
-  (#{const LUA_TNUMBER})        -> TypeNumber
-  (#{const LUA_TSTRING})        -> TypeString
-  (#{const LUA_TTABLE})         -> TypeTable
-  (#{const LUA_TFUNCTION})      -> TypeFunction
-  (#{const LUA_TUSERDATA})      -> TypeUserdata
-  (#{const LUA_TTHREAD})        -> TypeThread
+  #{const LUA_TNONE}          -> TypeNone
+  #{const LUA_TNIL}           -> TypeNil
+  #{const LUA_TBOOLEAN}       -> TypeBoolean
+  #{const LUA_TLIGHTUSERDATA} -> TypeLightUserdata
+  #{const LUA_TNUMBER}        -> TypeNumber
+  #{const LUA_TSTRING}        -> TypeString
+  #{const LUA_TTABLE}         -> TypeTable
+  #{const LUA_TFUNCTION}      -> TypeFunction
+  #{const LUA_TUSERDATA}      -> TypeUserdata
+  #{const LUA_TTHREAD}        -> TypeThread
   _ -> error ("No Type corresponding to " ++ show c)
 
 --
@@ -278,14 +277,14 @@ data Status
 -- | Convert C integer constant to @'LuaStatus'@.
 toStatus :: StatusCode -> Status
 toStatus (StatusCode c) = case c of
-  (#{const LUA_OK})        -> OK
-  (#{const LUA_YIELD})     -> Yield
-  (#{const LUA_ERRRUN})    -> ErrRun
-  (#{const LUA_ERRSYNTAX}) -> ErrSyntax
-  (#{const LUA_ERRMEM})    -> ErrMem
-  (#{const LUA_ERRGCMM})   -> ErrGcmm
-  (#{const LUA_ERRERR})    -> ErrErr
-  (#{const LUA_ERRFILE})   -> ErrFile
+  #{const LUA_OK}        -> OK
+  #{const LUA_YIELD}     -> Yield
+  #{const LUA_ERRRUN}    -> ErrRun
+  #{const LUA_ERRSYNTAX} -> ErrSyntax
+  #{const LUA_ERRMEM}    -> ErrMem
+  #{const LUA_ERRGCMM}   -> ErrGcmm
+  #{const LUA_ERRERR}    -> ErrErr
+  #{const LUA_ERRFILE}   -> ErrFile
   n -> error $ "Cannot convert (" ++ show n ++ ") to LuaStatus"
 {-# INLINABLE toStatus #-}
 
