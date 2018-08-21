@@ -1,0 +1,29 @@
+# HLint configuration file
+##########################
+
+# Ignore warnings if the code is fine the way it is.
+- ignore:
+    name: "Use camelCase"
+    within: "Foreign.Lua.FunctionCalling"
+
+- ignore:
+    name: "Avoid lambda using `infix`"
+    within: "Foreign.Lua.Core.Functions"
+
+- ignore:
+    name: "Reduce duplication"
+    within: "Foreign.Lua.Types.Pushable"
+
+
+- modules:
+  # Ensure names for qualified imports
+  - {name: Data.ByteString, as: B}
+  - {name: Data.ByteString.Char8, as: Char8}
+  - {name: Foreign.Lua, as: Lua}
+
+
+# Ban "module X(module X) where", to require a real export list
+- warn: {name: Use explicit module export list}
+
+# Replace a $ b $ c with a . b $ c
+# - group: {name: dollar, enabled: true}
