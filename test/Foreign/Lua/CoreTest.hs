@@ -213,17 +213,20 @@ tests = testGroup "Haskell version of the C API"
       luaSt2 <- liftIO newstate
       return (luaSt1 /= luaSt2)
 
-  , testCase "thread status" . run $ do
-      status >>= liftIO . assertEqual "base status should be OK" OK
-      openlibs
-      getglobal "coroutine"
-      getfield stackTop "resume"
-      pushLuaExpr "coroutine.create(function() coroutine.yield(9) end)"
-      (Just contThread) <- tothread stackTop
-      call 1 0
-      liftIO . runWith contThread $ do
-        liftIO . assertEqual "yielding will put thread status to Yield" Yield
-          =<< status
+  , testGroup "thread status"
+    [ "OK is base thread status" =:
+      OK `shouldBeResultOf` status
+
+    , "Yield is the thread status after yielding" =:
+      Yield `shouldBeResultOf` do
+        openlibs
+        getglobal "coroutine"
+        getfield stackTop "resume"
+        pushLuaExpr "coroutine.create(function() coroutine.yield(9) end)"
+        (Just contThread) <- tothread stackTop
+        call 1 0
+        liftIO $ runWith contThread status
+    ]
 
   , testGroup "auxiliary functions"
     [ testGroup "tostring'"
