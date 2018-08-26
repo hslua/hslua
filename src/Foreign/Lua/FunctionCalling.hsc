@@ -36,7 +36,7 @@ import Foreign.Lua.Core as Lua
 import Foreign.Lua.Types
 import Foreign.Lua.Userdata ( ensureUserdataMetatable, pushAnyWithMetatable
                             , toAnyWithName )
-import Foreign.Lua.Util (getglobal', raiseError)
+import Foreign.Lua.Util (getglobal', popValue, raiseError)
 import Foreign.Ptr (freeHaskellFunPtr)
 
 import qualified Data.ByteString.Char8 as Char8
@@ -103,7 +103,7 @@ instance Peekable a => LuaCallFunc (Lua a) where
     getglobal' fnName
     pushArgs
     call nargs 1
-    peek (-1) <* pop 1
+    popValue
 
 instance (Pushable a, LuaCallFunc b) => LuaCallFunc (a -> b) where
   callFunc' fnName pushArgs nargs x =
