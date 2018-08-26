@@ -28,7 +28,7 @@ module Foreign.Lua.Core.Auxiliary
 
 import Control.Exception (IOException, try)
 import Data.ByteString (ByteString)
-import Foreign.C (CChar, CInt (CInt), CSize (CSize), CString)
+import Foreign.C (CChar, CInt (CInt), CSize (CSize), CString, withCString)
 import Foreign.Lua.Core.Constants (multret, registryindex)
 import Foreign.Lua.Core.Error (hsluaErrorRegistryField, throwTopMessage)
 import Foreign.Lua.Core.Types (Lua, Reference, StackIndex, Status, liftLua)
@@ -84,11 +84,11 @@ getref idx ref' = Lua.rawgeti idx (fromIntegral (Lua.fromReference ref'))
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadbuffer luaL_loadbuffer>.
 loadbuffer :: ByteString -- ^ Program to load
-           -> ByteString -- ^ chunk name
+           -> String     -- ^ chunk name
            -> Lua Status
 loadbuffer bs name = liftLua $ \l ->
   B.useAsCStringLen bs $ \(str, len) ->
-  B.useAsCString name
+  withCString name
     (fmap Lua.toStatus . luaL_loadbuffer l str (fromIntegral len))
 
 foreign import capi SAFTY "lauxlib.h luaL_loadbuffer"
@@ -114,7 +114,7 @@ foreign import capi SAFTY "lauxlib.h luaL_loadbuffer"
 loadfile :: FilePath -- ^ filename
          -> Lua Status
 loadfile fp = Lua.liftIO contentOrError >>= \case
-  Right script -> loadbuffer script (Utf8.fromString fp)
+  Right script -> loadbuffer script fp
   Left e -> do
     Lua.pushstring (Utf8.fromString (show e))
     return Lua.ErrFile
@@ -133,7 +133,7 @@ loadfile fp = Lua.liftIO contentOrError >>= \case
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadstring>.
 loadstring :: ByteString -> Lua Status
-loadstring str = loadbuffer str str
+loadstring s = loadbuffer s (Utf8.toString s)
 
 
 -- | If the registry already has the key tname, returns @False@. Otherwise,
@@ -150,9 +150,9 @@ loadstring str = loadbuffer str str
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#luaL_newmetatable luaL_newmetatable>.
-newmetatable :: ByteString -> Lua Bool
+newmetatable :: String -> Lua Bool
 newmetatable tname = liftLua $ \l ->
-  Lua.fromLuaBool <$> B.useAsCString tname (luaL_newmetatable l)
+  Lua.fromLuaBool <$> withCString tname (luaL_newmetatable l)
 
 foreign import ccall SAFTY "lauxlib.h luaL_newmetatable"
   luaL_newmetatable :: Lua.State -> CString -> IO Lua.LuaBool

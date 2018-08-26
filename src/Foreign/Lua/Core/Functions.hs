@@ -33,6 +33,8 @@ import Foreign.Ptr
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Unsafe as B
 import qualified Data.ByteString.Char8 as Char8
+import qualified Foreign.C as C
+import qualified Foreign.Lua.Utf8 as Utf8
 import qualified Foreign.Storable as F
 
 --
@@ -241,10 +243,10 @@ gc what data' = liftLua $ \l ->
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getfield lua_getfield>.
-getfield :: StackIndex -> ByteString -> Lua ()
+getfield :: StackIndex -> String -> Lua ()
 getfield i s = do
   absidx <- absindex i
-  pushstring s
+  pushstring (Utf8.fromString s)
   gettable absidx
 
 -- | Pushes onto the stack the value of the global @name@.
@@ -253,9 +255,9 @@ getfield i s = do
 --
 -- Wrapper of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getglobal lua_getglobal>.
-getglobal :: ByteString -> Lua ()
+getglobal :: String -> Lua ()
 getglobal name = throwOnError <=< liftLua $ \l ->
-  B.unsafeUseAsCStringLen name $ \(namePtr, len) ->
+  C.withCStringLen name $ \(namePtr, len) ->
   hslua_getglobal l namePtr (fromIntegral len)
 
 -- | If the value at the given index has a metatable, the function pushes that
@@ -712,10 +714,10 @@ rawseti k m = ensureTable k (\l -> lua_rawseti l k m)
 -- | Sets the C function @f@ as the new value of global @name@.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_register lua_register>.
-register :: ByteString -> CFunction -> Lua ()
+register :: String -> CFunction -> Lua ()
 register name f = do
-    pushcfunction f
-    setglobal name
+  pushcfunction f
+  setglobal name
 
 -- | Removes the element at the given valid index, shifting down the elements
 -- above this index to fill the gap. This function cannot be called with a
@@ -745,10 +747,10 @@ replace n = liftLua $ \l ->  lua_replace l n
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_setfield lua_setfield>.
-setfield :: StackIndex -> ByteString -> Lua ()
+setfield :: StackIndex -> String -> Lua ()
 setfield i s = do
   absidx <- absindex i
-  pushstring s
+  pushstring (Utf8.fromString s)
   insert (nthFromTop 2)
   settable absidx
 
@@ -758,9 +760,9 @@ setfield i s = do
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_setglobal lua_setglobal>.
-setglobal :: ByteString -> Lua ()
+setglobal :: String -> Lua ()
 setglobal name = throwOnError <=< liftLua $ \l ->
-  B.unsafeUseAsCStringLen name $ \(namePtr, nameLen) ->
+  C.withCStringLen name $ \(namePtr, nameLen) ->
   hslua_setglobal l namePtr (fromIntegral nameLen)
 
 -- | Pops a table from the stack and sets it as the new metatable for the value

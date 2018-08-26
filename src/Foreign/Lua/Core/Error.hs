@@ -108,8 +108,8 @@ foreign import capi unsafe "lua.h lua_pop"
   lua_pop :: Lua.State -> CInt -> IO ()
 
 -- | Registry field under which the special HsLua error indicator is stored.
-hsluaErrorRegistryField :: ByteString
-hsluaErrorRegistryField = Char8.pack "HSLUA_ERR"
+hsluaErrorRegistryField :: String
+hsluaErrorRegistryField = "HSLUA_ERR"
 
 --
 -- * Custom protocol to communicate with hslua C wrapper functions.

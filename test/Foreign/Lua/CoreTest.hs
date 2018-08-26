@@ -50,8 +50,6 @@ import Test.Tasty.QuickCheck (testProperty)
 
 import qualified Prelude
 import qualified Data.ByteString as B
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as T
 import qualified Foreign.Lua.Core.RawBindings as LuaRaw
 import qualified Foreign.Lua.Core.ErrorTests
 import qualified Foreign.Marshal as Foreign
@@ -199,7 +197,7 @@ tests = testGroup "Core module"
     [ "unicode characters in field name are ok" =:
       True `shouldBeResultOf` do
         pushLuaExpr "{['\xE2\x9A\x94'] = true}"
-        getfield stackTop (T.encodeUtf8 (T.pack "⚔"))
+        getfield stackTop "⚔"
         toboolean stackTop
     ]
 

@@ -40,12 +40,10 @@ module Foreign.Lua.Userdata
 
 -- import Control.Applicative (empty)
 import Control.Monad (when)
-import Data.ByteString (ByteString)
 import Data.Data (Data, dataTypeName, dataTypeOf)
 import Foreign.Lua.Core (Lua)
 import Foreign.Lua.Types.Peekable (reportValueOnFailure)
 
-import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as Char8
 import qualified Foreign.Lua.Core as Lua
 import qualified Foreign.C as C
@@ -78,7 +76,7 @@ pushAnyWithMetatable mtOp x = do
 
 -- | Push the metatable used to define the behavior of the given value in Lua.
 -- The table will be created if it doesn't exist yet.
-ensureUserdataMetatable :: ByteString -- ^ name of the registered
+ensureUserdataMetatable :: String     -- ^ name of the registered
                                       -- metatable which should be used.
                         -> Lua ()     -- ^ set additional properties; this
                                       -- operation will be called with the newly
@@ -108,11 +106,11 @@ toAny idx = toAny' undefined
 -- | Retrieve data which has been pushed with @'pushAnyWithMetatable'@, where
 -- *name* must is the value of the @__name@ field of the metatable.
 toAnyWithName :: Lua.StackIndex
-              -> ByteString     -- ^ expected metatable name
+              -> String         -- ^ expected metatable name
               -> Lua (Maybe a)
 toAnyWithName idx name = do
   l <- Lua.state
-  udPtr <- Lua.liftIO (B.useAsCString name (luaL_testudata l idx))
+  udPtr <- Lua.liftIO (C.withCString name (luaL_testudata l idx))
   if udPtr == Ptr.nullPtr
     then return Nothing
     else
@@ -130,8 +128,8 @@ peekAny idx = peek' undefined
 
 -- | Return the default name for userdata to be used when wrapping an object as
 -- the given type as userdata.  The argument is never evaluated.
-metatableName :: Data a => a -> ByteString
-metatableName x = Char8.pack ("HSLUA_" ++ dataTypeName (dataTypeOf x))
+metatableName :: Data a => a -> String
+metatableName x = "HSLUA_" ++ dataTypeName (dataTypeOf x)
 
 -- | Function to free the stable pointer in a userdata, ensuring the Haskell
 -- value can be garbage collected. This function does not call back into

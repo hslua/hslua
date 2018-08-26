@@ -25,13 +25,12 @@ module Foreign.Lua.Util
 
 import Control.Exception (bracket, try)
 import Data.ByteString (ByteString)
-import Data.Char (ord)
+import Data.List (groupBy)
 import Foreign.Lua.Core (Lua, NumResults, StackIndex)
 import Foreign.Lua.Types (Peekable, Pushable)
 import Text.Read (readMaybe)
 
 import qualified Control.Monad.Catch as Catch
-import qualified Data.ByteString as B
 import qualified Foreign.Lua.Core as Lua
 import qualified Foreign.Lua.Types as Lua
 import qualified Foreign.Lua.Utf8 as Utf8
@@ -54,7 +53,7 @@ runEither = try . run
 -- > getglobal' "math.sin"
 --
 -- will return the function @sin@ in package @math@.
-getglobal' :: ByteString -> Lua ()
+getglobal' :: String -> Lua ()
 getglobal' = getnested . splitdot
 
 -- | Like @setglobal@, but knows about packages and nested tables. E.g.
@@ -63,7 +62,7 @@ getglobal' = getnested . splitdot
 -- > setglobal' "mypackage.version"
 --
 -- All tables and fields, except for the last field, must exist.
-setglobal' :: ByteString -> Lua ()
+setglobal' :: String -> Lua ()
 setglobal' s =
   case reverse (splitdot s) of
     [] ->
@@ -77,15 +76,13 @@ setglobal' s =
       Lua.pop 1
 
 -- | Gives the list of the longest substrings not containing dots.
-splitdot :: ByteString -> [ByteString]
-splitdot = filter (/= B.singleton dot) .
-           B.groupBy (\a b -> a /= dot && b /= dot)
-  where dot = fromIntegral (ord '.')
+splitdot :: String -> [String]
+splitdot = filter (/= ".") . groupBy (\a b -> a /= '.' && b /= '.')
 
 -- | Pushes the value described by the strings to the stack; where the first
 -- value is the name of a global variable and the following strings are the
 -- field values in nested tables.
-getnested :: [ByteString] -> Lua ()
+getnested :: [String] -> Lua ()
 getnested [] = return ()
 getnested (x:xs) = do
   Lua.getglobal x
