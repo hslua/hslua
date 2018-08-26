@@ -28,7 +28,6 @@ module Foreign.Lua.Core.Error
   ) where
 
 import Control.Applicative (Alternative (..))
-import Data.ByteString (ByteString)
 import Data.Typeable (Typeable)
 import Foreign.C (CChar, CInt (CInt), CSize)
 import Foreign.Marshal.Alloc (alloca)
@@ -44,16 +43,16 @@ import qualified Foreign.Lua.Core.Types as Lua
 import qualified Foreign.Lua.Utf8 as Utf8
 
 -- | Exceptions raised by Lua-related operations.
-newtype Exception = Exception { exceptionMessage :: ByteString}
+newtype Exception = Exception { exceptionMessage :: String}
   deriving (Eq, Typeable)
 
 instance Show Exception where
-  show (Exception msg) = "Lua exception: " ++ Utf8.toString msg
+  show (Exception msg) = "Lua exception: " ++ msg
 
 instance E.Exception Exception
 
 -- | Raise a Lua @'Exception'@ containing the given error message.
-throwException :: ByteString -> Lua a
+throwException :: String -> Lua a
 throwException = Catch.throwM . Exception
 {-# INLINABLE throwException #-}
 
@@ -63,7 +62,7 @@ catchException = Catch.catch
 {-# INLINABLE catchException #-}
 
 -- | Catch Lua @'Exception'@, alter the message and rethrow.
-withExceptionMessage :: (ByteString -> ByteString) -> Lua a -> Lua a
+withExceptionMessage :: (String -> String) -> Lua a -> Lua a
 withExceptionMessage modifier luaOp =
   luaOp `catchException` \(Exception msg) -> throwException (modifier msg)
 {-# INLINABLE withExceptionMessage #-}
@@ -84,7 +83,7 @@ throwTopMessage :: Lua a
 throwTopMessage = do
   l <- Lua.state
   msg <- Lua.liftIO (errorMessage l)
-  throwException msg
+  throwException (Utf8.toString msg)
 
 -- | Retrieve and pop the top object as an error message. This is very similar
 -- to tostring', but ensures that we don't recurse if getting the message

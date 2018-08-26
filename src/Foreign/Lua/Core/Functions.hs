@@ -32,7 +32,6 @@ import Foreign.Ptr
 
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Unsafe as B
-import qualified Data.ByteString.Char8 as Char8
 import qualified Foreign.C as C
 import qualified Foreign.Lua.Utf8 as Utf8
 import qualified Foreign.Storable as F
@@ -49,7 +48,7 @@ ensureTable idx ioOp = do
     then liftLua ioOp
     else do
       tyName <- ltype idx >>= typename
-      throwException (Char8.pack "table expected, got " <> tyName)
+      throwException ("table expected, got " <> tyName)
 
 --
 -- API functions
@@ -921,9 +920,9 @@ touserdata n = liftLua $ \l -> do
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_typename lua_typename>.
-typename :: Type -> Lua ByteString
+typename :: Type -> Lua String
 typename tp = liftLua $ \l ->
-  lua_typename l (fromType tp) >>= B.unsafePackCString
+  lua_typename l (fromType tp) >>= C.peekCString
 
 -- | Returns the pseudo-index that represents the @i@-th upvalue of the running
 -- function (see <https://www.lua.org/manual/5.3/manual.html#4.4 §4.4> of the

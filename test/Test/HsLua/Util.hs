@@ -38,7 +38,6 @@ import Test.Tasty (TestTree)
 import Test.Tasty.HUnit (Assertion, assertBool, assertFailure, testCase, (@?=))
 
 import qualified Foreign.Lua as Lua
-import qualified Data.ByteString.Char8 as Char8
 
 pushLuaExpr :: ByteString -> Lua ()
 pushLuaExpr expr = loadstring ("return " <> expr) *> call 0 multret
@@ -48,10 +47,10 @@ shouldBeResultOf expected luaOp = do
   errOrRes <- runEither luaOp
   case errOrRes of
     Left (Lua.Exception msg) -> assertFailure $ "Lua operation failed with "
-                                ++ "message: '" ++ Char8.unpack msg ++ "'"
+                                ++ "message: '" ++ msg ++ "'"
     Right res -> res @?= expected
 
-shouldBeErrorMessageOf :: Show a => ByteString -> Lua a -> Assertion
+shouldBeErrorMessageOf :: Show a => String -> Lua a -> Assertion
 shouldBeErrorMessageOf expectedErrMsg luaOp = do
   errOrRes <- runEither luaOp
   case errOrRes of
@@ -65,7 +64,7 @@ shouldHoldForResultOf predicate luaOp = do
   errOrRes <- runEither luaOp
   case errOrRes of
     Left (Lua.Exception msg) -> assertFailure $ "Lua operation failed with "
-                                ++ "message: '" ++ Char8.unpack msg ++ "'"
+                                ++ "message: '" ++ msg ++ "'"
     Right res -> assertBool ("predicate doesn't hold for " ++ show res)
                             (predicate res)
 

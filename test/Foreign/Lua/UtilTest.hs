@@ -24,7 +24,6 @@ THE SOFTWARE.
 -}
 module Foreign.Lua.UtilTest (tests) where
 
-import Data.ByteString (ByteString)
 import Data.Either (isLeft, isRight)
 import Foreign.Lua
 import Test.HsLua.Util ( (?:), (=:), pushLuaExpr, shouldBeResultOf
@@ -76,7 +75,7 @@ tests = testGroup "Utilities"
       Left "Could not read list: expected integer, got 'false' (boolean)"
       `shouldBeResultOf` do
         pushLuaExpr "{1, false}"
-        peekEither stackTop :: Lua (Either ByteString [Lua.Integer])
+        peekEither stackTop :: Lua (Either String [Lua.Integer])
     ]
 
   , testGroup "popValue"

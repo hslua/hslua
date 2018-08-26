@@ -24,7 +24,6 @@ module Foreign.Lua.Util
   ) where
 
 import Control.Exception (bracket, try)
-import Data.ByteString (ByteString)
 import Data.List (groupBy)
 import Foreign.Lua.Core (Lua, NumResults, StackIndex)
 import Foreign.Lua.Types (Peekable, Pushable)
@@ -33,7 +32,6 @@ import Text.Read (readMaybe)
 import qualified Control.Monad.Catch as Catch
 import qualified Foreign.Lua.Core as Lua
 import qualified Foreign.Lua.Types as Lua
-import qualified Foreign.Lua.Utf8 as Utf8
 
 -- | Run Lua computation using the default HsLua state as starting point.
 -- Exceptions are masked, thus avoiding some issues when using multiple threads.
@@ -124,12 +122,13 @@ peekRead idx = do
   s <- Lua.peek idx
   case readMaybe s of
     Just x -> return x
-    Nothing -> Lua.throwException (Utf8.fromString ("Could not read: " ++ s))
+    Nothing -> Lua.throwException ("Could not read: " ++ s)
 
 -- | Try to convert the value at the given stack index to a Haskell value.
 -- Returns @Left@ with an error message on failure.
-peekEither :: Peekable a => StackIndex -> Lua (Either ByteString a)
-peekEither idx = either (Left . Lua.exceptionMessage) Right <$> Lua.try (Lua.peek idx)
+peekEither :: Peekable a => StackIndex -> Lua (Either String a)
+peekEither idx = either (Left . Lua.exceptionMessage) Right <$>
+                 Lua.try (Lua.peek idx)
 
 -- | Get, then pop the value at the top of the stack. The pop operation is
 -- executed even if the retrieval operation failed.

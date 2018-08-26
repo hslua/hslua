@@ -38,7 +38,7 @@ import qualified Foreign.Lua.Utf8 as Utf8
 -- type and use @peekfn@ to convert it to a haskell value if possible. A
 -- successfully received value is wrapped using the @'Success'@ constructor,
 -- while a type mismatch results in an @Error@ with the given error message.
-typeChecked :: ByteString
+typeChecked :: String
             -> (StackIndex -> Lua Bool)
             -> (StackIndex -> Lua a)
             -> StackIndex -> Lua a
@@ -48,7 +48,7 @@ typeChecked expectedType test peekfn idx = do
 
 -- | Report the expected and actual type of the value under the given index if
 -- conversion failed.
-reportValueOnFailure :: ByteString
+reportValueOnFailure :: String
                      -> (StackIndex -> Lua (Maybe a))
                      -> StackIndex -> Lua a
 reportValueOnFailure expected peekMb idx = do
@@ -58,12 +58,12 @@ reportValueOnFailure expected peekMb idx = do
     Nothing -> mismatchError expected idx
 
 -- | Return a Result error containing a message about the assertion failure.
-mismatchError :: ByteString -> StackIndex -> Lua a
+mismatchError :: String -> StackIndex -> Lua a
 mismatchError expected idx = do
   actualType <- ltype idx >>= typename
-  actualValue <- tostring' idx <* pop 1
-  let msg = "expected " <> expected
-          <> ", got '" <> actualValue <> "' (" <> actualType <> ")"
+  actualValue <- Utf8.toString <$> tostring' idx <* pop 1
+  let msg = "expected " <> expected <> ", got '" <>
+            actualValue <> "' (" <> actualType <> ")"
   Lua.throwException msg
 
 -- | A value that can be read from the Lua stack.
@@ -159,7 +159,7 @@ nextPair idx = do
             -- removes the value, keeps the key
     else return Nothing
 
-inContext :: ByteString -> Lua a -> Lua a
+inContext :: String -> Lua a -> Lua a
 inContext ctx = Lua.withExceptionMessage (ctx <>)
 
 --

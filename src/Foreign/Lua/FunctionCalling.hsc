@@ -39,8 +39,6 @@ import Foreign.Lua.Userdata ( ensureUserdataMetatable, pushAnyWithMetatable
 import Foreign.Lua.Util (getglobal', popValue, raiseError)
 import Foreign.Ptr (freeHaskellFunPtr)
 
-import qualified Data.ByteString.Char8 as Char8
-
 -- | Type of raw Haskell functions that can be made into 'CFunction's.
 type PreCFunction = Lua.State -> IO NumResults
 
@@ -66,7 +64,7 @@ instance (Peekable a, ToHaskellFunction b) =>
      where
       getArg = Lua.withExceptionMessage (errorPrefix <>) (peek narg)
       errorPrefix = "could not read argument " <>
-                    Char8.pack (show (fromStackIndex narg)) <> ": "
+                    show (fromStackIndex narg) <> ": "
 
 -- | Convert a Haskell function to Lua function. Any Haskell function
 -- can be converted provided that:

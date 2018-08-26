@@ -44,7 +44,6 @@ import Data.Data (Data, dataTypeName, dataTypeOf)
 import Foreign.Lua.Core (Lua)
 import Foreign.Lua.Types.Peekable (reportValueOnFailure)
 
-import qualified Data.ByteString.Char8 as Char8
 import qualified Foreign.Lua.Core as Lua
 import qualified Foreign.C as C
 import qualified Foreign.Ptr as Ptr
@@ -122,9 +121,7 @@ peekAny :: Data a => Lua.StackIndex -> Lua a
 peekAny idx = peek' undefined
  where
   peek' :: Data a => a -> Lua a
-  peek' x = reportValueOnFailure (Char8.pack (dataTypeName (dataTypeOf x)))
-                                 toAny
-                                 idx
+  peek' x = reportValueOnFailure (dataTypeName (dataTypeOf x)) toAny idx
 
 -- | Return the default name for userdata to be used when wrapping an object as
 -- the given type as userdata.  The argument is never evaluated.
