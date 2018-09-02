@@ -22,7 +22,7 @@ software and embedded devices. This package provides Haskell bindings to Lua,
 enable coders to embed the language into their programs, making them scriptable.
 
 HsLua ships with batteries included and includes the most recent Lua version
-(i.e., Lua 5.3.4). Cabal flags make it easy to compile against a system-wide Lua
+(i.e., Lua 5.3.5). Cabal flags make it easy to compile against a system-wide Lua
 installation.
 
 
@@ -30,19 +30,19 @@ Interacting with Lua
 --------------------
 
 HsLua provides the `Lua` type to define Lua operations. The operations are
-executed by calling `runLua`. A simple "Hello, World" program, using the Lua
+executed by calling `run`. A simple "Hello, World" program, using the Lua
 `print` function, is given below:
 
 ``` haskell
-import Foreign.Lua
+import Foreign.Lua as Lua
 
 main :: IO ()
-main = runLua prog
+main = Lua.run prog
   where
     prog :: Lua ()
     prog = do
-      openlibs  -- load lua libraries so we can use 'print'
-      callFunc "print" "Hello, World!"
+      Lua.openlibs  -- load Lua libraries so we can use 'print'
+      Lua.callFunc "print" "Hello, World!"
 ```
 
 ### The Lua stack
@@ -123,12 +123,17 @@ The following cabal build flags are supported:
 
 - `lua_32bits`: Compile Lua for a 32-bits system (e.g., i386, PowerPC G4).
 
+- `export-dynamic`: Add all symbols to dynamic symbol table; disabling this
+  will make it possible to create fully static binaries, but renders loading
+  of dynamic C libraries impossible.
+
 
 ### Example: using a different lua version
 
-To use a system-wide installed Lua/LuaJIT when linking hslua as a dependency,
+To use a system-wide installed Lua when linking hslua as a dependency,
 build/install your package using `--constraint="hslua +system-lua"`. For
-example, you can install Pandoc with hslua that uses system-wide Lua like this:
+example, you can install Pandoc with hslua that uses system-wide Lua like
+this:
 
 ``` sh
 cabal install pandoc --constraint="hslua +system-lua"
