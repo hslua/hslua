@@ -62,11 +62,29 @@ instance Pushable T.Text where
 instance Pushable BL.ByteString where
   push = push . BL.toStrict
 
+instance Pushable Prelude.Integer where
+  push = pushInteger
+
+instance Pushable Int where
+  push = pushInteger . fromIntegral
+
 instance {-# OVERLAPS #-} Pushable [Char] where
   push = push . Utf8.fromString
 
 instance Pushable a => Pushable [a] where
   push = pushList
+
+
+-- | Push an @Int@ to the Lua stack. Numbers representable as Lua integers are
+-- pushed as such; bigger integers are represented using their string
+-- representation.
+pushInteger :: Prelude.Integer -> Lua ()
+pushInteger i =
+  let maxInt = fromIntegral (maxBound :: Lua.Integer)
+      minInt = fromIntegral (minBound :: Lua.Integer)
+  in if i >= minInt && i <= maxInt
+     then push (fromIntegral i :: Lua.Integer)
+     else push (show i)
 
 -- | Push list as numerically indexed table.
 pushList :: Pushable a => [a] -> Lua ()

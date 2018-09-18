@@ -65,6 +65,18 @@ tests = testGroup "Peekable"
         peek stackTop
     ]
 
+  , testGroup "Prelude.Integer"
+    [ "small integer can be peeked" =:
+      (23 :: Prelude.Integer) `shouldBeResultOf` do
+        pushnumber 23
+        peek stackTop
+
+    , "very large integer can be peeked" =:
+      (10000000000000000000001 :: Prelude.Integer) `shouldBeResultOf` do
+        pushstring "10000000000000000000001"
+        peek stackTop
+    ]
+
   , testGroup "peekKeyValuePairs"
     [ "`next` is not confused when peeking at number keys as strings" =:
       -- list of numbers can be retrieved as pair of strings

@@ -27,6 +27,7 @@ import Data.Set (Set)
 import Data.Monoid ((<>))
 import Foreign.Lua.Core as Lua
 import Foreign.Ptr (Ptr)
+import Text.Read (readMaybe)
 
 import qualified Control.Monad.Catch as Catch
 import qualified Data.Set as Set
@@ -107,6 +108,12 @@ instance Peekable T.Text where
 instance Peekable BL.ByteString where
   peek = fmap BL.fromStrict . peek
 
+instance Peekable Prelude.Integer where
+  peek = peekInteger
+
+instance Peekable Int where
+  peek = fmap fromIntegral <$> peekInteger
+
 instance {-# OVERLAPS #-} Peekable [Char] where
   peek = fmap Utf8.toString . peek
 
@@ -119,6 +126,16 @@ instance (Ord a, Peekable a, Peekable b) => Peekable (Map a b) where
 instance (Ord a, Peekable a) => Peekable (Set a) where
   peek = -- All keys with non-nil values are in the set
     fmap (Set.fromList . map fst . filter snd) . peekKeyValuePairs
+
+-- | Retrieve an @Int@ value from the stack.
+peekInteger :: StackIndex -> Lua Prelude.Integer
+peekInteger idx = ltype idx >>= \case
+  TypeString -> do
+    s <- peek idx
+    case readMaybe s of
+      Just x -> return x
+      Nothing -> mismatchError "integer" idx
+  _ -> fromIntegral <$> (peek idx :: Lua Lua.Integer)
 
 -- | Read a table into a list
 peekList :: Peekable a => StackIndex -> Lua [a]

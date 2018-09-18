@@ -50,11 +50,14 @@ tests = testGroup "peek and push are well behaved"
     , testProperty "lua numbers (i.e., doubles) remain equal under push/peek"
       (prop_roundtripEqual :: Lua.Number -> Property)
 
-    , testProperty "lua integers remain equal under push/peek"
+    , testProperty "Lua integers remain equal under push/peek"
       (prop_roundtripEqual :: Lua.Integer -> Property)
 
     , testProperty "bytestring remain equal under push/peek"
       (prop_roundtripEqual :: ByteString -> Property)
+
+    , testProperty "Prelude.Integer"
+      (prop_roundtripEqual :: Prelude.Integer -> Property)
 
     , testProperty "round-tripping strings"
       (prop_roundtripEqual :: String -> Property)

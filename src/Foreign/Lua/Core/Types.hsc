@@ -141,7 +141,7 @@ type Reader = FunPtr (State -> Ptr () -> Ptr CSize -> IO (Ptr CChar))
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_Integer lua_Integer>.
 newtype Integer = Integer #{type LUA_INTEGER}
-  deriving (Enum, Eq, Integral, Num, Ord, Real, Show)
+  deriving (Bounded, Enum, Eq, Integral, Num, Ord, Real, Show)
 
 -- |  The type of floats in Lua.
 --
