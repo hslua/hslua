@@ -162,14 +162,3 @@ Q&A
     coroutines working with HsLua were unsuccessful. No coroutine related
     functions are exported from the default module for that reason. Pull
     requests intended to fix this are very welcome.
-
-- **Why are there no predefined stack instances for default numerical types?**
-    HsLua defines instances for the `Peekable` and `Pushable` type-classes
-    only if the following law holds: `return x == push x *> peek x`. Lua can be
-    configured during compilation to use longer or shorter number types, e.g. by
-    setting the 32-bits flag. This makes it impossible to verify the correctness
-    of the above equation for any fixed numeric Haskell type.
-
-    Instances for numerical types can be based on those of LuaInteger and
-    LuaNumber and are easy to write. Therefore, hslua doesn't provide any such
-    instances.
