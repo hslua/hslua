@@ -4,7 +4,7 @@ synopsis:            Bindings to Lua, an embeddable scripting language
 description:         The Foreign.Lua module is a wrapper of Lua language
                      interpreter as described on <https://www.lua.org/ lua.org>.
                      .
-                     This package contains a full Lua interpreter version 5.3.4.
+                     This package contains a full Lua interpreter version 5.3.5.
                      If you want to link it with a system-wide Lua installation,
                      use the @system-lua@ flag.
                      .
