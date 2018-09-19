@@ -59,6 +59,12 @@ tests = testGroup "peek and push are well behaved"
     , testProperty "Prelude.Integer"
       (prop_roundtripEqual :: Prelude.Integer -> Property)
 
+    , testProperty "Float"
+      (prop_roundtripEqual :: Float -> Property)
+
+    , testProperty "Double"
+      (prop_roundtripEqual :: Double -> Property)
+
     , testProperty "round-tripping strings"
       (prop_roundtripEqual :: String -> Property)
 

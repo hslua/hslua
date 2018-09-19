@@ -68,6 +68,12 @@ instance Pushable Prelude.Integer where
 instance Pushable Int where
   push = pushInteger . fromIntegral
 
+instance Pushable Float where
+  push = pushRealFloat
+
+instance Pushable Double where
+  push = pushRealFloat
+
 instance {-# OVERLAPS #-} Pushable [Char] where
   push = push . Utf8.fromString
 
@@ -85,6 +91,18 @@ pushInteger i =
   in if i >= minInt && i <= maxInt
      then push (fromIntegral i :: Lua.Integer)
      else push (show i)
+
+-- | Push a floating point number to the Lua stack.
+pushRealFloat :: (RealFloat a, Show a) => a -> Lua ()
+pushRealFloat f =
+  let
+    number = 0 :: Lua.Number
+    doubleFitsInNumber = floatRadix number == floatRadix f
+      && floatDigits number == floatDigits f
+      && floatRange number == floatRange f
+  in if doubleFitsInNumber
+     then push (realToFrac f :: Lua.Number)
+     else push (show f)
 
 -- | Push list as numerically indexed table.
 pushList :: Pushable a => [a] -> Lua ()

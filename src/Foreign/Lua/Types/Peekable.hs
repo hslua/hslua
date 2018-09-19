@@ -114,6 +114,12 @@ instance Peekable Prelude.Integer where
 instance Peekable Int where
   peek = fmap fromIntegral <$> peekInteger
 
+instance Peekable Float where
+  peek = peekRealFloat
+
+instance Peekable Double where
+  peek = peekRealFloat
+
 instance {-# OVERLAPS #-} Peekable [Char] where
   peek = fmap Utf8.toString . peek
 
@@ -136,6 +142,16 @@ peekInteger idx = ltype idx >>= \case
       Just x -> return x
       Nothing -> mismatchError "integer" idx
   _ -> fromIntegral <$> (peek idx :: Lua Lua.Integer)
+
+-- | Retrieve a @'RealFloat'@ (e.g., Float or Double) from the stack.
+peekRealFloat :: (Read a, RealFloat a) => StackIndex -> Lua a
+peekRealFloat idx = ltype idx >>= \case
+  TypeString -> do
+    s <- peek idx
+    case readMaybe s of
+      Just x -> return x
+      Nothing -> mismatchError "number" idx
+  _ -> realToFrac <$> (peek idx :: Lua Lua.Number)
 
 -- | Read a table into a list
 peekList :: Peekable a => StackIndex -> Lua [a]
