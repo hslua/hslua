@@ -158,6 +158,9 @@ module Foreign.Lua.Core (
   , toReference
   , noref
   , refnil
+  -- ** Registry fields
+  , loadedTableRegistryField
+  , preloadTableRegistryField
   -- * Error handling
   -- | We are trying to keep error handling on the haskell side very simple
   -- and intuitive. However, when combined with error handling on the Lua

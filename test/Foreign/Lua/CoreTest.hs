@@ -51,6 +51,7 @@ import Test.Tasty.QuickCheck (testProperty)
 import qualified Prelude
 import qualified Data.ByteString as B
 import qualified Foreign.Lua.Core.RawBindings as LuaRaw
+import qualified Foreign.Lua.Core.AuxiliaryTests
 import qualified Foreign.Lua.Core.ErrorTests
 import qualified Foreign.Marshal as Foreign
 import qualified Foreign.Ptr as Foreign
@@ -61,6 +62,7 @@ import qualified Test.QuickCheck.Monadic as QCMonadic
 tests :: TestTree
 tests = testGroup "Core module"
   [ Foreign.Lua.Core.ErrorTests.tests
+  , Foreign.Lua.Core.AuxiliaryTests.tests
   , testGroup "copy"
     [ "copies stack elements using positive indices" ?: do
         pushLuaExpr "5, 4, 3, 2, 1"

@@ -24,6 +24,9 @@ module Foreign.Lua.Core.Auxiliary
   , getref
   , ref
   , unref
+  -- * Registry fields
+  , loadedTableRegistryField
+  , preloadTableRegistryField
   ) where
 
 import Control.Exception (IOException, try)
@@ -34,8 +37,10 @@ import Foreign.Lua.Core.Error (hsluaErrorRegistryField, throwTopMessage)
 import Foreign.Lua.Core.Types (Lua, Reference, StackIndex, Status, liftLua)
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
+import System.IO.Unsafe (unsafePerformIO)
 
 import qualified Data.ByteString as B
+import qualified Foreign.C as C
 import qualified Foreign.Lua.Core.Functions as Lua
 import qualified Foreign.Lua.Core.Types as Lua
 import qualified Foreign.Lua.Utf8 as Utf8
@@ -50,6 +55,21 @@ import qualified Foreign.Storable as Storable
 
 --------------------------------------------------------------------------------
 -- * The Auxiliary Library
+
+-- | Key, in the registry, for table of loaded modules.
+loadedTableRegistryField :: String
+loadedTableRegistryField =
+  unsafePerformIO (C.peekCString c_loaded_table)
+
+foreign import capi "lauxlib.h value LUA_LOADED_TABLE"
+  c_loaded_table :: CString
+
+-- -- | Key, in the registry, for table of preloaded loaders.
+preloadTableRegistryField :: String
+preloadTableRegistryField = unsafePerformIO (C.peekCString c_preload_table)
+
+foreign import capi "lauxlib.h value LUA_PRELOAD_TABLE"
+  c_preload_table :: CString
 
 -- | Loads and runs the given string.
 --

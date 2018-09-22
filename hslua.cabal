@@ -182,6 +182,7 @@ test-suite test-hslua
   default-language:    Haskell2010
   other-modules:       Foreign.LuaTest
                      , Foreign.Lua.CoreTest
+                     , Foreign.Lua.Core.AuxiliaryTests
                      , Foreign.Lua.Core.ErrorTests
                      , Foreign.Lua.FunctionCallingTest
                      , Foreign.Lua.TypesTest
