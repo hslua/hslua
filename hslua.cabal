@@ -10,7 +10,7 @@ description:         The Foreign.Lua module is a wrapper of Lua language
                      .
                      <https://github.com/hslua/hslua-examples Example programs>
                      are available in a separate repository.
-homepage:            https://github.com/hslua/hslua
+homepage:            https://hslua.github.io/
 bug-reports:         https://github.com/hslua/hslua/issues
 license:             MIT
 license-file:        LICENSE
