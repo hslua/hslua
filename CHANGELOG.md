@@ -2,35 +2,104 @@
 
 ### 1.0.0 (unreleased)
 
-- Added stack instance for Data.Set.Set.
-- The `Result` type is used to indicate that a computation can fail. Exceptions
-  are still used when the alternative would impact ergonomics too much.
-- Haskell functions pushed with `pushHaskellFunction` can now be garbage
-  collected by Lua without having to call back into Haskell. The callback into
-  Haskell by the GC had previously caused programs to hang in some situations.
-- Renamed:
-  + module *Foreign.Lua.Api* was renamed to *Foreign.Lua.Core*;
-  + function *Foreign.Lua.lerror* was renamed to *Foreign.Lua.error*;
-  + typeclass *ToLuaStack* was renamed to *Pushable*;
-  + typeclass *FromLuaStack* was renamed to *Peekable*;
-  + cabal flag *use-pkgconfig* was renamed to *pkg-config* (which is the flag
-    name used by other projects such a zlib).
-- Updated type signatures:
-  + return value of `lua_newuserdata` is *CSize* (was *CInt*);
-  + table index parameter in `rawgeti` and `rawseti` must be of type
-    *LuaInteger*, but were of type *Int*;
-  + the number of upvalues passed to `pushcclosure` must be of type *NumArgs*;
-  + `Lua.error` has type *Lua NumResults*, simplifying its use in
-    HaskellFunctions;
-  + functions now require *ByteString* instead of *String*, avoiding the
-    encoding to depend on the systm locale – it also forces the user to think
-    about text encoding.
-- Removed:
-  + support for Lua versions before 5.3 has been dropped;
-  + support for GHC 7.8 has been dropped;
-  + `wrapHaskellFunction` is made internal and no longer exported.
-- Many internal improvements and additions such as a benchmarking suite, code
-  cleanups, better tests, etc.
+#### New features
+
+- Added stack instance for
+
+  + Data.Set.Set,
+  + Integer,
+  + Int,
+  + Float, and
+  + Double.
+
+  Instances for numbers fall back to strings when the
+  representation as a Lua number would cause a loss of precision.
+
+- Haskell functions pushed with `pushHaskellFunction` can now be
+  garbage collected by Lua without having to call back into
+  Haskell. The callback into Haskell by the GC had previously
+  caused programs to hang in some situations.
+  
+- Any Haskell value can be pushed to the Lua stack as userdata via
+  `pushAny` and retrieved via `peekAny`. Additional functions are
+  provided to setup the userdata metatable.
+  
+- The C preprocessor constants `LUA_LOADED_TABLE` and
+  `LUA_PRELOAD_TABLE` are made available as
+  `loadedTableRegistryField` and `preloadTableRegistryField`,
+  respectively.
+  
+- Additional small helper functions:
+
+  + `peekRead` -- read value from a string.
+  + `popValue` -- peek value at the top of the Lua stack, then
+    remove it from the stack regardless of whether peeking was
+    successful or not.
+
+#### Naming
+
+- The *Lua* prefix was removed from types (`State`, `Integer`, `Number`,
+  `Exception`) and the respective infix from functions (`try`, `run`,
+  `runWith`, `runEither`). HsLua should be imported qualified to avoid
+  name collisions.
+  
+- Terminology now consistently uses *exception* to refer to Haskell
+  exceptions, and *error* for Lua errors; function names changed
+  accordingly (`throwException`, `catchException`,
+  `withExceptionMessage`).
+
+- Module *Foreign.Lua.Api* was renamed to *Foreign.Lua.Core*.
+
+- *Foreign.Lua.lerror* was renamed to *Foreign.Lua.error*.
+
+- Typeclass *ToLuaStack* was renamed to *Pushable*.
+
+- Typeclass *FromLuaStack* was renamed to *Peekable*.
+
+- Cabal flag *use-pkgconfig* was renamed to *pkg-config* (which is the
+   flag name used by other projects such a zlib).
+    
+
+#### Type signatures
+
+- The return value of `lua_newuserdata` is *CSize* (was *CInt*).
+
+- Table index parameter in `rawgeti` and `rawseti` must be of type
+  *LuaInteger*, but were of type *Int*.
+
+- The number of upvalues passed to `pushcclosure` must be of type
+  *NumArgs*.
+
+- `Lua.error` has type *Lua NumResults*, simplifying its use in
+    HaskellFunctions.
+
+- Retrieval functions which can fail, i.e. `tocfunction`, `tointeger`,
+  `tonumber`, `tostring`, `tothread`, and `touserdata`, use the *Maybe*
+  type to indicate success or failure, avoiding the need to perform
+  additional checks.
+
+#### Removed Features
+
+- Support for Lua versions before 5.3 has been dropped.
+
+- Support for GHC 7.8 has been dropped.
+
+- `wrapHaskellFunction` has been made internal and is no longer
+   exported.
+
+#### Changed behavior
+
+- Peekable instances for numbers and strings became more forgiving.
+  Peeking of basic types now follows Lua's default conversion rules:
+
+  + numbers can be given as strings, and *vice versa*;
+  + any value can be converted into a boolean -- only `nil` and `false`
+    are peeked as `False`, all other as `True`.
+
+#### Other
+
+- Many internal improvements and additions such as a benchmarking suite,
+  code cleanups, better tests, etc.
 
 ### 0.9.5.{1,2}
 
