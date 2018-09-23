@@ -1,8 +1,8 @@
 name:                hslua
 version:             1.0.0
 synopsis:            Bindings to Lua, an embeddable scripting language
-description:         The Foreign.Lua module is a wrapper of Lua language
-                     interpreter as described on <https://www.lua.org/ lua.org>.
+description:         HsLua provides bindings, wrappers, types, and helper
+                     functions to bridge Haskell and <https://www.lua.org/ Lua>.
                      .
                      This package contains a full Lua interpreter version 5.3.5.
                      If you want to link it with a system-wide Lua installation,
