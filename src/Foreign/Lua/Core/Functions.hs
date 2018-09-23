@@ -604,6 +604,9 @@ pushcclosure f n = liftLua $ \l -> lua_pushcclosure l f n
 pushcfunction :: CFunction -> Lua ()
 pushcfunction f = pushcclosure f 0
 
+pushglobaltable :: Lua ()
+pushglobaltable = liftLua lua_pushglobaltable
+
 -- | Pushes an integer with with the given value onto the stack.
 --
 -- See also:

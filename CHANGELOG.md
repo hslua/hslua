@@ -20,8 +20,8 @@
   Haskell. The callback into Haskell by the GC had previously
   caused programs to hang in some situations.
 
-- Bindings to more Lua C API functions: `isinteger`, `load`, and
-  `loadbuffer`.
+- Bindings to more Lua C API functions and macros: `isinteger`, `load`,
+  `loadbuffer`, and `pushglobaltable`.
 
 - Any Haskell value can be pushed to the Lua stack as userdata via
   `pushAny` and retrieved via `peekAny`. Additional functions are

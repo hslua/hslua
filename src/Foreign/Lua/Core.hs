@@ -134,6 +134,7 @@ module Foreign.Lua.Core (
   , next
   , error
   , concat
+  , pushglobaltable
   , register
   -- * loading libraries
   , openbase

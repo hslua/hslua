@@ -337,6 +337,9 @@ foreign import ccall "error-conversion.h hslua_next"
 foreign import ccall "error-conversion.h hslua_concat"
   hslua_concat :: Lua.State -> NumArgs -> IO (Failable ())
 
+foreign import capi unsafe "lua.h lua_pushglobaltable"
+  lua_pushglobaltable :: Lua.State -> IO ()
+
 
 ------------------------------------------------------------------------------
 -- * Lua Libraries

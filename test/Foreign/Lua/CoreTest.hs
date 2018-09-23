@@ -230,6 +230,18 @@ tests = testGroup "Core module"
         liftIO $ runWith contThread status
     ]
 
+  , testGroup "miscellaneous functions"
+    [ testGroup "pushglobaltable"
+      [ "globals are fields in global table" =:
+        "yep" `shouldBeResultOf` do
+          pushstring "yep"
+          setglobal "TEST"
+          pushglobaltable
+          getfield stackTop "TEST"
+          tostring' stackTop
+      ]
+    ]
+
   , testGroup "auxiliary functions"
     [ testGroup "tostring'"
       [ "integers are converted in base10" =:
