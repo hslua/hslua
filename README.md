@@ -9,7 +9,7 @@ and lua.
 
 [Build Status]: https://travis-ci.org/hslua/hslua.svg?branch=master
 [AppVeyor Status]: https://ci.appveyor.com/api/projects/status/ldutrilgxhpcau94/branch/master?svg=true
-[Hackage]: http://img.shields.io/hackage/v/hslua.svg
+[Hackage]: https://img.shields.io/hackage/v/hslua.svg
 
 
 Overview
