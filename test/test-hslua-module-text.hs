@@ -1,5 +1,5 @@
 {-
-Copyright © 2017 Albert Krewinkel
+Copyright © 2017–2018 Albert Krewinkel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,8 +19,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
+{-# LANGUAGE OverloadedStrings #-}
+
 import Control.Monad (void, when)
-import Foreign.Lua (Lua, runLua)
+import Foreign.Lua (Lua)
 import Foreign.Lua.Module.Text (preloadTextModule, pushModuleText)
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
@@ -34,22 +36,22 @@ main = defaultMain $ testGroup "hslua-module-text" [tests]
 tests :: TestTree
 tests = testGroup "FromLuaStack"
   [ testCase "text module can be pushed to the stack" $
-      runLua (void pushModuleText)
+      Lua.run (void pushModuleText)
 
-  , testCase "text module can be added to the preloader" . runLua $ do
+  , testCase "text module can be added to the preloader" . Lua.run $ do
       Lua.openlibs
       preloadTextModule "hstext"
       assertEqual' "function not added to preloader" Lua.TypeFunction =<< do
         Lua.getglobal' "package.preload.hstext"
         Lua.ltype (-1)
 
-  , testCase "text module can be loaded as hstext" . runLua $ do
+  , testCase "text module can be loaded as hstext" . Lua.run $ do
       Lua.openlibs
       preloadTextModule "hstext"
       assertEqual' "loading the module fails " Lua.OK =<<
         Lua.dostring "require 'hstext'"
 
-  , testCase "Lua tests pass" . runLua $ do
+  , testCase "Lua tests pass" . Lua.run $ do
       Lua.openlibs
       preloadTextModule "hstext"
       assertEqual' "error while running lua tests" Lua.OK =<< do

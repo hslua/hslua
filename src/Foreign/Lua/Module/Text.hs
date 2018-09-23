@@ -1,5 +1,5 @@
 {-
-Copyright © 2017 Albert Krewinkel
+Copyright © 2017–2018 Albert Krewinkel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,10 +19,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
-
+{-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : Foreign.Lua.Module.Text
-Copyright   : © 2017 Albert Krewinkel
+Copyright   : © 2017–2018 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : alpha
@@ -36,10 +36,10 @@ module Foreign.Lua.Module.Text
   )where
 
 import Control.Applicative ((<$>))
+import Data.ByteString (ByteString)
 import Data.Text (Text)
 import Data.Maybe (fromMaybe)
-import Foreign.Lua (FromLuaStack, NumResults, Lua, LuaInteger, ToLuaStack)
-import Foreign.Lua.FunctionCalling (ToHaskellFunction, newCFunction)
+import Foreign.Lua (NumResults, Lua, Peekable, Pushable, ToHaskellFunction)
 import qualified Foreign.Lua as Lua
 import qualified Data.Text as T
 
@@ -50,7 +50,7 @@ pushModuleText = do
   addFunction "lower" (return . T.toLower :: Text -> Lua Text)
   addFunction "upper" (return . T.toUpper :: Text -> Lua Text)
   addFunction "reverse" (return . T.reverse :: Text -> Lua Text)
-  addFunction "len" (return . fromIntegral . T.length :: Text -> Lua LuaInteger)
+  addFunction "len" (return . fromIntegral . T.length :: Text -> Lua Lua.Integer)
   addFunction "sub" sub
   return 1
 
@@ -63,8 +63,8 @@ preloadTextModule = flip addPackagePreloader pushModuleText
 -- which produces the package.
 addPackagePreloader :: String -> Lua NumResults -> Lua ()
 addPackagePreloader name modulePusher = do
-  Lua.getglobal' "package.preload"
-  Lua.pushcfunction =<< newCFunction modulePusher
+  Lua.getfield Lua.registryindex Lua.preloadTableRegistryField
+  Lua.pushHaskellFunction modulePusher
   Lua.setfield (-2) name
   Lua.pop 1
 
@@ -77,20 +77,10 @@ addFunction name fn = do
   Lua.rawset (-3)
 
 -- | Returns a substring, using Lua's string indexing rules.
-sub :: Text -> LuaInteger -> OrNil LuaInteger -> Lua Text
+sub :: Text -> Lua.Integer -> Lua.Optional Lua.Integer -> Lua Text
 sub s i j =
   let i' = fromIntegral i
-      j' = fromIntegral . fromMaybe (-1) $ toMaybe j
+      j' = fromIntegral . fromMaybe (-1) $ Lua.fromOptional j
       fromStart = if i' >= 0 then  i' - 1 else T.length s + i'
       fromEnd   = if j' <  0 then -j' - 1 else T.length s - j'
   in return . T.dropEnd fromEnd . T.drop fromStart $ s
-
--- A lua value or nil
-newtype OrNil a = OrNil { toMaybe :: Maybe a }
-
-instance FromLuaStack a => FromLuaStack (OrNil a) where
-  peek idx = do
-    noValue <- Lua.isnoneornil idx
-    if noValue
-      then return (OrNil Nothing)
-      else OrNil . Just <$> Lua.peek idx
