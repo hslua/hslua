@@ -60,13 +60,15 @@ import qualified Foreign.Storable as Storable
 loadedTableRegistryField :: String
 loadedTableRegistryField =
   unsafePerformIO (C.peekCString c_loaded_table)
+{-# NOINLINE loadedTableRegistryField #-}
 
 foreign import capi "lauxlib.h value LUA_LOADED_TABLE"
   c_loaded_table :: CString
 
--- -- | Key, in the registry, for table of preloaded loaders.
+-- | Key, in the registry, for table of preloaded loaders.
 preloadTableRegistryField :: String
 preloadTableRegistryField = unsafePerformIO (C.peekCString c_preload_table)
+{-# NOINLINE preloadTableRegistryField #-}
 
 foreign import capi "lauxlib.h value LUA_PRELOAD_TABLE"
   c_preload_table :: CString
