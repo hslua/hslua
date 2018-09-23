@@ -1,16 +1,10 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-{-# LANGUAGE CPP #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-|
 Copyright   :  © 2017–2018 Albert Krewinkel
 License     :  MIT
 
 Tests for Aeson–Lua glue.
 -}
-#if MIN_VERSION_base(4,8,0)
-#else
-import Control.Applicative ((<$>), (*>))
-#endif
 import Control.Monad (forM_, when)
 import Data.AEq ((~==))
 import Data.HashMap.Lazy (HashMap)
@@ -18,7 +12,7 @@ import Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
 import Data.Text (Text)
 import Data.Vector (Vector)
 import Foreign.Lua as Lua
-import Foreign.Lua.Aeson (registerNull)
+import Foreign.Lua.Aeson (pushNull)
 import Test.Hspec
 import Test.HUnit
 import Test.QuickCheck
@@ -33,7 +27,20 @@ main = hspec spec
 
 -- | Specifications for Attributes parsing functions.
 spec :: Spec
-spec =
+spec = do
+  describe "pushNull" $ do
+    it "pushes a value that is recognized as null when peeked" $ do
+      val <- run (pushNull *> peek stackTop)
+      assert (val == Aeson.Null)
+    it "pushes a non-nil value" $ do
+      nil <- run (pushNull *> isnil stackTop)
+      assert (not nil)
+    it "pushes a single value" $ do
+      diff <- run $ stackDiff pushNull
+      assert (diff == 1)
+    it "pushes two values when called twice" $ do
+      diff <- run $ stackDiff (pushNull *> pushNull)
+      assert (diff == 2)
   describe "Value component" $ do
     describe "Scientific" $ do
       it "can be converted to a lua number" $ property $
@@ -81,17 +88,22 @@ assertRoundtripEqual x = do
 
 roundtrip :: (Pushable a, Peekable a) => a -> IO a
 roundtrip x = run $ do
-  registerNull
   push x
   size <- gettop
   when (size /= 1) $
     Prelude.error ("not the right amount of elements on the stack: " ++ show size)
   peek (-1)
 
+stackDiff :: Lua a -> Lua StackIndex
+stackDiff op = do
+  topBefore <- gettop
+  _ <- op
+  topAfter <- gettop
+  return (topAfter - topBefore)
+
 luaTest :: Pushable a => String -> [(String, a)] -> IO Bool
 luaTest luaTestCode xs = run $ do
   openlibs
-  registerNull
   forM_ xs $ \(var, value) ->
     push value *> setglobal var
   let luaScript = "function run() return (" ++ luaTestCode ++ ") end"
@@ -105,7 +117,7 @@ instance Arbitrary Aeson.Value where
   arbitrary = arbitraryValue 7
 
 arbitraryValue :: Int -> Gen Aeson.Value
-arbitraryValue size = frequency $
+arbitraryValue size = frequency
     [ (1, return Aeson.Null)
     , (4, Aeson.Bool <$> arbitrary)
     -- FIXME: this is cheating: we don't draw numbers from the whole possible

@@ -1,6 +1,4 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-{-# LANGUAGE CPP #-}
-{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE LambdaCase #-}
 {-|
 Module      :  Foreign.Lua.Aeson
@@ -16,8 +14,9 @@ Glue to hslua for aeson values.
 This provides a @StackValue@ instance for aeson's @Value@ type. The following
 conventions are used:
 
-- @Null@ values are encoded as the special global @_NULL@. Using @Nil@ would
-  cause problems with null-containing arrays.
+- @Null@ values are encoded as a special value (stored in the registry field
+  @HSLUA_AESON_NULL@). Using @nil@ would cause problems with null-containing
+  arrays.
 
 - Objects are converted to tables in a straight-forward way.
 
@@ -26,20 +25,16 @@ conventions are used:
   objects.
 -}
 module Foreign.Lua.Aeson
-  ( registerNull
+  ( pushNull
   ) where
 
-#if MIN_VERSION_base(4,8,0)
-#else
-import Control.Applicative ((<$>), (<*>), (*>), (<*))
-#endif
+import Control.Monad (when)
 import Data.HashMap.Lazy (HashMap)
 import Data.Hashable (Hashable)
 import Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
 import Data.Vector (Vector, fromList, toList)
-import Foreign.Lua
+import Foreign.Lua as Lua
 
-import qualified Foreign.Lua as Lua
 import qualified Data.Aeson as Aeson
 import qualified Data.HashMap.Lazy as HashMap
 import qualified Data.Vector as Vector
@@ -49,7 +44,7 @@ instance Pushable Scientific where
   push = pushnumber . toRealFloat
 
 instance Peekable Scientific where
-  peek n = fromFloatDigits <$> (peek n :: Lua Lua.Number)
+  peek = fmap (fromFloatDigits :: Lua.Number -> Scientific) . peek
 
 -- Vector
 instance (Pushable a) => Pushable (Vector a) where
@@ -75,47 +70,57 @@ instance Pushable Aeson.Value where
     Aeson.String s -> push s
     Aeson.Array a -> push a
     Aeson.Bool b -> push b
-    Aeson.Null -> getglobal "_NULL"
+    Aeson.Null -> pushNull
 
 instance Peekable Aeson.Value where
-  peek i = do
-    ltype' <- ltype i
-    case ltype' of
-      TypeBoolean -> Aeson.Bool  <$> peek i
-      TypeNumber -> Aeson.Number <$> peek i
-      TypeString -> Aeson.String <$> peek i
+  peek idx =
+    ltype idx >>= \case
+      TypeBoolean -> Aeson.Bool  <$> peek idx
+      TypeNumber -> Aeson.Number <$> peek idx
+      TypeString -> Aeson.String <$> peek idx
       TypeTable -> do
-        rawgeti i 0
-        isInt <- isnumber (-1)
+        rawgeti idx 0
+        isInt <- isinteger stackTop
         pop 1
         if isInt
-          then Aeson.Array <$> peek i
+          then Aeson.Array <$> peek idx
           else do
-            rawlen' <- rawlen i
+            rawlen' <- rawlen idx
             if rawlen' > 0
-              then Aeson.Array <$> peek i
+              then Aeson.Array <$> peek idx
               else do
-                isNull <- isLuaNull i
-                if isNull
+                isNull' <- isNull idx
+                if isNull'
                   then return Aeson.Null
-                  else Aeson.Object <$> peek i
+                  else Aeson.Object <$> peek idx
       TypeNil -> return Aeson.Null
-      _    -> Lua.throwException ("Unexpected type: " ++ show ltype')
+      luaType -> Lua.throwException ("Unexpected type: " ++ show luaType)
 
--- | Create a new lua state suitable for use with aeson values. This behaves
--- like @newstate@ in hslua, but initializes the @_NULL@ global. That variable
--- is used to encode null values.
-registerNull :: Lua ()
-registerNull = do
-  createtable 0 0
-  setglobal "_NULL"
+-- | Registry key containing the representation for JSON null values.
+nullRegistryField :: String
+nullRegistryField = "HSLUA_AESON_NULL"
 
--- | Check if the value under the given index is rawequal to @_NULL@.
-isLuaNull :: StackIndex -> Lua Bool
-isLuaNull i = do
-  let i' = if i < 0 then i - 1 else i
-  getglobal "_NULL"
-  rawequal i' (-1) <* pop 1
+-- | Push the value which represents JSON null values to the stack (a specific
+-- empty table by default). Internally, this uses the contents of the
+-- @HSLUA_AESON_NULL@ registry field; modifying this field is possible, but it
+-- must always be non-nil.
+pushNull :: Lua ()
+pushNull = do
+  push nullRegistryField
+  rawget registryindex
+  uninitialized <- isnil stackTop
+  when uninitialized $ do
+    pop 1 -- remove nil
+    newtable
+    pushvalue stackTop
+    setfield registryindex nullRegistryField
+
+-- | Check if the value under the given index represents a @null@ value.
+isNull :: StackIndex -> Lua Bool
+isNull idx = do
+  idx' <- absindex idx
+  pushNull
+  rawequal idx' stackTop <* pop 1
 
 -- | Push a vector unto the stack.
 pushvector :: Pushable a => Vector a -> Lua ()
@@ -131,7 +136,6 @@ tovector = fmap fromList . Lua.peekList
 -- | Push a hashmap unto the stack.
 pushTextHashMap :: (Pushable a, Pushable b) => HashMap a b -> Lua ()
 pushTextHashMap hm = do
-    let xs = HashMap.toList hm
-    let addValue (k, v) = push k *> push v *> rawset (-3)
-    newtable
-    mapM_ addValue xs
+  let addValue (k, v) = push k *> push v *> rawset (-3)
+  newtable
+  mapM_ addValue (HashMap.toList hm)
