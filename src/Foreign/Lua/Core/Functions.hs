@@ -326,6 +326,11 @@ iscfunction n = liftLua $ \l -> fromLuaBool <$> lua_iscfunction l n
 isfunction :: StackIndex -> Lua Bool
 isfunction n = (== TypeFunction) <$> ltype n
 
+-- | Returns @True@ if the value at the given index is an integer (that is, the
+-- value is a number and is represented as an integer), and @False@ otherwise.
+isinteger :: StackIndex -> Lua Bool
+isinteger n = liftLua $ \l -> fromLuaBool <$> lua_isinteger l n
+
 -- | Returns @True@ if the value at the given index is a light userdata, and
 -- @False@ otherwise.
 --

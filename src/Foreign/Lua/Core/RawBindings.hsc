@@ -93,6 +93,10 @@ foreign import capi SAFTY "lua.h lua_checkstack"
 foreign import ccall SAFTY "lua.h lua_isnumber"
   lua_isnumber :: Lua.State -> StackIndex -> IO LuaBool
 
+-- | See <https://www.lua.org/manual/5.3/manual.html#lua_isinteger lua_isinteger>
+foreign import ccall SAFTY "lua.h lua_isinteger"
+  lua_isinteger :: Lua.State -> StackIndex -> IO LuaBool
+
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_isstring lua_isstring>
 foreign import ccall SAFTY "lua.h lua_isstring"
   lua_isstring :: Lua.State -> StackIndex -> IO LuaBool

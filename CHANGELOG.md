@@ -19,16 +19,19 @@
   garbage collected by Lua without having to call back into
   Haskell. The callback into Haskell by the GC had previously
   caused programs to hang in some situations.
-  
+
+- Bindings to more Lua C API functions: `isinteger`, `load`, and
+  `loadbuffer`.
+
 - Any Haskell value can be pushed to the Lua stack as userdata via
   `pushAny` and retrieved via `peekAny`. Additional functions are
   provided to setup the userdata metatable.
-  
+
 - The C preprocessor constants `LUA_LOADED_TABLE` and
   `LUA_PRELOAD_TABLE` are made available as
   `loadedTableRegistryField` and `preloadTableRegistryField`,
   respectively.
-  
+
 - Additional small helper functions:
 
   + `peekRead` -- read value from a string.
@@ -42,7 +45,7 @@
   `Exception`) and the respective infix from functions (`try`, `run`,
   `runWith`, `runEither`). HsLua should be imported qualified to avoid
   name collisions.
-  
+
 - Terminology now consistently uses *exception* to refer to Haskell
   exceptions, and *error* for Lua errors; function names changed
   accordingly (`throwException`, `catchException`,
@@ -58,7 +61,7 @@
 
 - Cabal flag *use-pkgconfig* was renamed to *pkg-config* (which is the
    flag name used by other projects such a zlib).
-    
+
 
 #### Type signatures
 
@@ -226,7 +229,7 @@
 - The signature of `concat` was changed from `Int -> Lua ()` to
   `NumArgs -> Lua ()`.
 - The signature of `loadfile` was changed from `String -> Lua Int` to
-  `String -> Lua Status`. 
+  `String -> Lua Status`.
 - The type `LTYPE` was renamed to `Type`, its constructors were renamed to
   follow the pattern `Type<Typename>`. `LuaRelation` was renamed to
   `RelationalOperator`, the *Lua* prefix was removed from its constructors.
