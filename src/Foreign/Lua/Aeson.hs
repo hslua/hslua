@@ -23,6 +23,9 @@ conventions are used:
 - Arrays are converted to lua tables. Array-length is included as the value at
   index 0. This makes it possible to distinguish between empty arrays and empty
   objects.
+
+- JSON numbers are converted to Lua numbers (usually doubles), which can cause
+  a loss of precision.
 -}
 module Foreign.Lua.Aeson
   ( pushNull

@@ -20,6 +20,8 @@ conventions are used:
   index 0. This makes it possible to distinguish between empty arrays and empty
   objects.
 
+- JSON numbers are converted to Lua numbers (usually doubles), which can cause
+  a loss of precision.
 
 License
 -------
