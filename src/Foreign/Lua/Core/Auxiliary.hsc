@@ -31,7 +31,8 @@ module Foreign.Lua.Core.Auxiliary
 
 import Control.Exception (IOException, try)
 import Data.ByteString (ByteString)
-import Foreign.C (CChar, CInt (CInt), CSize (CSize), CString, withCString)
+import Foreign.C ( CChar, CInt (CInt), CSize (CSize), CString
+                 , withCString, peekCString )
 import Foreign.Lua.Core.Constants (multret, registryindex)
 import Foreign.Lua.Core.Error (hsluaErrorRegistryField, throwTopMessage)
 import Foreign.Lua.Core.Types (Lua, Reference, StackIndex, Status, liftLua)
@@ -40,7 +41,6 @@ import Foreign.Ptr
 import System.IO.Unsafe (unsafePerformIO)
 
 import qualified Data.ByteString as B
-import qualified Foreign.C as C
 import qualified Foreign.Lua.Core.Functions as Lua
 import qualified Foreign.Lua.Core.Types as Lua
 import qualified Foreign.Lua.Utf8 as Utf8
@@ -58,8 +58,7 @@ import qualified Foreign.Storable as Storable
 
 -- | Key, in the registry, for table of loaded modules.
 loadedTableRegistryField :: String
-loadedTableRegistryField =
-  unsafePerformIO (C.peekCString c_loaded_table)
+loadedTableRegistryField = unsafePerformIO (peekCString c_loaded_table)
 {-# NOINLINE loadedTableRegistryField #-}
 
 foreign import capi "lauxlib.h value LUA_LOADED_TABLE"
@@ -67,7 +66,7 @@ foreign import capi "lauxlib.h value LUA_LOADED_TABLE"
 
 -- | Key, in the registry, for table of preloaded loaders.
 preloadTableRegistryField :: String
-preloadTableRegistryField = unsafePerformIO (C.peekCString c_preload_table)
+preloadTableRegistryField = unsafePerformIO (peekCString c_preload_table)
 {-# NOINLINE preloadTableRegistryField #-}
 
 foreign import capi "lauxlib.h value LUA_PRELOAD_TABLE"
