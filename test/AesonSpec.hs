@@ -17,7 +17,7 @@ import Data.HashMap.Lazy (HashMap)
 import Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
 import Data.Text (Text)
 import Data.Vector (Vector)
-import Foreign.Lua
+import Foreign.Lua as Lua
 import Foreign.Lua.Aeson (registerNull)
 import Test.Hspec
 import Test.HUnit
@@ -25,6 +25,7 @@ import Test.QuickCheck
 import Test.QuickCheck.Instances ()
 
 import qualified Data.Aeson as Aeson
+import qualified Data.ByteString.Char8 as Char8
 
 -- | Run this spec.
 main :: IO ()
@@ -32,13 +33,13 @@ main = hspec spec
 
 -- | Specifications for Attributes parsing functions.
 spec :: Spec
-spec = do
+spec =
   describe "Value component" $ do
     describe "Scientific" $ do
       it "can be converted to a lua number" $ property $
         \x -> assert =<< luaTest "type(x) == 'number'" [("x", x::Scientific)]
       it "can be round-tripped through the stack with numbers of double precision" $
-        property $ \x -> assertRoundtripEqual (luaNumberToScientific (LuaNumber x))
+        property $ \x -> assertRoundtripEqual (luaNumberToScientific (Lua.Number x))
       it "can be round-tripped through the stack and stays approximately equal" $
         property $ \x -> assertRoundtripApprox (x :: Scientific)
     describe "Text" $ do
@@ -62,8 +63,8 @@ spec = do
         property $ \x -> assertRoundtripEqual (x::HashMap Text Bool)
       it "can be round-tripped through the stack with Text keys and Vector Bool values" $
         property $ \x -> assertRoundtripEqual (x::HashMap Text (Vector Bool))
-    describe "Value" $ do
-      it "can be round-tripped through the stack" $ property $
+    describe "Value" $
+      it "can be round-tripped through the stack" . property $
         \x -> assertRoundtripEqual (x::Aeson.Value)
 
 assertRoundtripApprox :: Scientific -> IO ()
@@ -73,33 +74,32 @@ assertRoundtripApprox x = do
   let ydouble = toRealFloat y :: Double
   assert (xdouble ~== ydouble)
 
-assertRoundtripEqual :: (Show a, Eq a, ToLuaStack a, FromLuaStack a) => a -> IO ()
+assertRoundtripEqual :: (Show a, Eq a, Pushable a, Peekable a) => a -> IO ()
 assertRoundtripEqual x = do
   y <- roundtrip x
   assert (x == y)
 
-roundtrip :: (ToLuaStack a, FromLuaStack a) => a -> IO a
-roundtrip x = runLua $ do
+roundtrip :: (Pushable a, Peekable a) => a -> IO a
+roundtrip x = run $ do
   registerNull
   push x
   size <- gettop
   when (size /= 1) $
-    error ("not the right amount of elements on the stack: " ++ show size)
+    Prelude.error ("not the right amount of elements on the stack: " ++ show size)
   peek (-1)
 
-luaTest :: ToLuaStack a => String -> [(String, a)] -> IO Bool
-luaTest luaTestCode xs = runLua $ do
+luaTest :: Pushable a => String -> [(String, a)] -> IO Bool
+luaTest luaTestCode xs = run $ do
   openlibs
   registerNull
   forM_ xs $ \(var, value) ->
     push value *> setglobal var
   let luaScript = "function run() return (" ++ luaTestCode ++ ") end"
-  _ <- loadstring luaScript
-  call 0 0
+  _ <- dostring (Char8.pack luaScript)
   callFunc "run"
 
-luaNumberToScientific :: LuaNumber -> Scientific
-luaNumberToScientific = fromFloatDigits . (realToFrac :: LuaNumber -> Double)
+luaNumberToScientific :: Lua.Number -> Scientific
+luaNumberToScientific = fromFloatDigits . (realToFrac :: Lua.Number -> Double)
 
 instance Arbitrary Aeson.Value where
   arbitrary = arbitraryValue 7
@@ -112,7 +112,7 @@ arbitraryValue size = frequency $
     -- range, but only fro the range of nubers that can pass through the lua
     -- stack without rounding errors. Good enough for now, but we still might
     -- want to do better in the future.
-    , (4, Aeson.Number . luaNumberToScientific . LuaNumber <$> arbitrary)
+    , (4, Aeson.Number . luaNumberToScientific . Lua.Number <$> arbitrary)
     , (4, Aeson.String <$> arbitrary)
     , (2, resize (size - 1) $ Aeson.Array <$> arbitrary)
     , (2, resize (size - 1) $ Aeson.Object <$> arbitrary)
