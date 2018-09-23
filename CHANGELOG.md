@@ -4,6 +4,16 @@
 
 #### New features
 
+- Error handling at language borders has been vastly improved and is now
+  mostly automatic. Haskell's `Foreign.Lua.Exception`s are transformed
+  into Lua errors and *vice versa*. Lua-side wrappers are no longer
+  necessary.
+
+- Haskell functions are no longer pushed as userdata by
+  `pushHaskellFunction`, but as C functions. This simplifies tasks where
+  Lua expects true function objects object (for example when looking for
+  module loaders).
+
 - Added stack instance for
 
   + Data.Set.Set,
