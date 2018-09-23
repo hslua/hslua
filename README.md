@@ -1,11 +1,11 @@
-# hslua – Lua interpreter interface for Haskell
+# HsLua – Bindings to Lua, an embeddable scripting language
 
 [![Build Status]](https://travis-ci.org/hslua/hslua)
 [![AppVeyor Status]](https://ci.appveyor.com/project/tarleb/hslua-r2y18)
 [![Hackage]](https://hackage.haskell.org/package/hslua)
 
-Hslua provides bindings, wrappers, types, and helper functions to bridge haskell
-and lua.
+HsLua provides bindings, wrappers, types, and helper functions to bridge
+Haskell and Lua.
 
 [Build Status]: https://travis-ci.org/hslua/hslua.svg?branch=master
 [AppVeyor Status]: https://ci.appveyor.com/api/projects/status/ldutrilgxhpcau94/branch/master?svg=true
