@@ -21,7 +21,7 @@ THE SOFTWARE.
 -}
 {-# LANGUAGE OverloadedStrings #-}
 -- | Tests that lua functions can be called from haskell and vice versa.
-module Foreign.Lua.FunctionCallingTest (tests) where
+module Foreign.Lua.FunctionCallingTests (tests) where
 
 import Control.Monad (forM_)
 import Data.ByteString.Char8 as Char8

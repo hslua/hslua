@@ -21,7 +21,7 @@ THE SOFTWARE.
 -}
 {-| Test that conversions from and to the lua stack are isomorphisms.
 -}
-module Foreign.Lua.TypesTest (tests) where
+module Foreign.Lua.TypesTests (tests) where
 
 import Control.Monad (forM, forM_)
 import Data.ByteString (ByteString)

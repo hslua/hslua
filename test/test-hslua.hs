@@ -21,14 +21,14 @@ THE SOFTWARE.
 -}
 import Test.Tasty (TestTree, defaultMain, testGroup)
 
-import qualified Foreign.LuaTest
-import qualified Foreign.Lua.CoreTest
-import qualified Foreign.Lua.FunctionCallingTest
-import qualified Foreign.Lua.TypesTest
-import qualified Foreign.Lua.Types.PeekableTest
-import qualified Foreign.Lua.Types.PushableTest
+import qualified Foreign.LuaTests
+import qualified Foreign.Lua.CoreTests
+import qualified Foreign.Lua.FunctionCallingTests
+import qualified Foreign.Lua.TypesTests
+import qualified Foreign.Lua.Types.PeekableTests
+import qualified Foreign.Lua.Types.PushableTests
 import qualified Foreign.Lua.UserdataTests
-import qualified Foreign.Lua.UtilTest
+import qualified Foreign.Lua.UtilTests
 
 main :: IO ()
 main = defaultMain $ testGroup "hslua" tests
@@ -36,14 +36,14 @@ main = defaultMain $ testGroup "hslua" tests
 -- | HSpec tests
 tests :: [TestTree]
 tests =
-  [ Foreign.Lua.CoreTest.tests
-  , Foreign.Lua.FunctionCallingTest.tests
-  , Foreign.Lua.UtilTest.tests
+  [ Foreign.Lua.CoreTests.tests
+  , Foreign.Lua.FunctionCallingTests.tests
+  , Foreign.Lua.UtilTests.tests
   , testGroup "Sendings and receiving values from the stack"
-    [ Foreign.Lua.TypesTest.tests
-    , Foreign.Lua.Types.PeekableTest.tests
-    , Foreign.Lua.Types.PushableTest.tests
+    [ Foreign.Lua.TypesTests.tests
+    , Foreign.Lua.Types.PeekableTests.tests
+    , Foreign.Lua.Types.PushableTests.tests
     ]
   , Foreign.Lua.UserdataTests.tests
-  , Foreign.LuaTest.tests
+  , Foreign.LuaTests.tests
   ]

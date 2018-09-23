@@ -21,7 +21,7 @@ THE SOFTWARE.
 -}
 {-# LANGUAGE OverloadedStrings #-}
 {-|
-Module      :  Foreign.Lua.Types.PushableTest
+Module      :  Foreign.Lua.Types.PushableTests
 Copyright   :  © 2017-2018 Albert Krewinkel
 License     :  MIT
 
@@ -31,7 +31,7 @@ Portability :  portable
 
 Test for the interoperability between haskell and lua.
 -}
-module Foreign.Lua.Types.PushableTest (tests) where
+module Foreign.Lua.Types.PushableTests (tests) where
 
 import Data.ByteString (ByteString)
 import Foreign.Lua (Pushable (push), gettop, equal, nthFromTop)

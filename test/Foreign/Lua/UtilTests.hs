@@ -22,7 +22,7 @@ THE SOFTWARE.
 {-# LANGUAGE OverloadedStrings #-}
 {-| Tests for utility types and functions
 -}
-module Foreign.Lua.UtilTest (tests) where
+module Foreign.Lua.UtilTests (tests) where
 
 import Data.Either (isLeft, isRight)
 import Foreign.Lua

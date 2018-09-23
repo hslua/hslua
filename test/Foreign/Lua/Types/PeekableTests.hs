@@ -21,7 +21,7 @@ THE SOFTWARE.
 -}
 {-# LANGUAGE OverloadedStrings #-}
 {-|
-Module      :  Foreign.Lua.Types.PeekableTest
+Module      :  Foreign.Lua.Types.PeekableTests
 Copyright   :  © 2017-2018 Albert Krewinkel
 License     :  MIT
 
@@ -31,7 +31,7 @@ Portability :  portable
 
 Test for the conversion of lua values to haskell values.
 -}
-module Foreign.Lua.Types.PeekableTest (tests) where
+module Foreign.Lua.Types.PeekableTests (tests) where
 
 import Data.ByteString (ByteString)
 import Foreign.Lua as Lua

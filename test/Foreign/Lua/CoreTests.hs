@@ -22,7 +22,7 @@ THE SOFTWARE.
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
 {-|
-Module      :  Foreign.Lua.CoreTest
+Module      :  Foreign.Lua.CoreTests
 Copyright   :  © 2017-2018 Albert Krewinkel
 License     :  MIT
 
@@ -32,7 +32,7 @@ Portability :  portable
 
 Tests for Lua C API-like functions.
 -}
-module Foreign.Lua.CoreTest (tests) where
+module Foreign.Lua.CoreTests (tests) where
 
 import Prelude hiding (compare)
 
