@@ -1,6 +1,6 @@
 # Revision history for hslua-module-text
 
-## 0.2.0 -- unreleased
+## 0.2.0 -- 2018-09-24
 
 - Use hslua 1.0.
 
