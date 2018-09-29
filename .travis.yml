@@ -26,6 +26,10 @@ matrix:
     - env: GHCVER=8.4.2 LUAVER=default CABALVER=2.0
       compiler: ": #GHC 8.4.2"
       addons: {apt: {packages: [cabal-install-2.0,ghc-8.4.2], sources: [hvr-ghc]}}
+    # Test GHC 8.6
+    - env: GHCVER=8.6.1 LUAVER=default CABALVER=2.0
+      compiler: ": #GHC 8.6.1"
+      addons: {apt: {packages: [cabal-install-2.0,ghc-8.6.1], sources: [hvr-ghc]}}
 
     ## Test system Lua
     # Test system Lua 5.3
