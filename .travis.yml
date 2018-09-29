@@ -22,10 +22,10 @@ matrix:
     - env: GHCVER=8.2.2 LUAVER=default CABALVER=2.0
       compiler: ": #GHC 8.2.2"
       addons: {apt: {packages: [cabal-install-2.0,ghc-8.2.2], sources: [hvr-ghc]}}
-    # Test GHC 8.4.2
-    - env: GHCVER=8.4.2 LUAVER=default CABALVER=2.0
-      compiler: ": #GHC 8.4.2"
-      addons: {apt: {packages: [cabal-install-2.0,ghc-8.4.2], sources: [hvr-ghc]}}
+    # Test GHC 8.4.3
+    - env: GHCVER=8.4.3 LUAVER=default CABALVER=2.0
+      compiler: ": #GHC 8.4.3"
+      addons: {apt: {packages: [cabal-install-2.0,ghc-8.4.3], sources: [hvr-ghc]}}
     # Test GHC 8.6
     - env: GHCVER=8.6.1 LUAVER=default CABALVER=2.0
       compiler: ": #GHC 8.6.1"
@@ -33,9 +33,9 @@ matrix:
 
     ## Test system Lua
     # Test system Lua 5.3
-    - env: GHCVER=8.4.2 LUAVER=lua-5.3.5 CABALVER=2.0
-      compiler: ": #GHC 8.4.2"
-      addons: {apt: {packages: [cabal-install-2.0,ghc-8.4.2], sources: [hvr-ghc]}}
+    - env: GHCVER=8.4.3 LUAVER=lua-5.3.5 CABALVER=2.0
+      compiler: ": #GHC 8.4.3"
+      addons: {apt: {packages: [cabal-install-2.0,ghc-8.4.3], sources: [hvr-ghc]}}
 
   # mark build as successful as soon as all required successes are in.
   fast_finish: true
