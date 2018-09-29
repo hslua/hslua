@@ -1,5 +1,10 @@
 ## Changelog
 
+### 1.0.1 (unreleased)
+
+- Fixed tests for GHC 8.6 by no longer depending on failable pattern
+  matching.
+
 ### 1.0.0
 
 #### New features
