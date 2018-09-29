@@ -37,6 +37,7 @@ module Foreign.Lua.CoreTests (tests) where
 import Prelude hiding (compare)
 
 import Control.Monad (forM_)
+import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Foreign.Lua as Lua
 import Test.HsLua.Arbitrary ()
@@ -225,7 +226,8 @@ tests = testGroup "Core module"
         getglobal "coroutine"
         getfield stackTop "resume"
         pushLuaExpr "coroutine.create(function() coroutine.yield(9) end)"
-        (Just contThread) <- tothread stackTop
+        contThread <- fromMaybe (Prelude.error "not a thread at top of stack")
+                      <$> tothread stackTop
         call 1 0
         liftIO $ runWith contThread status
     ]
