@@ -149,6 +149,7 @@ module Foreign.Lua.Core (
   -- * Auxiliary library
   , dostring
   , dofile
+  , getmetatable'
   , getsubtable
   , newmetatable
   , tostring'

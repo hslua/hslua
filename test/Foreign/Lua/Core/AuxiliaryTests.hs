@@ -36,6 +36,24 @@ tests = testGroup "Auxiliary"
 
     ]
 
+  , testGroup "getmetatable'"
+    [ "gets table created with newmetatable" =:
+      [("__name" :: String, "testing" :: String)] `shouldBeResultOf` do
+        Lua.newmetatable "testing" *> Lua.pop 1
+        _ <- Lua.getmetatable' "testing"
+        Lua.peekKeyValuePairs Lua.stackTop
+
+    , "returns nil if there is no such metatable" =:
+      Lua.TypeNil `shouldBeResultOf` do
+        _ <- Lua.getmetatable' "nope"
+        Lua.ltype Lua.stackTop
+
+    , "returns TypeTable if metatable exists" =:
+      Lua.TypeTable `shouldBeResultOf` do
+        _ <- Lua.newmetatable "yep"
+        Lua.getmetatable' "yep"
+    ]
+
   , "loadedTable" =: ("_LOADED" @=? Lua.loadedTableRegistryField)
   , "preloadTable" =: ("_PRELOAD" @=? Lua.preloadTableRegistryField)
   ]

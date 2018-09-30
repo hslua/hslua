@@ -14,6 +14,7 @@ Wrappers for the auxiliary library.
 module Foreign.Lua.Core.Auxiliary
   ( dostring
   , dofile
+  , getmetatable'
   , getsubtable
   , loadbuffer
   , loadfile
@@ -94,6 +95,17 @@ dofile fp = do
   if loadRes == Lua.OK
     then Lua.pcall 0 multret Nothing
     else return loadRes
+
+-- | Pushes onto the stack the metatable associated with name @tname@ in the
+-- registry (see @newmetatable@) (@nil@ if there is no metatable associated
+-- with that name). Returns the type of the pushed value.
+getmetatable' :: String -- ^ tname
+              -> Lua Lua.Type
+getmetatable' tname = liftLua $ \l ->
+  withCString tname $ fmap Lua.toType . luaL_getmetatable l
+
+foreign import capi SAFTY "lauxlib.h luaL_getmetatable"
+  luaL_getmetatable :: Lua.State -> CString -> IO Lua.TypeCode
 
 -- | Push referenced value from the table at the given index.
 getref :: StackIndex -> Reference -> Lua ()
