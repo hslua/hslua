@@ -14,6 +14,7 @@ Wrappers for the auxiliary library.
 module Foreign.Lua.Core.Auxiliary
   ( dostring
   , dofile
+  , getsubtable
   , loadbuffer
   , loadfile
   , loadstring
@@ -97,6 +98,25 @@ dofile fp = do
 -- | Push referenced value from the table at the given index.
 getref :: StackIndex -> Reference -> Lua ()
 getref idx ref' = Lua.rawgeti idx (fromIntegral (Lua.fromReference ref'))
+
+-- | Ensures that the value @t[fname]@, where @t@ is the value at index @idx@,
+-- is a table, and pushes that table onto the stack. Returns True if it finds a
+-- previous table there and False if it creates a new table.
+getsubtable :: StackIndex -> String -> Lua Bool
+getsubtable idx fname = do
+  -- This is a reimplementation of luaL_getsubtable from lauxlib.c.
+  idx' <- Lua.absindex idx
+  Lua.pushstring (Utf8.fromString fname)
+  Lua.gettable idx'
+  isTbl <- Lua.istable Lua.stackTop
+  if isTbl
+    then return True
+    else do
+      Lua.pop 1
+      Lua.newtable
+      Lua.pushvalue Lua.stackTop -- copy to be left at top
+      Lua.setfield idx' fname
+      return False
 
 -- | Loads a ByteString as a Lua chunk.
 --
