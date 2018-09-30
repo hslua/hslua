@@ -151,6 +151,7 @@ module Foreign.Lua.Core (
   , dofile
   , newmetatable
   , tostring'
+  , traceback
   -- ** References
   , Reference (..)
   , ref

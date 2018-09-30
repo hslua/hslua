@@ -20,6 +20,7 @@ module Foreign.Lua.Core.Auxiliary
   , newmetatable
   , newstate
   , tostring'
+  , traceback
   -- * References
   , getref
   , ref
@@ -238,6 +239,20 @@ tostring' n = liftLua $ \l -> alloca $ \lenPtr -> do
 
 foreign import ccall safe "error-conversion.h hsluaL_tolstring"
   hsluaL_tolstring :: Lua.State -> StackIndex -> Ptr CSize -> IO (Ptr CChar)
+
+
+-- | Creates and pushes a traceback of the stack L1. If a message is given it
+-- appended at the beginning of the traceback. The level parameter tells at
+-- which level to start the traceback.
+traceback :: Lua.State -> Maybe String -> Int -> Lua ()
+traceback l1 msg level = liftLua $ \l ->
+  case msg of
+    Nothing -> luaL_traceback l l1 nullPtr (fromIntegral level)
+    Just msg' -> withCString msg' $ \cstr ->
+      luaL_traceback l l1 cstr (fromIntegral level)
+
+foreign import capi unsafe "lauxlib.h luaL_traceback"
+  luaL_traceback :: Lua.State -> Lua.State -> CString -> CInt -> IO ()
 
 
 -- | Releases reference @'ref'@ from the table at index @idx@ (see @'ref'@). The
