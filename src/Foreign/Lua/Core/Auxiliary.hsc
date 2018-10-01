@@ -14,6 +14,7 @@ Wrappers for the auxiliary library.
 module Foreign.Lua.Core.Auxiliary
   ( dostring
   , dofile
+  , getmetafield
   , getmetatable'
   , getsubtable
   , loadbuffer
@@ -95,6 +96,19 @@ dofile fp = do
   if loadRes == Lua.OK
     then Lua.pcall 0 multret Nothing
     else return loadRes
+
+-- | Pushes onto the stack the field @e@ from the metatable of the object at
+-- index @obj@ and returns the type of the pushed value. If the object does not
+-- have a metatable, or if the metatable does not have this field, pushes
+-- nothing and returns TypeNil.
+getmetafield :: StackIndex -- ^ obj
+             -> String     -- ^ e
+             -> Lua Lua.Type
+getmetafield obj e = liftLua $ \l ->
+  withCString e $ fmap Lua.toType . luaL_getmetafield l obj
+
+foreign import capi SAFTY "lauxlib.h luaL_getmetafield"
+  luaL_getmetafield :: Lua.State -> StackIndex -> CString -> IO Lua.TypeCode
 
 -- | Pushes onto the stack the metatable associated with name @tname@ in the
 -- registry (see @newmetatable@) (@nil@ if there is no metatable associated

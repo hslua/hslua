@@ -36,6 +36,21 @@ tests = testGroup "Auxiliary"
 
     ]
 
+  , testGroup "getmetafield'"
+    [ "gets field from the object's metatable" =:
+      ("testing" :: String) `shouldBeResultOf` do
+        Lua.newtable
+        pushLuaExpr "{foo = 'testing'}"
+        Lua.setmetatable (Lua.nthFromTop 2)
+        _ <- Lua.getmetafield Lua.stackTop "foo"
+        Lua.peek Lua.stackTop
+
+    , "returns TypeNil if the object doesn't have a metatable" =:
+      Lua.TypeNil `shouldBeResultOf` do
+        Lua.newtable
+        Lua.getmetafield Lua.stackTop "foo"
+    ]
+
   , testGroup "getmetatable'"
     [ "gets table created with newmetatable" =:
       [("__name" :: String, "testing" :: String)] `shouldBeResultOf` do
