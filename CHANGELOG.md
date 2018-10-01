@@ -1,9 +1,21 @@
 ## Changelog
 
-### 1.0.1 (unreleased)
+### 1.0.1
+
+- Exposed more functions from Lua's `lauxlib` library:
+
+  + `getmetafield`,
+  + `getmetatable'`,
+  + `getsubtable`, and
+  + `traceback`.
+
+  The function `getsubtable` is a reimplementation instead of a wrapper
+  to the C function for simplicity (thereby avoiding additional C
+  wrappers).
 
 - Fixed tests for GHC 8.6 by no longer depending on failable pattern
   matching.
+
 
 ### 1.0.0
 
