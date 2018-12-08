@@ -73,8 +73,19 @@ instance (Peekable a, ToHaskellFunction b) =>
 --   * return type is @Lua a@, where @a@ is an instance of
 --     @'Pushable'@
 --
--- Any Haskell exception will be converted to a string and returned
+-- Any @'Lua.Exception'@ will be converted to a string and returned
 -- as Lua error.
+--
+-- /Important/: this does __not__ catch exceptions other than
+-- @'Lua.Exception'@; exception handling must be done by the converted
+-- Haskell function. Failure to do so will cause the program to crash.
+--
+-- E.g., the following code could be used to handle an Exception of type
+-- FooException, if that type is an instance of @'MonadCatch'@ and
+-- @'Pushable'@:
+--
+-- > toHaskellFunction (myFun `catchM` (\e -> raiseError (e :: FooException)))
+--
 toHaskellFunction :: ToHaskellFunction a => a -> HaskellFunction
 toHaskellFunction a = toHsFun 1 a `catchException` \(Lua.Exception msg) ->
   raiseError ("Error during function call: " <> msg)
