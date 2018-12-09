@@ -58,11 +58,11 @@ tests = testGroup "Utilities"
   , testGroup "runEither"
     [ "Lua errors are caught" =:
       isLeft `shouldHoldForResultOf`
-        liftIO (runEither (push True *> peek (-1) :: Lua String))
+        liftIO (runEither' (push True *> peek (-1) :: Lua String))
 
     , "error-less code gives 'Right'" =:
       isRight `shouldHoldForResultOf`
-        liftIO (runEither (push True *> peek (-1) :: Lua Bool))
+        liftIO (runEither' (push True *> peek (-1) :: Lua Bool))
     ]
 
   , testGroup "peekEither"
@@ -105,3 +105,7 @@ tests = testGroup "Utilities"
         return (p1 == p2)
     ]
   ]
+
+
+runEither' :: Lua a -> IO (Either Lua.Exception a)
+runEither' = runEither

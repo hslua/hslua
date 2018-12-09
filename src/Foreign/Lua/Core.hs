@@ -16,9 +16,14 @@ not caught and will cause the host program to terminate.
 module Foreign.Lua.Core (
   -- * Lua Computations
     Lua (..)
-  , runWith
+  , runWithConverter
+  , unsafeRunWith
   , liftIO
   , state
+  , LuaEnvironment (..)
+  , ErrorConversion (..)
+  , errorConversion
+  , unsafeErrorConversion
   -- * Lua API types
   , CFunction
   , Lua.Integer (..)
@@ -173,7 +178,11 @@ module Foreign.Lua.Core (
   , catchException
   , withExceptionMessage
   , try
+  , throwMessage
+  , errorMessage
+  , throwErrorAsException
   , throwTopMessage
+  , throwTopMessageWithState
   ) where
 
 import Prelude hiding (EQ, LT, compare, concat, error)

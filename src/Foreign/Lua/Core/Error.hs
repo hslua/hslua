@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveDataTypeable         #-}
 {-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE ScopedTypeVariables        #-}
 {-# OPTIONS_GHC -fno-warn-orphans       #-}
 {-|
 Module      : Foreign.Lua.Core.Error
@@ -16,12 +17,16 @@ module Foreign.Lua.Core.Error
   , catchException
   , throwException
   , withExceptionMessage
+  , throwErrorAsException
   , throwTopMessage
+  , throwTopMessageWithState
+  , errorMessage
   , try
     -- * Helpers for hslua C wrapper functions.
   , Failable (..)
   , fromFailable
   , throwOnError
+  , throwMessage
   , boolFromFailable
     -- * Signaling errors to Lua
   , hsluaErrorRegistryField
@@ -29,7 +34,7 @@ module Foreign.Lua.Core.Error
 
 import Control.Applicative (Alternative (..))
 import Data.Typeable (Typeable)
-import Foreign.C (CChar, CInt (CInt), CSize)
+import Foreign.C (CChar, CInt (CInt), CSize (CSize))
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr (Ptr, nullPtr)
 import Foreign.Lua.Core.Types (Lua, StackIndex, fromLuaBool)
@@ -38,6 +43,7 @@ import qualified Control.Exception as E
 import qualified Control.Monad.Catch as Catch
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as Char8
+import qualified Data.ByteString.Unsafe as B
 import qualified Foreign.Storable as Storable
 import qualified Foreign.Lua.Core.Types as Lua
 import qualified Foreign.Lua.Utf8 as Utf8
@@ -73,17 +79,43 @@ try :: Lua a -> Lua (Either Exception a)
 try = Catch.try
 {-# INLINABLE try #-}
 
-instance Alternative Lua where
-  empty = throwException "empty"
-  x <|> y = either (const y) return =<< try x
-
--- | Convert the object at the top of the stack into a string and throw it as
--- an @'Exception'@.
-throwTopMessage :: Lua a
-throwTopMessage = do
+-- | Convert a Lua error into a Haskell exception. The error message is
+-- expected to be at the top of the stack.
+throwErrorAsException :: Lua a
+throwErrorAsException = do
+  f <- Lua.errorToException <$> Lua.errorConversion
   l <- Lua.state
+  Lua.liftIO (f l)
+
+-- | Alias for `throwErrorAsException`; will be deprecated in the next
+-- mayor release.
+throwTopMessage :: Lua a
+throwTopMessage = throwErrorAsException
+
+instance Alternative Lua where
+  empty = throwMessage "empty"
+  x <|> y = do
+    alt <- Lua.alternative <$> Lua.errorConversion
+    x `alt` y
+
+-- | Convert the object at the top of the stack into a string and throw
+-- it as a HsLua @'Exception'@.
+--
+-- This function serves as the default to convert Lua errors to Haskell
+-- exceptions.
+throwTopMessageWithState :: Lua.State -> IO a
+throwTopMessageWithState l = do
   msg <- Lua.liftIO (errorMessage l)
-  throwException (Utf8.toString msg)
+  Catch.throwM $ Exception (Utf8.toString msg)
+
+-- | Helper function which uses proper error-handling to throw an
+-- exception with the given message.
+throwMessage :: String -> Lua a
+throwMessage msg = do
+  Lua.liftLua $ \l ->
+    B.unsafeUseAsCStringLen (Utf8.fromString msg) $ \(msgPtr, z) ->
+      lua_pushlstring l msgPtr (fromIntegral z)
+  Lua.errorConversion >>= Lua.liftLua . Lua.errorToException
 
 -- | Retrieve and pop the top object as an error message. This is very similar
 -- to tostring', but ensures that we don't recurse if getting the message
@@ -105,6 +137,9 @@ foreign import ccall safe "error-conversion.h hsluaL_tolstring"
 
 foreign import capi unsafe "lua.h lua_pop"
   lua_pop :: Lua.State -> CInt -> IO ()
+
+foreign import capi unsafe "lua.h lua_pushlstring"
+  lua_pushlstring :: Lua.State -> Ptr CChar -> CSize -> IO ()
 
 -- | Registry field under which the special HsLua error indicator is stored.
 hsluaErrorRegistryField :: String

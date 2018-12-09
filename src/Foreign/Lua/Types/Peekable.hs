@@ -64,7 +64,7 @@ mismatchError expected idx = do
   actualValue <- Utf8.toString <$> tostring' idx <* pop 1
   let msg = "expected " <> expected <> ", got '" <>
             actualValue <> "' (" <> actualType <> ")"
-  Lua.throwException msg
+  Lua.throwMessage msg
 
 -- | A value that can be read from the Lua stack.
 class Peekable a where
@@ -191,8 +191,11 @@ nextPair idx = do
             -- removes the value, keeps the key
     else return Nothing
 
+-- | Specify a name for the context in which a computation is run. The name is
+-- added to the error message in case of an exception.
 inContext :: String -> Lua a -> Lua a
-inContext ctx = Lua.withExceptionMessage (ctx <>)
+inContext ctx op = Lua.errorConversion >>= \ec ->
+  Lua.addContextToException ec ctx op
 
 --
 -- Tuples

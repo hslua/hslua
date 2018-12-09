@@ -14,10 +14,13 @@ module Foreign.Lua.Util
   ( getglobal'
   , setglobal'
   , run
+  , run'
   , runEither
   , raiseError
   , Optional (Optional, fromOptional)
-  -- * getting values
+    -- * Default error handling
+  , runWith
+    -- * getting values
   , peekEither
   , peekRead
   , popValue
@@ -38,13 +41,39 @@ import qualified Foreign.Lua.Types as Lua
 -- All exceptions are passed through; error handling is the responsibility of
 -- the caller.
 run :: Lua a -> IO a
-run = (Lua.newstate `bracket` Lua.close) . flip Lua.runWith . Catch.mask_
+run = (Lua.newstate `bracket` Lua.close) . flip runWith . Catch.mask_
+
+-- | Run Lua computation using the default HsLua state as starting point.
+-- Conversion from Lua errors to Haskell exceptions can be controlled through
+-- @'Lua.ErrorConversion'@.
+run' :: Lua.ErrorConversion -> Lua a -> IO a
+run' ec = (Lua.newstate `bracket` Lua.close) .
+  flip (Lua.runWithConverter ec) . Catch.mask_
 
 -- | Run the given Lua computation; exceptions raised in haskell code are
 -- caught, but other exceptions (user exceptions raised in haskell, unchecked
 -- type errors, etc.) are passed through.
-runEither :: Lua a -> IO (Either Lua.Exception a)
+runEither :: Catch.Exception e => Lua a -> IO (Either e a)
 runEither = try . run
+
+-- | Run Lua computation with the given Lua state and the default
+-- error-to-exception converter (@'throwTopStringAsException'@). Exception
+-- handling is left to the caller.
+runWith :: Lua.State -> Lua a -> IO a
+runWith = Lua.runWithConverter defaultErrorConversion
+
+-- | Conversions between Lua errors and Haskell exceptions; only deals with
+-- @'Lua.Exception'@s.
+defaultErrorConversion :: Lua.ErrorConversion
+defaultErrorConversion = Lua.ErrorConversion
+  { Lua.errorToException = Lua.throwTopMessageWithState
+  , Lua.addContextToException = Lua.withExceptionMessage . (++)
+  , Lua.alternative = \x y -> Lua.try x >>= \case
+      Left _   -> y
+      Right x' -> return x'
+  , Lua.exceptionToError = (`Lua.catchException` \ (Lua.Exception msg) ->
+                            raiseError msg)
+  }
 
 -- | Like @getglobal@, but knows about packages and nested tables. E.g.
 --
@@ -126,6 +155,8 @@ peekRead idx = do
 
 -- | Try to convert the value at the given stack index to a Haskell value.
 -- Returns @Left@ with an error message on failure.
+--
+-- WARNING: this is not save to use with custom error handling!
 peekEither :: Peekable a => StackIndex -> Lua (Either String a)
 peekEither idx = either (Left . Lua.exceptionMessage) Right <$>
                  Lua.try (Lua.peek idx)

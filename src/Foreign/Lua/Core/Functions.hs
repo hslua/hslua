@@ -39,7 +39,8 @@ import qualified Foreign.Storable as F
 -- Helper functions
 --
 
--- | Execute an action only if the given index is a table. Throw an error otherwise.
+-- | Execute an action only if the given index is a table. Throw an
+-- error otherwise.
 ensureTable :: StackIndex -> (Lua.State -> IO ()) -> Lua ()
 ensureTable idx ioOp = do
   isTbl <- istable idx
@@ -47,7 +48,7 @@ ensureTable idx ioOp = do
     then liftLua ioOp
     else do
       tyName <- ltype idx >>= typename
-      throwException ("table expected, got " <> tyName)
+      throwMessage ("table expected, got " <> tyName)
 
 --
 -- API functions

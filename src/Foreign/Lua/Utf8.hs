@@ -40,5 +40,3 @@ fromString = TextEncoding.encodeUtf8 . T.pack
 fromText :: Text -> ByteString
 fromText = TextEncoding.encodeUtf8
 {-# INLINABLE fromText #-}
-
-    -- Text.unpack (Encoding.decodeUtf8With TextError.lenientDecode msg)

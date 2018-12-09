@@ -38,7 +38,7 @@ import Control.Exception (IOException, try)
 import Data.ByteString (ByteString)
 import Foreign.C ( CChar, CInt (CInt), CSize (CSize), CString, withCString )
 import Foreign.Lua.Core.Constants (multret, registryindex)
-import Foreign.Lua.Core.Error (hsluaErrorRegistryField, throwTopMessage)
+import Foreign.Lua.Core.Error (hsluaErrorRegistryField)
 import Foreign.Lua.Core.Types (Lua, Reference, StackIndex, Status, liftLua)
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
@@ -249,7 +249,7 @@ foreign import ccall SAFTY "lauxlib.h luaL_newmetatable"
 newstate :: IO Lua.State
 newstate = do
   l <- luaL_newstate
-  Lua.runWith l $ do
+  Lua.unsafeRunWith l $ do
     Lua.createtable 0 0
     Lua.setfield registryindex hsluaErrorRegistryField
     return l
@@ -287,13 +287,16 @@ foreign import ccall SAFTY "lauxlib.h luaL_ref"
 -- calls the corresponding metamethod with the value as argument, and uses the
 -- result of the call as its result.
 tostring' :: StackIndex -> Lua B.ByteString
-tostring' n = liftLua $ \l -> alloca $ \lenPtr -> do
-  cstr <- hsluaL_tolstring l n lenPtr
-  if cstr == nullPtr
-    then Lua.runWith l throwTopMessage
-    else do
-      cstrLen <- Storable.peek lenPtr
-      B.packCStringLen (cstr, fromIntegral cstrLen)
+tostring' n = do
+  l <- Lua.state
+  e2e <- Lua.errorToException <$> Lua.errorConversion
+  Lua.liftIO $ alloca $ \lenPtr -> do
+    cstr <- hsluaL_tolstring l n lenPtr
+    if cstr == nullPtr
+      then e2e l
+      else do
+        cstrLen <- Storable.peek lenPtr
+        B.packCStringLen (cstr, fromIntegral cstrLen)
 
 foreign import ccall safe "error-conversion.h hsluaL_tolstring"
   hsluaL_tolstring :: Lua.State -> StackIndex -> Ptr CSize -> IO (Ptr CChar)

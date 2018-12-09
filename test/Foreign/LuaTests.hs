@@ -19,24 +19,31 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-| Tests for HsLua -}
 module Foreign.LuaTests (tests) where
 
 import Prelude hiding (concat)
 
+import Control.Applicative (Alternative (..))
 import Data.ByteString (ByteString)
+import Data.Data (Typeable)
 import Data.Either (isLeft)
 import Foreign.Lua as Lua
 import System.Mem (performMajorGC)
 import Test.HsLua.Util ( (=:), (?:), pushLuaExpr, shouldBeErrorMessageOf
                        , shouldHoldForResultOf)
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit (assertBool, assertEqual, testCase)
+import Test.Tasty.HUnit ((@?=), assertBool, assertEqual, testCase)
 
+import qualified Control.Monad.Catch as Catch
 import qualified Data.ByteString.Char8 as Char8
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
+import qualified Foreign.Lua.Utf8 as Utf8
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
@@ -135,7 +142,8 @@ tests = testGroup "lua integration tests"
               then peek (-1)
               else throwException "Error in words function."
       in assertEqual "greeting function failed"
-          (Right ["Caffeine", "induced", "nonsense"]) =<< runEither comp
+          (Right ["Caffeine", "induced", "nonsense"])
+          =<< (runEither comp :: IO (Either Lua.Exception [String]))
 
     , testCase "pushing a C closure to and calling it from Lua" $
       -- Closures would usually be defined on the Haskell side, unless the
@@ -156,7 +164,7 @@ tests = testGroup "lua integration tests"
             peek (-1)
 
       in assertEqual "greeting function failed" (Right "Hello, World!") =<<
-         runEither comp
+         (runEither comp :: IO (Either Lua.Exception String))
     ]
 
   , testGroup "error handling"
@@ -172,13 +180,97 @@ tests = testGroup "lua integration tests"
       `shouldBeErrorMessageOf` do
         openbase
         loadstring "return error('error message')" *> call 0 1
+
+    , let errTbl ="setmetatable({}, {__index = function(t, k) error(k) end})"
+      in testGroup "error conversion"
+      [ "throw custom exceptions" =: do
+          let comp = do
+                openlibs
+                pushLuaExpr errTbl
+                pushnumber 23
+                gettable (Lua.nthFromTop 2) :: Lua ()
+          result <- tryCustom comp
+          result @?= Left (ExceptionWithNumber 23)
+
+      , "catch custom exception in exposed function" =: do
+          let frob n = do
+                pushLuaExpr errTbl
+                pushnumber n
+                gettable (Lua.nthFromTop 2) :: Lua ()
+          result <- tryCustom $ do
+            openlibs
+            registerHaskellFunction "frob" frob
+            callFunc "frob" (Lua.Number 42) :: Lua ()
+          result @?= Left (ExceptionWithNumber 42)
+
+      , "pass exception through Lua" =: do
+          let frob = Catch.throwM (ExceptionWithMessage "borked") :: Lua ()
+          result <- tryCustom $ do
+            pushHaskellFunction frob
+            call 0 1
+          result @?= Left (ExceptionWithMessage "borked")
+
+      , "failing peek" =: do
+          let msg = "expected integer, got '1.1' (number)"
+          result <- tryCustom $ do
+            pushnumber 1.1
+            peek stackTop :: Lua Lua.Integer
+          result @?= Left (ExceptionWithMessage msg)
+
+      , "alternative" =: do
+          result <- tryCustom $ do
+            pushstring "NaN"
+            pushnumber 13.37
+            (<|>) (peek (nthFromTop 2) :: Lua Number)
+                  (peek stackTop :: Lua Number)
+          result @?= Right 13.37
+      ]
     ]
   ]
 
---------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 -- luaopen_* functions
 
 testOpen :: String -> Lua () -> TestTree
 testOpen lib openfn = testCase ("open" ++ lib) $
   assertBool "opening the library failed" =<<
   run (openfn *> istable (-1))
+
+
+-------------------------------------------------------------------------------
+-- Custom exception handling
+
+data CustomException =
+    ExceptionWithNumber Lua.Number
+  | ExceptionWithMessage String
+  deriving (Eq, Show, Typeable)
+
+instance Catch.Exception CustomException
+
+customErrorConversion :: Lua.ErrorConversion
+customErrorConversion = Lua.ErrorConversion
+  { errorToException = errorToCustomException
+  , addContextToException = const id
+  , alternative = customAlternative
+  , exceptionToError = flip Catch.catch $ \case
+      ExceptionWithMessage m -> raiseError (Utf8.fromString m)
+      ExceptionWithNumber n  -> raiseError n
+  }
+
+errorToCustomException :: Lua.State -> IO a
+errorToCustomException l = Lua.unsafeRunWith l $
+  Lua.tonumber Lua.stackTop >>= \case
+    Just num -> do
+      Lua.pop 1
+      Catch.throwM (ExceptionWithNumber num)
+    _        -> do
+      msg <- Lua.liftIO (Lua.errorMessage l)
+      Catch.throwM (ExceptionWithMessage (Utf8.toString msg))
+
+tryCustom :: Lua a -> IO (Either CustomException a)
+tryCustom = Catch.try . Lua.run' customErrorConversion
+
+customAlternative :: Lua a -> Lua a -> Lua a
+customAlternative x y = Catch.try x >>= \case
+  Left (_ :: CustomException) -> y
+  Right x' -> return x'
