@@ -52,6 +52,10 @@ module Foreign.Lua.Core.Types
   , toReference
   ) where
 
+#include "lua.h"
+-- required only for LUA_ERRFILE
+#include "lauxlib.h"
+
 import Prelude hiding (Integer, EQ, LT)
 
 import Control.Monad.Catch (MonadCatch, MonadMask, MonadThrow)
@@ -61,10 +65,6 @@ import Foreign.C (CChar, CInt, CSize)
 import Foreign.Ptr (FunPtr, Ptr)
 import Foreign.Storable (Storable)
 import GHC.Generics (Generic)
-
-#include "lua.h"
--- required only for LUA_ERRFILE
-#include "lauxlib.h"
 
 -- | A Lua computation. This is the base type used to run Lua programs of any
 -- kind. The Lua state is handled automatically, but can be retrieved via
