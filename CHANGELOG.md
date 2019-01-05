@@ -1,5 +1,21 @@
 ## Changelog
 
+### 1.0.2
+
+Released 2019-01-05.
+
+- Fixed cross-compilation: placement of C import declarations
+  were fixed, thereby resolving issues with cross-compilation.
+  (Vanessa McHale and Faraz Maleknia)
+
+- Added .gitattributes file, fixing the wrong language
+  classification of the GitHub repository. (Vanessa McHale)
+
+- Improved `toHaskellFunction` documentation. The documentation
+  is now more specific on which Haskell exceptions are caught and
+  which will lead to crashes.
+
+
 ### 1.0.1
 
 - Exposed more functions from Lua's `lauxlib` library:
