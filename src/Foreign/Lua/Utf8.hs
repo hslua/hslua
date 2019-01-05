@@ -1,6 +1,6 @@
 {-|
 Module      : Foreign.Lua.Utf8
-Copyright   : © 2018 Albert Krewinkel
+Copyright   : © 2018-2019 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta

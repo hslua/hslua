@@ -1,5 +1,5 @@
 {-
-Copyright © 2017-2018 Albert Krewinkel
+Copyright © 2017-2019 Albert Krewinkel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@ THE SOFTWARE.
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
 {-|
 Module      :  Foreign.Lua.CoreTests
-Copyright   :  © 2017-2018 Albert Krewinkel
+Copyright   :  © 2017-2019 Albert Krewinkel
 License     :  MIT
 
 Maintainer  :  Albert Krewinkel <tarleb+hslua@zeitkraut.de>

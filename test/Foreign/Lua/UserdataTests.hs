@@ -1,5 +1,5 @@
 {-
-Copyright © 2018 Albert Krewinkel
+Copyright © 2018-2019 Albert Krewinkel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

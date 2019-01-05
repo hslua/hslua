@@ -3,7 +3,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans       #-}
 {-|
 Module      : Foreign.Lua.Core.Error
-Copyright   : © 2017-2018 Albert Krewinkel
+Copyright   : © 2017-2019 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta
