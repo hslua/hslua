@@ -474,62 +474,63 @@ newuserdata = liftLua1 lua_newuserdata . fromIntegral
 next :: StackIndex -> Lua Bool
 next idx = boolFromFailable =<< liftLua (\l -> hslua_next l idx)
 
--- | Opens all standard Lua libraries into the current state.
+-- | Opens all standard Lua libraries into the current state and sets each
+-- library name as a global value.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#luaL_openlibs luaL_openlibs>.
 openlibs :: Lua ()
 openlibs = liftLua luaL_openlibs
 
--- | Opens all standard Lua libraries into the current state.
+-- | Pushes Lua's /base/ library onto the stack.
 --
--- | See <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_base luaopen_base>.
+-- See <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_base luaopen_base>.
 openbase :: Lua ()
 openbase = pushcfunction lua_open_base_ptr *> call 0 multret
 
--- | Opens Lua's /debug/ library into the current state.
+-- | Pushes Lua's /debug/ library onto the stack.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_debug luaopen_debug>.
 opendebug :: Lua ()
 opendebug = pushcfunction lua_open_debug_ptr *> call 0 multret
 
--- | Opens Lua's /io/ library into the current state.
+-- | Pushes Lua's /io/ library onto the stack.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_io luaopen_io>.
 openio :: Lua ()
 openio = pushcfunction lua_open_io_ptr *> call 0 multret
 
--- | Opens Lua's /math/ library into the current state.
+-- | Pushes Lua's /math/ library onto the stack.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_math luaopen_math>.
 openmath :: Lua ()
 openmath = pushcfunction lua_open_math_ptr *> call 0 multret
 
--- | Opens Lua's /os/ library into the current state.
+-- | Pushes Lua's /os/ library onto the stack.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_os luaopen_os>.
 openos :: Lua ()
 openos = pushcfunction lua_open_os_ptr *> call 0 multret
 
--- | Opens Lua's /package/ library into the current state.
+-- | Pushes Lua's /package/ library onto the stack.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_package luaopen_package>.
 openpackage :: Lua ()
 openpackage = pushcfunction lua_open_package_ptr *> call 0 multret
 
--- | Opens Lua's /string/ library into the current state.
+-- | Pushes Lua's /string/ library onto the stack.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_string luaopen_string>.
 openstring :: Lua ()
 openstring = pushcfunction lua_open_string_ptr *> call 0 multret
 
--- | Opens Lua's /table/ library into the current state.
+-- | Pushes Lua's /table/ library onto the stack.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_table luaopen_table>.
