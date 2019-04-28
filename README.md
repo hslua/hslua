@@ -26,6 +26,18 @@ loadProg = do
 Documentation
 -------------
 
+### chdir {#system-chdir}
+
+`chdir (directory)`
+
+Change the working directory to the given path.
+
+Parameters:
+
+`directory`:
+:   Path of the directory which is to become the new working directory.
+
+
 ### currentdir {#system-currentdir}
 
 `currentdir ()`
@@ -38,20 +50,20 @@ Returns:
 
 ### ls {#system-ls}
 
-`ls ([dir])`
+`ls ([directory])`
 
 List the contents of a directory.
 
 Parameters:
 
-`dir`:
+`directory`:
 :   Path of the directory whose contents should be listed (string).
     Defaults to `.`.
     
 Returns:
 
-- A table of all entries in `dir` without the special entries (`.` and
-  `..`).
+- A table of all entries in `directory` without the special entries (`.`
+  and `..`).
 
 ### pwd {#system-pwd}
 

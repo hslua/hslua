@@ -127,13 +127,13 @@ ls fp = do
   let fp' = fromMaybe "." (fromOptional fp)
   ioToLua (Directory.listDirectory fp')
 
--- | Return the current working directory.
-currentdir :: Lua FilePath
-currentdir = ioToLua Directory.getCurrentDirectory
-
 -- | Change current working directory.
 chdir :: FilePath -> Lua ()
 chdir fp = ioToLua $ Directory.setCurrentDirectory fp
+
+-- | Return the current working directory.
+currentdir :: Lua FilePath
+currentdir = ioToLua Directory.getCurrentDirectory
 
 -- | Convert a System IO operation to a Lua operation.
 ioToLua :: IO a -> Lua a
