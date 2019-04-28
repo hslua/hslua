@@ -1,5 +1,5 @@
 name:                hslua-module-system
-version:             0.1.0
+version:             0.1.0.1
 synopsis:            Lua module wrapper around Haskell's System module.
 
 description:         Provides access to system information and functionality
@@ -18,6 +18,7 @@ copyright:           Albert Krewinkel <albert+hslua@zeitkraut.de>
 category:            Foreign
 build-type:          Simple
 extra-source-files:  CHANGELOG.md
+                     test/system-module-tests.lua
 cabal-version:       >=1.10
 
 source-repository head
