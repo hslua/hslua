@@ -1,5 +1,5 @@
 name:                hslua-module-system
-version:             0.1.0.0
+version:             0.1.0
 synopsis:            Lua module wrapper around Haskell's System module.
 homepage:            https://github.com/hslua/hslua-module-system
 license:             MIT
