@@ -1,6 +1,14 @@
 name:                hslua-module-system
 version:             0.1.0
 synopsis:            Lua module wrapper around Haskell's System module.
+
+description:         Provides access to system information and functionality
+                     to Lua scripts via Haskell's `System` module.
+                     .
+                     Intended usage for this package is to preload it by adding
+                     the loader function to `package.preload`. Note that the
+                     Lua `package` library must have already been loaded before
+                     the loader can be added.
 homepage:            https://github.com/hslua/hslua-module-system
 license:             MIT
 license-file:        LICENSE
