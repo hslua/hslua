@@ -117,14 +117,6 @@ callWithFilename callback filename = do
   return . NumResults . fromIntegral . Lua.fromStackIndex $
     newTop - oldTop
 
-tmpdirname :: Lua FilePath
-tmpdirname = do
-  eitherTmpdir <- Lua.liftIO $ try Directory.getTemporaryDirectory
-  case eitherTmpdir :: Either IOException FilePath of
-    Right tmpdir -> return tmpdir
-    Left _ -> Lua.throwException ("The operating system has no notion " ++
-                                  "of temporary directory.")
-
 -- | List the contents of a directory.
 ls :: Optional FilePath -> Lua [FilePath]
 ls fp = do
@@ -155,6 +147,10 @@ getenv name = ioToLua (Optional <$> Env.lookupEnv name)
 -- | Set the specified environment variable to a new value.
 setenv :: String -> String -> Lua ()
 setenv name value = ioToLua (Env.setEnv name value)
+
+-- | Get the current directory for temporary files.
+tmpdirname :: Lua FilePath
+tmpdirname = ioToLua Directory.getTemporaryDirectory
 
 -- | Convert a System IO operation to a Lua operation.
 ioToLua :: IO a -> Lua a
