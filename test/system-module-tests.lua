@@ -19,6 +19,9 @@ assert(system.with_tmpdir('foo', write_read_token) == token)
 -- tmpdirname
 assert(type(system.tmpdirname()) == 'string', "tmpdirname should return a string")
 
+-- env
+assert(type(system.env()) == 'table')
+
 -- ls
 assert(type(system.ls('.')) == 'table')
 assert(#system.ls('.') == #system.ls())
@@ -52,3 +55,7 @@ function create_then_count_files ()
 end
 
 assert(in_tmpdir(create_then_count_files) == 1, 'Number of files should be 1')
+
+system.setenv('TESTING', token)
+assert(system.getenv 'TESTING' == token,
+       'setting and getting env var is inconsistent')

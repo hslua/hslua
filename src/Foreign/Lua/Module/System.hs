@@ -25,6 +25,7 @@ import System.IO.Error (IOError, isDoesNotExistError)
 
 import qualified Foreign.Lua as Lua
 import qualified System.Directory as Directory
+import qualified System.Environment as Env
 import qualified System.IO.Temp as Temp
 
 -- | Pushes the @text@ module to the lua stack.
@@ -33,8 +34,11 @@ pushModule = do
   Lua.newtable
   addFunction "chdir" chdir
   addFunction "currentdir" currentdir
+  addFunction "env" env
+  addFunction "getenv" getenv
   addFunction "ls" ls
   addFunction "pwd" currentdir
+  addFunction "setenv" setenv
   addFunction "tmpdirname" tmpdirname
   addFunction "with_tmpdir" with_tmpdir
   return 1
@@ -134,6 +138,23 @@ chdir fp = ioToLua $ Directory.setCurrentDirectory fp
 -- | Return the current working directory.
 currentdir :: Lua FilePath
 currentdir = ioToLua Directory.getCurrentDirectory
+
+-- | Retrieve the entire environment
+env :: Lua NumResults
+env = do
+  kvs <- ioToLua Env.getEnvironment
+  let addValue (k, v) = Lua.push k *> Lua.push v *> Lua.rawset (-3)
+  Lua.newtable
+  mapM_ addValue kvs
+  return (NumResults 1)
+
+-- | Returns the value of an environment variable
+getenv :: String -> Lua (Optional String)
+getenv name = ioToLua (Optional <$> Env.lookupEnv name)
+
+-- | Set the specified environment variable to a new value.
+setenv :: String -> String -> Lua ()
+setenv name value = ioToLua (Env.setEnv name value)
 
 -- | Convert a System IO operation to a Lua operation.
 ioToLua :: IO a -> Lua a

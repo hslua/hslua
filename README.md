@@ -48,6 +48,34 @@ Returns:
 
 - The current working directory (string).
 
+### env {#system-env}
+
+`env ()`
+
+Retrieve the entire environment.
+
+Returns:
+
+- A table mapping environment variables names to their string value
+  (table).
+
+### getenv {#system-getenv}
+
+`getenv (var)`
+
+Return the value of the environment variable `var`, or `nil` if there
+is no such value.
+
+Parameters:
+
+`var`:
+:   name of the environment variable (string)
+
+Returns:
+
+- value of the variable, or nil if the variable is not defined (string
+  or nil).
+
 ### ls {#system-ls}
 
 `ls ([directory])`
@@ -59,7 +87,7 @@ Parameters:
 `directory`:
 :   Path of the directory whose contents should be listed (string).
     Defaults to `.`.
-    
+
 Returns:
 
 - A table of all entries in `directory` without the special entries (`.`
@@ -70,6 +98,20 @@ Returns:
 `pwd ()`
 
 An alias for [`currentdir`](#system-currentdir)
+
+### setenv {#system-setenv}
+
+`setenv (var, value)`
+
+Set the specified environment variable to a new value.
+
+Parameters:
+
+`var`:
+:   name of the environment variable (string).
+
+`value`:
+:   new value (string).
 
 ### tmpdirname {#system-tmpdirname}
 
@@ -91,7 +133,7 @@ The operation may fail if the operating system has no notion of
 temporary directory.
 
 The function doesn't verify whether the path exists.
-    
+
 Returns:
 
 - The current directory for temporary files (string).
@@ -116,7 +158,7 @@ Parameters:
 `callback`:
 :   Function which takes the name of the temporary directory as its
     first argument (function).
-    
+
 Returns:
 
 -   The result of the call to `callback`.
