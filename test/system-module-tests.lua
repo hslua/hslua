@@ -9,21 +9,8 @@ assert(type(system.compiler_name) == 'string')
 assert(type(system.compiler_version) == 'table')
 assert(type(system.os) == 'string')
 
-local token = 'Banana'
-function write_read_token (tmpdir)
-  local filename = tmpdir .. '/foo.txt'
-  local fh = io.open(filename, 'w')
-  fh:write(token .. '\n')
-  fh:close()
-  return io.open(filename):read '*l'
-end
-
--- with_tmpdir
-assert(system.with_tmpdir('.', 'foo', write_read_token) == token)
-assert(system.with_tmpdir('foo', write_read_token) == token)
-
--- tmpdirname
-assert(type(system.tmpdirname()) == 'string', "tmpdirname should return a string")
+-- currentdir
+assert(type(system.currentdir()) == 'string')
 
 -- env
 assert(type(system.env()) == 'table')
@@ -35,10 +22,7 @@ assert(#system.ls('.') == #system.ls())
 assert(pcall(system.ls, 'thisdoesnotexist') == false)
 assert(pcall(system.ls, 'README.md') == false)
 
--- currentdir
-assert(type(system.currentdir()) == 'string')
-
--- Complex scripts
+-- mkdir and rmdir
 function in_tmpdir (callback)
   local orig_dir = system.currentdir()
   return system.with_tmpdir(
@@ -52,6 +36,44 @@ function in_tmpdir (callback)
   )
 end
 
+function test_mkdir_rmdir ()
+  -- mkdir
+  assert(not pcall(system.mkdir, '.'), "should not be possible to create `.`")
+  assert(pcall(system.mkdir, 'foo'), "normal dir creation")
+  assert(pcall(system.mkdir, 'foo', true), "dir creation if exists")
+  assert((system.ls())[1] == 'foo')
+  assert(not pcall(system.mkdir, 'bar/baz'),
+         "creation of nested dir")
+  assert(pcall(system.mkdir, 'bar/baz', true),
+         "nested dir creation, including parent directories")
+  assert((system.ls 'bar')[1] == 'baz')
+
+  -- rmdir
+  assert(pcall(system.rmdir, 'foo'), "delete empty directory")
+  assert(not pcall(system.rmdir, 'bar'), "cannot delete non-empty dir")
+  assert(pcall(system.rmdir, 'bar', true), "delete dir recursively")
+  assert(#system.ls() == 0, "dir should be empty")
+end
+in_tmpdir(test_mkdir_rmdir)
+
+-- tmpdirname
+assert(type(system.tmpdirname()) == 'string', "tmpdirname should return a string")
+
+-- with_tmpdir
+local token = 'Banana'
+function write_read_token (tmpdir)
+  local filename = tmpdir .. '/foo.txt'
+  local fh = io.open(filename, 'w')
+  fh:write(token .. '\n')
+  fh:close()
+  return io.open(filename):read '*l'
+end
+
+assert(system.with_tmpdir('.', 'foo', write_read_token) == token)
+assert(system.with_tmpdir('foo', write_read_token) == token)
+
+
+-- Complex scripts
 function create_then_count_files ()
   io.open('README.org', 'w'):close()
   return #system.ls '.'

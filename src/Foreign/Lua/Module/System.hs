@@ -42,6 +42,8 @@ pushModule = do
   addFunction "env" env
   addFunction "getenv" getenv
   addFunction "ls" ls
+  addFunction "mkdir" mkdir
+  addFunction "rmdir" rmdir
   addFunction "setenv" setenv
   addFunction "tmpdirname" tmpdirname
   addFunction "with_tmpdir" with_tmpdir
@@ -153,6 +155,25 @@ env = do
 -- | Returns the value of an environment variable
 getenv :: String -> Lua (Optional String)
 getenv name = ioToLua (Optional <$> Env.lookupEnv name)
+
+-- | Create a new directory which is initially empty, or as near to
+-- empty as the operating system allows.
+--
+-- If the optional second parameter is `false`, then create the new
+-- directory only if it doesn't exist yet. If the parameter is `true`,
+-- then parent directories are created as necessary.
+mkdir :: FilePath -> Bool -> Lua ()
+mkdir fp createParent =
+  if createParent
+  then ioToLua (Directory.createDirectoryIfMissing True fp)
+  else ioToLua (Directory.createDirectory fp)
+
+-- | Remove an existing directory.
+rmdir :: FilePath -> Bool -> Lua ()
+rmdir fp recursive =
+  if recursive
+  then ioToLua (Directory.removeDirectoryRecursive fp)
+  else ioToLua (Directory.removeDirectory fp)
 
 -- | Set the specified environment variable to a new value.
 setenv :: String -> String -> Lua ()

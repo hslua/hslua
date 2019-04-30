@@ -113,6 +113,43 @@ Returns:
 - A table of all entries in `directory` without the special entries (`.`
   and `..`).
 
+### mkdir
+
+`mkdir (dirname [, create_parent])`
+
+Create a new directory which is initially empty, or as near to
+empty as the operating system allows. The function throws an
+error if the directory cannot be created, e.g., if the parent
+directory does not exist or if a directory of the same name is
+already present.
+
+If the optional second parameter is provided and truthy, then all
+directories, including parent directories, are created as
+necessary.
+
+Parameters:
+
+`dirname`:
+:   name of the new directory
+
+`create_parent`:
+:   create parent directories if necessary
+
+### rmdir
+
+`rmdir (dirname [, recursive])`
+
+Remove an existing, empty directory. If `recursive` is given,
+then delete the directory and its contents recursively.
+
+Parameters:
+
+`dirname`:
+:   name of the directory to delete
+
+`recursive`:
+:   delete content recursively
+
 ### setenv {#system-setenv}
 
 `setenv (var, value)`
