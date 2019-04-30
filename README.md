@@ -113,12 +113,6 @@ Returns:
 - A table of all entries in `directory` without the special entries (`.`
   and `..`).
 
-### pwd {#system-pwd}
-
-`pwd ()`
-
-An alias for [`currentdir`](#system-currentdir)
-
 ### setenv {#system-setenv}
 
 `setenv (var, value)`

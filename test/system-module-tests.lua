@@ -37,9 +37,6 @@ assert(pcall(system.ls, 'README.md') == false)
 
 -- currentdir
 assert(type(system.currentdir()) == 'string')
--- pwd is an alias for currentdir
-assert(system.currentdir() == system.pwd())
-
 
 -- Complex scripts
 function in_tmpdir (callback)

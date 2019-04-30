@@ -42,7 +42,6 @@ pushModule = do
   addFunction "env" env
   addFunction "getenv" getenv
   addFunction "ls" ls
-  addFunction "pwd" currentdir
   addFunction "setenv" setenv
   addFunction "tmpdirname" tmpdirname
   addFunction "with_tmpdir" with_tmpdir
