@@ -17,21 +17,26 @@ module Foreign.Lua.Module.System
 where
 
 import Control.Applicative ((<$>))
-import Control.Exception (IOException, catch, evaluate, try)
+import Control.Exception (IOException, try)
 import Data.Maybe (fromMaybe)
 import Foreign.Lua (Lua, NumResults(..), Optional (..), Peekable, Pushable,
                     StackIndex, ToHaskellFunction)
-import System.IO.Error (IOError, isDoesNotExistError)
 
+import qualified Data.Version
 import qualified Foreign.Lua as Lua
 import qualified System.Directory as Directory
 import qualified System.Environment as Env
+import qualified System.Info as Info
 import qualified System.IO.Temp as Temp
 
 -- | Pushes the @text@ module to the lua stack.
 pushModule :: Lua NumResults
 pushModule = do
   Lua.newtable
+  addField "arch" Info.arch
+  addField "compiler_name" Info.compilerName
+  addField "compiler_version" (Data.Version.versionBranch Info.compilerVersion)
+  addField "os" Info.os
   addFunction "chdir" chdir
   addFunction "currentdir" currentdir
   addFunction "env" env
@@ -57,6 +62,12 @@ addPackagePreloader name modulePusher = do
   Lua.setfield (-2) name
   Lua.pop 1
 
+addField :: Pushable a => String -> a -> Lua ()
+addField name value = do
+  Lua.push name
+  Lua.push value
+  Lua.rawset (Lua.nthFromTop 3)
+
 -- | Attach a function to the table at the top of the stack, using the
 -- given name.
 addFunction :: ToHaskellFunction a => String -> a -> Lua ()
@@ -66,7 +77,7 @@ addFunction name fn = do
   Lua.rawset (-3)
 
 -- | Lua callback function
-newtype Callback = Callback { callbackStackIndex :: StackIndex }
+newtype Callback = Callback StackIndex
 
 instance Peekable Callback where
   peek idx = do
@@ -92,7 +103,7 @@ with_tmpdir :: String            -- ^ parent dir or template
             -> AnyValue          -- ^ template or callback
             -> Optional Callback -- ^ callback or nil
             -> Lua NumResults
-with_tmpdir parentDir tmpl callback = do
+with_tmpdir parentDir tmpl callback =
   case fromOptional callback of
     Nothing -> do
       -- At most two args. The first arg (parent dir) has probably been

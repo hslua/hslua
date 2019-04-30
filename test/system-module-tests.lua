@@ -3,6 +3,12 @@
 --
 local system = require 'system'
 
+-- Check existence static fields
+assert(type(system.arch) == 'string')
+assert(type(system.compiler_name) == 'string')
+assert(type(system.compiler_version) == 'table')
+assert(type(system.os) == 'string')
+
 local token = 'Banana'
 function write_read_token (tmpdir)
   local filename = tmpdir .. '/foo.txt'

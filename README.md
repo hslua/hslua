@@ -26,6 +26,26 @@ loadProg = do
 Documentation
 -------------
 
+## Fields
+
+### arch
+
+The machine architecture on which the program is running.
+
+### compiler_name
+
+The Haskell implementation with which the host program was compiled.
+
+### compiler_version
+
+The version of `compiler_name` with which the host program was compiled.
+
+### os
+
+The operating system on which the program is running.
+
+## Functions
+
 ### chdir {#system-chdir}
 
 `chdir (directory)`
