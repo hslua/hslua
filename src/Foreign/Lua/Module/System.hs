@@ -22,8 +22,8 @@ module Foreign.Lua.Module.System (
 
   -- * Functions
   , chdir
-  , currentdir
   , env
+  , getwd
   , getenv
   , ls
   , mkdir
@@ -63,9 +63,9 @@ pushModule = do
   addField "compiler_version" compiler_version
   addField "os" os
   addFunction "chdir" chdir
-  addFunction "currentdir" currentdir
   addFunction "env" env
   addFunction "getenv" getenv
+  addFunction "getwd" getwd
   addFunction "ls" ls
   addFunction "mkdir" mkdir
   addFunction "rmdir" rmdir
@@ -112,10 +112,6 @@ os = Info.os
 chdir :: FilePath -> Lua ()
 chdir fp = ioToLua $ Directory.setCurrentDirectory fp
 
--- | Return the current working directory.
-currentdir :: Lua FilePath
-currentdir = ioToLua Directory.getCurrentDirectory
-
 -- | Retrieve the entire environment
 env :: Lua NumResults
 env = do
@@ -124,6 +120,10 @@ env = do
   Lua.newtable
   mapM_ addValue kvs
   return (NumResults 1)
+
+-- | Return the current working directory as an absolute path.
+getwd :: Lua FilePath
+getwd = ioToLua Directory.getCurrentDirectory
 
 -- | Returns the value of an environment variable
 getenv :: String -> Lua (Optional String)

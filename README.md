@@ -58,16 +58,6 @@ Parameters:
 :   Path of the directory which is to become the new working directory.
 
 
-### currentdir {#system-currentdir}
-
-`currentdir ()`
-
-Obtain the current working directory as an absolute path.
-
-Returns:
-
-- The current working directory (string).
-
 ### env {#system-env}
 
 `env ()`
@@ -79,7 +69,6 @@ Returns:
 - A table mapping environment variables names to their string value
   (table).
 
-### getenv {#system-getenv}
 
 `getenv (var)`
 
@@ -96,7 +85,17 @@ Returns:
 - value of the variable, or nil if the variable is not defined (string
   or nil).
 
-### ls {#system-ls}
+### getwd
+
+`getwd ()`
+
+Obtain the current working directory as an absolute path.
+
+Returns:
+
+- The current working directory (string).
+
+### ls
 
 `ls ([directory])`
 

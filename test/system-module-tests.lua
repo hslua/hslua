@@ -9,8 +9,8 @@ assert(type(system.compiler_name) == 'string')
 assert(type(system.compiler_version) == 'table')
 assert(type(system.os) == 'string')
 
--- currentdir
-assert(type(system.currentdir()) == 'string')
+-- getwd
+assert(type(system.getwd()) == 'string')
 
 -- env
 assert(type(system.env()) == 'table')
@@ -24,7 +24,7 @@ assert(pcall(system.ls, 'README.md') == false)
 
 -- mkdir and rmdir
 function in_tmpdir (callback)
-  local orig_dir = system.currentdir()
+  local orig_dir = system.getwd()
   return system.with_tmpdir(
     'hello',
     function (tmpdir)
