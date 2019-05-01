@@ -8,9 +8,30 @@ Portability : Requires GHC 8 or later.
 
 Provide a Lua module containing a selection of @'System'@ functions.
 -}
-module Foreign.Lua.Module.System
-  ( pushModule
+module Foreign.Lua.Module.System (
+
+  -- * Module
+    pushModule
   , preloadModule
+
+  -- * Fields
+  , arch
+  , compiler_name
+  , compiler_version
+  , os
+
+  -- * Functions
+  , chdir
+  , currentdir
+  , env
+  , getenv
+  , ls
+  , mkdir
+  , rmdir
+  , setenv
+  , tmpdirname
+  , with_env
+  , with_tmpdir
   )
 where
 
@@ -29,14 +50,18 @@ import qualified System.Environment as Env
 import qualified System.Info as Info
 import qualified System.IO.Temp as Temp
 
+--
+-- Module
+--
+
 -- | Pushes the @system@ module to the Lua stack.
 pushModule :: Lua NumResults
 pushModule = do
   Lua.newtable
-  addField "arch" Info.arch
-  addField "compiler_name" Info.compilerName
-  addField "compiler_version" (versionBranch Info.compilerVersion)
-  addField "os" Info.os
+  addField "arch" arch
+  addField "compiler_name" compiler_name
+  addField "compiler_version" compiler_version
+  addField "os" os
   addFunction "chdir" chdir
   addFunction "currentdir" currentdir
   addFunction "env" env
@@ -55,8 +80,32 @@ pushModule = do
 preloadModule :: String -> Lua ()
 preloadModule = flip addPackagePreloader pushModule
 
+
 --
--- Module functions
+-- Fields
+--
+
+-- | The machine architecture on which the program is running.
+arch :: String
+arch = Info.arch
+
+-- | The Haskell implementation with which the host program was
+-- compiled.
+compiler_name :: String
+compiler_name = Info.compilerName
+
+-- | The version of `compiler_name` with which the host program was
+-- compiled.
+compiler_version :: [Int]
+compiler_version = versionBranch Info.compilerVersion
+
+-- | The operating system on which the program is running.
+os :: String
+os = Info.os
+
+
+--
+-- Functions
 --
 
 -- | Change current working directory.
