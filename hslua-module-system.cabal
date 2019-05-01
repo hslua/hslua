@@ -20,6 +20,7 @@ build-type:          Simple
 extra-source-files:  CHANGELOG.md
                      test/system-module-tests.lua
 cabal-version:       >=1.10
+tested-with:         GHC == 8.0.2, GHC == 8.2.2, GHC == 8.4.4, GHC == 8.6.5
 
 source-repository head
   type:              git
