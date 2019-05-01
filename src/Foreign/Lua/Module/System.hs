@@ -55,6 +55,64 @@ pushModule = do
 preloadModule :: String -> Lua ()
 preloadModule = flip addPackagePreloader pushModule
 
+--
+-- Module functions
+--
+
+-- | Change current working directory.
+chdir :: FilePath -> Lua ()
+chdir fp = ioToLua $ Directory.setCurrentDirectory fp
+
+-- | Return the current working directory.
+currentdir :: Lua FilePath
+currentdir = ioToLua Directory.getCurrentDirectory
+
+-- | Retrieve the entire environment
+env :: Lua NumResults
+env = do
+  kvs <- ioToLua Env.getEnvironment
+  let addValue (k, v) = Lua.push k *> Lua.push v *> Lua.rawset (-3)
+  Lua.newtable
+  mapM_ addValue kvs
+  return (NumResults 1)
+
+-- | Returns the value of an environment variable
+getenv :: String -> Lua (Optional String)
+getenv name = ioToLua (Optional <$> Env.lookupEnv name)
+
+-- | List the contents of a directory.
+ls :: Optional FilePath -> Lua [FilePath]
+ls fp = do
+  let fp' = fromMaybe "." (fromOptional fp)
+  ioToLua (Directory.listDirectory fp')
+
+-- | Create a new directory which is initially empty, or as near to
+-- empty as the operating system allows.
+--
+-- If the optional second parameter is `false`, then create the new
+-- directory only if it doesn't exist yet. If the parameter is `true`,
+-- then parent directories are created as necessary.
+mkdir :: FilePath -> Bool -> Lua ()
+mkdir fp createParent =
+  if createParent
+  then ioToLua (Directory.createDirectoryIfMissing True fp)
+  else ioToLua (Directory.createDirectory fp)
+
+-- | Remove an existing directory.
+rmdir :: FilePath -> Bool -> Lua ()
+rmdir fp recursive =
+  if recursive
+  then ioToLua (Directory.removeDirectoryRecursive fp)
+  else ioToLua (Directory.removeDirectory fp)
+
+-- | Set the specified environment variable to a new value.
+setenv :: String -> String -> Lua ()
+setenv name value = ioToLua (Env.setEnv name value)
+
+-- | Get the current directory for temporary files.
+tmpdirname :: Lua FilePath
+tmpdirname = ioToLua Directory.getTemporaryDirectory
+
 -- | Run an action, then restore the old environment variable values.
 with_env :: Map.Map String String -> Callback -> Lua NumResults
 with_env environment callback =
@@ -86,57 +144,3 @@ with_tmpdir parentDir tmpl callback =
       -- all args given. Second value must be converted to a string.
       tmpl' <- Lua.peek (fromAnyValue tmpl)
       Temp.withTempDirectory parentDir tmpl' (invokeWithFilePath callback')
-
--- | List the contents of a directory.
-ls :: Optional FilePath -> Lua [FilePath]
-ls fp = do
-  let fp' = fromMaybe "." (fromOptional fp)
-  ioToLua (Directory.listDirectory fp')
-
--- | Change current working directory.
-chdir :: FilePath -> Lua ()
-chdir fp = ioToLua $ Directory.setCurrentDirectory fp
-
--- | Return the current working directory.
-currentdir :: Lua FilePath
-currentdir = ioToLua Directory.getCurrentDirectory
-
--- | Retrieve the entire environment
-env :: Lua NumResults
-env = do
-  kvs <- ioToLua Env.getEnvironment
-  let addValue (k, v) = Lua.push k *> Lua.push v *> Lua.rawset (-3)
-  Lua.newtable
-  mapM_ addValue kvs
-  return (NumResults 1)
-
--- | Returns the value of an environment variable
-getenv :: String -> Lua (Optional String)
-getenv name = ioToLua (Optional <$> Env.lookupEnv name)
-
--- | Create a new directory which is initially empty, or as near to
--- empty as the operating system allows.
---
--- If the optional second parameter is `false`, then create the new
--- directory only if it doesn't exist yet. If the parameter is `true`,
--- then parent directories are created as necessary.
-mkdir :: FilePath -> Bool -> Lua ()
-mkdir fp createParent =
-  if createParent
-  then ioToLua (Directory.createDirectoryIfMissing True fp)
-  else ioToLua (Directory.createDirectory fp)
-
--- | Remove an existing directory.
-rmdir :: FilePath -> Bool -> Lua ()
-rmdir fp recursive =
-  if recursive
-  then ioToLua (Directory.removeDirectoryRecursive fp)
-  else ioToLua (Directory.removeDirectory fp)
-
--- | Set the specified environment variable to a new value.
-setenv :: String -> String -> Lua ()
-setenv name value = ioToLua (Env.setEnv name value)
-
--- | Get the current directory for temporary files.
-tmpdirname :: Lua FilePath
-tmpdirname = ioToLua Directory.getTemporaryDirectory
