@@ -54,11 +54,11 @@ Change the working directory to the given path.
 
 Parameters:
 
-`directory`:
+`directory`
 :   Path of the directory which is to become the new working directory.
 
 
-### env {#system-env}
+### env
 
 `env ()`
 
@@ -69,6 +69,7 @@ Returns:
 - A table mapping environment variables names to their string value
   (table).
 
+### getenv
 
 `getenv (var)`
 
@@ -77,7 +78,7 @@ is no such value.
 
 Parameters:
 
-`var`:
+`var`
 :   name of the environment variable (string)
 
 Returns:
@@ -103,7 +104,7 @@ List the contents of a directory.
 
 Parameters:
 
-`directory`:
+`directory`
 :   Path of the directory whose contents should be listed (string).
     Defaults to `.`.
 
@@ -128,10 +129,10 @@ necessary.
 
 Parameters:
 
-`dirname`:
+`dirname`
 :   name of the new directory
 
-`create_parent`:
+`create_parent`
 :   create parent directories if necessary
 
 ### rmdir
@@ -143,13 +144,13 @@ then delete the directory and its contents recursively.
 
 Parameters:
 
-`dirname`:
+`dirname`
 :   name of the directory to delete
 
-`recursive`:
+`recursive`
 :   delete content recursively
 
-### setenv {#system-setenv}
+### setenv
 
 `setenv (var, value)`
 
@@ -157,13 +158,13 @@ Set the specified environment variable to a new value.
 
 Parameters:
 
-`var`:
+`var`
 :   name of the environment variable (string).
 
-`value`:
+`value`
 :   new value (string).
 
-### tmpdirname {#system-tmpdirname}
+### tmpdirname
 
 `tmpdirname ()`
 
@@ -200,12 +201,12 @@ action.
 
 Parameters:
 
-`environment`:
+`environment`
 :   Environment variables and their values to be set before
     running `callback`. (table with string keys and string
     values)
 
-`callback`:
+`callback`
 :   Action to execute in the custom environment (function)
 
 Returns:
@@ -213,7 +214,7 @@ Returns:
 -   The result(s) of the call to `callback`
 
 
-### with\_tmpdir {#system-with_tmpdir}
+### with\_tmpdir
 
 `with_tmpdir ([parent_dir,] templ, callback)`
 
@@ -222,15 +223,15 @@ The directory is deleted after use.
 
 Parameters:
 
-`parent_dir`:
+`parent_dir`
 :   Parent directory to create the directory in (string). If this
     parameter is omitted, the system's canonical temporary directory is
     used.
 
-`templ`:
+`templ`
 :   Directory name template (string).
 
-`callback`:
+`callback`
 :   Function which takes the name of the temporary directory as its
     first argument (function).
 
