@@ -213,7 +213,6 @@ Returns:
 
 -   The result(s) of the call to `callback`
 
-
 ### with\_tmpdir
 
 `with_tmpdir ([parent_dir,] templ, callback)`
@@ -238,6 +237,28 @@ Parameters:
 Returns:
 
 -   The result of the call to `callback`.
+
+### with\_wd
+
+`with_wd (directory, callback)`
+
+Run an action within a different directory. This function will
+change the working directory to `directory`, execute `callback`,
+then switch back to the original working directory, even if an
+error occurs while running the callback action.
+
+Parameters:
+
+`directory`
+:   Directory in which the given `callback` should be executed
+    (string)
+
+`callback`
+:   Action to execute in the given directory (function)
+
+Returns:
+
+-   The result(s) of the call to `callback`
 
 
 License

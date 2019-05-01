@@ -32,6 +32,7 @@ module Foreign.Lua.Module.System (
   , tmpdirname
   , with_env
   , with_tmpdir
+  , with_wd
   )
 where
 
@@ -73,6 +74,7 @@ pushModule = do
   addFunction "tmpdirname" tmpdirname
   addFunction "with_env" with_env
   addFunction "with_tmpdir" with_tmpdir
+  addFunction "with_wd" with_wd
   return 1
 
 -- | Add the @system@ module under the given name to the table of
@@ -161,6 +163,17 @@ setenv name value = ioToLua (Env.setEnv name value)
 -- | Get the current directory for temporary files.
 tmpdirname :: Lua FilePath
 tmpdirname = ioToLua Directory.getTemporaryDirectory
+
+-- | Run an action in a different directory, then restore the old
+-- working directory.
+with_wd :: FilePath -> Callback -> Lua NumResults
+with_wd fp callback =
+  bracket (Lua.liftIO Directory.getCurrentDirectory)
+          (Lua.liftIO . Directory.setCurrentDirectory)
+          $ \_ -> do
+              Lua.liftIO (Directory.setCurrentDirectory fp)
+              callback `invokeWithFilePath` fp
+
 
 -- | Run an action, then restore the old environment variable values.
 with_env :: Map.Map String String -> Callback -> Lua NumResults

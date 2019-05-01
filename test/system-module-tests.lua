@@ -110,3 +110,15 @@ assert(in_tmpdir(create_then_count_files) == 1, 'Number of files should be 1')
 system.setenv('TESTING', token)
 assert(system.getenv 'TESTING' == token,
        'setting and getting env var is inconsistent')
+
+-- with_wd
+local cwd = system.getwd()
+function check_wd (path)
+  assert(path == system.getwd(), "current path is given as arg")
+  assert(path ~= cwd, "current path has changed from original")
+end
+
+system.with_tmpdir(
+  'wd-test',
+  function (path) return system.with_wd(path, check_wd) end
+)
