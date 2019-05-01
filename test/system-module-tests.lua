@@ -28,9 +28,9 @@ function in_tmpdir (callback)
   return system.with_tmpdir(
     'hello',
     function (tmpdir)
-      system.chdir(tmpdir)
+      system.setwd(tmpdir)
       local result = callback(tmpdir)
-      system.chdir(orig_dir)
+      system.setwd(orig_dir)
       return result
     end
   )

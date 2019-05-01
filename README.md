@@ -46,18 +46,6 @@ The operating system on which the program is running.
 
 ## Functions
 
-### chdir {#system-chdir}
-
-`chdir (directory)`
-
-Change the working directory to the given path.
-
-Parameters:
-
-`directory`
-:   Path of the directory which is to become the new working directory.
-
-
 ### env
 
 `env ()`
@@ -163,6 +151,18 @@ Parameters:
 
 `value`
 :   new value (string).
+
+### setwd
+
+`setwd (directory)`
+
+Change the working directory to the given path.
+
+Parameters:
+
+`directory`
+:   Path of the directory which is to become the new working
+    directory (string)
 
 ### tmpdirname
 

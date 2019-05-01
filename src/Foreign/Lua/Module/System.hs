@@ -21,7 +21,6 @@ module Foreign.Lua.Module.System (
   , os
 
   -- * Functions
-  , chdir
   , env
   , getwd
   , getenv
@@ -29,6 +28,7 @@ module Foreign.Lua.Module.System (
   , mkdir
   , rmdir
   , setenv
+  , setwd
   , tmpdirname
   , with_env
   , with_tmpdir
@@ -63,7 +63,6 @@ pushModule = do
   addField "compiler_name" compiler_name
   addField "compiler_version" compiler_version
   addField "os" os
-  addFunction "chdir" chdir
   addFunction "env" env
   addFunction "getenv" getenv
   addFunction "getwd" getwd
@@ -71,6 +70,7 @@ pushModule = do
   addFunction "mkdir" mkdir
   addFunction "rmdir" rmdir
   addFunction "setenv" setenv
+  addFunction "setwd" setwd
   addFunction "tmpdirname" tmpdirname
   addFunction "with_env" with_env
   addFunction "with_tmpdir" with_tmpdir
@@ -109,10 +109,6 @@ os = Info.os
 --
 -- Functions
 --
-
--- | Change current working directory.
-chdir :: FilePath -> Lua ()
-chdir fp = ioToLua $ Directory.setCurrentDirectory fp
 
 -- | Retrieve the entire environment
 env :: Lua NumResults
@@ -159,6 +155,10 @@ rmdir fp recursive =
 -- | Set the specified environment variable to a new value.
 setenv :: String -> String -> Lua ()
 setenv name value = ioToLua (Env.setEnv name value)
+
+-- | Change current working directory.
+setwd :: FilePath -> Lua ()
+setwd fp = ioToLua $ Directory.setCurrentDirectory fp
 
 -- | Get the current directory for temporary files.
 tmpdirname :: Lua FilePath
