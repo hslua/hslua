@@ -15,13 +15,12 @@ module Foreign.Lua.Module.System
 where
 
 import Control.Applicative ((<$>))
-import Control.Exception (IOException, try)
 import Control.Monad (forM_)
 import Control.Monad.Catch (bracket)
 import Data.Maybe (fromMaybe)
 import Data.Version (versionBranch)
-import Foreign.Lua (Lua, NumResults(..), Optional (..), Peekable, Pushable,
-                    StackIndex, ToHaskellFunction)
+import Foreign.Lua (Lua, NumResults (..), Optional (..))
+import Foreign.Lua.Module.SystemUtils
 
 import qualified Data.Map as Map
 import qualified Foreign.Lua as Lua
@@ -56,52 +55,6 @@ pushModule = do
 preloadModule :: String -> Lua ()
 preloadModule = flip addPackagePreloader pushModule
 
--- | Registers a preloading function. Takes an module name and the Lua
--- operation which produces the package.
-addPackagePreloader :: String -> Lua NumResults -> Lua ()
-addPackagePreloader name modulePusher = do
-  Lua.getfield Lua.registryindex Lua.preloadTableRegistryField
-  Lua.pushHaskellFunction modulePusher
-  Lua.setfield (-2) name
-  Lua.pop 1
-
-addField :: Pushable a => String -> a -> Lua ()
-addField name value = do
-  Lua.push name
-  Lua.push value
-  Lua.rawset (Lua.nthFromTop 3)
-
--- | Attach a function to the table at the top of the stack, using the
--- given name.
-addFunction :: ToHaskellFunction a => String -> a -> Lua ()
-addFunction name fn = do
-  Lua.push name
-  Lua.pushHaskellFunction fn
-  Lua.rawset (-3)
-
--- | Lua callback function
-newtype Callback = Callback StackIndex
-
-instance Peekable Callback where
-  peek idx = do
-    isFn <- Lua.isfunction idx
-    if isFn
-      then return (Callback idx)
-      else Lua.throwException "Function expected"
-
-instance Pushable Callback where
-  push (Callback idx) = Lua.pushvalue idx
-
-
--- | Any value of unknown type
-newtype AnyValue = AnyValue { fromAnyValue :: StackIndex }
-
-instance Peekable AnyValue where
-  peek = return . AnyValue
-
-instance Pushable AnyValue where
-  push (AnyValue idx) = Lua.pushvalue idx
-
 -- | Run an action, then restore the old environment variable values.
 with_env :: Map.Map String String -> Callback -> Lua NumResults
 with_env environment callback =
@@ -133,26 +86,6 @@ with_tmpdir parentDir tmpl callback =
       -- all args given. Second value must be converted to a string.
       tmpl' <- Lua.peek (fromAnyValue tmpl)
       Temp.withTempDirectory parentDir tmpl' (invokeWithFilePath callback')
-
-invoke :: Callback -> Lua NumResults
-invoke callback = do
-  oldTop <- Lua.gettop
-  Lua.push callback
-  Lua.call 0 Lua.multret
-  newTop <- Lua.gettop
-  return . NumResults . fromIntegral . Lua.fromStackIndex $
-    newTop - oldTop
-
--- | Call Lua callback function with the given filename as its argument.
-invokeWithFilePath :: Callback -> FilePath -> Lua NumResults
-invokeWithFilePath callback filename = do
-  oldTop <- Lua.gettop
-  Lua.push callback
-  Lua.push filename
-  Lua.call (Lua.NumArgs 1) Lua.multret
-  newTop <- Lua.gettop
-  return . NumResults . fromIntegral . Lua.fromStackIndex $
-    newTop - oldTop
 
 -- | List the contents of a directory.
 ls :: Optional FilePath -> Lua [FilePath]
@@ -207,11 +140,3 @@ setenv name value = ioToLua (Env.setEnv name value)
 -- | Get the current directory for temporary files.
 tmpdirname :: Lua FilePath
 tmpdirname = ioToLua Directory.getTemporaryDirectory
-
--- | Convert a System IO operation to a Lua operation.
-ioToLua :: IO a -> Lua a
-ioToLua action = do
-  result <- Lua.liftIO (try action)
-  case result of
-    Right result' -> return result'
-    Left err      -> Lua.throwException (show (err :: IOException))
