@@ -59,6 +59,32 @@ in_tmpdir(test_mkdir_rmdir)
 -- tmpdirname
 assert(type(system.tmpdirname()) == 'string', "tmpdirname should return a string")
 
+-- with_env
+local outer_value = 'outer test value'
+local inner_value = 'inner test value'
+local inner_only = 'test #2'
+
+function check_env ()
+  assert(os.getenv 'SYSTEM_TEST' == inner_value, "env has test value")
+  assert(os.getenv 'SYSTEM_TEST_INNER_ONLY' == inner_only,
+         "inner only exists")
+  assert(os.getenv 'SYSTEM_TEST_OUTER_ONLY' == nil,
+         "outer only variable should be unset")
+end
+
+local test_env = {
+  SYSTEM_TEST = inner_value,
+  SYSTEM_TEST_INNER_ONLY = inner_only
+}
+system.setenv('SYSTEM_TEST_OUTER_ONLY', outer_value)
+system.setenv('SYSTEM_TEST', outer_value)
+system.with_env(test_env, check_env)
+
+assert(system.getenv 'SYSTEM_TEST' == outer_value, "value was restored")
+assert(system.getenv 'SYSTEM_TEST_INNER_ONLY' == nil, "value was restored")
+assert(system.getenv 'SYSTEM_TEST_OUTER_ONLY' == outer_value,
+       "value was restored")
+
 -- with_tmpdir
 local token = 'Banana'
 function write_read_token (tmpdir)

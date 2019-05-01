@@ -189,6 +189,31 @@ Returns:
 
 - The current directory for temporary files (string).
 
+### with\_env
+
+`with_env (environment, callback)`
+
+Run an action within a custom environment. Only the environment
+variables given by `environment` will be set, when `callback` is
+called. The original environment is restored after this function
+finishes, even if an error occurs while running the callback
+action.
+
+Parameters:
+
+`environment`:
+:   Environment variables and their values to be set before
+    running `callback`. (table with string keys and string
+    values)
+
+`callback`:
+:   Action to execute in the custom environment (function)
+
+Returns:
+
+-   The result(s) of the call to `callback`
+
+
 ### with\_tmpdir {#system-with_tmpdir}
 
 `with_tmpdir ([parent_dir,] templ, callback)`

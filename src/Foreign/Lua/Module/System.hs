@@ -18,11 +18,14 @@ where
 
 import Control.Applicative ((<$>))
 import Control.Exception (IOException, try)
+import Control.Monad (forM_)
+import Control.Monad.Catch (bracket)
 import Data.Maybe (fromMaybe)
+import Data.Version (versionBranch)
 import Foreign.Lua (Lua, NumResults(..), Optional (..), Peekable, Pushable,
                     StackIndex, ToHaskellFunction)
 
-import qualified Data.Version
+import qualified Data.Map as Map
 import qualified Foreign.Lua as Lua
 import qualified System.Directory as Directory
 import qualified System.Environment as Env
@@ -35,7 +38,7 @@ pushModule = do
   Lua.newtable
   addField "arch" Info.arch
   addField "compiler_name" Info.compilerName
-  addField "compiler_version" (Data.Version.versionBranch Info.compilerVersion)
+  addField "compiler_version" (versionBranch Info.compilerVersion)
   addField "os" Info.os
   addFunction "chdir" chdir
   addFunction "currentdir" currentdir
@@ -46,6 +49,7 @@ pushModule = do
   addFunction "rmdir" rmdir
   addFunction "setenv" setenv
   addFunction "tmpdirname" tmpdirname
+  addFunction "with_env" with_env
   addFunction "with_tmpdir" with_tmpdir
   return 1
 
@@ -100,6 +104,20 @@ instance Peekable AnyValue where
 instance Pushable AnyValue where
   push (AnyValue idx) = Lua.pushvalue idx
 
+-- | Run an action, then restore the old environment variable values.
+with_env :: Map.Map String String -> Callback -> Lua NumResults
+with_env environment callback =
+  bracket (Lua.liftIO Env.getEnvironment)
+          setEnvironment
+          (\_ -> setEnvironment (Map.toList environment) >> invoke callback)
+ where
+  setEnvironment newEnv = Lua.liftIO $ do
+    -- Crude, but fast enough: delete all entries in new environment,
+    -- then restore old environment one-by-one.
+    curEnv <- Env.getEnvironment
+    forM_ curEnv (Env.unsetEnv . fst)
+    forM_ newEnv (uncurry Env.setEnv)
+
 with_tmpdir :: String            -- ^ parent dir or template
             -> AnyValue          -- ^ template or callback
             -> Optional Callback -- ^ callback or nil
@@ -112,15 +130,24 @@ with_tmpdir parentDir tmpl callback =
       -- temporary directory.
       let tmpl' = parentDir
       callback' <- Lua.peek (fromAnyValue tmpl)
-      Temp.withSystemTempDirectory tmpl' (callWithFilename callback')
+      Temp.withSystemTempDirectory tmpl' (invokeWithFilePath callback')
     Just callback' -> do
       -- all args given. Second value must be converted to a string.
       tmpl' <- Lua.peek (fromAnyValue tmpl)
-      Temp.withTempDirectory parentDir tmpl' (callWithFilename callback')
+      Temp.withTempDirectory parentDir tmpl' (invokeWithFilePath callback')
+
+invoke :: Callback -> Lua NumResults
+invoke callback = do
+  oldTop <- Lua.gettop
+  Lua.push callback
+  Lua.call 0 Lua.multret
+  newTop <- Lua.gettop
+  return . NumResults . fromIntegral . Lua.fromStackIndex $
+    newTop - oldTop
 
 -- | Call Lua callback function with the given filename as its argument.
-callWithFilename :: Callback -> FilePath -> Lua NumResults
-callWithFilename callback filename = do
+invokeWithFilePath :: Callback -> FilePath -> Lua NumResults
+invokeWithFilePath callback filename = do
   oldTop <- Lua.gettop
   Lua.push callback
   Lua.push filename
