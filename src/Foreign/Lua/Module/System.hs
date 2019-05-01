@@ -1,12 +1,10 @@
-{-# LANGUAGE ScopedTypeVariables #-}
 {-|
 Module      : Foreign.Lua.Module.System
 Copyright   : © 2019 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
 Stability   : alpha
-Portability : Requires language extensions ForeignFunctionInterface,
-              OverloadedStrings.
+Portability : Requires GHC 8 or later.
 
 Provide a Lua module containing a selection of @'System'@ functions.
 -}

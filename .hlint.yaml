@@ -1,0 +1,6 @@
+# HLint configuration file
+##########################
+
+- ignore:
+    name: "Use camelCase"
+    within: "Foreign.Lua.Module.System"
