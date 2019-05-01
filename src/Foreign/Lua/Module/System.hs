@@ -30,7 +30,7 @@ import qualified System.Environment as Env
 import qualified System.Info as Info
 import qualified System.IO.Temp as Temp
 
--- | Pushes the @text@ module to the lua stack.
+-- | Pushes the @system@ module to the Lua stack.
 pushModule :: Lua NumResults
 pushModule = do
   Lua.newtable
@@ -51,8 +51,8 @@ pushModule = do
   addFunction "with_tmpdir" with_tmpdir
   return 1
 
--- | Add the text module under the given name to the table of preloaded
--- packages.
+-- | Add the @system@ module under the given name to the table of
+-- preloaded packages.
 preloadModule :: String -> Lua ()
 preloadModule = flip addPackagePreloader pushModule
 

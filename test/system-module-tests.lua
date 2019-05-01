@@ -1,5 +1,5 @@
 --
--- Tests for the hstext module
+-- Tests for the system module
 --
 local system = require 'system'
 

@@ -28,18 +28,18 @@ tests = testGroup "HsLua System module"
   [ testCase "system module can be pushed to the stack" $
       Lua.run (void pushModule)
 
-  , testCase "text module can be added to the preloader" . Lua.run $ do
+  , testCase "system module can be added to the preloader" . Lua.run $ do
       Lua.openlibs
       preloadModule "system"
       assertEqual' "function not added to preloader" Lua.TypeFunction =<< do
         Lua.getglobal' "package.preload.system"
         Lua.ltype (-1)
 
-  , testCase "text module can be loaded as hstext" . Lua.run $ do
+  , testCase "system module can be loaded as hssystem" . Lua.run $ do
       Lua.openlibs
-      preloadModule "system"
+      preloadModule "hssystem"
       assertEqual' "loading the module fails " Lua.OK =<<
-        Lua.dostring "require 'system'"
+        Lua.dostring "require 'hssystem'"
 
   , testCase "Lua tests pass" . Lua.run $ do
       Lua.openlibs
