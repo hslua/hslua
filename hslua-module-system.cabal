@@ -1,5 +1,5 @@
 name:                hslua-module-system
-version:             0.2.0
+version:             0.2.1
 synopsis:            Lua module wrapper around Haskell's System module.
 
 description:         Provides access to system information and functionality
