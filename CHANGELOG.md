@@ -1,9 +1,14 @@
 # Revision history for hslua-module-system
 
+## 0.2.1 -- 2019-05-04
+
+- Use module helpers made available with HsLua 1.0.3. This avoids
+  code duplication when used with other hslua modules.
+
 ## 0.2.0 -- 2019-05-01
 
-All fields and functions are now exported from the Haskell module under
-the same name as that used in Lua.
+All fields and functions are now exported from the Haskell module
+under the same name as that used in Lua.
 
 ### New fields
 
