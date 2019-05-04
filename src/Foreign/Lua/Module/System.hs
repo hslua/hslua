@@ -59,29 +59,28 @@ import qualified System.IO.Temp as Temp
 pushModule :: Lua NumResults
 pushModule = do
   Lua.newtable
-  addField "arch" arch
-  addField "compiler_name" compiler_name
-  addField "compiler_version" compiler_version
-  addField "os" os
-  addFunction "env" env
-  addFunction "getenv" getenv
-  addFunction "getwd" getwd
-  addFunction "ls" ls
-  addFunction "mkdir" mkdir
-  addFunction "rmdir" rmdir
-  addFunction "setenv" setenv
-  addFunction "setwd" setwd
-  addFunction "tmpdirname" tmpdirname
-  addFunction "with_env" with_env
-  addFunction "with_tmpdir" with_tmpdir
-  addFunction "with_wd" with_wd
+  Lua.addfield "arch" arch
+  Lua.addfield "compiler_name" compiler_name
+  Lua.addfield "compiler_version" compiler_version
+  Lua.addfield "os" os
+  Lua.addfunction "env" env
+  Lua.addfunction "getenv" getenv
+  Lua.addfunction "getwd" getwd
+  Lua.addfunction "ls" ls
+  Lua.addfunction "mkdir" mkdir
+  Lua.addfunction "rmdir" rmdir
+  Lua.addfunction "setenv" setenv
+  Lua.addfunction "setwd" setwd
+  Lua.addfunction "tmpdirname" tmpdirname
+  Lua.addfunction "with_env" with_env
+  Lua.addfunction "with_tmpdir" with_tmpdir
+  Lua.addfunction "with_wd" with_wd
   return 1
 
 -- | Add the @system@ module under the given name to the table of
 -- preloaded packages.
 preloadModule :: String -> Lua ()
-preloadModule = flip addPackagePreloader pushModule
-
+preloadModule = flip Lua.preloadhs pushModule
 
 --
 -- Fields

@@ -11,9 +11,6 @@ Utility functions and types for HsLua's system module.
 module Foreign.Lua.Module.SystemUtils
   ( AnyValue (..)
   , Callback (..)
-  , addPackagePreloader
-  , addField
-  , addFunction
   , invoke
   , invokeWithFilePath
   , ioToLua
@@ -21,34 +18,8 @@ module Foreign.Lua.Module.SystemUtils
 where
 
 import Control.Exception (IOException, try)
-import Foreign.Lua (Lua, NumResults(..), Peekable, Pushable,
-                    StackIndex, ToHaskellFunction)
-
+import Foreign.Lua (Lua, NumResults(..), Peekable, Pushable, StackIndex)
 import qualified Foreign.Lua as Lua
-
--- | Registers a preloading function. Takes an module name and the Lua
--- operation which produces the package.
-addPackagePreloader :: String -> Lua NumResults -> Lua ()
-addPackagePreloader name modulePusher = do
-  Lua.getfield Lua.registryindex Lua.preloadTableRegistryField
-  Lua.pushHaskellFunction modulePusher
-  Lua.setfield (-2) name
-  Lua.pop 1
-
--- | Add a string-indexed field to the table at the top of the stack.
-addField :: Pushable a => String -> a -> Lua ()
-addField name value = do
-  Lua.push name
-  Lua.push value
-  Lua.rawset (Lua.nthFromTop 3)
-
--- | Attach a function to the table at the top of the stack, using the
--- given name.
-addFunction :: ToHaskellFunction a => String -> a -> Lua ()
-addFunction name fn = do
-  Lua.push name
-  Lua.pushHaskellFunction fn
-  Lua.rawset (-3)
 
 -- | Lua callback function
 newtype Callback = Callback StackIndex
