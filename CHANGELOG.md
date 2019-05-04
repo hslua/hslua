@@ -1,5 +1,15 @@
 ## Changelog
 
+### 1.0.3
+
+Released 2019-05-04.
+
+- New module `Foreign.Lua.Module`, containing helper functions to
+  define and load modules from Haskell.
+
+- Improve documentation of `open<lib>` (many thanks to Christian
+  Charukiewicz.)
+
 ### 1.0.2
 
 Released 2019-01-05.
