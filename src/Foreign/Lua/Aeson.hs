@@ -2,7 +2,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-|
 Module      :  Foreign.Lua.Aeson
-Copyright   :  © 2017–2018 Albert Krewinkel
+Copyright   :  © 2017–2019 Albert Krewinkel
 License     :  MIT
 
 Maintainer  :  Albert Krewinkel <tarleb@zeitkraut.de>
