@@ -10,7 +10,8 @@ Portability : ForeignFunctionInterface
 Provide a lua module containing a selection of useful Text functions.
 -}
 module Foreign.Lua.Module.Text
-  ( pushModuleText
+  ( pushModule
+  , pushModuleText
   , preloadTextModule
   )where
 
@@ -22,38 +23,25 @@ import Foreign.Lua (NumResults, Lua, Peekable, Pushable, ToHaskellFunction)
 import qualified Foreign.Lua as Lua
 import qualified Data.Text as T
 
--- | Pushes the @text@ module to the lua stack.
-pushModuleText :: Lua NumResults
-pushModuleText = do
+-- | Pushes the @text@ module to the Lua stack.
+pushModule :: Lua NumResults
+pushModule = do
   Lua.newtable
-  addFunction "lower" (return . T.toLower :: Text -> Lua Text)
-  addFunction "upper" (return . T.toUpper :: Text -> Lua Text)
-  addFunction "reverse" (return . T.reverse :: Text -> Lua Text)
-  addFunction "len" (return . fromIntegral . T.length :: Text -> Lua Lua.Integer)
-  addFunction "sub" sub
+  Lua.addfunction "lower" (return . T.toLower :: Text -> Lua Text)
+  Lua.addfunction "upper" (return . T.toUpper :: Text -> Lua Text)
+  Lua.addfunction "reverse" (return . T.reverse :: Text -> Lua Text)
+  Lua.addfunction "len" (return . fromIntegral . T.length :: Text -> Lua Lua.Integer)
+  Lua.addfunction "sub" sub
   return 1
+
+-- | Legacy alias for '@pushModule@'.
+pushModuleText :: Lua NumResults
+pushModuleText = pushModule
 
 -- | Add the text module under the given name to the table of preloaded
 -- packages.
 preloadTextModule :: String -> Lua ()
-preloadTextModule = flip addPackagePreloader pushModuleText
-
--- | Registers a preloading function. Takes an module name and the Lua operation
--- which produces the package.
-addPackagePreloader :: String -> Lua NumResults -> Lua ()
-addPackagePreloader name modulePusher = do
-  Lua.getfield Lua.registryindex Lua.preloadTableRegistryField
-  Lua.pushHaskellFunction modulePusher
-  Lua.setfield (-2) name
-  Lua.pop 1
-
--- | Attach a function to the table at the top of the stack, using the given
--- name.
-addFunction :: ToHaskellFunction a => String -> a -> Lua ()
-addFunction name fn = do
-  Lua.push name
-  Lua.pushHaskellFunction fn
-  Lua.rawset (-3)
+preloadTextModule = flip Lua.preloadhs pushModule
 
 -- | Returns a substring, using Lua's string indexing rules.
 sub :: Text -> Lua.Integer -> Lua.Optional Lua.Integer -> Lua Text
