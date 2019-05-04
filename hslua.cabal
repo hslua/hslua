@@ -1,5 +1,5 @@
 name:                hslua
-version:             1.0.2
+version:             1.0.3
 synopsis:            Bindings to Lua, an embeddable scripting language
 description:         HsLua provides bindings, wrappers, types, and helper
                      functions to bridge Haskell and <https://www.lua.org/ Lua>.
