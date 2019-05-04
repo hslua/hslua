@@ -1,5 +1,5 @@
 name:                hslua-module-text
-version:             0.2.0.1
+version:             0.2.1
 synopsis:            Lua module for text
 description:         UTF-8 aware subset of Lua's `string` module.
 homepage:            https://github.com/hslua/hslua-module-text
