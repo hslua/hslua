@@ -1,5 +1,13 @@
 # Revision history for hslua-module-text
 
+## 0.2.1 -- 2019-05-04
+
+- Require at least HsLua v1.0.3: that version has better support
+  for modules.
+
+- Rename `pushModuleText` to `pushModule`. The old name is keeped
+  as an alias for now.
+
 ## 0.2.0 -- 2018-09-24
 
 - Use hslua 1.0.
