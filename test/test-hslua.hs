@@ -24,6 +24,7 @@ import Test.Tasty (TestTree, defaultMain, testGroup)
 import qualified Foreign.LuaTests
 import qualified Foreign.Lua.CoreTests
 import qualified Foreign.Lua.FunctionCallingTests
+import qualified Foreign.Lua.ModuleTests
 import qualified Foreign.Lua.TypesTests
 import qualified Foreign.Lua.Types.PeekableTests
 import qualified Foreign.Lua.Types.PushableTests
@@ -45,5 +46,6 @@ tests =
     , Foreign.Lua.Types.PushableTests.tests
     ]
   , Foreign.Lua.UserdataTests.tests
+  , Foreign.Lua.ModuleTests.tests
   , Foreign.LuaTests.tests
   ]

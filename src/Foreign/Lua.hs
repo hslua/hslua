@@ -67,14 +67,21 @@ module Foreign.Lua (
   , setglobal'
   , raiseError
   , Optional (Optional, fromOptional)
-  -- ** retrieving values
+  -- ** Retrieving values
   , popValue
+  -- ** Modules
+  , requirehs
+  , preloadhs
+  , create
+  , addfield
+  , addfunction
   ) where
 
 import Prelude hiding (compare, concat)
 
 import Foreign.Lua.Core
 import Foreign.Lua.FunctionCalling
+import Foreign.Lua.Module
 import Foreign.Lua.Types
 import Foreign.Lua.Userdata ( pushAny, peekAny )
 import Foreign.Lua.Util

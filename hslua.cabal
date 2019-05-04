@@ -79,6 +79,7 @@ library
                      , Foreign.Lua.Core.RawBindings
                      , Foreign.Lua.Core.Types
                      , Foreign.Lua.FunctionCalling
+                     , Foreign.Lua.Module
                      , Foreign.Lua.Types
                      , Foreign.Lua.Types.Peekable
                      , Foreign.Lua.Types.Pushable
@@ -186,6 +187,7 @@ test-suite test-hslua
                      , Foreign.Lua.Core.AuxiliaryTests
                      , Foreign.Lua.Core.ErrorTests
                      , Foreign.Lua.FunctionCallingTests
+                     , Foreign.Lua.ModuleTests
                      , Foreign.Lua.TypesTests
                      , Foreign.Lua.Types.PeekableTests
                      , Foreign.Lua.Types.PushableTests
