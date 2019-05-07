@@ -1,0 +1,14 @@
+sudo: false
+language: haskell
+
+# Speed builds up by caching install requirements
+cache:
+  directories:
+  - $HOME/.ghc
+  - $HOME/.cabal
+
+ghc:
+  - '8.0'
+  - '8.2'
+  - '8.4'
+  - '8.6'

@@ -1,0 +1,44 @@
+name:                tasty-hslua
+version:             0.1.0
+synopsis:            Write tests in Lua, integrate into tasty.
+description:         Allow users to define tasty tests from Lua.
+homepage:            https://github.com/hslua/hslua-module-tasty
+license:             MIT
+license-file:        LICENSE
+author:              Albert Krewinkel
+maintainer:          albert+hslua@zeitkraut.de
+copyright:           Albert Krewinkel <albert+hslua@zeitkraut.de>
+category:            Foreign
+build-type:          Simple
+extra-source-files:  CHANGELOG.md
+cabal-version:       >=1.10
+tested-with:         GHC == 8.0.2, GHC == 8.2.2, GHC == 8.4.4, GHC == 8.6.5
+
+source-repository head
+  type:              git
+  location:          https://github.com/hslua/hslua-module-tasty.git
+
+library
+  build-depends:       base        >= 4.9    && < 5
+                     , bytestring  >= 0.10.2 && < 0.11
+                     , file-embed  >= 0.0    && < 0.1
+                     , hslua       >= 1.0.3  && < 1.2
+                     , tasty       >= 1.2    && < 1.3
+                     , tasty-hunit >= 0.10   && < 0.11
+                     , text        >= 1.0    && < 1.3
+  exposed-modules:     Foreign.Lua.Module.Tasty
+  hs-source-dirs:      src
+  default-language:    Haskell2010
+  ghc-options:         -Wall
+
+test-suite test-hslua-module-tasty
+  default-language:    Haskell2010
+  type:                exitcode-stdio-1.0
+  main-is:             test-hslua-module-tasty.hs
+  hs-source-dirs:      test
+  ghc-options:         -Wall -threaded
+  build-depends:       base
+                     , hslua
+                     , tasty
+                     , tasty-hslua
+                     , tasty-hunit
