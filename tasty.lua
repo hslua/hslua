@@ -28,9 +28,15 @@ local function is_nil (x)
   return x == nil
 end
 
+--- Values are equal
+local function are_equal (x, y)
+  return x == y
+end
+
 register_assertor('is_truthy', is_truthy, "not truthy")
 register_assertor('is_falsy', is_falsy, "not falsy")
 register_assertor('is_nil', is_nil, "not nil")
+register_assertor('are_equal', are_equal, "not equal")
 
 ------------------------------------------------------------------------
 

@@ -17,6 +17,9 @@ return {
     },
     group 'is_nil' {
       test('nil is nil', function () assert.is_nil(nil) end)
+    },
+    group 'are_equal' {
+      test('equal strings', function () assert.are_equal('test', 'test') end)
     }
   },
 }
