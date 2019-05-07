@@ -24,7 +24,7 @@ import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Text.Encoding
 import qualified Foreign.Lua as Lua
 import qualified Test.Tasty as Tasty
-import qualified Test.Tasty.HUnit as Tasty
+import qualified Test.Tasty.Providers as Tasty
 
 
 -- | Tasty Lua script
@@ -48,40 +48,55 @@ testsFromFile fp =  do
   if res == Lua.OK
     then do
       results <- Lua.peekList Lua.stackTop
-      return $ Tasty.testGroup fp $ map dummyTestTree results
+      return $ Tasty.testGroup fp $ map testTree results
     else Lua.throwTopMessage
 
-data TestReport
-  = TestReport Tasty.TestName TestResult
+testTree :: Tree -> Tasty.TestTree
+testTree (Tree name tree) =
+  case tree of
+    SingleTest outcome -> Tasty.singleTest name outcome
+    TestGroup results  -> Tasty.testGroup name (map testTree results)
 
-instance Peekable TestReport where
+data Tree = Tree Tasty.TestName UnnamedTree
+
+instance Peekable Tree where
   peek idx = do
     name   <- Lua.getfield idx "name"   *> Lua.popValue
     result <- Lua.getfield idx "result" *> Lua.popValue
-    return $ TestReport name result
+    return $ Tree name result
 
-dummyTestTree :: TestReport -> Tasty.TestTree
-dummyTestTree (TestReport name outcome) =
-  case outcome of
-    TestSuccess success -> Tasty.testCase name (Tasty.assertBool "" success)
-    TestFailure msg     -> Tasty.testCase name (Tasty.assertFailure msg)
-    TestGroup results   -> Tasty.testGroup name (map dummyTestTree results)
+instance Tasty.IsTest Outcome where
+  run _ tr _ = return $ case tr of
+    Success     -> Tasty.testPassed ""
+    Failure msg -> Tasty.testFailed msg
+  testOptions = return []
 
-data TestResult
-  = TestSuccess Bool
-  | TestFailure String
-  | TestGroup [TestReport]
 
-instance Peekable TestResult where
-  peek = peekTestResult
+data UnnamedTree
+  = SingleTest Outcome
+  | TestGroup [Tree]
 
-peekTestResult :: StackIndex -> Lua TestResult
-peekTestResult idx = do
+instance Peekable UnnamedTree where
+  peek = peekTree
+
+peekTree :: StackIndex -> Lua UnnamedTree
+peekTree idx = do
   ty <- Lua.ltype idx
   case ty of
-    Lua.TypeBoolean -> TestSuccess <$> Lua.peek idx
-    Lua.TypeString  -> TestFailure <$> Lua.peek idx
     Lua.TypeTable   -> TestGroup   <$> Lua.peekList idx
-    _ -> do
-      s <- Text.unpack . Text.Encoding.decodeUtf8 <$> Lua.tostring' idx
-      Lua.throwException ("not a test result: " ++ s)
+    _               -> SingleTest  <$> Lua.peek idx
+
+-- | Test outcome
+data Outcome = Success | Failure String
+
+instance Peekable Outcome where
+  peek idx = do
+    ty <- Lua.ltype idx
+    case ty of
+      Lua.TypeString  -> Failure <$> Lua.peek idx
+      Lua.TypeBoolean -> do
+        b <- Lua.peek idx
+        return $ if b then Success else Failure "???"
+      _ -> do
+        s <- Text.unpack . Text.Encoding.decodeUtf8 <$> Lua.tostring' idx
+        Lua.throwException ("not a test result: " ++ s)
