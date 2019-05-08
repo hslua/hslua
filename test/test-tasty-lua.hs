@@ -13,16 +13,16 @@ Tests for the @tasty@ Lua module.
 
 import Control.Monad (void)
 import Foreign.Lua (Lua)
-import Foreign.Lua.Module.Tasty (pushModule, testsFromFile)
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
+import Test.Tasty.Lua (pushModule, testsFromFile)
 
 import qualified Foreign.Lua as Lua
 
 main :: IO ()
 main = do
-  luaTest <- Lua.run $ testsFromFile "test/tasty-module-tests.lua"
-  defaultMain $ testGroup "hslua-module-system" [luaTest, tests]
+  luaTest <- Lua.run $ testsFromFile "test/test-tasty.lua"
+  defaultMain $ testGroup "tasty-hslua" [luaTest, tests]
 
 -- | HSpec tests for the Lua 'system' module
 tests :: TestTree

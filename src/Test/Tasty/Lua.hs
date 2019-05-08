@@ -1,16 +1,16 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-|
-Module      : Foreign.Lua.Module.Tasty
+Module      : Test.Tasty.Lua
 Copyright   : © 2019 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
 Stability   : alpha
 Portability : Requires TemplateHaskell
 
-Expose functions of the tasty Haskell test-framework.
+Convert Lua test results into a tasty test trees.
 -}
-module Foreign.Lua.Module.Tasty
+module Test.Tasty.Lua
   ( pushModule
   , testsFromFile
   )
