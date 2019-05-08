@@ -1,4 +1,5 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : Foreign.Lua.Core.Auxiliary
 Copyright   : © 2007–2012 Gracjan Polak,
@@ -35,6 +36,7 @@ module Foreign.Lua.Core.Auxiliary
 
 import Control.Exception (IOException, try)
 import Data.ByteString (ByteString)
+import Data.Monoid ((<>))
 import Foreign.C ( CChar, CInt (CInt), CSize (CSize), CString
                  , withCString, peekCString )
 import Foreign.Lua.Core.Constants (multret, registryindex)
@@ -182,7 +184,7 @@ foreign import capi SAFTY "lauxlib.h luaL_loadbuffer"
 loadfile :: FilePath -- ^ filename
          -> Lua Status
 loadfile fp = Lua.liftIO contentOrError >>= \case
-  Right script -> loadbuffer script fp
+  Right script -> loadbuffer script ("@" <> fp)
   Left e -> do
     Lua.pushstring (Utf8.fromString (show e))
     return Lua.ErrFile
