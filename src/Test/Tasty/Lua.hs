@@ -49,7 +49,9 @@ testsFromFile fp =  do
     then do
       results <- Lua.peekList Lua.stackTop
       return $ Tasty.testGroup fp $ map testTree results
-    else Lua.throwTopMessage
+    else do
+      errMsg <- toString <$> Lua.tostring' Lua.stackTop
+      return $ Tasty.singleTest fp (Failure errMsg)
 
 testTree :: Tree -> Tasty.TestTree
 testTree (Tree name tree) =
@@ -98,5 +100,9 @@ instance Peekable Outcome where
         b <- Lua.peek idx
         return $ if b then Success else Failure "???"
       _ -> do
-        s <- Text.unpack . Text.Encoding.decodeUtf8 <$> Lua.tostring' idx
+        s <- toString <$> Lua.tostring' idx
         Lua.throwException ("not a test result: " ++ s)
+
+-- | Convert UTF8-encoded @'ByteString'@ to a @'String'@.
+toString :: ByteString -> String
+toString = Text.unpack . Text.Encoding.decodeUtf8
