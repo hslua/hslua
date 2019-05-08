@@ -1,5 +1,15 @@
 ## Changelog
 
+### 1.0.3.1
+
+Released 2019-05-08.
+
+- Prevent filenames being treated as strings in debug messages.
+  Lua's `loadbuffer` takes a `source` description as an argument,
+  which is used for debug messages. The `loadfile` function now
+  adds a special prefix (`@`) to `source`, thus marking it as a
+  filename.
+
 ### 1.0.3
 
 Released 2019-05-04.
