@@ -38,6 +38,7 @@ test-suite test-tasty-lua
   hs-source-dirs:      test
   ghc-options:         -Wall -threaded
   build-depends:       base
+                     , directory
                      , hslua
                      , tasty
                      , tasty-lua

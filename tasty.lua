@@ -9,7 +9,13 @@ local function register_assertor (name, callback, error_message)
     if bool then
       return
     end
-    error(error_message or 'assertion failed!', 2)
+
+    local success, formatted_message =
+      pcall(string.format, error_message, ...)
+    if not success then
+      error('assertion failed, and error message could not be formatted', 2)
+    end
+    error('\n' .. formatted_message or 'assertion failed!', 2)
   end
 end
 
@@ -33,10 +39,12 @@ local function are_equal (x, y)
   return x == y
 end
 
-register_assertor('is_truthy', is_truthy, "not truthy")
-register_assertor('is_falsy', is_falsy, "not falsy")
-register_assertor('is_nil', is_nil, "not nil")
-register_assertor('are_equal', are_equal, "not equal")
+register_assertor('is_truthy', is_truthy, "expected a truthy value, got %s")
+register_assertor('is_falsy', is_falsy, "expected a falsy value, got %s")
+register_assertor('is_nil', is_nil, "expected nil, got %s")
+register_assertor(
+  'are_equal', are_equal, "expected values to be equal, got '%s' and '%s'"
+)
 
 ------------------------------------------------------------------------
 

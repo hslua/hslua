@@ -2,4 +2,4 @@ resolver: lts-13.18
 packages:
   - .
 extra-deps:
-  - hslua-1.0.3
+  - hslua-1.0.3.1
