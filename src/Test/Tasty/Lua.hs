@@ -11,8 +11,12 @@ Portability : Requires TemplateHaskell
 Convert Lua test results into a tasty test trees.
 -}
 module Test.Tasty.Lua
-  ( pushModule
+  ( -- * Lua module
+    pushModule
+    -- * Running tests
   , testsFromFile
+    -- * Helpers
+  , pathFailure
   )
 where
 
@@ -40,6 +44,11 @@ pushModule = do
     else Lua.throwTopMessage
 {-# INLINABLE pushModule #-}
 
+-- | Report failure of testing a path.
+pathFailure :: FilePath -> String -> Tasty.TestTree
+pathFailure fp errMsg = Tasty.singleTest fp (Failure errMsg)
+
+-- | Run tasty.lua tests from the given file.
 testsFromFile :: FilePath -> Lua Tasty.TestTree
 testsFromFile fp =  do
   Lua.openlibs
@@ -51,8 +60,9 @@ testsFromFile fp =  do
       return $ Tasty.testGroup fp $ map testTree results
     else do
       errMsg <- toString <$> Lua.tostring' Lua.stackTop
-      return $ Tasty.singleTest fp (Failure errMsg)
+      return $ pathFailure fp errMsg
 
+-- | Convert internal (tasty.lua) tree format into Tasty tree.
 testTree :: Tree -> Tasty.TestTree
 testTree (Tree name tree) =
   case tree of
