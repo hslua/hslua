@@ -39,11 +39,61 @@ local function are_equal (x, y)
   return x == y
 end
 
+local function cycle_aware_compare(t1, t2, cache)
+  if cache[t1] and cache[t1][t2] then return true end
+
+  local ty1 = type(t1)
+  local ty2 = type(t2)
+
+  -- if t1 == t2 then return true end
+  if ty1 ~= ty2 then return false end
+  if ty1 ~= 'table' then return t1 == t2 end
+
+  -- Check tables have the same set of keys
+  for k1 in pairs(t1) do
+    if t2[k1] == nil then return false end
+  end
+  for k2 in pairs(t2) do
+    if t1[k2] == nil then return false end
+  end
+
+  -- cache comparison result
+  cache[t1] = cache[t1] or {}
+  cache[t1][t2] = true
+
+  for k1, v1 in pairs(t1) do
+    local v2 = t2[k1]
+    if not cycle_aware_compare(v1, v2, cache) then return false end
+  end
+  return true
+end
+
+--- Check if tables are the same
+local function are_same(x, y)
+  return cycle_aware_compare(x, y, {})
+end
+
+local function error_matches(fn, pattern)
+  local success, msg = pcall(fn)
+  if success then
+    return false
+  end
+  return msg:match(pattern)
+end
+
 register_assertor('is_truthy', is_truthy, "expected a truthy value, got %s")
 register_assertor('is_falsy', is_falsy, "expected a falsy value, got %s")
 register_assertor('is_nil', is_nil, "expected nil, got %s")
+register_assertor('are_same', are_same, 'expected same values, got %s and %s')
 register_assertor(
-  'are_equal', are_equal, "expected values to be equal, got '%s' and '%s'"
+  'are_equal',
+  are_equal,
+  "expected values to be equal, got '%s' and '%s'"
+)
+register_assertor(
+  'error_matches',
+  error_matches,
+  'no error matching the given pattern was raised'
 )
 
 ------------------------------------------------------------------------
