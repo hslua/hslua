@@ -1,5 +1,12 @@
 # hslua-aeson
 
+## v1.1.0
+
+Unreleased.
+
+- Relax version constraint for package hashable, allow
+  `hashable-1.3`.
+
 ## v1.0.0
 
 - Update to hslua 1.0.0
