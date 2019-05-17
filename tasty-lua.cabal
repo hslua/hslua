@@ -39,6 +39,7 @@ test-suite test-tasty-lua
   ghc-options:         -Wall -threaded
   build-depends:       base
                      , directory
+                     , filepath    >= 1.4
                      , hslua
                      , tasty
                      , tasty-lua

@@ -14,9 +14,10 @@ Tests for the @tasty@ Lua module.
 import Control.Monad (void)
 import Foreign.Lua (Lua)
 import System.Directory (withCurrentDirectory)
+import System.FilePath ((</>))
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
-import Test.Tasty.Lua (pushModule, testsFromFile)
+import Test.Tasty.Lua (pushModule, testFileWith, testsFromFile)
 
 import qualified Foreign.Lua as Lua
 
@@ -44,6 +45,9 @@ tests = testGroup "HsLua tasty module"
       Lua.requirehs "tasty" (void pushModule)
       assertEqual' "loading the module fails " Lua.OK =<<
         Lua.dostring "require 'tasty'"
+
+  , testGroup "testFileWith" $
+      [testFileWith ("test" </> "test-tasty.lua") Lua.run]
   ]
 
 assertEqual' :: (Show a, Eq a) => String -> a -> a -> Lua ()
