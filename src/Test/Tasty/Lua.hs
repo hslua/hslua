@@ -1,7 +1,5 @@
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-|
 Module      : Test.Tasty.Lua
 Copyright   : © 2019 Albert Krewinkel
@@ -16,36 +14,37 @@ module Test.Tasty.Lua
   ( -- * Lua module
     pushModule
     -- * Running tests
-  , testFileWith
-  , testsFromFile
+  , testLuaFile
+  , translateResultsFromFile
     -- * Helpers
   , pathFailure
   )
 where
 
 import Control.Exception (SomeException, try)
-import Control.Monad (void)
-import Data.ByteString (ByteString)
-import Data.FileEmbed
 import Data.List (intercalate)
-import Foreign.Lua (Lua, NumResults, Peekable, StackIndex)
-import qualified Data.Text as Text
-import qualified Data.Text.Encoding as Text.Encoding
-import qualified Foreign.Lua as Lua
+import Foreign.Lua (Lua)
+import Test.Tasty.Lua.Module (pushModule)
+import Test.Tasty.Lua.Core (Outcome (..), ResultTree (..), UnnamedTree (..),
+                            runTastyFile)
+import Test.Tasty.Lua.Translate (pathFailure, translateResultsFromFile)
 import qualified Test.Tasty as Tasty
 import qualified Test.Tasty.Providers as Tasty
 
 -- | Run the given file as a single test. It is possible to use
 -- `tasty.lua` in the script. This test collects and summarizes all
 -- errors, but shows generally no information on the successful tests.
-testFileWith :: FilePath -> (forall a . Lua a -> IO a) -> Tasty.TestTree
-testFileWith fp runLua =
+testLuaFile :: (forall a . Lua a -> IO a)
+             -> Tasty.TestName
+             -> FilePath
+             -> Tasty.TestTree
+testLuaFile runLua name fp =
   let testAction = TestCase $ do
         result <- runLua (runTastyFile fp)
         return $ case result >>= failuresMessage of
           Left errMsg -> Failure errMsg
           Right ()    -> Success
-  in Tasty.singleTest fp testAction
+  in Tasty.singleTest name testAction
 
 -- | Lua test case action
 newtype TestCase = TestCase (IO Outcome)
@@ -60,29 +59,8 @@ instance Tasty.IsTest TestCase where
 
   testOptions = return []
 
--- | Run tasty.lua tests from the given file.
-testsFromFile :: FilePath -> Lua Tasty.TestTree
-testsFromFile fp = do
-  result <- runTastyFile fp
-  case result of
-    Left errMsg -> return $ pathFailure fp errMsg
-    Right tree  -> return $ Tasty.testGroup fp (map testTree tree)
-
--- | Run a tasty Lua script from a file and return either the resulting
--- test tree or the error message.
-runTastyFile :: FilePath -> Lua (Either String [Tree])
-runTastyFile fp = do
-  Lua.openlibs
-  Lua.requirehs "tasty" (void pushModule)
-  res <- Lua.dofile fp
-  if res /= Lua.OK
-    then Left . toString <$> Lua.tostring' Lua.stackTop
-    else Lua.try (Lua.peekList Lua.stackTop) >>= \case
-           Left (Lua.Exception e) -> return (Left e)
-           Right trees            -> return (Right trees)
-
 -- | Generate a single error message from all failures in a test tree.
-failuresMessage :: [Tree] -> Either String ()
+failuresMessage :: [ResultTree] -> Either String ()
 failuresMessage tree =
   let messages = concatMap collectFailureMessages tree
   in case messages of
@@ -101,81 +79,9 @@ stringifyFailureGist (names, msg) =
   intercalate " // " names ++ ":\n" ++ msg ++ "\n\n"
 
 -- | Extract all failures from a test result tree.
-collectFailureMessages :: Tree -> [FailureGist]
-collectFailureMessages (Tree name tree) =
+collectFailureMessages :: ResultTree -> [FailureGist]
+collectFailureMessages (ResultTree name tree) =
   case tree of
     SingleTest Success       -> []
     SingleTest (Failure msg) -> [([name], msg)]
     TestGroup subtree        -> concatMap collectFailureMessages subtree
-
--- | Tasty Lua script
-tastyScript :: ByteString
-tastyScript = $(embedFile "tasty.lua")
-
--- | Push the Aeson module on the Lua stack.
-pushModule :: Lua NumResults
-pushModule = do
-  result <- Lua.dostring tastyScript
-  if result == Lua.OK
-    then return 1
-    else Lua.throwTopMessage
-{-# INLINABLE pushModule #-}
-
--- | Report failure of testing a path.
-pathFailure :: FilePath -> String -> Tasty.TestTree
-pathFailure fp errMsg = Tasty.singleTest fp (Failure errMsg)
-
--- | Convert internal (tasty.lua) tree format into Tasty tree.
-testTree :: Tree -> Tasty.TestTree
-testTree (Tree name tree) =
-  case tree of
-    SingleTest outcome -> Tasty.singleTest name outcome
-    TestGroup results  -> Tasty.testGroup name (map testTree results)
-
-data Tree = Tree Tasty.TestName UnnamedTree
-
-instance Peekable Tree where
-  peek idx = do
-    name   <- Lua.getfield idx "name"   *> Lua.popValue
-    result <- Lua.getfield idx "result" *> Lua.popValue
-    return $ Tree name result
-
-instance Tasty.IsTest Outcome where
-  run _ tr _ = return $ case tr of
-    Success     -> Tasty.testPassed ""
-    Failure msg -> Tasty.testFailed msg
-  testOptions = return []
-
--- | Either a raw test outcome, or a nested @'Tree'@.
-data UnnamedTree
-  = SingleTest Outcome
-  | TestGroup [Tree]
-
-instance Peekable UnnamedTree where
-  peek = peekTree
-
-peekTree :: StackIndex -> Lua UnnamedTree
-peekTree idx = do
-  ty <- Lua.ltype idx
-  case ty of
-    Lua.TypeTable   -> TestGroup   <$> Lua.peekList idx
-    _               -> SingleTest  <$> Lua.peek idx
-
--- | Test outcome
-data Outcome = Success | Failure String
-
-instance Peekable Outcome where
-  peek idx = do
-    ty <- Lua.ltype idx
-    case ty of
-      Lua.TypeString  -> Failure <$> Lua.peek idx
-      Lua.TypeBoolean -> do
-        b <- Lua.peek idx
-        return $ if b then Success else Failure "???"
-      _ -> do
-        s <- toString <$> Lua.tostring' idx
-        Lua.throwException ("not a test result: " ++ s)
-
--- | Convert UTF8-encoded @'ByteString'@ to a @'String'@.
-toString :: ByteString -> String
-toString = Text.unpack . Text.Encoding.decodeUtf8

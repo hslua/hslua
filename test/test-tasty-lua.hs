@@ -17,14 +17,14 @@ import System.Directory (withCurrentDirectory)
 import System.FilePath ((</>))
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
-import Test.Tasty.Lua (pushModule, testFileWith, testsFromFile)
+import Test.Tasty.Lua (pushModule, testLuaFile, translateResultsFromFile)
 
 import qualified Foreign.Lua as Lua
 
 main :: IO ()
 main = do
   luaTest <- withCurrentDirectory "test" . Lua.run $
-    testsFromFile "test-tasty.lua"
+    translateResultsFromFile "test-tasty.lua"
   defaultMain $ testGroup "tasty-hslua" [luaTest, tests]
 
 -- | HSpec tests for the Lua 'system' module
@@ -47,7 +47,7 @@ tests = testGroup "HsLua tasty module"
         Lua.dostring "require 'tasty'"
 
   , testGroup "testFileWith" $
-      [testFileWith ("test" </> "test-tasty.lua") Lua.run]
+      [testLuaFile Lua.run "test-tasty.lua" ("test" </> "test-tasty.lua")]
   ]
 
 assertEqual' :: (Show a, Eq a) => String -> a -> a -> Lua ()
