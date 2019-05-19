@@ -12,7 +12,7 @@ basic Lua test-suite is provided with the `tasty` Lua module.
 Example
 =======
 
-Lua tests will usually be put into a separate file and then
+Tasty Lua scripts can be put into a separate file and then
 loaded in the test program. The script must return the test
 result tree:
 
@@ -34,16 +34,41 @@ return {
 ```
 
 On the Haskell side, the script is executed and the results are
-included in the test results.
+included in the test results. Two ways of integrating the tests
+into the test output are supported.
+
+### One test per file
+
+This method is closest to the Tasty's intended way of running
+tests. A script is run as a single test case. On success, the
+number of passing Lua tests is included in the output. In the
+case of a failure, all failure information is collected and
+presented to the user.
 
 ``` haskell
-import Test.Tasty (defaultMain)
-import Test.Tasty.Lua (testGroup)
+import Test.Tasty (defaultMain, testGroup)
+import Test.Tasty.Lua (testLuaFile)
+import Foreign.Lua (run)
+
+main = defaultMain $
+    testLuaFile run "Lua example tests" "example-tests.lua"
+```
+
+### Lua tests as Tasty tests
+
+Lua tests can be transformed into mock Tasty tests, thus showing
+all tests with their status in the final output.
+
+``` haskell
+import Foreign.Lua (run)
+import System.Directory (withCurrentDirectory)
+import Test.Tasty (defaultMain, testGroup)
+import Test.Tasty.Lua (translateResultsFromFile)
 
 main = do
-  luaTest <- withCurrentDirectory "test" . Lua.run $ do
+  luaTest <- withCurrentDirectory "test" . run $ do
     -- run other commands to setup the Lua environment here.
-    testsFromFile "example-tests.lua"
+    translateResultsFromFile "example-tests.lua"
 
   defaultMain . testGroup "Haskell and Lua tests" $
     [ luaTest
