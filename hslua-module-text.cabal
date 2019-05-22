@@ -11,7 +11,7 @@ copyright:           © 2017–2019 Albert Krewinkel
 category:            Foreign
 build-type:          Simple
 extra-source-files:  ChangeLog.md
-                     test/hstext-test.lua
+                     test/test-text.lua
 cabal-version:       >=1.10
 tested-with:         GHC == 7.10.3
                    , GHC == 8.0.2
@@ -44,4 +44,5 @@ test-suite test-hslua
                      , hslua-module-text
                      , tasty
                      , tasty-hunit
+                     , tasty-lua   >= 0.2    && < 0.3
                      , text

@@ -26,11 +26,17 @@ import Foreign.Lua (Lua)
 import Foreign.Lua.Module.Text (preloadTextModule, pushModuleText)
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
+import Test.Tasty.Lua (translateResultsFromFile)
 
 import qualified Foreign.Lua as Lua
 
 main :: IO ()
-main = defaultMain $ testGroup "hslua-module-text" [tests]
+main = do
+  luaTest <- Lua.run $ do
+    Lua.openlibs
+    Lua.requirehs "text" (void pushModuleText)
+    translateResultsFromFile "test/test-text.lua"
+  defaultMain $ testGroup "hslua-module-text" [tests, luaTest]
 
 -- | HSpec tests
 tests :: TestTree
@@ -50,14 +56,6 @@ tests = testGroup "FromLuaStack"
       preloadTextModule "hstext"
       assertEqual' "loading the module fails " Lua.OK =<<
         Lua.dostring "require 'hstext'"
-
-  , testCase "Lua tests pass" . Lua.run $ do
-      Lua.openlibs
-      preloadTextModule "hstext"
-      assertEqual' "error while running lua tests" Lua.OK =<< do
-        st <- Lua.loadfile "test/hstext-test.lua"
-        when (st == Lua.OK) $ Lua.call 0 0
-        return st
   ]
 
 assertEqual' :: (Show a, Eq a) => String -> a -> a -> Lua ()
