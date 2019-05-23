@@ -18,7 +18,7 @@ copyright:           Albert Krewinkel <albert+hslua@zeitkraut.de>
 category:            Foreign
 build-type:          Simple
 extra-source-files:  CHANGELOG.md
-                     test/system-module-tests.lua
+                   , test/test-system.lua
 cabal-version:       >=1.10
 tested-with:         GHC == 8.0.2, GHC == 8.2.2, GHC == 8.4.4, GHC == 8.6.5
 
@@ -51,4 +51,5 @@ test-suite test-hslua-module-system
                      , hslua-module-system
                      , tasty
                      , tasty-hunit
+                     , tasty-lua  >= 0.2    && < 0.3
                      , text 

@@ -3,3 +3,4 @@ packages:
   - .
 extra-deps:
   - hslua-1.0.3
+  - tasty-lua-0.2.0

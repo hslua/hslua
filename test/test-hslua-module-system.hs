@@ -11,16 +11,22 @@ Portability : Requires language extensions ForeignFunctionInterface,
 Tests for the `system` Lua module.
 -}
 
-import Control.Monad (void, when)
+import Control.Monad (void)
 import Foreign.Lua (Lua)
 import Foreign.Lua.Module.System (preloadModule, pushModule)
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
+import Test.Tasty.Lua (translateResultsFromFile)
 
 import qualified Foreign.Lua as Lua
 
 main :: IO ()
-main = defaultMain $ testGroup "hslua-module-system" [tests]
+main = do
+  luaTestResults <- Lua.run $ do
+    Lua.openlibs
+    Lua.requirehs "system" (void pushModule)
+    translateResultsFromFile "test/test-system.lua"
+  defaultMain $ testGroup "hslua-module-system" [tests, luaTestResults]
 
 -- | HSpec tests for the Lua 'system' module
 tests :: TestTree
@@ -40,14 +46,6 @@ tests = testGroup "HsLua System module"
       preloadModule "hssystem"
       assertEqual' "loading the module fails " Lua.OK =<<
         Lua.dostring "require 'hssystem'"
-
-  , testCase "Lua tests pass" . Lua.run $ do
-      Lua.openlibs
-      preloadModule "system"
-      assertEqual' "error while running lua tests" Lua.OK =<< do
-        st <- Lua.loadfile "test/system-module-tests.lua"
-        when (st == Lua.OK) $ Lua.call 0 0
-        return st
   ]
 
 assertEqual' :: (Show a, Eq a) => String -> a -> a -> Lua ()
