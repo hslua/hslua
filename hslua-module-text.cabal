@@ -13,8 +13,7 @@ build-type:          Simple
 extra-source-files:  ChangeLog.md
                      test/test-text.lua
 cabal-version:       >=1.10
-tested-with:         GHC == 7.10.3
-                   , GHC == 8.0.2
+tested-with:         GHC == 8.0.2
                    , GHC == 8.2.2
                    , GHC == 8.4.4
                    , GHC == 8.6.5
@@ -25,7 +24,7 @@ source-repository head
 
 library
   exposed-modules:     Foreign.Lua.Module.Text
-  build-depends:       base       >= 4.7    && < 5
+  build-depends:       base       >= 4.8    && < 5
                      , bytestring >= 0.10.2 && < 0.11
                      , hslua      >= 1.0.3  && < 1.2
                      , text       >= 1      && < 1.3
