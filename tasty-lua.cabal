@@ -1,5 +1,5 @@
 name:                tasty-lua
-version:             0.2.0
+version:             0.2.0.1
 synopsis:            Write tests in Lua, integrate into tasty.
 description:         Allow users to define tasty tests from Lua.
 homepage:            https://github.com/hslua/tasty-lua
@@ -12,6 +12,7 @@ category:            Foreign
 build-type:          Simple
 extra-source-files:  CHANGELOG.md
                    , tasty.lua
+                   , test/test-tasty.lua
 cabal-version:       >=1.10
 tested-with:         GHC == 8.0.2, GHC == 8.2.2, GHC == 8.4.4, GHC == 8.6.5
 
