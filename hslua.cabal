@@ -72,6 +72,15 @@ flag pkg-config
   description:         Use @pkg-config@ to discover library and include paths.
                        Setting this flag implies `system-lua`.
 
+flag hardcode-reg-keys
+  default:             False
+  manual:              True
+
+  description:         Don't use CAPI to determine the names of certain registry
+                       key names but Use hard coded values for instead. This
+                       flag is required when compiling against Lua 5.3.3 or
+                       earlier, as those do not expose the necessary information
+                       in the @lauxlib.h@ header file.
 
 library
   exposed-modules:     Foreign.Lua
@@ -176,6 +185,9 @@ library
 
   if flag(allow-unsafe-gc)
     cpp-options:         -DALLOW_UNSAFE_GC
+
+  if flag(hardcode-reg-keys)
+    cpp-options:         -DHARDCODE_REG_KEYS
 
 
 test-suite test-hslua
