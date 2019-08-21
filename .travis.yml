@@ -76,7 +76,7 @@ script:
     esac
   - export LD_LIBRARY_PATH=${HOME}/usr/lib:$LD_LIBRARY_PATH
   - echo $CABAL_CONFIG_ARGS
-  - cabal configure --enable-tests --disable-optimization --ghc-options="-Werror" $CABAL_CONFIG_ARGS
+  - cabal configure --enable-tests --disable-optimization $([ $GHCVER == "7.10.3" ] || printf '--ghc-options="-Werror"') $CABAL_CONFIG_ARGS
   - cabal build
   - cabal test
   - cabal copy
