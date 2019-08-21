@@ -1,5 +1,25 @@
 ## Changelog
 
+
+### 1.0.3.2
+
+Released 2019-08-21.
+
+- Added flag to use hardcoded values for registry keys: The names
+  of the registry keys used to store package information are
+  available as CPP values from file lauxlib.h since Lua 5.3.4;
+  compiling HsLua against older Lua versions was not possible, as
+  those values were expected to exist.
+
+  The respective values are now hardcoded into HsLua, and a new
+  flag `hardcode-reg-key` is introduced, which will cause the use
+  of these hardcoded values instead of those defined in
+  lauxlib.h. Using this flag makes it possible to compile hslua
+  against all Lua 5.3.* versions.
+
+- Added missing C files for benchmarking to list of
+  *extra-source-files*.
+
 ### 1.0.3.1
 
 Released 2019-05-08.
