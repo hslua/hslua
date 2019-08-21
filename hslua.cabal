@@ -23,6 +23,8 @@ category:            Foreign
 build-type:          Simple
 extra-source-files:  cbits/lua-5.3.5/*.h
                      cbits/error-conversion/*.h
+                     benchmark/benchmark-functions.h
+                     benchmark/benchmark-functions.c
                      README.md
                      CHANGELOG.md
                      test/lua/*.lua
