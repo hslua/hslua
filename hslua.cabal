@@ -103,7 +103,6 @@ library
                      , bytestring           >= 0.10.2 && < 0.11
                      , containers           >= 0.5    && < 0.7
                      , exceptions           >= 0.8    && < 0.11
-                     , fail                 >= 4.9    && < 5
                      , mtl                  >= 2.2    && < 2.3
                      , text                 >= 1.0    && < 1.3
   hs-source-dirs:      src
@@ -189,6 +188,8 @@ library
   if flag(hardcode-reg-keys)
     cpp-options:         -DHARDCODE_REG_KEYS
 
+  if !impl(ghc >= 8.0)
+    build-depends: fail >= 4.9 && < 5
 
 test-suite test-hslua
   type:                exitcode-stdio-1.0
@@ -213,7 +214,6 @@ test-suite test-hslua
                      , bytestring           >= 0.10.2 && < 0.11
                      , containers           >= 0.5    && < 0.7
                      , exceptions           >= 0.8    && < 0.11
-                     , fail                 >= 4.9    && < 5
                      , mtl                  >= 2.2    && < 2.3
                      , text                 >= 1.0    && < 1.3
                      -- for testing
@@ -223,6 +223,9 @@ test-suite test-hslua
                      , tasty                >= 0.11
                      , tasty-hunit          >= 0.9
                      , tasty-quickcheck     >= 0.8
+
+  if !impl(ghc >= 8.0)
+    build-depends: fail >= 4.9 && < 5
 
 benchmark benchmark-hslua
   type:                exitcode-stdio-1.0
