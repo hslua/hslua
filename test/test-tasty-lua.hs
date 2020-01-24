@@ -46,8 +46,9 @@ tests = testGroup "HsLua tasty module"
       assertEqual' "loading the module fails " Lua.OK =<<
         Lua.dostring "require 'tasty'"
 
-  , testGroup "testFileWith" $
-      [testLuaFile Lua.run "test-tasty.lua" ("test" </> "test-tasty.lua")]
+  , testGroup "testFileWith"
+    [ testLuaFile Lua.run "test-tasty.lua" ("test" </> "test-tasty.lua")
+    ]
   ]
 
 assertEqual' :: (Show a, Eq a) => String -> a -> a -> Lua ()
