@@ -110,3 +110,4 @@ instance Semigroup ResultSummary where
 
 instance Monoid ResultSummary where
   mempty = SuccessSummary 0
+  mappend = (<>)             -- GHC 8.2 compatibility
