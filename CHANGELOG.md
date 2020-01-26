@@ -1,5 +1,16 @@
 # Revision history for tasty-lua
 
+## 0.2.1 -- 2020-01-26
+
+- Fixed an issue with error reporting: the bug caused test-group
+  names to be added multiple times when reporting a test failure.
+
+## 0.2.0.1 -- 2019-06-19
+
+- List all files in cabal file: *stack.yaml* and
+  *test/tasty-lua.lua* were added to the list of extra source
+  files.
+
 ## 0.2.0 -- 2019-05-19
 
 - Renamed `testFileWith` to `testLuaFile`, and
