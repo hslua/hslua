@@ -1,5 +1,12 @@
 # Revision history for tasty-lua
 
+## 0.2.2 -- 2020-01-26
+
+- Avoid compilation warnings on GHC 8.2 and older. Monoid
+  instances on older GHC versions require an explicit
+  implementation of `mappend`. Newer instances use `(<>)` from
+  Semigroup.
+
 ## 0.2.1 -- 2020-01-26
 
 - Fixed an issue with error reporting: the bug caused test-group

@@ -1,5 +1,5 @@
 name:                tasty-lua
-version:             0.2.1
+version:             0.2.2
 synopsis:            Write tests in Lua, integrate into tasty.
 description:         Allow users to define tasty tests from Lua.
 homepage:            https://github.com/hslua/tasty-lua
