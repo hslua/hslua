@@ -1,12 +1,14 @@
-sudo: false
+sudo: true
 language: haskell
+
+cabal: "2.4"
 
 # Speed builds up by caching install requirements
 cache:
   directories:
   - $HOME/.ghc
   - $HOME/.cabal
-
+  - $TRAVIS_BUILD_DIR/.stack-work
 
 matrix:
   include:
@@ -15,3 +17,27 @@ matrix:
   - ghc: 8.4.4
   - ghc: 8.6.5
   - ghc: 8.8.1
+
+  - ghc: 8.6.5
+    env: STACK_YAML="$TRAVIS_BUILD_DIR/stack.yaml"
+
+install:
+  - |
+    if [ -z "$STACK_YAML" ]; then
+      ghc --version
+      cabal --version
+      cabal new-update
+      cabal new-build --enable-tests --enable-benchmarks
+    else
+      curl -sSL https://get.haskellstack.org/ | sh
+      stack --version
+      stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --ghc-options=-Werror
+    fi
+
+script:
+  - |
+    if [ -z "$STACK_YAML" ]; then
+      cabal new-test --enable-tests
+    else
+      stack test --system-ghc
+    fi
