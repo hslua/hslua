@@ -4,7 +4,7 @@ Copyright   : © 2019–2020 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
 Stability   : alpha
-Portability : Requires TemplateHaskell
+Portability : Requires GHC
 
 Translate test results from Lua into a Tasty @'TestTree'@.
 -}
