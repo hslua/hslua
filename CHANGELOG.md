@@ -7,6 +7,9 @@
   implementation of `mappend`. Newer instances use `(<>)` from
   Semigroup.
 
+- Improved CI tests: build with more GHC versions, build with
+  stack, and ensure that there are no HLint errors.
+
 ## 0.2.1 -- 2020-01-26
 
 - Fixed an issue with error reporting: the bug caused test-group
