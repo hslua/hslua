@@ -22,6 +22,7 @@ module Test.Tasty.Lua
 where
 
 import Control.Exception (SomeException, try)
+import Data.Bifunctor (first)
 import Data.List (intercalate)
 import Data.Semigroup (Semigroup (..))
 import Foreign.Lua (Lua)
@@ -83,22 +84,29 @@ stringifyFailureGist :: FailureInfo -> String
 stringifyFailureGist (names, msg) =
   intercalate " // " names ++ ":\n" ++ msg ++ "\n\n"
 
--- | Extract all failures from a test result tree.
+-- | Combine all failures (or successes) from a test result tree into a
+-- @'ResultSummary'@. If the tree contains only successes, the result
+-- will be @'SuccessSummary'@ with the number of successful tests; if
+-- there was at least one failure, the result will be
+-- @'FailureSummary'@, with a @'FailureInfo'@ for each failure.
 collectSummary :: ResultTree -> ResultSummary
 collectSummary (ResultTree name tree) =
   case tree of
     SingleTest Success       -> SuccessSummary 1
     SingleTest (Failure msg) -> FailureSummary [([name], msg)]
-    TestGroup subtree        -> foldr go (SuccessSummary 0) subtree
-      where go r summary = collectSummary r <> addGroup name summary
+    TestGroup subtree        -> foldMap (addGroup name . collectSummary)
+                                        subtree
 
+-- | Add the name of the current test group to all failure summaries.
 addGroup :: TestName -> ResultSummary -> ResultSummary
-addGroup name (FailureSummary fs) = FailureSummary (map addName fs)
-  where addName (names, msg) = (name : names, msg)
-addGroup _name summary = summary
+addGroup name  (FailureSummary fs) = FailureSummary (map (first (name:)) fs)
+addGroup _name summary             = summary
 
 instance Semigroup ResultSummary where
   (SuccessSummary n)  <> (SuccessSummary m)  = SuccessSummary (n + m)
   (SuccessSummary _)  <> (FailureSummary fs) = FailureSummary fs
   (FailureSummary fs) <> (SuccessSummary _)  = FailureSummary fs
   (FailureSummary fs) <> (FailureSummary gs) = FailureSummary (fs ++ gs)
+
+instance Monoid ResultSummary where
+  mempty = SuccessSummary 0
