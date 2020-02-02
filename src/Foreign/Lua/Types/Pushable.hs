@@ -5,7 +5,7 @@
 Module      : Foreign.Lua.Types.Pushable
 Copyright   : © 2007–2012 Gracjan Polak,
                 2012–2016 Ömer Sinan Ağacan,
-                2017-2019 Albert Krewinkel
+                2017-2020 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta
