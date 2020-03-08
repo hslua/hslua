@@ -26,6 +26,7 @@ module Foreign.Lua.FunctionCalling
   , freeCFunction
   , newCFunction
   , pushHaskellFunction
+  , pushPreCFunction
   , registerHaskellFunction
   ) where
 
