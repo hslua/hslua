@@ -193,10 +193,7 @@ equal index1 index2 = compare index1 index2 EQ
 -- `lua_error` function from Lua C API because it's never safe to use. (see
 -- [Error handling in hslua](#g:1) for details)
 error :: Lua NumResults
-error = do
-  getfield registryindex hsluaErrorRegistryField
-  insert (-2)
-  return 2
+error = liftLua hslua_error
 
 -- |  Controls the garbage collector.
 --

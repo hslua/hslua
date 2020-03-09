@@ -12,6 +12,17 @@ void hslua_pushhaskellerr(lua_State *L)
 }
 
 /*
+** Marks the occurence of an error; the returned value should be used as
+** the error message.
+*/
+int hslua_error(lua_State *L)
+{
+  hslua_pushhaskellerr(L);
+  lua_insert(L, -2);
+  return 2;
+}
+
+/*
 ** Checks whether the object at the given index is a Haskell error.
 */
 int hslua_is_haskell_error(lua_State *L, int idx) {

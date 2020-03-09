@@ -1,6 +1,8 @@
 #include "lua.h"
 #include "lauxlib.h"
 
+int hslua_error(lua_State *L);
+
 int hslua_call_hs(lua_State *L);
 
 int hslua_userdata_gc(lua_State *L);

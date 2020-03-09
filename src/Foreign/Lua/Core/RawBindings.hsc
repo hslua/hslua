@@ -323,9 +323,15 @@ foreign import ccall "lua.h lua_gc"
 ------------------------------------------------------------------------------
 -- * Miscellaneous functions
 
--- lua_error is unsafe in a haskell context and hence not supported.
+-- lua_error is unsafe, use hslua_error instead.
 -- lua_next is unsafe, use hslua_next instead.
 -- lua_concat is unsafe (may trigger a longjmp), use hslua_concat instead.
+
+-- | Replacement for <https://lua.org/manual/5.3/manual.html#lua_error \
+-- @lua_error@>; it uses the HsLua error signaling convention instead of raw
+-- @longjmp@.
+foreign import ccall "error-conversion.h hslua_error"
+  hslua_error :: Lua.State -> IO NumResults
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_next \
 -- @lua_next@> which catches any @longjmp@s.
