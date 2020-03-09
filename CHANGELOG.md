@@ -1,5 +1,55 @@
 ## Changelog
 
+### 1.1.0
+
+Released 2020-03-25.
+
+**WARNING:** The changes in this release are experimental. It is
+recommended to skip this release unless the newly introduced
+features are required.
+
+- Allow custom error handling: conversion of Lua errors to
+  Haskell exceptions and back is made configurable. Users can
+  define their own exception/error handling strategies, even
+  opening up the option to pass arbitrary exceptions through Lua.
+
+    - New types exported from `Foreign.Lua.Types`:
+
+        - `ErrorConversion`: defines the ways in which exceptions
+          and errors are handled and converted.
+        - `LuaEnvironment`: environment in which Lua computations
+          are evaluated. Contains the Lua interpreter state and
+          the error conversion strategy.
+
+    - The environment of the `Lua` type is changed from a plain
+      Lua `State` to the above mentioned `LuaEnvironment`.
+
+    - New functions `run'` is exported from `Foreign.Lua.Util`
+      and `Foreign.Lua`: it is analogous to `run`, but allows to
+      run computations with a custom error conversion strategy.
+
+    - New function `runWithConverter` exported from
+      `Foreign.Lua.Core.Types` and `Foreign.Lua.Core`; like
+      `run'`, but takes a custom state.
+
+    - New function `unsafeRunWith` exported from
+      `Foreign.Lua.Core.Types` and `Foreign.Lua.Core`; runs a
+      computation without proper error handling.
+
+    - New function `errorConversion` exported from
+      `Foreign.Lua.Core.Types` and `Foreign.Lua.Core`: extract
+      the error conversion strategy from the Lua type.
+
+    - New function `throwErrorAsException` exported from
+      `Foreign.Lua.Core.Error` and `Foreign.Lua.Core`: throws a
+      Lua error as Haskell exception, using the current error
+      conversion strategy.
+
+- Function `runWith` is moved from module `Foreign.Lua.Core` to
+  `Foreign.Lua.Util`.
+
+- The module `Foreign.Lua.Utf8` is now exported.
+
 
 ### 1.0.3.2
 
