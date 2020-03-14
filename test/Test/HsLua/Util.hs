@@ -32,7 +32,6 @@ module Test.HsLua.Util
   ) where
 
 import Data.ByteString (ByteString)
-import Data.Monoid ((<>))
 import Foreign.Lua ( Lua, run, runEither, loadstring, call, multret)
 import Test.Tasty (TestTree)
 import Test.Tasty.HUnit (Assertion, assertBool, assertFailure, testCase, (@?=))

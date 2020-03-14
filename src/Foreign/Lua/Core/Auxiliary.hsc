@@ -36,7 +36,6 @@ module Foreign.Lua.Core.Auxiliary
 
 import Control.Exception (IOException, try)
 import Data.ByteString (ByteString)
-import Data.Monoid ((<>))
 import Foreign.C ( CChar, CInt (CInt), CSize (CSize), CString, withCString )
 import Foreign.Lua.Core.Constants (multret, registryindex)
 import Foreign.Lua.Core.Error (hsluaErrorRegistryField, throwTopMessage)

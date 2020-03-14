@@ -25,7 +25,6 @@ module Foreign.Lua.FunctionCallingTests (tests) where
 
 import Control.Monad (forM_)
 import Data.ByteString.Char8 as Char8
-import Data.Monoid ((<>))
 import Foreign.Lua (Lua)
 import Test.HsLua.Util ( (=:), pushLuaExpr, shouldBeErrorMessageOf
                        , shouldBeResultOf )

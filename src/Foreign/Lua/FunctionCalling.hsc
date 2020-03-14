@@ -31,7 +31,6 @@ module Foreign.Lua.FunctionCalling
   ) where
 
 import Data.ByteString (ByteString)
-import Data.Monoid ((<>))
 import Foreign.C (CInt (..))
 import Foreign.Lua.Core as Lua
 import Foreign.Lua.Types

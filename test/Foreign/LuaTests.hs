@@ -27,7 +27,6 @@ import Prelude hiding (concat)
 
 import Data.ByteString (ByteString)
 import Data.Either (isLeft)
-import Data.Monoid ((<>))
 import Foreign.Lua as Lua
 import System.Mem (performMajorGC)
 import Test.HsLua.Util ( (=:), (?:), pushLuaExpr, shouldBeErrorMessageOf

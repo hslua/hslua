@@ -21,7 +21,6 @@ import Prelude hiding (EQ, LT, compare, concat, error)
 
 import Control.Monad
 import Data.ByteString (ByteString)
-import Data.Monoid ((<>))
 import Data.Maybe (fromMaybe)
 import Foreign.Lua.Core.Constants
 import Foreign.Lua.Core.Error
