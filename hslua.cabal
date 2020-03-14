@@ -18,7 +18,7 @@ author:              Gracjan Polak, Ömer Sinan Ağacan
 maintainer:          albert+hslua@zeitkraut.de
 copyright:           © 2007–2012 Gracjan Polak
                      © 2012–2016 Ömer Sinan Ağacan
-                     © 2016–2019 Albert Krewinkel
+                     © 2016–2020 Albert Krewinkel
 category:            Foreign
 build-type:          Simple
 extra-source-files:  cbits/lua-5.3.5/*.h

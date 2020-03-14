@@ -1,5 +1,5 @@
 {-
-Copyright © 2017-2019 Albert Krewinkel
+Copyright © 2017-2020 Albert Krewinkel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@ THE SOFTWARE.
 {-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      :  Foreign.Lua.Types.PushableTests
-Copyright   :  © 2017-2019 Albert Krewinkel
+Copyright   :  © 2017-2020 Albert Krewinkel
 License     :  MIT
 
 Maintainer  :  Albert Krewinkel <tarleb+hslua@zeitkraut.de>
