@@ -78,7 +78,7 @@ local function error_matches(fn, pattern)
   if success then
     return false
   end
-  return msg:match(pattern)
+  return tostring(msg):match(pattern)
 end
 
 register_assertor('is_truthy', is_truthy, "expected a truthy value, got %s")
