@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-|
-Copyright   :  © 2017–2019 Albert Krewinkel
+Copyright   :  © 2017–2020 Albert Krewinkel
 License     :  MIT
 
 Tests for Aeson–Lua glue.
@@ -121,7 +121,7 @@ arbitraryValue size = frequency
     [ (1, return Aeson.Null)
     , (4, Aeson.Bool <$> arbitrary)
     -- FIXME: this is cheating: we don't draw numbers from the whole possible
-    -- range, but only fro the range of nubers that can pass through the lua
+    -- range, but only from the range of nubers that can pass through the Lua
     -- stack without rounding errors. Good enough for now, but we still might
     -- want to do better in the future.
     , (4, Aeson.Number . luaNumberToScientific . Lua.Number <$> arbitrary)
