@@ -18,16 +18,15 @@ module Foreign.Lua.Types.Pushable
   , pushList
   ) where
 
-import Control.Monad (zipWithM_)
 import Data.ByteString (ByteString)
-import Data.Map (Map, toList)
+import Data.Map (Map)
+import Data.Text (Text)
 import Data.Set (Set)
 import Foreign.Lua.Core as Lua
+import Foreign.Lua.Push as Push
 import Foreign.Ptr (Ptr)
 
-import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as BL
-import qualified Foreign.Lua.Utf8 as Utf8
 
 -- | A value that can be pushed to the Lua stack.
 class Pushable a where
@@ -56,17 +55,17 @@ instance Pushable CFunction where
 instance Pushable (Ptr a) where
   push = pushlightuserdata
 
-instance Pushable T.Text where
-  push = push . Utf8.fromText
+instance Pushable Text where
+  push = pushText
 
 instance Pushable BL.ByteString where
-  push = push . BL.toStrict
+  push = pushLazyByteString
 
 instance Pushable Prelude.Integer where
-  push = pushInteger
+  push = pushIntegral
 
 instance Pushable Int where
-  push = pushInteger . fromIntegral
+  push = pushIntegral
 
 instance Pushable Float where
   push = pushRealFloat
@@ -75,53 +74,16 @@ instance Pushable Double where
   push = pushRealFloat
 
 instance {-# OVERLAPS #-} Pushable [Char] where
-  push = push . Utf8.fromString
+  push = pushString
 
 instance Pushable a => Pushable [a] where
-  push = pushList
-
-
--- | Push an @Int@ to the Lua stack. Numbers representable as Lua integers are
--- pushed as such; bigger integers are represented using their string
--- representation.
-pushInteger :: Prelude.Integer -> Lua ()
-pushInteger i =
-  let maxInt = fromIntegral (maxBound :: Lua.Integer)
-      minInt = fromIntegral (minBound :: Lua.Integer)
-  in if i >= minInt && i <= maxInt
-     then push (fromIntegral i :: Lua.Integer)
-     else push (show i)
-
--- | Push a floating point number to the Lua stack.
-pushRealFloat :: (RealFloat a, Show a) => a -> Lua ()
-pushRealFloat f =
-  let
-    number = 0 :: Lua.Number
-    doubleFitsInNumber = floatRadix number == floatRadix f
-      && floatDigits number == floatDigits f
-      && floatRange number == floatRange f
-  in if doubleFitsInNumber
-     then push (realToFrac f :: Lua.Number)
-     else push (show f)
-
--- | Push list as numerically indexed table.
-pushList :: Pushable a => [a] -> Lua ()
-pushList xs = do
-  let setField i x = push x *> rawseti (-2) i
-  newtable
-  zipWithM_ setField [1..] xs
+  push = pushList push
 
 instance (Pushable a, Pushable b) => Pushable (Map a b) where
-  push m = do
-    let addValue (k, v) = push k *> push v *> rawset (-3)
-    newtable
-    mapM_ addValue (toList m)
+  push = pushMap push push
 
 instance Pushable a => Pushable (Set a) where
-  push set = do
-    let addItem item = push item *> push True *> rawset (-3)
-    newtable
-    mapM_ addItem set
+  push = pushSet push
 
 --
 -- Tuples

@@ -95,6 +95,7 @@ library
                      , Foreign.Lua.Core.Types
                      , Foreign.Lua.FunctionCalling
                      , Foreign.Lua.Module
+                     , Foreign.Lua.Push
                      , Foreign.Lua.Types
                      , Foreign.Lua.Types.Peekable
                      , Foreign.Lua.Types.Pushable
