@@ -35,6 +35,7 @@ import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as BL
 import qualified Foreign.Lua.Utf8 as Utf8
 
+-- | Function to push a value to Lua's stack.
 type Pusher a = a -> Lua ()
 
 -- | Pushes a 'Bool' as a Lua boolean.

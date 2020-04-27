@@ -21,17 +21,18 @@ module Foreign.Lua.Types.Peekable
   , reportValueOnFailure
   ) where
 
+import Control.Monad ((>=>))
 import Data.ByteString (ByteString)
 import Data.Map (Map, fromList)
 import Data.Set (Set)
 import Foreign.Lua.Core as Lua
 import Foreign.Ptr (Ptr)
-import Text.Read (readMaybe)
 
 import qualified Control.Monad.Catch as Catch
 import qualified Data.Set as Set
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as BL
+import qualified Foreign.Lua.Peek as Peek
 import qualified Foreign.Lua.Utf8 as Utf8
 
 -- | Use @test@ to check whether the value at stack index @n@ has the correct
@@ -84,10 +85,7 @@ instance Peekable Lua.Number where
   peek = reportValueOnFailure "number" tonumber
 
 instance Peekable ByteString where
-  peek = reportValueOnFailure "string" $ \idx -> do
-    -- copy value, as tostring converts numbers to strings *in-place*.
-    pushvalue idx
-    tostring stackTop <* pop 1
+  peek = Peek.peekByteString >=> Peek.force
 
 instance Peekable Bool where
   peek = toboolean
@@ -102,25 +100,25 @@ instance Peekable Lua.State where
   peek = reportValueOnFailure "Lua state (i.e., a thread)" tothread
 
 instance Peekable T.Text where
-  peek = fmap Utf8.toText . peek
+  peek = Peek.peekText >=> Peek.force
 
 instance Peekable BL.ByteString where
-  peek = fmap BL.fromStrict . peek
+  peek = Peek.peekLazyByteString >=> Peek.force
 
 instance Peekable Prelude.Integer where
-  peek = peekInteger
+  peek = Peek.peekIntegral >=> Peek.force
 
 instance Peekable Int where
-  peek = fmap fromIntegral <$> peekInteger
+  peek = Peek.peekIntegral >=> Peek.force
 
 instance Peekable Float where
-  peek = peekRealFloat
+  peek = Peek.peekRealFloat >=> Peek.force
 
 instance Peekable Double where
-  peek = peekRealFloat
+  peek = Peek.peekRealFloat >=> Peek.force
 
 instance {-# OVERLAPS #-} Peekable [Char] where
-  peek = fmap Utf8.toString . peek
+  peek = Peek.peekString >=> Peek.force
 
 instance Peekable a => Peekable [a] where
   peek = peekList
@@ -131,26 +129,6 @@ instance (Ord a, Peekable a, Peekable b) => Peekable (Map a b) where
 instance (Ord a, Peekable a) => Peekable (Set a) where
   peek = -- All keys with non-nil values are in the set
     fmap (Set.fromList . map fst . filter snd) . peekKeyValuePairs
-
--- | Retrieve an @Int@ value from the stack.
-peekInteger :: StackIndex -> Lua Prelude.Integer
-peekInteger idx = ltype idx >>= \case
-  TypeString -> do
-    s <- peek idx
-    case readMaybe s of
-      Just x -> return x
-      Nothing -> mismatchError "integer" idx
-  _ -> fromIntegral <$> (peek idx :: Lua Lua.Integer)
-
--- | Retrieve a @'RealFloat'@ (e.g., Float or Double) from the stack.
-peekRealFloat :: (Read a, RealFloat a) => StackIndex -> Lua a
-peekRealFloat idx = ltype idx >>= \case
-  TypeString -> do
-    s <- peek idx
-    case readMaybe s of
-      Just x -> return x
-      Nothing -> mismatchError "number" idx
-  _ -> realToFrac <$> (peek idx :: Lua Lua.Number)
 
 -- | Read a table into a list
 peekList :: Peekable a => StackIndex -> Lua [a]
