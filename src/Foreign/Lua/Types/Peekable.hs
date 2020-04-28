@@ -36,12 +36,12 @@ import qualified Foreign.Lua.Peek as Peek
 import qualified Foreign.Lua.Utf8 as Utf8
 
 -- | Use @test@ to check whether the value at stack index @n@ has the correct
--- type and use @peekfn@ to convert it to a haskell value if possible. A
--- successfully received value is wrapped using the @'Success'@ constructor,
--- while a type mismatch results in an @Error@ with the given error message.
-typeChecked :: String
-            -> (StackIndex -> Lua Bool)
-            -> (StackIndex -> Lua a)
+-- type and use @peekfn@ to convert it to a haskell value if possible. Throws
+-- and exception if the test failes with the expected type name as part of the
+-- message.
+typeChecked :: String                   -- ^ expected type
+            -> (StackIndex -> Lua Bool) -- ^ pre-condition Checker
+            -> (StackIndex -> Lua a)    -- ^ retrieval function
             -> StackIndex -> Lua a
 typeChecked expectedType test peekfn idx = do
   v <- test idx

@@ -57,8 +57,8 @@ runEither :: Catch.Exception e => Lua a -> IO (Either e a)
 runEither = try . run
 
 -- | Run Lua computation with the given Lua state and the default
--- error-to-exception converter (@'throwTopStringAsException'@). Exception
--- handling is left to the caller.
+-- error-to-exception converter. Exception handling is left to
+-- the caller.
 runWith :: Lua.State -> Lua a -> IO a
 runWith = Lua.runWithConverter defaultErrorConversion
 

@@ -90,8 +90,8 @@ foreign import capi "lauxlib.h value LUA_PRELOAD_TABLE"
 
 -- | Loads and runs the given string.
 --
--- Returns @'OK'@ on success, or an error if either loading of the string or
--- calling of the thunk failed.
+-- Returns 'Lua.OK' on success, or an error if either loading of the
+-- string or calling of the thunk failed.
 dostring :: ByteString -> Lua Status
 dostring s = do
   loadRes <- loadstring s
@@ -158,9 +158,9 @@ getsubtable idx fname = do
 
 -- | Loads a ByteString as a Lua chunk.
 --
--- This function returns the same results as @'load'@. @name@ is the chunk name,
--- used for debug information and error messages. Note that @name@ is used as a
--- C string, so it may not contain null-bytes.
+-- This function returns the same results as @'Lua.load'@. @name@ is the
+-- chunk name, used for debug information and error messages. Note that
+-- @name@ is used as a C string, so it may not contain null-bytes.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadbuffer luaL_loadbuffer>.
 loadbuffer :: ByteString -- ^ Program to load
@@ -176,17 +176,18 @@ foreign import capi SAFTY "lauxlib.h luaL_loadbuffer"
                   -> IO Lua.StatusCode
 
 
--- | Loads a file as a Lua chunk. This function uses @lua_load@ (see @'load'@)
--- to load the chunk in the file named filename. The first line in the file is
--- ignored if it starts with a @#@.
+-- | Loads a file as a Lua chunk. This function uses @lua_load@ (see
+-- @'Lua.load'@) to load the chunk in the file named filename. The first
+-- line in the file is ignored if it starts with a @#@.
 --
--- The string mode works as in function @'load'@.
+-- The string mode works as in function @'Lua.load'@.
 --
--- This function returns the same results as @'load'@, but it has an extra error
--- code @'ErrFile'@ for file-related errors (e.g., it cannot open or read the
--- file).
+-- This function returns the same results as @'Lua.load'@, but it has an
+-- extra error code @'Lua.ErrFile'@ for file-related errors (e.g., it
+-- cannot open or read the file).
 --
--- As @'load'@, this function only loads the chunk; it does not run it.
+-- As @'Lua.load'@, this function only loads the chunk; it does not run
+-- it.
 --
 -- Note that the file is opened by Haskell, not Lua.
 --
@@ -203,13 +204,15 @@ loadfile fp = Lua.liftIO contentOrError >>= \case
   contentOrError = try (B.readFile fp)
 
 
--- | Loads a string as a Lua chunk. This function uses @lua_load@ to load the
--- chunk in the given ByteString. The given string may not contain any NUL
--- characters.
+-- | Loads a string as a Lua chunk. This function uses @lua_load@ to
+-- load the chunk in the given ByteString. The given string may not
+-- contain any NUL characters.
 --
--- This function returns the same results as @lua_load@ (see @'load'@).
+-- This function returns the same results as @lua_load@ (see
+-- @'Lua.load'@).
 --
--- Also as @'load'@, this function only loads the chunk; it does not run it.
+-- Also as @'Lua.load'@, this function only loads the chunk; it does not
+-- run it.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadstring>.
 loadstring :: ByteString -> Lua Status
@@ -238,11 +241,11 @@ foreign import ccall SAFTY "lauxlib.h luaL_newmetatable"
   luaL_newmetatable :: Lua.State -> CString -> IO Lua.LuaBool
 
 
--- | Creates a new Lua state. It calls @'lua_newstate'@ with an allocator based
--- on the standard C @realloc@ function and then sets a panic function (see
--- <https://www.lua.org/manual/5.3/manual.html#4.6 §4.6> of the Lua 5.3
--- Reference Manual) that prints an error message to the standard error output
--- in case of fatal errors.
+-- | Creates a new Lua state. It calls @lua_newstate@ with an allocator
+-- based on the standard C @realloc@ function and then sets a panic
+-- function (see <https://www.lua.org/manual/5.3/manual.html#4.6 §4.6>
+-- of the Lua 5.3 Reference Manual) that prints an error message to the
+-- standard error output in case of fatal errors.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#luaL_newstate luaL_newstate>.
@@ -267,9 +270,9 @@ foreign import ccall unsafe "lauxlib.h luaL_newstate"
 -- @rawgeti t r@. Function @'unref'@ frees a reference and its associated
 -- object.
 --
--- If the object at the top of the stack is nil, @'ref'@ returns the constant
--- @'refnil'@. The constant @'noref'@ is guaranteed to be different from any
--- reference returned by @'ref'@.
+-- If the object at the top of the stack is nil, @'ref'@ returns the
+-- constant @'Lua.refnil'@. The constant @'Lua.noref'@ is guaranteed to
+-- be different from any reference returned by @'ref'@.
 --
 -- See also: <https://www.lua.org/manual/5.3/manual.html#luaL_ref luaL_ref>.
 ref :: StackIndex -> Lua Reference

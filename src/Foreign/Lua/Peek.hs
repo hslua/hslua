@@ -81,12 +81,13 @@ toPeeker :: (StackIndex -> Lua a)
 toPeeker op idx =
   (Right <$> op idx) <|> return (Left $ errorMsg "retrieving failed")
 
--- | Use @test@ to check whether the value at stack index @n@ has the correct
--- type and use @peekfn@ to convert it to a haskell value if possible. A
--- successfully received value is wrapped using the @'Success'@ constructor,
--- while a type mismatch results in an @Error@ with the given error message.
-typeChecked :: Text
-            -> (StackIndex -> Lua Bool)
+-- | Use @test@ to check whether the value at stack index @n@ has
+-- the correct type and use @peekfn@ to convert it to a Haskell
+-- value if possible. A successfully received value is wrapped
+-- using the 'Right' constructor, while a type mismatch results
+-- in @Left PeekError@ with the given error message.
+typeChecked :: Text                      -- ^ expected type
+            -> (StackIndex -> Lua Bool)  -- ^ pre-condition checker
             -> Peeker a
             -> Peeker a
 typeChecked expectedType test peekfn idx = do

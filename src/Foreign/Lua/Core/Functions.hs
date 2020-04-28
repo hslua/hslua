@@ -133,11 +133,11 @@ close = lua_close
 -- metamethods). Otherwise returns @False@. Also returns @False@ if any of the
 -- indices is not valid.
 --
--- The value of op must be of type @'LuaComparerOp'@:
+-- The value of op must be of type @RelationalOperator@:
 --
---    OpEQ: compares for equality (==)
---    OpLT: compares for less than (<)
---    OpLE: compares for less or equal (<=)
+--    EQ: compares for equality (==)
+--    LT: compares for less than (<)
+--    LE: compares for less or equal (<=)
 --
 -- This is a wrapper function of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_compare lua_compare>.
@@ -188,10 +188,11 @@ createtable narr nrec = liftLua $ \l ->
 equal :: StackIndex -> StackIndex -> Lua Bool
 equal index1 index2 = compare index1 index2 EQ
 
--- | This is a convenience function to implement error propagation convention
--- described in [Error handling in hslua](#g:1). hslua doesn't implement
--- `lua_error` function from Lua C API because it's never safe to use. (see
--- [Error handling in hslua](#g:1) for details)
+-- | This is a convenience function to implement error propagation
+-- convention described in [Error handling in hslua](#g:1). hslua
+-- doesn't implement the @lua_error@ function from Lua C API because
+-- it's never safe to use. (see [Error handling in hslua](#g:1) for
+-- details)
 error :: Lua NumResults
 error = liftLua hslua_error
 
@@ -602,6 +603,10 @@ pushcclosure f n = liftLua $ \l -> lua_pushcclosure l f n
 pushcfunction :: CFunction -> Lua ()
 pushcfunction f = pushcclosure f 0
 
+-- | Pushes the global environment onto the stack.
+--
+-- Wraps <https://www.lua.org/manual/5.3/manual.html#lua_pushglobaltable \
+-- lua_pushglobaltable>.
 pushglobaltable :: Lua ()
 pushglobaltable = liftLua lua_pushglobaltable
 
@@ -689,7 +694,7 @@ rawgeti k n = ensureTable k (\l -> lua_rawgeti l k n)
 
 -- | Returns the raw "length" of the value at the given index: for strings, this
 -- is the string length; for tables, this is the result of the length operator
--- ('#') with no metamethods; for userdata, this is the size of the block of
+-- (@#@) with no metamethods; for userdata, this is the size of the block of
 -- memory allocated for the userdata; for other values, it is 0.
 --
 -- See also:
@@ -807,13 +812,13 @@ settop = liftLua1 lua_settop
 
 -- |  Returns the status of this Lua thread.
 --
--- The status can be @'OK'@ for a normal thread, an error value if the thread
--- finished the execution of a @'lua_resume'@ with an error, or @'Yield'@ if
--- the thread is suspended.
+-- The status can be 'OK' for a normal thread, an error value if the
+-- thread finished the execution of a @lua_resume@ with an error, or
+-- 'Yield' if the thread is suspended.
 --
--- You can only call functions in threads with status @'OK'@. You can resume
--- threads with status @'OK'@ (to start a new coroutine) or @'Yield'@ (to
--- resume a coroutine).
+-- You can only call functions in threads with status 'OK'. You can
+-- resume threads with status 'OK' (to start a new coroutine) or 'Yield'
+-- (to resume a coroutine).
 --
 -- See also: <https://www.lua.org/manual/5.3/manual.html#lua_status lua_status>.
 status :: Lua Status
@@ -840,7 +845,7 @@ tocfunction n = liftLua $ \l -> do
   return (if fnPtr == nullFunPtr then Nothing else Just fnPtr)
 
 -- | Converts the Lua value at the given acceptable index to the signed integral
--- type @'lua_Integer'@. The Lua value must be an integer, a number or a string
+-- type 'Lua.Integer'. The Lua value must be an integer, a number or a string
 -- convertible to an integer (see
 -- <https://www.lua.org/manual/5.3/manual.html#3.4.3 §3.4.3> of the Lua 5.3
 -- Reference Manual); otherwise, @tointeger@ returns @Nothing@.

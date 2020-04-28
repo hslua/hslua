@@ -284,7 +284,7 @@ foreign import ccall "error-conversion.h hslua_setglobal"
 
 
 --------------------------------------------------------------------------------
--- * 'load' and 'call' functions (load and run Lua code)
+-- * \'load\' and \'call\' functions (load and run Lua code)
 
 -- lua_call is inherently unsafe, we do not support it.
 
@@ -343,6 +343,8 @@ foreign import ccall "error-conversion.h hslua_next"
 foreign import ccall "error-conversion.h hslua_concat"
   hslua_concat :: Lua.State -> NumArgs -> IO (Failable ())
 
+-- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushglobaltable \
+-- lua_pushglobaltable>
 foreign import capi unsafe "lua.h lua_pushglobaltable"
   lua_pushglobaltable :: Lua.State -> IO ()
 

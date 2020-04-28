@@ -11,8 +11,9 @@ Portability : non-portable (depends on GHC)
 
 Convenience functions to convert Haskell values into Lua userdata.
 
-The main purpose of this module is to allow fast and simple creation of
-instances for @'Peekable'@ and @'Pushable'@. E.g., given a data type Person
+The main purpose of this module is to allow fast and simple
+creation of instances for @Peekable@ and @Pushable@. E.g., given
+a data type Person
 
 > data Person = Person { name :: String, age :: Int }
 >    deriving (Eq, Show, Typeable, Data)

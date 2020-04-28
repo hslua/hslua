@@ -155,27 +155,30 @@ newtype State = State (Ptr ()) deriving (Eq, Generic)
 -- |  Type for C functions.
 --
 -- In order to communicate properly with Lua, a C function must use the
--- following protocol, which defines the way parameters and results are passed:
--- a C function receives its arguments from Lua in its stack in direct order
--- (the first argument is pushed first). So, when the function starts,
--- @'gettop'@ returns the number of arguments received by the function. The
--- first argument (if any) is at index 1 and its last argument is at index
--- @gettop@. To return values to Lua, a C function just pushes them onto the
--- stack, in direct order (the first result is pushed first), and returns the
--- number of results. Any other value in the stack below the results will be
--- properly discarded by Lua. Like a Lua function, a C function called by Lua
--- can also return many results.
+-- following protocol, which defines the way parameters and results are
+-- passed: a C function receives its arguments from Lua in its stack in
+-- direct order (the first argument is pushed first). So, when the
+-- function starts, @'Foreign.Lua.Core.Functions.gettop'@ returns the
+-- number of arguments received by the function. The first argument (if
+-- any) is at index 1 and its last argument is at index
+-- @'Foreign.Lua.Core.Functions.gettop'@. To return values to Lua, a C
+-- function just pushes them onto the stack, in direct order (the first
+-- result is pushed first), and returns the number of results. Any other
+-- value in the stack below the results will be properly discarded by
+-- Lua. Like a Lua function, a C function called by Lua can also return
+-- many results.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_CFunction lua_CFunction>.
 type CFunction = FunPtr (State -> IO NumResults)
 
--- | The reader function used by @'lua_load'@. Every time it needs another piece
--- of the chunk, lua_load calls the reader, passing along its data parameter.
--- The reader must return a pointer to a block of memory with a new piece of the
--- chunk and set size to the block size. The block must exist until the reader
--- function is called again. To signal the end of the chunk, the reader must
--- return @NULL@ or set size to zero. The reader function may return pieces of any
--- size greater than zero.
+-- | The reader function used by @'Foreign.Lua.Core.Functions.load'@.
+-- Every time it needs another piece of the chunk, lua_load calls the
+-- reader, passing along its data parameter. The reader must return a
+-- pointer to a block of memory with a new piece of the chunk and set
+-- size to the block size. The block must exist until the reader
+-- function is called again. To signal the end of the chunk, the reader
+-- must return @NULL@ or set size to zero. The reader function may
+-- return pieces of any size greater than zero.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_Reader lua_Reader>.
 type Reader = FunPtr (State -> Ptr () -> Ptr CSize -> IO (Ptr CChar))
@@ -320,7 +323,7 @@ data Status
   | ErrFile   -- ^ opening or reading a file failed.
   deriving (Eq, Show)
 
--- | Convert C integer constant to @'LuaStatus'@.
+-- | Convert C integer constant to @'Status'@.
 toStatus :: StatusCode -> Status
 toStatus (StatusCode c) = case c of
   #{const LUA_OK}        -> OK
@@ -331,7 +334,7 @@ toStatus (StatusCode c) = case c of
   #{const LUA_ERRGCMM}   -> ErrGcmm
   #{const LUA_ERRERR}    -> ErrErr
   #{const LUA_ERRFILE}   -> ErrFile
-  n -> error $ "Cannot convert (" ++ show n ++ ") to LuaStatus"
+  n -> error $ "Cannot convert (" ++ show n ++ ") to Status"
 {-# INLINABLE toStatus #-}
 
 -- | Integer code used to signal the status of a thread or computation.

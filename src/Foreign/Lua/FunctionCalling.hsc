@@ -80,9 +80,9 @@ instance (Peekable a, ToHaskellFunction b) =>
 -- @'Lua.Exception'@; exception handling must be done by the converted
 -- Haskell function. Failure to do so will cause the program to crash.
 --
--- E.g., the following code could be used to handle an Exception of type
--- FooException, if that type is an instance of @'MonadCatch'@ and
--- @'Pushable'@:
+-- E.g., the following code could be used to handle an Exception
+-- of type FooException, if that type is an instance of
+-- 'Control.Monad.Catch.MonadCatch' and 'Pushable':
 --
 -- > toHaskellFunction (myFun `catchM` (\e -> raiseError (e :: FooException)))
 --
