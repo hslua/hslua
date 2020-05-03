@@ -25,6 +25,7 @@ import qualified Foreign.LuaTests
 import qualified Foreign.Lua.CoreTests
 import qualified Foreign.Lua.FunctionCallingTests
 import qualified Foreign.Lua.ModuleTests
+import qualified Foreign.Lua.PushTests
 import qualified Foreign.Lua.TypesTests
 import qualified Foreign.Lua.Types.PeekableTests
 import qualified Foreign.Lua.Types.PushableTests
@@ -38,6 +39,7 @@ main = defaultMain $ testGroup "hslua" tests
 tests :: [TestTree]
 tests =
   [ Foreign.Lua.CoreTests.tests
+  , Foreign.Lua.PushTests.tests
   , Foreign.Lua.FunctionCallingTests.tests
   , Foreign.Lua.UtilTests.tests
   , testGroup "Sendings and receiving values from the stack"
