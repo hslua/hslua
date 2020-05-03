@@ -23,8 +23,6 @@ category:            Foreign
 build-type:          Simple
 extra-source-files:  cbits/lua-5.3.5/*.h
                      cbits/error-conversion/*.h
-                     benchmark/benchmark-functions.h
-                     benchmark/benchmark-functions.c
                      README.md
                      CHANGELOG.md
                      test/lua/*.lua
@@ -244,18 +242,3 @@ test-suite test-hslua
     build-depends:       base-compat          >= 0.10
     hs-source-dirs:      prelude
     other-modules:       Prelude
-
-
-benchmark benchmark-hslua
-  type:                exitcode-stdio-1.0
-  main-is:             benchmark-hslua.hs
-  hs-source-dirs:      benchmark
-  default-language:    Haskell2010
-  build-depends:       hslua
-                     , base                 >= 4.8
-                     , bytestring           >= 0.10.2 && < 0.11
-                     , criterion            >= 1.0    && < 1.6
-                     , deepseq              >= 1.4.1  && < 1.5
-  c-sources:           benchmark/benchmark-functions.c
-  include-dirs:        benchmark
-                     , cbits/lua-5.3.5
