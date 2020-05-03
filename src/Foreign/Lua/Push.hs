@@ -30,6 +30,7 @@ import Data.ByteString (ByteString)
 import Data.Map (Map, toList)
 import Data.Set (Set)
 import Foreign.Lua.Core as Lua
+import Numeric (showGFloat)
 
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as BL
@@ -69,17 +70,19 @@ pushIntegral i =
      then pushinteger $ fromIntegral i
      else pushString  $ show i
 
--- | Push a floating point number to the Lua stack.
-pushRealFloat :: (RealFloat a, Show a) => a -> Lua ()
+-- | Push a floating point number to the Lua stack. Uses a string
+-- representation for all types which do not match the float properties
+-- of the 'Lua.Number' type.
+pushRealFloat :: RealFloat a => a -> Lua ()
 pushRealFloat f =
   let
     number = 0 :: Lua.Number
-    doubleFitsInNumber = floatRadix number == floatRadix f
+    realFloatFitsInNumber = floatRadix number == floatRadix f
       && floatDigits number == floatDigits f
       && floatRange number == floatRange f
-  in if doubleFitsInNumber
+  in if realFloatFitsInNumber
      then pushnumber (realToFrac f :: Lua.Number)
-     else pushString (show f)
+     else pushString (showGFloat Nothing f $ "")
 
 -- | Push list as numerically indexed table.
 pushList :: Pusher a -> [a] -> Lua ()
