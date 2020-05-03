@@ -181,11 +181,14 @@ createtable narr nrec = liftLua $ \l ->
 
 -- TODO: implement dump
 
--- | Returns @True@ if the two values in acceptable indices index1 and index2
--- are equal, following the semantics of the Lua @==@ operator (that is, may
--- call metamethods). Otherwise returns False. Also returns False if any of the
--- indices is non valid. Uses @'compare'@ internally.
-equal :: StackIndex -> StackIndex -> Lua Bool
+-- | Returns @True@ if the two values in acceptable indices index1 and
+-- index2 are equal, following the semantics of the Lua @==@ operator
+-- (that is, may call metamethods). Otherwise returns @False@. Also
+-- returns @False@ if any of the indices is non valid. Uses @'compare'@
+-- internally.
+equal :: StackIndex  -- ^ index1
+      -> StackIndex  -- ^ index2
+      -> Lua Bool
 equal index1 index2 = compare index1 index2 EQ
 
 -- | This is a convenience function to implement error propagation
