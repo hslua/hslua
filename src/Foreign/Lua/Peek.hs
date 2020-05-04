@@ -12,6 +12,7 @@ Functions which marshal and push Haskell values onto Lua's stack.
 module Foreign.Lua.Peek
   ( Peeker
   , PeekError (..)
+  , errorMsg
   , force
   , toPeeker
   -- * Primitives
@@ -24,6 +25,7 @@ module Foreign.Lua.Peek
   , peekString
   , peekText
   -- * Collections
+  , peekKeyValuePairs
   , peekList
   , peekMap
   , peekSet
