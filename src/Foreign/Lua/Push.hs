@@ -66,7 +66,8 @@ pushIntegral :: (Integral a, Show a) => a -> Lua ()
 pushIntegral i =
   let maxInt = fromIntegral (maxBound :: Lua.Integer)
       minInt = fromIntegral (minBound :: Lua.Integer)
-  in if i >= minInt && i <= maxInt
+      i' = fromIntegral i :: Prelude.Integer
+  in if i' >= minInt && i' <= maxInt
      then pushinteger $ fromIntegral i
      else pushString  $ show i
 
