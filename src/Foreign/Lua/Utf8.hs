@@ -20,15 +20,18 @@ import Data.Text (Text)
 
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TextEncoding
+import qualified Data.Text.Encoding.Error as TextEncoding
 
--- | Decode @'ByteString'@ to @'String'@ using UTF-8.
+-- | Decode @'ByteString'@ to @'String'@ using UTF-8. Invalid input
+-- bytes are replaced with the Unicode replacement character U+FFFD.
 toString :: ByteString -> String
-toString = T.unpack . TextEncoding.decodeUtf8
+toString = T.unpack . toText
 {-# INLINABLE toString #-}
 
--- | Decode @'ByteString'@ to @'Text'@ using UTF-8.
+-- | Decode @'ByteString'@ to @'Text'@ using UTF-8. Invalid input
+-- bytes are replaced with the Unicode replacement character U+FFFD.
 toText :: ByteString -> Text
-toText = TextEncoding.decodeUtf8
+toText = TextEncoding.decodeUtf8With TextEncoding.lenientDecode
 {-# INLINABLE toText #-}
 
 -- | Encode @'String'@ to @'ByteString'@ using UTF-8.
