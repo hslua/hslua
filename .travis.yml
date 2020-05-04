@@ -10,10 +10,6 @@ cache:
 matrix:
   include:
     ## Test Compilers
-    # Test GHC 7.10.3
-    - env: GHCVER=7.10.3 LUAVER=default CABALVER=1.22
-      compiler: ": #GHC 7.10.3"
-      addons: {apt: {packages: [cabal-install-1.22,ghc-7.10.3], sources: [hvr-ghc]}}
     # Test GHC 8.0.2
     - env: GHCVER=8.0.2 LUAVER=default CABALVER=2.0
       compiler: ": #GHC 8.0.2"
