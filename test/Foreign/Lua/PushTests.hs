@@ -156,7 +156,7 @@ tests = testGroup "Push"
             return $ Lua.TypeTable == listType
           assert producesTable
 
-      , testProperty "set values become table keys" $ \set -> monadicIO $ do
+      , testProperty "set values become table keys" $ \set -> monadicIO $
           case Set.lookupMin set of
             Nothing -> return ()
             Just el -> do
@@ -164,7 +164,7 @@ tests = testGroup "Push"
                 pushSet (pushIntegral @Lua.Integer) set
                 pushIntegral el
                 Lua.gettable (Lua.nthFromTop 2)
-                Lua.toboolean (Lua.stackTop)
+                Lua.toboolean Lua.stackTop
               assert hasKey
 
       , testSingleElementProperty (pushSet pushText)
@@ -178,7 +178,7 @@ tests = testGroup "Push"
             return $ Lua.TypeTable == listType
           assert producesTable
 
-      , testProperty "pairs are in table" $ \m -> monadicIO $ do
+      , testProperty "pairs are in table" $ \m -> monadicIO $
           case Map.lookupMax m of
             Nothing -> return ()
             Just (k, v) -> do
@@ -187,7 +187,7 @@ tests = testGroup "Push"
                 pushText k
                 Lua.gettable (Lua.nthFromTop 2)
                 fromMaybe (error "key not found") <$>
-                  Lua.tonumber (Lua.stackTop)
+                  Lua.tonumber Lua.stackTop
               assert (tabVal == v)
 
       , testSingleElementProperty (pushMap pushText (pushRealFloat @Double))

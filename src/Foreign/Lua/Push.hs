@@ -82,7 +82,7 @@ pushRealFloat f =
       && floatRange number == floatRange f
   in if realFloatFitsInNumber
      then pushnumber (realToFrac f :: Lua.Number)
-     else pushString (showGFloat Nothing f $ "")
+     else pushString (showGFloat Nothing f "")
 
 -- | Push list as numerically indexed table.
 pushList :: Pusher a -> [a] -> Lua ()
