@@ -162,7 +162,7 @@ peekIntegral idx =
       str <- Utf8.toString .
              fromMaybe (Prelude.error "programming error in peekIntegral")
              <$> tostring idx
-      let msg = "expected Integral, got " <> T.pack str
+      let msg = "expected Integral, got '" <> T.pack str <> "' (string)"
       return $ maybe (Left $ errorMsg msg) Right $ readMaybe str
     _ -> Left <$> mismatchError "Integral" idx
 
@@ -174,12 +174,14 @@ peekRealFloat idx =
       str <- Utf8.toString .
              fromMaybe (Prelude.error "programming error in peekRealFloat")
              <$> tostring idx
-      let msg = "expected RealFloat, got " <> T.pack str
+      let msg = "expected RealFloat, got '" <> T.pack str <> "' (string)"
       return $ maybe (Left $ errorMsg msg) Right $ readMaybe str
     _ -> second realToFrac <$>
          reportValueOnFailure "RealFloat" tonumber idx
 
--- | Reads a numerically indexed table into a list.
+-- | Reads a numerically indexed table @t@ into a list, where the 'length' of
+-- the list is equal to @#t@. The operation will fail if a numerical field @n@
+-- with @1 ≤ n < #t@ is missing.
 peekList :: Peeker a -> Peeker [a]
 peekList peekElement = typeChecked "table" istable $ \idx -> do
   let elementsAt [] = return (Right [])
