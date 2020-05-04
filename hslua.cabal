@@ -213,6 +213,7 @@ test-suite test-hslua
                      , Foreign.Lua.Core.ErrorTests
                      , Foreign.Lua.FunctionCallingTests
                      , Foreign.Lua.ModuleTests
+                     , Foreign.Lua.PeekTests
                      , Foreign.Lua.PushTests
                      , Foreign.Lua.TypesTests
                      , Foreign.Lua.Types.PeekableTests

@@ -25,6 +25,7 @@ import qualified Foreign.LuaTests
 import qualified Foreign.Lua.CoreTests
 import qualified Foreign.Lua.FunctionCallingTests
 import qualified Foreign.Lua.ModuleTests
+import qualified Foreign.Lua.PeekTests
 import qualified Foreign.Lua.PushTests
 import qualified Foreign.Lua.TypesTests
 import qualified Foreign.Lua.Types.PeekableTests
@@ -50,4 +51,5 @@ tests =
   , Foreign.Lua.UserdataTests.tests
   , Foreign.Lua.ModuleTests.tests
   , Foreign.LuaTests.tests
+  , Foreign.Lua.PeekTests.tests
   ]
