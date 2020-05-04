@@ -105,16 +105,16 @@ tests = testGroup "Push"
     , testGroup "pushString"
       [ "\"test\"" =:
         assertLuaEqual (pushString "test") "\"test\""
-      , "\"äéïøûßð\"" =:
-        assertLuaEqual (pushString "äéïøûßð") (Utf8.fromString "'äéïøûßð'")
+      , "unicode" =:
+        assertLuaEqual (pushString "ÄÉÏøûßð") (Utf8.fromString "'ÄÉÏøûßð'")
       , testSingleElementProperty pushString
       ]
 
     , testGroup "pushText"
       [ "\"test\"" =:
         assertLuaEqual (pushText "test") "\"test\""
-      , "\"äéïøûßð\"" =:
-        assertLuaEqual (pushText "äéïøûßð") (Utf8.fromString "'äéïøûßð'")
+      , "unicode" =:
+        assertLuaEqual (pushText "ÄÉÏøûßð") (Utf8.fromString "'ÄÉÏøûßð'")
       , testSingleElementProperty pushText
       ]
     ]
