@@ -50,6 +50,7 @@ import qualified Foreign.Lua.Utf8 as Utf8
 -- | List of errors which occurred while retrieving a value from
 -- the stack.
 newtype PeekError = PeekError { fromPeekError :: NonEmpty Text }
+  deriving (Show, Eq)
 
 formatPeekError :: PeekError -> String
 formatPeekError (PeekError msgs) = T.unpack $
