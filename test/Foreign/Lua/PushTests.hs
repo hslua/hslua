@@ -62,7 +62,7 @@ tests = testGroup "Push"
       , "-2^129 + 1" =:
         assertLuaEqual (pushIntegral @Integer
                         (-680564733841876926926749214863536422911))
-                        "'-680564733841876926926749214863536422911'"
+                       "'-680564733841876926926749214863536422911'"
       , testSingleElementProperty (pushIntegral @Integer)
       ]
     ]
@@ -138,12 +138,11 @@ tests = testGroup "Push"
               <* Lua.pop 1
           assert $ retrievedList == list
 
-      -- PENDING: enable once Lua.len becomes available
-      -- , testProperty "table size equals list length" $ \list -> monadicIO $ do
-      --     tableSize <- run $ Lua.run $ do
-      --       pushList pushString list
-      --       Lua.len Lua.stackTop
-      --     assert $ fromIntegral tableSize == length list
+      , testProperty "table size equals list length" $ \list -> monadicIO $ do
+          tableSize <- run $ Lua.run $ do
+            pushList pushString list
+            Lua.rawlen Lua.stackTop
+          assert $ fromIntegral tableSize == length list
 
       , testSingleElementProperty (pushList pushText)
       ]
