@@ -7,7 +7,7 @@ Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta
 Portability : Portable
 
-Functions which marshal and push Haskell values onto Lua's stack.
+Functions which unmarshal and retrieve Haskell values from Lua's stack.
 -}
 module Foreign.Lua.Peek
   ( Peeker
@@ -52,7 +52,7 @@ import qualified Foreign.Lua.Utf8 as Utf8
 -- | List of errors which occurred while retrieving a value from
 -- the stack.
 newtype PeekError = PeekError { fromPeekError :: NonEmpty Text }
-  deriving (Show, Eq)
+  deriving (Eq, Show)
 
 formatPeekError :: PeekError -> String
 formatPeekError (PeekError msgs) = T.unpack $
@@ -222,7 +222,6 @@ peekKeyValuePairs keyPeeker valuePeeker =
 -- index @idx@. The next key, if it exists, is left at the top of
 -- the stack.
 nextPair :: Peeker a -> Peeker b -> Peeker (Maybe (a, b))
--- nextPair = undefined
 nextPair keyPeeker valuePeeker idx = retrieving "key-value pair" <$> do
   hasNext <- next idx
   if not hasNext
