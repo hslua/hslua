@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : Foreign.Lua.Core.Auxiliary
@@ -36,10 +35,11 @@ module Foreign.Lua.Core.Auxiliary
 
 import Control.Exception (IOException, try)
 import Data.ByteString (ByteString)
-import Foreign.C ( CChar, CInt (CInt), CSize (CSize), CString, withCString )
-import Foreign.Lua.Core.Constants (multret, registryindex)
+import Foreign.C (withCString)
 import Foreign.Lua.Core.Error (hsluaErrorRegistryField)
-import Foreign.Lua.Core.Types (Lua, Reference, StackIndex, Status, liftLua)
+import Foreign.Lua.Raw.Auxiliary
+import Foreign.Lua.Raw.Constants (multret, registryindex)
+import Foreign.Lua.Raw.Types (Lua, Reference, StackIndex, Status, liftLua)
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 
@@ -49,44 +49,7 @@ import qualified Foreign.Lua.Core.Types as Lua
 import qualified Foreign.Lua.Utf8 as Utf8
 import qualified Foreign.Storable as Storable
 
-#ifndef HARDCODE_REG_KEYS
-import System.IO.Unsafe (unsafePerformIO)
-import qualified Foreign.C as C
-#endif
-
-##ifdef ALLOW_UNSAFE_GC
-##define SAFTY unsafe
-##else
-##define SAFTY safe
-##endif
-
-
---------------------------------------------------------------------------------
 -- * The Auxiliary Library
-
--- | Key, in the registry, for table of loaded modules.
-loadedTableRegistryField :: String
-#ifdef HARDCODE_REG_KEYS
-loadedTableRegistryField = "_LOADED"
-#else
-loadedTableRegistryField = unsafePerformIO (C.peekCString c_loaded_table)
-{-# NOINLINE loadedTableRegistryField #-}
-
-foreign import capi "lauxlib.h value LUA_LOADED_TABLE"
-  c_loaded_table :: CString
-#endif
-
--- | Key, in the registry, for table of preloaded loaders.
-preloadTableRegistryField :: String
-#ifdef HARDCODE_REG_KEYS
-preloadTableRegistryField = "_PRELOAD"
-#else
-preloadTableRegistryField = unsafePerformIO (C.peekCString c_preload_table)
-{-# NOINLINE preloadTableRegistryField #-}
-
-foreign import capi "lauxlib.h value LUA_PRELOAD_TABLE"
-  c_preload_table :: CString
-#endif
 
 -- | Loads and runs the given string.
 --
@@ -119,9 +82,6 @@ getmetafield :: StackIndex -- ^ obj
 getmetafield obj e = liftLua $ \l ->
   withCString e $ fmap Lua.toType . luaL_getmetafield l obj
 
-foreign import capi SAFTY "lauxlib.h luaL_getmetafield"
-  luaL_getmetafield :: Lua.State -> StackIndex -> CString -> IO Lua.TypeCode
-
 -- | Pushes onto the stack the metatable associated with name @tname@ in the
 -- registry (see @newmetatable@) (@nil@ if there is no metatable associated
 -- with that name). Returns the type of the pushed value.
@@ -129,9 +89,6 @@ getmetatable' :: String -- ^ tname
               -> Lua Lua.Type
 getmetatable' tname = liftLua $ \l ->
   withCString tname $ fmap Lua.toType . luaL_getmetatable l
-
-foreign import capi SAFTY "lauxlib.h luaL_getmetatable"
-  luaL_getmetatable :: Lua.State -> CString -> IO Lua.TypeCode
 
 -- | Push referenced value from the table at the given index.
 getref :: StackIndex -> Reference -> Lua ()
@@ -170,11 +127,6 @@ loadbuffer bs name = liftLua $ \l ->
   B.useAsCStringLen bs $ \(str, len) ->
   withCString name
     (fmap Lua.toStatus . luaL_loadbuffer l str (fromIntegral len))
-
-foreign import capi SAFTY "lauxlib.h luaL_loadbuffer"
-  luaL_loadbuffer :: Lua.State -> Ptr CChar -> CSize -> CString
-                  -> IO Lua.StatusCode
-
 
 -- | Loads a file as a Lua chunk. This function uses @lua_load@ (see
 -- @'Lua.load'@) to load the chunk in the file named filename. The first
@@ -237,10 +189,6 @@ newmetatable :: String -> Lua Bool
 newmetatable tname = liftLua $ \l ->
   Lua.fromLuaBool <$> withCString tname (luaL_newmetatable l)
 
-foreign import ccall SAFTY "lauxlib.h luaL_newmetatable"
-  luaL_newmetatable :: Lua.State -> CString -> IO Lua.LuaBool
-
-
 -- | Creates a new Lua state. It calls @lua_newstate@ with an allocator
 -- based on the standard C @realloc@ function and then sets a panic
 -- function (see <https://www.lua.org/manual/5.3/manual.html#4.6 §4.6>
@@ -256,10 +204,6 @@ newstate = do
     Lua.createtable 0 0
     Lua.setfield registryindex hsluaErrorRegistryField
     return l
-
-foreign import ccall unsafe "lauxlib.h luaL_newstate"
-  luaL_newstate :: IO Lua.State
-
 
 -- | Creates and returns a reference, in the table at index @t@, for the object
 -- at the top of the stack (and pops the object).
@@ -277,10 +221,6 @@ foreign import ccall unsafe "lauxlib.h luaL_newstate"
 -- See also: <https://www.lua.org/manual/5.3/manual.html#luaL_ref luaL_ref>.
 ref :: StackIndex -> Lua Reference
 ref t = liftLua $ \l -> Lua.toReference <$> luaL_ref l t
-
-foreign import ccall SAFTY "lauxlib.h luaL_ref"
-  luaL_ref :: Lua.State -> StackIndex -> IO CInt
-
 
 -- | Converts any Lua value at the given index to a @'ByteString'@ in a
 -- reasonable format. The resulting string is pushed onto the stack and also
@@ -301,10 +241,6 @@ tostring' n = do
         cstrLen <- Storable.peek lenPtr
         B.packCStringLen (cstr, fromIntegral cstrLen)
 
-foreign import ccall safe "error-conversion.h hsluaL_tolstring"
-  hsluaL_tolstring :: Lua.State -> StackIndex -> Ptr CSize -> IO (Ptr CChar)
-
-
 -- | Creates and pushes a traceback of the stack L1. If a message is given it
 -- appended at the beginning of the traceback. The level parameter tells at
 -- which level to start the traceback.
@@ -314,10 +250,6 @@ traceback l1 msg level = liftLua $ \l ->
     Nothing -> luaL_traceback l l1 nullPtr (fromIntegral level)
     Just msg' -> withCString msg' $ \cstr ->
       luaL_traceback l l1 cstr (fromIntegral level)
-
-foreign import capi unsafe "lauxlib.h luaL_traceback"
-  luaL_traceback :: Lua.State -> Lua.State -> CString -> CInt -> IO ()
-
 
 -- | Releases reference @'ref'@ from the table at index @idx@ (see @'ref'@). The
 -- entry is removed from the table, so that the referred object can be
@@ -330,6 +262,3 @@ unref :: StackIndex -- ^ idx
       -> Lua ()
 unref idx r = liftLua $ \l ->
   luaL_unref l idx (Lua.fromReference r)
-
-foreign import ccall SAFTY "lauxlib.h luaL_unref"
-  luaL_unref :: Lua.State -> StackIndex -> CInt -> IO ()

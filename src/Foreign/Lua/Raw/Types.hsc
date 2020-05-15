@@ -2,7 +2,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE RankNTypes                 #-}
 {-|
-Module      : Foreign.Lua.Core.Types
+Module      : Foreign.Lua.Raw.Types
 Copyright   : © 2007–2012 Gracjan Polak,
                 2012–2016 Ömer Sinan Ağacan,
                 2017-2020 Albert Krewinkel
@@ -13,7 +13,7 @@ Portability : non-portable (depends on GHC)
 
 The core Lua types, including mappings of Lua types to Haskell.
 -}
-module Foreign.Lua.Core.Types
+module Foreign.Lua.Raw.Types
   ( Lua (..)
   , LuaEnvironment (..)
   , ErrorConversion (..)
@@ -41,10 +41,6 @@ module Foreign.Lua.Core.Types
   , Integer (..)
   , Number (..)
   , StackIndex (..)
-  , nthFromBottom
-  , nthFromTop
-  , stackTop
-  , stackBottom
   , NumArgs (..)
   , NumResults (..)
   , RelationalOperator (..)
@@ -362,31 +358,11 @@ data GCCONTROL
 newtype StackIndex = StackIndex { fromStackIndex :: CInt }
   deriving (Enum, Eq, Num, Ord, Show)
 
--- | Stack index of the nth element from the top of the stack.
-nthFromTop :: CInt -> StackIndex
-nthFromTop n = StackIndex (-n)
-{-# INLINABLE nthFromTop #-}
-
--- | Stack index of the nth element from the bottom of the stack.
-nthFromBottom :: CInt -> StackIndex
-nthFromBottom = StackIndex
-{-# INLINABLE nthFromBottom #-}
-
--- | Top of the stack
-stackTop :: StackIndex
-stackTop = -1
-{-# INLINABLE stackTop #-}
-
--- | Bottom of the stack
-stackBottom :: StackIndex
-stackBottom = 1
-{-# INLINABLE stackBottom #-}
-
 --
 -- Number of arguments and return values
 --
 
--- | The number of arguments expected a function.
+-- | The number of arguments consumed curing a function call.
 newtype NumArgs = NumArgs { fromNumArgs :: CInt }
   deriving (Eq, Num, Ord, Show)
 

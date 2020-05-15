@@ -1,5 +1,5 @@
 {-|
-Module      : Foreign.Lua.Core.Constants
+Module      : Foreign.Lua.Raw.Constants
 Copyright   : © 2007–2012 Gracjan Polak,
                 2012–2016 Ömer Sinan Ağacan,
                 2017-2020 Albert Krewinkel
@@ -10,14 +10,14 @@ Portability : ForeignFunctionInterface
 
 Lua constants
 -}
-module Foreign.Lua.Core.Constants
+module Foreign.Lua.Raw.Constants
   ( multret
   , registryindex
   , refnil
   , noref
   ) where
 
-import Foreign.Lua.Core.Types
+import Foreign.Lua.Raw.Types
 
 #include "lua.h"
 #include "lauxlib.h"

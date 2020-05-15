@@ -1,21 +1,21 @@
 {-# LANGUAGE CPP #-}
 {-|
-Module      : Foreign.Lua.Core.RawBindings
+Module      : Foreign.Lua.Raw.Functions
 Copyright   : © 2007–2012 Gracjan Polak,
                 2012–2016 Ömer Sinan Ağacan,
                 2017-2020 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta
-Portability : ForeignFunctionInterface
+Portability : ForeignFunctionInterface, CPP
 
-Haskell bindings to lua C API functions.
+Haskell bindings to Lua C API functions.
 -}
-module Foreign.Lua.Core.RawBindings where
+module Foreign.Lua.Raw.Functions where
 
 import Foreign.C
-import Foreign.Lua.Core.Error (Failable (Failable))
-import Foreign.Lua.Core.Types as Lua
+import Foreign.Lua.Raw.Error (Failable (Failable))
+import Foreign.Lua.Raw.Types as Lua
 import Foreign.Ptr
 
 ##ifdef ALLOW_UNSAFE_GC

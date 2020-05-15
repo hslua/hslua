@@ -35,17 +35,11 @@ module Foreign.Lua.Core.Error
 
 import Control.Applicative (Alternative (..))
 import Data.Typeable (Typeable)
-import Foreign.C (CChar, CInt (CInt), CSize (CSize))
-import Foreign.Marshal.Alloc (alloca)
-import Foreign.Ptr (Ptr, nullPtr)
-import Foreign.Lua.Core.Types (Lua, StackIndex, fromLuaBool)
+import Foreign.Lua.Core.Types (Lua, fromLuaBool)
+import Foreign.Lua.Raw.Error
 
 import qualified Control.Exception as E
 import qualified Control.Monad.Catch as Catch
-import qualified Data.ByteString as B
-import qualified Data.ByteString.Char8 as Char8
-import qualified Data.ByteString.Unsafe as B
-import qualified Foreign.Storable as Storable
 import qualified Foreign.Lua.Core.Types as Lua
 import qualified Foreign.Lua.Utf8 as Utf8
 
@@ -109,71 +103,9 @@ throwTopMessageWithState l = do
   msg <- Lua.liftIO (errorMessage l)
   Catch.throwM $ Exception (Utf8.toString msg)
 
--- | Helper function which uses proper error-handling to throw an
--- exception with the given message.
-throwMessage :: String -> Lua a
-throwMessage msg = do
-  Lua.liftLua $ \l ->
-    B.unsafeUseAsCStringLen (Utf8.fromString msg) $ \(msgPtr, z) ->
-      lua_pushlstring l msgPtr (fromIntegral z)
-  Lua.errorConversion >>= Lua.liftLua . Lua.errorToException
-
--- | Retrieve and pop the top object as an error message. This is very similar
--- to tostring', but ensures that we don't recurse if getting the message
--- failed.
-errorMessage :: Lua.State -> IO B.ByteString
-errorMessage l = alloca $ \lenPtr -> do
-  cstr <- hsluaL_tolstring l Lua.stackTop lenPtr
-  if cstr == nullPtr
-    then return $ Char8.pack ("An error occurred, but the error object " ++
-                              "cannot be converted into a string.")
-    else do
-      cstrLen <- Storable.peek lenPtr
-      msg <- B.packCStringLen (cstr, fromIntegral cstrLen)
-      lua_pop l 2
-      return msg
-
-foreign import ccall safe "error-conversion.h hsluaL_tolstring"
-  hsluaL_tolstring :: Lua.State -> StackIndex -> Ptr CSize -> IO (Ptr CChar)
-
-foreign import capi unsafe "lua.h lua_pop"
-  lua_pop :: Lua.State -> CInt -> IO ()
-
-foreign import capi unsafe "lua.h lua_pushlstring"
-  lua_pushlstring :: Lua.State -> Ptr CChar -> CSize -> IO ()
-
 -- | Registry field under which the special HsLua error indicator is stored.
 hsluaErrorRegistryField :: String
 hsluaErrorRegistryField = "HSLUA_ERR"
-
---
--- * Custom protocol to communicate with hslua C wrapper functions.
---
-
--- | CInt value or an error, using the convention that value below zero indicate
--- an error. Values greater than zero are used verbatim. The phantom type is
--- used for additional type safety and gives the type into which the wrapped
--- CInt should be converted.
-newtype Failable a = Failable CInt
-
--- | Convert from Failable to target type if possible, returning
--- @'Nothing'@ if there was a failure.
-fromFailable :: (CInt -> a) -> Failable a -> Lua (Result a)
-fromFailable fromCInt (Failable x) =
-  if x < 0
-  then return ErrorOnStack
-  else return (Success $ fromCInt x)
-
--- | The result of a Lua operation which may throw an error.
-data Result a
-  = Success a
-  | ErrorOnStack
-  deriving
-    ( Eq
-    , Functor
-    , Ord
-    , Show
-    )
 
 -- | Return a result or throw the error object at the top of the
 -- stack as an exception.
