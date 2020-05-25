@@ -1,5 +1,11 @@
 # hslua-aeson
 
+## v1.0.2
+
+Released 2020-05-25
+
+- Relaxed version constraint for aeson, allowing `aeson-1.5.*`.
+
 ## v1.0.1
 
 Released 2020-04-03
