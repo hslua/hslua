@@ -1,3 +1,4 @@
+cabal-version:       >=2.0
 name:                hslua-aeson
 version:             1.0.2
 synopsis:            Allow aeson data types to be used with lua.
@@ -13,7 +14,13 @@ category:            Foreign
 build-type:          Simple
 extra-source-files:  README.md
                      changelog.md
-cabal-version:       >=1.10
+tested-with:         GHC == 8.0.2
+                   , GHC == 8.2.2
+                   , GHC == 8.4.3
+                   , GHC == 8.6.5
+                   , GHC == 8.8.3
+                   , GHC == 8.10.1
+
 
 source-repository head
   type:     git

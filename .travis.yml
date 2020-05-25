@@ -1,91 +1,52 @@
-sudo: false
-language: c
+sudo: true
+language: haskell
+
+git:
+  depth: 5
+
+cabal: "2.4"
+
 cache:
   directories:
-  - $HOME/.ghc
-  - $HOME/.cabal
-  - $HOME/.stack
+  - "$HOME/.cabal/store"
+  - "$HOME/.stack"
+  - "$TRAVIS_BUILD_DIR/.stack-work"
 
 matrix:
   include:
-  # grab the appropriate GHC and cabal-install versions from hvr's PPA.
-  - env: BUILD=cabal GHCVER=7.10.3 CABALVER=1.22
-    compiler: "GHC 7.10.3"
-    addons:
-      apt:
-        packages:
-          - cabal-install-1.22
-          - ghc-7.10.3
-        sources: [hvr-ghc]
+  - ghc: 8.0.2
+  - ghc: 8.2.2
+  - ghc: 8.4.4
+  - ghc: 8.6.5
+  - ghc: 8.8.3
+  - ghc: 8.10.1
 
-  - env: BUILD=cabal GHCVER=8.0.2 CABALVER=1.24
-    compiler: "GHC 8.0.2"
-    addons:
-      apt:
-        packages:
-          - cabal-install-1.24
-          - ghc-8.0.2
-        sources: [hvr-ghc]
-
-  - env: BUILD=cabal GHCVER=8.2.1 CABALVER=1.24
-    compiler: "GHC 8.2.1"
-    addons:
-      apt:
-        packages:
-          - cabal-install-1.24
-          - ghc-8.2.1
-        sources: [hvr-ghc]
-
-  # The Stack builds. We can pass in arbitrary Stack arguments via the ARGS
-  # variable, such as using --stack-yaml to point to a different file.
-  - env: BUILD=stack ARGS="--resolver lts-10"
-    compiler: "stack 8.0.2"
-    addons:
-      apt:
-        packages:
-          - ghc-8.0.2
-        sources: [hvr-ghc]
-
-before_install:
-# Using compiler above sets CC to an invalid value, so unset it
-- unset CC
-
-# Download and unpack the stack executable
-- export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$HOME/.local/bin:$PATH
-- mkdir -p ~/.local/bin
-- |
-  curl -L https://www.stackage.org/stack/linux-x86_64 | \
-    tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+  - ghc: 8.6.5
+    env: STACK_YAML="$TRAVIS_BUILD_DIR/stack.yaml"
 
 install:
-- echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
-- |
-  case "$BUILD" in
-    stack)
-      stack --no-terminal --install-ghc $ARGS test --flag 'aeson:fast' --only-dependencies --fast
-      ;;
-    cabal)
+  - |
+    if [ -z "$STACK_YAML" ]; then
+      ghc --version
       cabal --version
-      travis_retry cabal update
-      cabal install --only-dependencies --enable-tests --force-reinstalls --reorder-goals
-      ;;
-  esac
+      cabal new-update
+      cabal new-build --enable-tests --enable-benchmarks
+    else
+      curl -sSL https://get.haskellstack.org/ | sh
+      stack --version
+      stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --ghc-options=-Werror
+    fi
 
 script:
-- GHC_OPTIONS="-Wall -Werror"
-- |
-  case "$BUILD" in
-    stack)
-      stack --no-terminal test --haddock --no-haddock-deps --ghc-options="$GHC_OPTIONS"
-      ;;
-    cabal)
-      cabal configure --enable-tests --ghc-options="$GHC_OPTIONS"
-      cabal build
-      cabal check
-      cabal test --show-details=direct
-      cabal copy
-      cabal sdist
-      SRC_TGZ=$(cabal info . | awk '{print $2;exit}').tar.gz && \
-        (cd dist && cabal install --enable-tests --force-reinstalls "$SRC_TGZ")
-      ;;
-  esac
+  - |
+    if [ -z "$STACK_YAML" ]; then
+       cabal new-test --enable-tests
+    else
+      stack test --system-ghc
+    fi
+
+  # HLint check
+  - curl -sSL https://raw.github.com/ndmitchell/neil/master/misc/travis.sh | sh -s -- hlint .
+
+notifications:
+  email: false
