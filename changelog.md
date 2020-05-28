@@ -2,9 +2,14 @@
 
 ## v1.0.2
 
-Released 2020-05-25
+Released 2020-05-28
 
 - Relaxed version constraint for aeson, allowing `aeson-1.5.*`.
+
+- Update CI tests to check with GHC versions 8.0 through 8.10.
+  Compilation with GHC 7.10 is no longer tested.
+
+- Bump to stackage LTS-14.
 
 ## v1.0.1
 
