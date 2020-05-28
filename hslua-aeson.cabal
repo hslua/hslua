@@ -1,4 +1,4 @@
-cabal-version:       >=2.0
+cabal-version:       2.2
 name:                hslua-aeson
 version:             1.0.2
 synopsis:            Allow aeson data types to be used with lua.
