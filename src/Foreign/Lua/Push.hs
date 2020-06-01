@@ -85,6 +85,13 @@ pushRealFloat f =
      then pushnumber (realToFrac f :: Lua.Number)
      else pushString (showGFloat Nothing f "")
 
+-- | Push list of pairs as default key-value Lua table.
+pushKeyValuePairs :: Pusher a -> Pusher b -> Pusher [(a,b)]
+pushKeyValuePairs pushKey pushValue m = do
+  let addValue (k, v) = pushKey k *> pushValue v *> rawset (-3)
+  newtable
+  mapM_ addValue m
+
 -- | Push list as numerically indexed table.
 pushList :: Pusher a -> [a] -> Lua ()
 pushList push xs = do
@@ -94,10 +101,7 @@ pushList push xs = do
 
 -- | Push 'Map' as default key-value Lua table.
 pushMap :: Pusher a -> Pusher b -> Pusher (Map a b)
-pushMap pushKey pushValue m = do
-  let addValue (k, v) = pushKey k *> pushValue v *> rawset (-3)
-  newtable
-  mapM_ addValue (toList m)
+pushMap pushKey pushValue m = pushKeyValuePairs pushKey pushValue $ toList m
 
 -- | Push a 'Set' as idiomatic Lua set, i.e., as a table with the set
 -- elements as keys and @true@ as values.
