@@ -1,5 +1,33 @@
 ## Changelog
 
+### 1.1.1
+
+Released 2020-06-02
+
+- New module Foreign.Lua.Push: provides functions which marshal
+  and push Haskell values onto Lua's stack.
+
+  Most functions in Foreign.Lua.Types.Pushable are now defined
+  using functions from this module.
+
+- New module Foreign.Lua.Peek: provides functions which unmarshal
+  and retrieve Haskell values from Lua's stack. Contrary to `peek`
+  from Foreign.Lua.Types.Peekable, the peeker functions in this
+  module will never throw errors, but use an `Either` type to
+  signal retrieval failure.
+
+  The error type `PeekError` should not be considered final and
+  will likely be subject to change in later versions.
+
+- Module Foreign.Lua.Utf8: never throw errors when decoding UTF-8
+  strings. Invalid UTF-8 input bytes no longer cause exceptions,
+  but are replaced with the Unicode replacement character U+FFFD.
+
+- Fixed missing and faulty Haddock documentation.
+
+- Fixed a bug which caused unnecessary use of strings to represent
+  floating point numbers under certain configurations.
+
 ### 1.1.0
 
 Released 2020-03-25.
