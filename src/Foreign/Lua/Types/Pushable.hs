@@ -23,10 +23,11 @@ import Data.Map (Map)
 import Data.Text (Text)
 import Data.Set (Set)
 import Foreign.Lua.Core as Lua
-import Foreign.Lua.Push as Push
+import Foreign.Lua.Push hiding (pushList)
 import Foreign.Ptr (Ptr)
 
 import qualified Data.ByteString.Lazy as BL
+import qualified Foreign.Lua.Push as Push
 
 -- | A value that can be pushed to the Lua stack.
 class Pushable a where
@@ -77,13 +78,17 @@ instance {-# OVERLAPS #-} Pushable [Char] where
   push = pushString
 
 instance Pushable a => Pushable [a] where
-  push = pushList push
+  push = Push.pushList push
 
 instance (Pushable a, Pushable b) => Pushable (Map a b) where
   push = pushMap push push
 
 instance Pushable a => Pushable (Set a) where
   push = pushSet push
+
+-- | Push list as numerically indexed table.
+pushList :: Pushable a => [a] -> Lua ()
+pushList = Push.pushList push
 
 --
 -- Tuples
