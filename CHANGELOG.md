@@ -2,10 +2,10 @@
 
 ### 1.1.2
 
-Released 2020-06-02
+Released 2020-06-27
 
 - Revert signature of function `pushList` to it's proper 1.1
-  value. This fixes a mistake which made caused the 1.1.1 release
+  value. This fixes a mistake which caused the 1.1.1 release
   to be in violation of the PVP versioning policy.
 
 - Module Foreign.Lua.Peek: add function `pushKeyValuePairs` (Alex
