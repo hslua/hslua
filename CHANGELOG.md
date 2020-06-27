@@ -1,8 +1,23 @@
 ## Changelog
 
+### 1.1.2
+
+Released 2020-06-02
+
+- Revert signature of function `pushList` to it's proper 1.1
+  value. This fixes a mistake which made caused the 1.1.1 release
+  to be in violation of the PVP versioning policy.
+
+- Module Foreign.Lua.Peek: add function `pushKeyValuePairs` (Alex
+  Loomis).
+
 ### 1.1.1
 
 Released 2020-06-02
+
+*WARNING*: This version does not conform to the PVP versioning
+policy, due to a unintended signature change of function
+`pushList`. It is recommended not to use this version.
 
 - New module Foreign.Lua.Push: provides functions which marshal
   and push Haskell values onto Lua's stack.
