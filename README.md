@@ -282,7 +282,7 @@ Parameters:
 
 Returns:
 
-- The modified filepath without extension.
+- The modified filepath without extension (string).
 
 This function wraps [System.FilePath.dropExtension].
 
@@ -304,7 +304,8 @@ Parameters:
 
 Returns:
 
-- `true` if `filepath` has an extension.
+- `true` iff `filepath` has an extension, `false` otherwise
+  (boolean).
 
 This function wraps [System.FilePath.hasExtension].
 
@@ -321,7 +322,8 @@ Parameters:
 
 Returns:
 
-- `true` if `filepath` is an absolute path.
+- `true` iff `filepath` is an absolute path, `false` otherwise
+  (boolean).
 
 This function wraps [System.FilePath.isAbsolute].
 
@@ -340,11 +342,12 @@ isRelative("/") == false
 Parameters:
 
 `filepath`
-:   path
+:   path (string)
 
 Returns:
 
-- `true` if `filepath` is a relative path.
+- `true` iff `filepath` is a relative path, `false` otherwise
+  (boolean).
 
 This function wraps [System.FilePath.isRelative].
 
@@ -365,7 +368,7 @@ Parameters:
 
 Returns:
 
-- The joined path.
+- The joined path (string).
 
 This function wraps [System.FilePath.joinPath].
 
@@ -382,7 +385,7 @@ Parameters:
 
 Returns:
 
-- The normalised path.
+- The normalised path (string).
 
 This function wraps [System.FilePath.normalise].
 
@@ -405,7 +408,7 @@ Parameters:
 
 Returns:
 
-- A list of all directory paths.
+- A list of all directory paths (list of strings).
 
 This function wraps [System.FilePath.splitDirectories].
 
@@ -427,7 +430,7 @@ Parameters:
 
 Returns:
 
-- The modified filepath.
+- The filepath up to the last directory separator (string).
 
 This function wraps [System.FilePath.takeDirectory].
 
@@ -449,7 +452,7 @@ Parameters:
 
 Returns:
 
-- String of all extensions.
+- String of all extensions (string).
 
 This function wraps [System.FilePath.takeExtensions].
 
@@ -471,7 +474,7 @@ Parameters:
 
 Returns:
 
-- The file name.
+- The file name (string).
 
 This function wraps [System.FilePath.takeFileName].
 
