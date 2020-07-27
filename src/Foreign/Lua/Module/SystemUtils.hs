@@ -21,7 +21,8 @@ import Control.Exception (IOException, try)
 import Foreign.Lua (Lua, NumResults(..), Peekable, Pushable, StackIndex)
 import qualified Foreign.Lua as Lua
 
--- | Lua callback function
+-- | Lua callback function. This type is similar to @'AnyValue'@, and
+-- the same caveats apply.
 newtype Callback = Callback StackIndex
 
 instance Peekable Callback where
@@ -35,7 +36,11 @@ instance Pushable Callback where
   push (Callback idx) = Lua.pushvalue idx
 
 
--- | Any value of unknown type
+-- | Any value of unknown type.
+--
+-- This simply wraps the function's index on the Lua stack. Changes to
+-- the stack may only be made with great care, as they can break the
+-- reference.
 newtype AnyValue = AnyValue { fromAnyValue :: StackIndex }
 
 instance Peekable AnyValue where
