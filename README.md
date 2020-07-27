@@ -262,8 +262,7 @@ Returns:
 
 This library includes wrappers around the following functions from
 the [filepath] library for the current platform (POSIX or
-Windows). All examples below are for [POSIX
-systems].
+Windows). All examples below are for [POSIX systems].
 
 #### drop_extension
 
@@ -313,7 +312,7 @@ This function wraps [System.FilePath.hasExtension].
 
 `is_absolute (filepath)`
 
-Is a path absolute? (same as `! is_relative(filepath)`)
+Is a path absolute? (same as `not is_relative(filepath)`)
 
 Parameters:
 
@@ -377,6 +376,7 @@ This function wraps [System.FilePath.joinPath].
 `normalise (filepath)`
 
 Normalise a path. See examples [here][System.FilePath.normalize].
+<!-- TODO explain so it becomes understandable without a link -->
 
 Parameters:
 
@@ -442,7 +442,7 @@ Get all extensions.
 
 ```lua
 takeExtensions("/directory/path.ext") == ".ext"
-takeExtensions("file.tar.gz") == ".tar.gz
+takeExtensions("file.tar.gz") == ".tar.gz"
 ```
 
 Parameters:
