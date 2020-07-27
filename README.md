@@ -278,7 +278,7 @@ dropExtension("/directory/path.ext") == "/directory/path"
 Parameters:
 
 `filepath`
-:   path
+:   path (string)
 
 Returns:
 
@@ -300,7 +300,7 @@ hasExtension("/directory/path") == false
 Parameters:
 
 `filepath`
-:   path
+:   path (string)
 
 Returns:
 
@@ -317,7 +317,7 @@ Is a path absolute? (same as `! is_relative(filepath)`)
 Parameters:
 
 `filepath`
-:   path
+:   path (string)
 
 Returns:
 
@@ -361,7 +361,7 @@ joinPath({"/","directory/","file.ext"}) == "/directory/file.ext"
 Parameters:
 
 `filepaths`
-:   list of paths
+:   list of path strings
 
 Returns:
 
@@ -378,7 +378,7 @@ Normalise a path. See examples [here][System.FilePath.normalize].
 Parameters:
 
 `filepath`
-:   path
+:   path (string)
 
 Returns:
 
@@ -401,7 +401,7 @@ splitDirectories("/test/file") == {"/","test","file"}
 Parameters:
 
 `filepath`
-:   path
+:   path (string)
 
 Returns:
 
@@ -423,7 +423,7 @@ takeDirectory("/foo/bar/baz/") == "/foo/bar/baz"
 Parameters:
 
 `filepath`
-:   path path
+:   path (string)
 
 Returns:
 
@@ -445,7 +445,7 @@ takeExtensions("file.tar.gz") == ".tar.gz
 Parameters:
 
 `filepath`
-:   path
+:   path (string)
 
 Returns:
 
@@ -467,7 +467,7 @@ takeFileName("test/") == ""
 Parameters:
 
 `filepath`
-:   path
+:   path (string)
 
 Returns:
 
