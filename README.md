@@ -1,4 +1,5 @@
-# HsLua Module: System
+HsLua Module: System
+====================
 
 This module provides access to system information and functionality via
 Haskell's `System` module.
@@ -7,7 +8,8 @@ Intended usage for this package is to preload it by adding the loader
 function to `package.preload`. Note that the Lua `package` library must
 have already been loaded before the loader can be added.
 
-## Example
+Example
+-------
 
 ``` haskell
 loadProg :: Lua Status
@@ -19,7 +21,8 @@ loadProg = do
           ++ "system.with_tmpdir('.', 'foo', print)"
 ```
 
-## Documentation
+Documentation
+-------------
 
 ### Fields
 
@@ -486,7 +489,8 @@ This function wraps [System.FilePath.takeFileName].
 [System.FilePath.takeExtensions]: https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html#v:takeExtensions.
 [System.FilePath.takeFileName]: https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html#v:takeFileName.
 
-## License
+License
+-------
 
 This package is licensed under the MIT license. See [`LICENSE`](LICENSE)
 for details.
