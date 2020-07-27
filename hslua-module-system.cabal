@@ -20,7 +20,12 @@ build-type:          Simple
 extra-source-files:  CHANGELOG.md
                    , test/test-system.lua
 cabal-version:       >=1.10
-tested-with:         GHC == 8.0.2, GHC == 8.2.2, GHC == 8.4.4, GHC == 8.6.5
+tested-with:         GHC == 8.0.2
+                   , GHC == 8.2.2
+                   , GHC == 8.4.4
+                   , GHC == 8.6.5
+                   , GHC == 8.8.3
+                   , GHC == 8.10.1
 
 source-repository head
   type:              git
@@ -31,9 +36,9 @@ library
                      , containers >= 0.5    && < 0.7
                      , directory  >= 1.3    && < 1.4
                      , exceptions >= 0.8    && < 0.11
+                     , filepath   >= 1.4    && < 1.5
                      , hslua      >= 1.0.3  && < 1.2
                      , temporary  >= 1.2    && < 1.4
-                     , filepath   >= 1.4 && < 1.5
   default-extensions:  LambdaCase
   default-language:    Haskell2010
   exposed-modules:     Foreign.Lua.Module.System
