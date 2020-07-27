@@ -35,16 +35,16 @@ module Foreign.Lua.Module.System (
   , with_wd
 
   -- * Path manipulations
-  , take_directory
-  , take_filename
-  , take_extensions
-  , split_directories
-  , has_extension
   , drop_extensions
-  , join_path
-  , is_relative
+  , has_extension
   , is_absolute
+  , is_relative
+  , join_path
   , normalise
+  , split_directories
+  , take_directory
+  , take_extensions
+  , take_filename
   )
 where
 
@@ -234,18 +234,6 @@ with_tmpdir parentDir tmpl callback =
 -- Path manipulations
 --
 
--- | See @System.FilePath.takeDirectory@
-take_directory :: FilePath -> Lua FilePath
-take_directory fp = return (Fp.takeDirectory fp)
-
--- | See @System.FilePath.takeFilename@
-take_filename :: FilePath -> Lua FilePath
-take_filename fp = return (Fp.takeFileName fp)
-
--- | See @System.FilePath.takeExtensions@
-take_extensions :: FilePath -> Lua String
-take_extensions fp = return (Fp.takeExtensions fp)
-
 -- | See @System.FilePath.dropExtension@
 drop_extensions :: FilePath -> Lua String
 drop_extensions fp = return (Fp.dropExtensions fp)
@@ -254,22 +242,34 @@ drop_extensions fp = return (Fp.dropExtensions fp)
 has_extension :: FilePath -> Lua Bool
 has_extension fp = return (Fp.hasExtension fp)
 
--- | See @System.FilePath.splitDirectories@
-split_directories :: FilePath -> Lua [FilePath]
-split_directories fp = return (Fp.splitDirectories fp)
-
--- | See @System.FilePath.joinPath@
-join_path :: [FilePath] -> Lua FilePath
-join_path fps = return (Fp.joinPath fps)
+-- | See @System.FilePath.isAbsolute@
+is_absolute :: FilePath -> Lua Bool
+is_absolute fp = return (Fp.isAbsolute fp)
 
 -- | See @System.FilePath.isRelative@
 is_relative :: FilePath -> Lua Bool
 is_relative fp = return (Fp.isRelative fp)
 
--- | See @System.FilePath.isAbsolute@
-is_absolute :: FilePath -> Lua Bool
-is_absolute fp = return (Fp.isAbsolute fp)
+-- | See @System.FilePath.joinPath@
+join_path :: [FilePath] -> Lua FilePath
+join_path fps = return (Fp.joinPath fps)
 
 -- | See @System.FilePath.normalise@
 normalise :: FilePath -> Lua FilePath
 normalise fp = return (Fp.normalise fp)
+
+-- | See @System.FilePath.splitDirectories@
+split_directories :: FilePath -> Lua [FilePath]
+split_directories fp = return (Fp.splitDirectories fp)
+
+-- | See @System.FilePath.takeDirectory@
+take_directory :: FilePath -> Lua FilePath
+take_directory fp = return (Fp.takeDirectory fp)
+
+-- | See @System.FilePath.takeExtensions@
+take_extensions :: FilePath -> Lua String
+take_extensions fp = return (Fp.takeExtensions fp)
+
+-- | See @System.FilePath.takeFilename@
+take_filename :: FilePath -> Lua FilePath
+take_filename fp = return (Fp.takeFileName fp)

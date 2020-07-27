@@ -257,73 +257,10 @@ Returns:
 
 ### Path Manipulation Functions
 
-This library includes wrappers around the following functions from the [filepath](https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath.html) library for the current platform (POSIX or Windows). All examples below are for [POSIX systems](https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html).
-
-#### take_directory
-
-`take_directory(filepath)`
-
-Get the directory name, move up one level.
-
-```lua
-takeDirectory("/foo/bar/baz") == "/foo/bar"
-takeDirectory("/foo/bar/baz/") == "/foo/bar/baz"
-```
-
-Parameters:
-
-`filepath`
-:   path path
-
-Returns:
-
-- The modified filepath.
-
-This function wraps [System.FilePath.takeDirectory](https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html#v:takeDirectory).
-
-#### take_filename
-
-`take_filename(filepath)`
-
-Get the file name.
-
-```lua
-takeFileName("/directory/file.ext") == "file.ext"
-takeFileName("test/") == ""
-```
-
-Parameters:
-
-`filepath`
-:   path
-
-Returns:
-
-- The file name.
-
-This function wraps [System.FilePath.takeFileName](https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html#v:takeFileName).
-
-#### take_extensions
-
-`take_extensions(filepath)`
-
-Get all extensions.
-
-```lua
-takeExtensions("/directory/path.ext") == ".ext"
-takeExtensions("file.tar.gz") == ".tar.gz
-```
-
-Parameters:
-
-`filepath`
-:   path
-
-Returns:
-
-- String of all extensions.
-
-This function wraps [System.FilePath.takeExtensions](https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html#v:takeExtensions).
+This library includes wrappers around the following functions from
+the [filepath] library for the current platform (POSIX or
+Windows). All examples below are for [POSIX
+systems].
 
 #### drop_extension
 
@@ -344,7 +281,7 @@ Returns:
 
 - The modified filepath without extension.
 
-This function wraps [System.FilePath.dropExtension](https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html#v:dropExtension).
+This function wraps [System.FilePath.dropExtension].
 
 #### has_extension
 
@@ -366,19 +303,13 @@ Returns:
 
 - `true` if `filepath` has an extension.
 
-This function wraps [System.FilePath.hasExtension](https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html#v:hasExtension).
+This function wraps [System.FilePath.hasExtension].
 
-#### split_directories
+#### is_absolute
 
-`split_directories(filepath)`
+`is_absolute(filepath)`
 
-Split a path by the directory separator.
-
-```lua
-splitDirectories("/directory/file.ext") == {"/","directory","file.ext"}
-splitDirectories("test/file") == {"test","file"}
-splitDirectories("/test/file") == {"/","test","file"}
-```
+Is a path absolute? (same as `! is_relative(filepath)`)
 
 Parameters:
 
@@ -387,30 +318,9 @@ Parameters:
 
 Returns:
 
-- A list of all directory paths.
+- `true` if `filepath` is an absolute path.
 
-This function wraps [System.FilePath.splitDirectories](https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html#v:splitDirectories).
-
-#### join_path
-
-`join_path(filepaths)`
-
-Join path elements back together by the directory separator.
-
-```lua
-joinPath({"/","directory/","file.ext"}) == "/directory/file.ext"
-```
-
-Parameters:
-
-`filepaths`
-:   list of paths
-
-Returns:
-
-- The joined path.
-
-This function wraps [System.FilePath.joinPath](https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html#v:joinPath).
+This function wraps [System.FilePath.isAbsolute].
 
 #### is_relative
 
@@ -433,30 +343,34 @@ Returns:
 
 - `true` if `filepath` is a relative path.
 
-This function wraps [System.FilePath.isRelative](https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html#v:isRelative).
+This function wraps [System.FilePath.isRelative].
 
-#### is_absolute
+#### join_path
 
-`is_absolute(filepath)`
+`join_path(filepaths)`
 
-Is a path absolute? (same as `! is_relative(filepath)`)
+Join path elements back together by the directory separator.
+
+```lua
+joinPath({"/","directory/","file.ext"}) == "/directory/file.ext"
+```
 
 Parameters:
 
-`filepath`
-:   path
+`filepaths`
+:   list of paths
 
 Returns:
 
-- `true` if `filepath` is an absolute path.
+- The joined path.
 
-This function wraps [System.FilePath.isAbsolute](https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html#v:isAbsolute).
+This function wraps [System.FilePath.joinPath].
 
 #### normalise
 
 `normalise(filepath)`
 
-Normalise a path. See examples [here](https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html#v:normalise).
+Normalise a path. See examples [here][System.FilePath.normalize].
 
 Parameters:
 
@@ -467,7 +381,110 @@ Returns:
 
 - The normalised path.
 
-This function wraps [System.FilePath.normalise](https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html#v:normalise).
+This function wraps [System.FilePath.normalise].
+
+#### split_directories
+
+`split_directories(filepath)`
+
+Split a path by the directory separator.
+
+```lua
+splitDirectories("/directory/file.ext") == {"/","directory","file.ext"}
+splitDirectories("test/file") == {"test","file"}
+splitDirectories("/test/file") == {"/","test","file"}
+```
+
+Parameters:
+
+`filepath`
+:   path
+
+Returns:
+
+- A list of all directory paths.
+
+This function wraps [System.FilePath.splitDirectories].
+
+#### take_directory
+
+`take_directory(filepath)`
+
+Get the directory name, move up one level.
+
+```lua
+takeDirectory("/foo/bar/baz") == "/foo/bar"
+takeDirectory("/foo/bar/baz/") == "/foo/bar/baz"
+```
+
+Parameters:
+
+`filepath`
+:   path path
+
+Returns:
+
+- The modified filepath.
+
+This function wraps [System.FilePath.takeDirectory].
+
+#### take_extensions
+
+`take_extensions(filepath)`
+
+Get all extensions.
+
+```lua
+takeExtensions("/directory/path.ext") == ".ext"
+takeExtensions("file.tar.gz") == ".tar.gz
+```
+
+Parameters:
+
+`filepath`
+:   path
+
+Returns:
+
+- String of all extensions.
+
+This function wraps [System.FilePath.takeExtensions].
+
+#### take_filename
+
+`take_filename(filepath)`
+
+Get the file name.
+
+```lua
+takeFileName("/directory/file.ext") == "file.ext"
+takeFileName("test/") == ""
+```
+
+Parameters:
+
+`filepath`
+:   path
+
+Returns:
+
+- The file name.
+
+This function wraps [System.FilePath.takeFileName].
+
+
+[filepath]: https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath.html
+[POSIX systems]: https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html
+[System.FilePath.dropExtension]: https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html#v:dropExtension
+[System.FilePath.hasExtension]: https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html#v:hasExtension
+[System.FilePath.isAbsolute]: https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html#v:isAbsolute
+[System.FilePath.isRelative]: https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html#v:isRelative
+[System.FilePath.joinPath]: https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html#v:joinPath
+[System.FilePath.normalise]: https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html#v:normalise
+[System.FilePath.splitDirectories]: https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html#v:splitDirectories.
+[System.FilePath.takeDirectory]: https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html#v:takeDirectory
+[System.FilePath.takeExtensions]: https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html#v:takeExtensions.
+[System.FilePath.takeFileName]: https://hackage.haskell.org/package/filepath-1.4.2.1/docs/System-FilePath-Posix.html#v:takeFileName.
 
 ## License
 
