@@ -393,7 +393,7 @@ This function wraps [System.FilePath.splitDirectories](https://hackage.haskell.o
 
 #### join_path
 
-`join_path(filepath)`
+`join_path(filepaths)`
 
 Join path elements back together by the directory separator.
 
@@ -403,8 +403,8 @@ joinPath({"/","directory/","file.ext"}) == "/directory/file.ext"
 
 Parameters:
 
-`filepath`
-:   path
+`filepaths`
+:   list of paths
 
 Returns:
 
