@@ -267,7 +267,7 @@ systems].
 
 #### drop_extension
 
-`drop_extension(filepath)`
+`drop_extension (filepath)`
 
 Remove last extension, and the `.` preceding it.
 
@@ -288,7 +288,7 @@ This function wraps [System.FilePath.dropExtension].
 
 #### has_extension
 
-`has_extensions(filepath)`
+`has_extensions (filepath)`
 
 Does the given filename have an extension?
 
@@ -310,7 +310,7 @@ This function wraps [System.FilePath.hasExtension].
 
 #### is_absolute
 
-`is_absolute(filepath)`
+`is_absolute (filepath)`
 
 Is a path absolute? (same as `! is_relative(filepath)`)
 
@@ -327,7 +327,7 @@ This function wraps [System.FilePath.isAbsolute].
 
 #### is_relative
 
-`ìs_relative(filepath)`
+`ìs_relative (filepath)`
 
 Is a path relative, or is it fixed to the root?
 
@@ -350,7 +350,7 @@ This function wraps [System.FilePath.isRelative].
 
 #### join_path
 
-`join_path(filepaths)`
+`join_path (filepaths)`
 
 Join path elements back together by the directory separator.
 
@@ -371,7 +371,7 @@ This function wraps [System.FilePath.joinPath].
 
 #### normalise
 
-`normalise(filepath)`
+`normalise (filepath)`
 
 Normalise a path. See examples [here][System.FilePath.normalize].
 
@@ -388,7 +388,7 @@ This function wraps [System.FilePath.normalise].
 
 #### split_directories
 
-`split_directories(filepath)`
+`split_directories (filepath)`
 
 Split a path by the directory separator.
 
@@ -411,7 +411,7 @@ This function wraps [System.FilePath.splitDirectories].
 
 #### take_directory
 
-`take_directory(filepath)`
+`take_directory (filepath)`
 
 Get the directory name, move up one level.
 
@@ -433,7 +433,7 @@ This function wraps [System.FilePath.takeDirectory].
 
 #### take_extensions
 
-`take_extensions(filepath)`
+`take_extensions (filepath)`
 
 Get all extensions.
 
@@ -455,7 +455,7 @@ This function wraps [System.FilePath.takeExtensions].
 
 #### take_filename
 
-`take_filename(filepath)`
+`take_filename (filepath)`
 
 Get the file name.
 
