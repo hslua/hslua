@@ -271,7 +271,7 @@ Windows). All examples below are for [POSIX systems].
 Remove last extension, and the `.` preceding it.
 
 ```lua
-dropExtension("/directory/path.ext") == "/directory/path"
+drop_extension("/directory/path.ext") == "/directory/path"
 ```
 
 Parameters:
@@ -292,8 +292,8 @@ This function wraps [System.FilePath.dropExtension].
 Does the given filename have an extension?
 
 ```lua
-hasExtension("/directory/path.ext") == true
-hasExtension("/directory/path") == false
+has_extension("/directory/path.ext") == true
+has_extension("/directory/path") == false
 ```
 
 Parameters:
@@ -333,9 +333,9 @@ This function wraps [System.FilePath.isAbsolute].
 Is a path relative, or is it fixed to the root?
 
 ```lua
-isRelative("test/path") == true
-isRelative("/test") == false
-isRelative("/") == false
+is_relative("test/path") == true
+is_relative("/test") == false
+is_relative("/") == false
 ```
 
 Parameters:
@@ -357,7 +357,7 @@ This function wraps [System.FilePath.isRelative].
 Join path elements back together by the directory separator.
 
 ```lua
-joinPath({"/","directory/","file.ext"}) == "/directory/file.ext"
+join_path({"/","directory/","file.ext"}) == "/directory/file.ext"
 ```
 
 Parameters:
@@ -396,9 +396,9 @@ This function wraps [System.FilePath.normalise].
 Split a path by the directory separator.
 
 ```lua
-splitDirectories("/directory/file.ext") == {"/","directory","file.ext"}
-splitDirectories("test/file") == {"test","file"}
-splitDirectories("/test/file") == {"/","test","file"}
+split_directories("/directory/file.ext") == {"/","directory","file.ext"}
+split_directories("test/file") == {"test","file"}
+split_directories("/test/file") == {"/","test","file"}
 ```
 
 Parameters:
@@ -419,8 +419,8 @@ This function wraps [System.FilePath.splitDirectories].
 Get the directory name, move up one level.
 
 ```lua
-takeDirectory("/foo/bar/baz") == "/foo/bar"
-takeDirectory("/foo/bar/baz/") == "/foo/bar/baz"
+take_directory("/foo/bar/baz") == "/foo/bar"
+take_directory("/foo/bar/baz/") == "/foo/bar/baz"
 ```
 
 Parameters:
@@ -441,8 +441,8 @@ This function wraps [System.FilePath.takeDirectory].
 Get all extensions.
 
 ```lua
-takeExtensions("/directory/path.ext") == ".ext"
-takeExtensions("file.tar.gz") == ".tar.gz"
+take_extensions("/directory/path.ext") == ".ext"
+take_extensions("file.tar.gz") == ".tar.gz"
 ```
 
 Parameters:
@@ -463,8 +463,8 @@ This function wraps [System.FilePath.takeExtensions].
 Get the file name.
 
 ```lua
-takeFileName("/directory/file.ext") == "file.ext"
-takeFileName("test/") == ""
+take_filename("/directory/file.ext") == "file.ext"
+take_filename("test/") == ""
 ```
 
 Parameters:
