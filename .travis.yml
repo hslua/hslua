@@ -28,8 +28,8 @@ matrix:
       addons: {apt: {packages: [cabal-install-2.4,ghc-8.6.5], sources: [hvr-ghc]}}
     # Test GHC 8.8
     - env: GHCVER=8.8.3 LUAVER=default CABALVER=2.4
-      compiler: ": #GHC 8.8.4"
-      addons: {apt: {packages: [cabal-install-2.4,ghc-8.8.4], sources: [hvr-ghc]}}
+      compiler: ": #GHC 8.8.3"
+      addons: {apt: {packages: [cabal-install-2.4,ghc-8.8.3], sources: [hvr-ghc]}}
     # Test GHC 8.10
     - env: GHCVER=8.10.3 LUAVER=default CABALVER=3.0
       compiler: ": #GHC 8.10.1"
