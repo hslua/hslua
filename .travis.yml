@@ -73,17 +73,16 @@ script:
           cd ..
 
           # Compile and link using system-wide Lua
-          CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS -fsystem-lua"
+          CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS --constraint 'hslua system-lua'"
           CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS --extra-include-dirs=${HOME}/usr/include"
           CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS --extra-lib-dirs=${HOME}/usr/lib"
           ;;
     esac
   - export LD_LIBRARY_PATH=${HOME}/usr/lib:$LD_LIBRARY_PATH
   - echo $CABAL_CONFIG_ARGS
-  - cabal new-configure --enable-tests --disable-optimization --ghc-options="-Werror" $CABAL_CONFIG_ARGS
+  - cabal new-configure --enable-tests --disable-optimization $CABAL_CONFIG_ARGS
   - cabal new-build
   - cabal new-test
-  - cabal copy
   - cabal sdist
   # Run HLint
   - curl -sL https://raw.github.com/ndmitchell/hlint/master/misc/travis.sh | sh -s .
