@@ -1,5 +1,4 @@
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : Foreign.Lua.Raw.Auxiliary
 Copyright   : © 2007–2012 Gracjan Polak,

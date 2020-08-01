@@ -27,9 +27,9 @@ import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr (Ptr, nullPtr)
 import Foreign.Lua.Raw.Types (Lua, StackIndex)
 
-import qualified Data.ByteString as BS
+import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as Char8
-import qualified Data.ByteString.Unsafe as BS
+import qualified Data.ByteString.Unsafe as B
 import qualified Foreign.Storable as Storable
 import qualified Foreign.Lua.Raw.Types as Lua
 import qualified Foreign.Lua.Utf8 as Utf8
@@ -45,7 +45,7 @@ errorMessage l = alloca $ \lenPtr -> do
                               "cannot be converted into a string.")
     else do
       cstrLen <- Storable.peek lenPtr
-      msg <- BS.packCStringLen (cstr, fromIntegral cstrLen)
+      msg <- B.packCStringLen (cstr, fromIntegral cstrLen)
       lua_pop l 2
       return msg
 
@@ -79,7 +79,7 @@ fromFailable fromCInt (Failable x) =
 throwMessage :: String -> Lua a
 throwMessage msg = do
   Lua.liftLua $ \l ->
-    BS.unsafeUseAsCStringLen (Utf8.fromString msg) $ \(msgPtr, z) ->
+    B.unsafeUseAsCStringLen (Utf8.fromString msg) $ \(msgPtr, z) ->
       lua_pushlstring l msgPtr (fromIntegral z)
   Lua.errorConversion >>= Lua.liftLua . Lua.errorToException
 
