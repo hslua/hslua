@@ -51,7 +51,7 @@ before_install:
 install:
   - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
   - echo "$(cabal --version)"
-  - cabal install --only-dependencies --enable-tests --disable-optimization
+  - cabal new-build --only-dependencies --enable-tests --disable-optimization
 
 script:
   - CABAL_CONFIG_ARGS=""
@@ -80,9 +80,9 @@ script:
     esac
   - export LD_LIBRARY_PATH=${HOME}/usr/lib:$LD_LIBRARY_PATH
   - echo $CABAL_CONFIG_ARGS
-  - cabal configure --enable-tests --disable-optimization --ghc-options="-Werror" $CABAL_CONFIG_ARGS
-  - cabal build
-  - cabal test
+  - cabal new-configure --enable-tests --disable-optimization --ghc-options="-Werror" $CABAL_CONFIG_ARGS
+  - cabal new-build
+  - cabal new-test
   - cabal copy
   - cabal sdist
   # Run HLint
