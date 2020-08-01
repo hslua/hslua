@@ -23,14 +23,17 @@ matrix:
       compiler: ": #GHC 8.4.3"
       addons: {apt: {packages: [cabal-install-2.0,ghc-8.4.3], sources: [hvr-ghc]}}
     # Test GHC 8.6
-    - env: GHCVER=8.6.5 LUAVER=default CABALVER=2.0
+    - env: GHCVER=8.6.5 LUAVER=default CABALVER=2.4
       compiler: ": #GHC 8.6.5"
-      addons: {apt: {packages: [cabal-install-2.0,ghc-8.6.5], sources: [hvr-ghc]}}
-
+      addons: {apt: {packages: [cabal-install-2.4,ghc-8.6.5], sources: [hvr-ghc]}}
     # Test GHC 8.8
-    - env: GHCVER=8.8.3 LUAVER=default CABALVER=2.0
-      compiler: ": #GHC 8.8.3"
-      addons: {apt: {packages: [cabal-install-2.0,ghc-8.8.3], sources: [hvr-ghc]}}
+    - env: GHCVER=8.8.3 LUAVER=default CABALVER=2.4
+      compiler: ": #GHC 8.8.4"
+      addons: {apt: {packages: [cabal-install-2.4,ghc-8.8.4], sources: [hvr-ghc]}}
+    # Test GHC 8.10
+    - env: GHCVER=8.10.3 LUAVER=default CABALVER=3.0
+      compiler: ": #GHC 8.10.1"
+      addons: {apt: {packages: [cabal-install-3.0,ghc-8.10.1], sources: [hvr-ghc]}}
 
     ## Test system Lua
     # Test system Lua 5.3
@@ -77,7 +80,7 @@ script:
     esac
   - export LD_LIBRARY_PATH=${HOME}/usr/lib:$LD_LIBRARY_PATH
   - echo $CABAL_CONFIG_ARGS
-  - cabal configure --enable-tests --disable-optimization $([ $GHCVER == "7.10.3" ] || printf '--ghc-options="-Werror"') $CABAL_CONFIG_ARGS
+  - cabal configure --enable-tests --disable-optimization --ghc-options="-Werror" $CABAL_CONFIG_ARGS
   - cabal build
   - cabal test
   - cabal copy
