@@ -142,7 +142,7 @@ tests = testGroup "Push"
           tableSize <- run $ Lua.run $ do
             pushList pushString list
             Lua.rawlen Lua.stackTop
-          assert $ fromIntegral tableSize == length list
+          assert $ tableSize == length list
 
       , testSingleElementProperty (pushList pushText)
       ]
