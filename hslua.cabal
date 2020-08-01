@@ -1,3 +1,4 @@
+cabal-version:       2.2
 name:                hslua
 version:             1.1.2
 synopsis:            Bindings to Lua, an embeddable scripting language
@@ -26,7 +27,6 @@ extra-source-files:  cbits/lua-5.3.5/*.h
                      README.md
                      CHANGELOG.md
                      test/lua/*.lua
-cabal-version:       >=1.10
 tested-with:         GHC == 8.0.2
                    , GHC == 8.2.2
                    , GHC == 8.4.3

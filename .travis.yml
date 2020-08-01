@@ -11,35 +11,35 @@ matrix:
   include:
     ## Test Compilers
     # Test GHC 8.0.2
-    - env: GHCVER=8.0.2 LUAVER=default CABALVER=2.0
+    - env: GHCVER=8.0.2 LUAVER=default CABALVER=2.2
       compiler: ": #GHC 8.0.2"
-      addons: {apt: {packages: [cabal-install-2.0,ghc-8.0.2], sources: [hvr-ghc]}}
+      addons: {apt: {packages: [cabal-install-2.2,ghc-8.0.2], sources: [hvr-ghc]}}
     # Test GHC 8.2.2
-    - env: GHCVER=8.2.2 LUAVER=default CABALVER=2.0
+    - env: GHCVER=8.2.2 LUAVER=default CABALVER=2.2
       compiler: ": #GHC 8.2.2"
-      addons: {apt: {packages: [cabal-install-2.0,ghc-8.2.2], sources: [hvr-ghc]}}
+      addons: {apt: {packages: [cabal-install-2.2,ghc-8.2.2], sources: [hvr-ghc]}}
     # Test GHC 8.4.3
-    - env: GHCVER=8.4.3 LUAVER=default CABALVER=2.0
+    - env: GHCVER=8.4.3 LUAVER=default CABALVER=2.2
       compiler: ": #GHC 8.4.3"
-      addons: {apt: {packages: [cabal-install-2.0,ghc-8.4.3], sources: [hvr-ghc]}}
+      addons: {apt: {packages: [cabal-install-2.2,ghc-8.4.3], sources: [hvr-ghc]}}
     # Test GHC 8.6
     - env: GHCVER=8.6.5 LUAVER=default CABALVER=2.4
       compiler: ": #GHC 8.6.5"
       addons: {apt: {packages: [cabal-install-2.4,ghc-8.6.5], sources: [hvr-ghc]}}
     # Test GHC 8.8
-    - env: GHCVER=8.8.3 LUAVER=default CABALVER=2.4
+    - env: GHCVER=8.8.3 LUAVER=default CABALVER=3.0
       compiler: ": #GHC 8.8.3"
-      addons: {apt: {packages: [cabal-install-2.4,ghc-8.8.3], sources: [hvr-ghc]}}
+      addons: {apt: {packages: [cabal-install-3.0,ghc-8.8.3], sources: [hvr-ghc]}}
     # Test GHC 8.10
-    - env: GHCVER=8.10.3 LUAVER=default CABALVER=3.0
+    - env: GHCVER=8.10.1 LUAVER=default CABALVER=3.2
       compiler: ": #GHC 8.10.1"
-      addons: {apt: {packages: [cabal-install-3.0,ghc-8.10.1], sources: [hvr-ghc]}}
+      addons: {apt: {packages: [cabal-install-3.2,ghc-8.10.1], sources: [hvr-ghc]}}
 
     ## Test system Lua
     # Test system Lua 5.3
-    - env: GHCVER=8.4.3 LUAVER=lua-5.3.5 CABALVER=2.0
-      compiler: ": #GHC 8.4.3"
-      addons: {apt: {packages: [cabal-install-2.0,ghc-8.4.3], sources: [hvr-ghc]}}
+    - env: GHCVER=8.8.3 LUAVER=lua-5.3.5 CABALVER=3.0
+      compiler: ": #GHC 8.8.3"
+      addons: {apt: {packages: [cabal-install-3.0,ghc-8.8.3], sources: [hvr-ghc]}}
 
   # mark build as successful as soon as all required successes are in.
   fast_finish: true
@@ -73,7 +73,7 @@ script:
           cd ..
 
           # Compile and link using system-wide Lua
-          CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS --constraint 'hslua system-lua'"
+          CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS --constraint 'hslua +system-lua'"
           CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS --extra-include-dirs=${HOME}/usr/include"
           CABAL_CONFIG_ARGS="$CABAL_CONFIG_ARGS --extra-lib-dirs=${HOME}/usr/lib"
           ;;
