@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable         #-}
+{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE ScopedTypeVariables        #-}
 {-# OPTIONS_GHC -fno-warn-orphans       #-}
@@ -155,19 +156,38 @@ hsluaErrorRegistryField = "HSLUA_ERR"
 -- CInt should be converted.
 newtype Failable a = Failable CInt
 
--- | Convert from Failable to target type, throwing an error if the value
--- indicates a failure.
-fromFailable :: (CInt -> a) -> Failable a -> Lua a
+-- | Convert from Failable to target type if possible, returning
+-- @'Nothing'@ if there was a failure.
+fromFailable :: (CInt -> a) -> Failable a -> Lua (Result a)
 fromFailable fromCInt (Failable x) =
   if x < 0
-  then throwTopMessage
-  else return (fromCInt x)
+  then return ErrorOnStack
+  else return (Success $ fromCInt x)
+
+-- | The result of a Lua operation which may throw an error.
+data Result a
+  = Success a
+  | ErrorOnStack
+  deriving
+    ( Eq
+    , Functor
+    , Ord
+    , Show
+    )
+
+-- | Return a result or throw the error object at the top of the
+-- stack as an exception.
+forceResult :: Result a -> Lua a
+forceResult = \case
+  ErrorOnStack -> throwTopMessage
+  Success x -> return x
 
 -- | Throw a Haskell exception if the computation signaled a failure.
 throwOnError :: Failable () -> Lua ()
-throwOnError = fromFailable (const ())
+throwOnError x = fromFailable (const ()) x >>= forceResult
 
 -- | Convert lua boolean to Haskell Bool, throwing an exception if the return
 -- value indicates that an error had happened.
 boolFromFailable :: Failable Lua.LuaBool -> Lua Bool
-boolFromFailable = fmap fromLuaBool . fromFailable Lua.LuaBool
+boolFromFailable x = fromFailable Lua.LuaBool x
+  >>= (fmap fromLuaBool . forceResult)
