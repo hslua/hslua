@@ -14,7 +14,6 @@ Haskell bindings to Lua C API functions.
 module Foreign.Lua.Raw.Functions where
 
 import Foreign.C
-import Foreign.Lua.Raw.Error (Failable (Failable))
 import Foreign.Lua.Raw.Types as Lua
 import Foreign.Ptr
 
@@ -121,9 +120,10 @@ foreign import ccall SAFTY "lua.h lua_typename"
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_compare \
 -- @lua_compare@> which catches any @longjmp@s.
-foreign import ccall "error-conversion.h hslua_compare"
-  hslua_compare :: Lua.State -> StackIndex -> StackIndex -> CInt
-                -> IO (Failable LuaBool)
+foreign import capi "error-conversion.h hslua_compare"
+  hslua_compare :: Lua.State
+                -> StackIndex -> StackIndex -> CInt
+                -> Ptr StatusCode -> IO LuaBool
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawequal lua_rawequal>
 foreign import ccall SAFTY "lua.h lua_rawequal"
@@ -224,7 +224,7 @@ foreign import ccall SAFTY "lua.h lua_pushthread"
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_gettable \
 -- @lua_gettable@> which catches any @longjmp@s.
 foreign import ccall "error-conversion.h hslua_gettable"
-  hslua_gettable :: Lua.State -> StackIndex -> IO (Failable ())
+  hslua_gettable :: Lua.State -> StackIndex -> Ptr StatusCode -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawget lua_rawget>
 foreign import ccall SAFTY "lua.h lua_rawget"
@@ -249,7 +249,7 @@ foreign import ccall SAFTY "lua.h lua_getmetatable"
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_getglobal \
 -- @lua_getglobal@> which catches any @longjmp@s.
 foreign import ccall "error-conversion.h hslua_getglobal"
-  hslua_getglobal :: Lua.State -> CString -> CSize -> IO (Failable ())
+  hslua_getglobal :: Lua.State -> CString -> CSize -> Ptr StatusCode -> IO ()
 
 
 --------------------------------------------------------------------------------
@@ -263,7 +263,7 @@ foreign import ccall "error-conversion.h hslua_getglobal"
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_settable \
 -- @lua_settable@> which catches any @longjmp@s.
 foreign import ccall "error-conversion.h hslua_settable"
-  hslua_settable :: Lua.State -> StackIndex -> IO (Failable ())
+  hslua_settable :: Lua.State -> StackIndex -> Ptr StatusCode -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawset lua_rawset>
 foreign import ccall SAFTY "lua.h lua_rawset"
@@ -280,7 +280,7 @@ foreign import ccall SAFTY "lua.h lua_setmetatable"
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_setglobal \
 -- @lua_setglobal@> which catches any @longjmp@s.
 foreign import ccall "error-conversion.h hslua_setglobal"
-  hslua_setglobal :: Lua.State -> CString -> CSize -> IO (Failable ())
+  hslua_setglobal :: Lua.State -> CString -> CSize -> Ptr StatusCode -> IO ()
 
 
 --------------------------------------------------------------------------------
@@ -336,12 +336,12 @@ foreign import ccall "error-conversion.h hslua_error"
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_next \
 -- @lua_next@> which catches any @longjmp@s.
 foreign import ccall "error-conversion.h hslua_next"
-  hslua_next :: Lua.State -> StackIndex -> IO (Failable LuaBool)
+  hslua_next :: Lua.State -> StackIndex -> Ptr StatusCode -> IO LuaBool
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_concat \
 -- @lua_concat@> which catches any @longjmp@s.
 foreign import ccall "error-conversion.h hslua_concat"
-  hslua_concat :: Lua.State -> NumArgs -> IO (Failable ())
+  hslua_concat :: Lua.State -> NumArgs -> Ptr StatusCode -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushglobaltable \
 -- lua_pushglobaltable>

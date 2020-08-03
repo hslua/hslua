@@ -93,7 +93,7 @@ int hslua__compare(lua_State *L)
   return 1;
 }
 
-int hslua_compare(lua_State *L, int index1, int index2, int op)
+int hslua_compare(lua_State *L, int index1, int index2, int op, int *status)
 {
   index1 = lua_absindex(L, index1);
   index2 = lua_absindex(L, index2);
@@ -101,13 +101,13 @@ int hslua_compare(lua_State *L, int index1, int index2, int op)
   lua_pushvalue(L, index1);
   lua_pushvalue(L, index2);
   lua_pushinteger(L, op);
-  int callres = lua_pcall(L, 3, 1, 0);
-  if (callres != 0) {
-    return -callres;
+  *status = lua_pcall(L, 3, 1, 0);
+  if (*status != LUA_OK) {
+    return 0;
   }
-  int res = lua_tointeger(L, -1);
+  int result = lua_tointeger(L, -1);
   lua_pop(L, 1);
-  return res;
+  return result;
 }
 
 
@@ -120,11 +120,11 @@ int hslua__concat(lua_State *L)
   return 1;
 }
 
-int hslua_concat(lua_State *L, int n)
+void hslua_concat(lua_State *L, int n, int *status)
 {
   lua_pushcfunction(L, hslua__concat);
   lua_insert(L, -n - 1);
-  return -lua_pcall(L, n, 1, 0);
+  *status = lua_pcall(L, n, 1, 0);
 }
 
 
@@ -137,12 +137,12 @@ int hslua__getglobal(lua_State *L)
   return 1;
 }
 
-int hslua_getglobal(lua_State *L, const char *name, size_t len)
+void hslua_getglobal(lua_State *L, const char *name, size_t len, int *status)
 {
   lua_pushcfunction(L, hslua__getglobal);
   lua_pushglobaltable(L);
   lua_pushlstring(L, name, len);
-  return -lua_pcall(L, 2, 1, 0);
+  *status = lua_pcall(L, 2, 1, 0);
 }
 
 
@@ -156,12 +156,12 @@ int hslua__gettable(lua_State *L)
   return 1;
 }
 
-int hslua_gettable(lua_State *L, int index)
+void hslua_gettable(lua_State *L, int index, int *status)
 {
   lua_pushvalue(L, index);
   lua_pushcfunction(L, hslua__gettable);
   lua_insert(L, -3);
-  return -lua_pcall(L, 2, 1, 0);
+  *status = lua_pcall(L, 2, 1, 0);
 }
 
 
@@ -178,14 +178,14 @@ int hslua__setglobal(lua_State *L)
   return 0;
 }
 
-int hslua_setglobal(lua_State *L, const char *name, size_t len)
+void hslua_setglobal(lua_State *L, const char *name, size_t len, int *status)
 {
   /* we expect the new value to be at the top of the stack */
   lua_pushglobaltable(L);
   lua_pushlstring(L, name, len);
   lua_pushcfunction(L, hslua__setglobal);
   lua_insert(L, -4);
-  return -lua_pcall(L, 3, 0, 0);
+  *status = lua_pcall(L, 3, 0, 0);
 }
 
 
@@ -200,12 +200,12 @@ int hslua__settable(lua_State *L)
   return 0;
 }
 
-int hslua_settable(lua_State *L, int index)
+void hslua_settable(lua_State *L, int index, int *status)
 {
   lua_pushvalue(L, index);
   lua_pushcfunction(L, hslua__settable);
   lua_insert(L, -4);
-  return -lua_pcall(L, 3, 0, 0);
+  *status = lua_pcall(L, 3, 0, 0);
 }
 
 
@@ -218,16 +218,16 @@ int hslua__next(lua_State *L)
   return lua_next(L, 2) ? 2 : 0;
 }
 
-int hslua_next(lua_State *L, int index)
+int hslua_next(lua_State *L, int index, int *status)
 {
   int oldsize = lua_gettop(L);
   lua_pushvalue(L, index);
   lua_pushcfunction(L, hslua__next);
   lua_insert(L, -3);
-  int res = lua_pcall(L, 2, LUA_MULTRET, 0);
-  if (res != 0) {
+  *status = lua_pcall(L, 2, LUA_MULTRET, 0);
+  if (*status != 0) {
     /* error */
-    return (- res);
+    return 0;
   }
   /* success */
   return (lua_gettop(L) - oldsize + 1); /* correct for popped value */

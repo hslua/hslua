@@ -142,8 +142,8 @@ close = lua_close
 -- This is a wrapper function of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_compare lua_compare>.
 compare :: StackIndex -> StackIndex -> RelationalOperator -> Lua Bool
-compare idx1 idx2 relOp = boolFromFailable =<< do
-  liftLua $ \l -> hslua_compare l idx1 idx2 (fromRelationalOperator relOp)
+compare idx1 idx2 relOp = fromLuaBool <$> do
+  liftLuaThrow $ \l -> hslua_compare l idx1 idx2 (fromRelationalOperator relOp)
 
 -- | Concatenates the @n@ values at the top of the stack, pops them, and leaves
 -- the result at the top. If @n@ is 1, the result is the single value on the
@@ -155,7 +155,7 @@ compare idx1 idx2 relOp = boolFromFailable =<< do
 -- This is a wrapper function of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_concat lua_concat>.
 concat :: NumArgs -> Lua ()
-concat n = throwOnError =<< liftLua (`hslua_concat` n)
+concat n = liftLuaThrow (`hslua_concat` n)
 
 -- | Copies the element at index @fromidx@ into the valid index @toidx@,
 -- replacing the value at that position. Values at other positions are not
@@ -256,9 +256,9 @@ getfield i s = do
 -- Wrapper of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getglobal lua_getglobal>.
 getglobal :: String -> Lua ()
-getglobal name = throwOnError <=< liftLua $ \l ->
+getglobal name = liftLuaThrow $ \l status' ->
   C.withCStringLen name $ \(namePtr, len) ->
-  hslua_getglobal l namePtr (fromIntegral len)
+  hslua_getglobal l namePtr (fromIntegral len) status'
 
 -- | If the value at the given index has a metatable, the function pushes that
 -- metatable onto the stack and returns @True@. Otherwise, the function returns
@@ -283,8 +283,7 @@ getmetatable n = liftLua $ \l ->
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_gettable lua_gettable>.
 gettable :: StackIndex -> Lua ()
-gettable n = throwOnError =<<
-  liftLua (\l -> hslua_gettable l n)
+gettable n = liftLuaThrow (\l -> hslua_gettable l n)
 
 -- | Returns the index of the top element in the stack. Because indices start at
 -- 1, this result is equal to the number of elements in the stack (and so 0
@@ -473,7 +472,7 @@ newuserdata = liftLua1 lua_newuserdata . fromIntegral
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_next lua_next>.
 next :: StackIndex -> Lua Bool
-next idx = boolFromFailable =<< liftLua (\l -> hslua_next l idx)
+next idx = fromLuaBool <$> liftLuaThrow (\l -> hslua_next l idx)
 
 -- | Opens all standard Lua libraries into the current state and sets each
 -- library name as a global value.
@@ -774,9 +773,9 @@ setfield i s = do
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_setglobal lua_setglobal>.
 setglobal :: String -> Lua ()
-setglobal name = throwOnError <=< liftLua $ \l ->
+setglobal name = liftLuaThrow $ \l status' ->
   C.withCStringLen name $ \(namePtr, nameLen) ->
-  hslua_setglobal l namePtr (fromIntegral nameLen)
+  hslua_setglobal l namePtr (fromIntegral nameLen) status'
 
 -- | Pops a table from the stack and sets it as the new metatable for the value
 -- at the given index.
@@ -801,8 +800,7 @@ setmetatable idx = liftLua $ \l -> lua_setmetatable l idx
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_settable lua_settable>.
 settable :: StackIndex -> Lua ()
-settable index = throwOnError =<<
-  liftLua (\l -> hslua_settable l index)
+settable index = liftLuaThrow $ \l -> hslua_settable l index
 
 -- | Accepts any index, or 0, and sets the stack top to this index. If the new
 -- top is larger than the old one, then the new elements are filled with nil. If

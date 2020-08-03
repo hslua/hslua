@@ -23,24 +23,24 @@ module Foreign.Lua.Core.Error
   , errorMessage
   , try
     -- * Helpers for hslua C wrapper functions.
-  , Failable (..)
-  , fromFailable
-  , throwOnError
   , throwMessage
-  , boolFromFailable
+  , liftLuaThrow
     -- * Signaling errors to Lua
   , hsluaErrorRegistryField
   ) where
 
 import Control.Applicative (Alternative (..))
 import Data.Typeable (Typeable)
-import Foreign.Lua.Core.Types (Lua, fromLuaBool)
+import Foreign.Lua.Core.Types (Lua)
 import Foreign.Lua.Raw.Error
+import Foreign.Marshal.Alloc (alloca)
+import Foreign.Ptr
 
 import qualified Control.Exception as E
 import qualified Control.Monad.Catch as Catch
 import qualified Foreign.Lua.Core.Types as Lua
 import qualified Foreign.Lua.Utf8 as Utf8
+import qualified Foreign.Storable as F
 
 -- | Exceptions raised by Lua-related operations.
 newtype Exception = Exception { exceptionMessage :: String}
@@ -106,19 +106,15 @@ throwTopMessageWithState l = do
 hsluaErrorRegistryField :: String
 hsluaErrorRegistryField = "HSLUA_ERR"
 
--- | Return a result or throw the error object at the top of the
--- stack as an exception.
-forceResult :: Result a -> Lua a
-forceResult = \case
-  ErrorOnStack -> throwTopMessage
-  Success x -> return x
-
--- | Throw a Haskell exception if the computation signaled a failure.
-throwOnError :: Failable () -> Lua ()
-throwOnError x = fromFailable (const ()) x >>= forceResult
-
--- | Convert lua boolean to Haskell Bool, throwing an exception if the return
--- value indicates that an error had happened.
-boolFromFailable :: Failable Lua.LuaBool -> Lua Bool
-boolFromFailable x = fromFailable Lua.LuaBool x
-  >>= (fmap fromLuaBool . forceResult)
+-- | Takes a failable HsLua function and transforms it into a
+-- monadic 'Lua' operation. Throws an exception if an error
+-- occured.
+liftLuaThrow :: (Lua.State -> Ptr Lua.StatusCode -> IO a) -> Lua a
+liftLuaThrow f = do
+  (result, status) <- Lua.liftLua $ \l -> alloca $ \statusPtr -> do
+    result <- f l statusPtr
+    status <- Lua.toStatus <$> F.peek statusPtr
+    return (result, status)
+  if status == Lua.OK
+    then return result
+    else throwTopMessage

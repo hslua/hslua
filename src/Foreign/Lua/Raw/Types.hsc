@@ -335,7 +335,7 @@ toStatus (StatusCode c) = case c of
 
 -- | Integer code used to signal the status of a thread or computation.
 -- See @'Status'@.
-newtype StatusCode = StatusCode CInt deriving Eq
+newtype StatusCode = StatusCode CInt deriving (Eq, Storable)
 
 
 --
