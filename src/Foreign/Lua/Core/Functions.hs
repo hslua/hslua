@@ -565,7 +565,7 @@ pcall nargs nresults msgh = liftLua $ \l ->
 --
 -- See also: <https://www.lua.org/manual/5.3/manual.html#lua_pop lua_pop>.
 pop :: StackIndex -> Lua ()
-pop n = settop (-n - 1)
+pop n = liftLua $ \l -> lua_pop l n
 
 -- | Pushes a boolean value with the given value onto the stack.
 --

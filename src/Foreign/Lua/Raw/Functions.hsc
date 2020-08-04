@@ -62,6 +62,10 @@ foreign import ccall SAFTY "lua.h lua_settop"
 foreign import ccall SAFTY "lua.h lua_pushvalue"
   lua_pushvalue :: Lua.State -> StackIndex -> IO ()
 
+-- | See <https://www.lua.org/manual/5.3/manual.html#lua_pop lua_pop>
+foreign import capi SAFTY "lua.h lua_pop"
+  lua_pop :: Lua.State -> StackIndex -> IO ()
+
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_copy lua_copy>
 foreign import ccall SAFTY "lua.h lua_copy"
   lua_copy :: Lua.State -> StackIndex -> StackIndex -> IO ()
