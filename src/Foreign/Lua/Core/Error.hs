@@ -32,10 +32,12 @@ module Foreign.Lua.Core.Error
 import Control.Applicative (Alternative (..))
 import Data.Typeable (Typeable)
 import Foreign.Lua.Core.Types (Lua)
-import Foreign.Lua.Raw.Error
+import Foreign.Lua.Raw.Error (errorMessage)
+import Foreign.Lua.Raw.Functions (lua_pushlstring)
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 
+import qualified Data.ByteString.Unsafe as B
 import qualified Control.Exception as E
 import qualified Control.Monad.Catch as Catch
 import qualified Foreign.Lua.Core.Types as Lua
@@ -85,6 +87,15 @@ throwErrorAsException = do
 -- mayor release.
 throwTopMessage :: Lua a
 throwTopMessage = throwErrorAsException
+
+-- | Helper function which uses proper error-handling to throw an
+-- exception with the given message.
+throwMessage :: String -> Lua a
+throwMessage msg = do
+  Lua.liftLua $ \l ->
+    B.unsafeUseAsCStringLen (Utf8.fromString msg) $ \(msgPtr, z) ->
+      lua_pushlstring l msgPtr (fromIntegral z)
+  Lua.errorConversion >>= Lua.liftLua . Lua.errorToException
 
 instance Alternative Lua where
   empty = throwMessage "empty"
