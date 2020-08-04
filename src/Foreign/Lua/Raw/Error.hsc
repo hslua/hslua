@@ -1,11 +1,10 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : Foreign.Lua.Raw.Error
 Copyright   : © 2017-2020 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta
-Portability : OverloadedStrings
+Portability : portable
 
 Lua exceptions and exception handling.
 -}
