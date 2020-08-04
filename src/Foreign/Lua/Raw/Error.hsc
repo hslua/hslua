@@ -16,10 +16,11 @@ module Foreign.Lua.Raw.Error
   ) where
 
 import Data.ByteString (ByteString)
-import Foreign.C (CChar, CInt (CInt), CSize (..))
-import Foreign.Lua.Raw.Types (Lua, StackIndex)
+import Foreign.Lua.Raw.Auxiliary (hsluaL_tolstring)
+import Foreign.Lua.Raw.Functions (lua_pop, lua_pushlstring)
+import Foreign.Lua.Raw.Types (Lua)
 import Foreign.Marshal.Alloc (alloca)
-import Foreign.Ptr (Ptr, nullPtr)
+import Foreign.Ptr (nullPtr)
 
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as Char8
@@ -43,12 +44,6 @@ errorMessage l = alloca $ \lenPtr -> do
       lua_pop l 2
       return msg
 
-foreign import ccall safe "error-conversion.h hsluaL_tolstring"
-  hsluaL_tolstring :: Lua.State -> StackIndex -> Ptr CSize -> IO (Ptr CChar)
-
-foreign import capi unsafe "lua.h lua_pop"
-  lua_pop :: Lua.State -> CInt -> IO ()
-
 -- | Helper function which uses proper error-handling to throw an
 -- exception with the given message.
 throwMessage :: String -> Lua a
@@ -57,6 +52,3 @@ throwMessage msg = do
     B.unsafeUseAsCStringLen (Utf8.fromString msg) $ \(msgPtr, z) ->
       lua_pushlstring l msgPtr (fromIntegral z)
   Lua.errorConversion >>= Lua.liftLua . Lua.errorToException
-
-foreign import capi unsafe "lua.h lua_pushlstring"
-  lua_pushlstring :: Lua.State -> Ptr CChar -> CSize -> IO ()
