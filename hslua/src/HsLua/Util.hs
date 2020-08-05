@@ -17,15 +17,15 @@ module HsLua.Util
 
 import Data.List (groupBy)
 import HsLua.Core
-  ( Lua, getfield, getglobal, nth, pop, pushvalue, remove, setfield
-  , setglobal, top )
+  ( LuaE, LuaError (..)
+  , getfield, getglobal, nth, pop, pushvalue, remove, setfield, setglobal, top )
 
 -- | Like @getglobal@, but knows about packages and nested tables. E.g.
 --
 -- > getglobal' "math.sin"
 --
 -- will return the function @sin@ in package @math@.
-getglobal' :: String -> Lua ()
+getglobal' :: LuaError e => String -> LuaE e ()
 getglobal' = getnested . splitdot
 
 -- | Like @setglobal@, but knows about packages and nested tables. E.g.
@@ -34,7 +34,7 @@ getglobal' = getnested . splitdot
 -- > setglobal' "mypackage.version"
 --
 -- All tables and fields, except for the last field, must exist.
-setglobal' :: String -> Lua ()
+setglobal' :: LuaError e => String -> LuaE e ()
 setglobal' s =
   case reverse (splitdot s) of
     [] ->
@@ -54,7 +54,7 @@ splitdot = filter (/= ".") . groupBy (\a b -> a /= '.' && b /= '.')
 -- | Pushes the value described by the strings to the stack; where the first
 -- value is the name of a global variable and the following strings are the
 -- field values in nested tables.
-getnested :: [String] -> Lua ()
+getnested :: LuaError e => [String] -> LuaE e ()
 getnested [] = return ()
 getnested (x:xs) = do
   _ <- getglobal x

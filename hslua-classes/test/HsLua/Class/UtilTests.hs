@@ -61,10 +61,12 @@ tests = testGroup "Utilities"
         peekEither top
 
     , "return error message on failure" =:
-      Left "Could not read list: expected integer, got 'false' (boolean)"
+      let msg = "Could not read list: expected integer, got 'false' (boolean)"
+      in
+      Left (Lua.Exception msg)
       `shouldBeResultOf` do
         pushLuaExpr "{1, false}"
-        peekEither top :: Lua (Either String [Lua.Integer])
+        peekEither top :: Lua (Either Lua.Exception [Lua.Integer])
     ]
 
   , testGroup "popValue"

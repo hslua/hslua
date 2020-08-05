@@ -65,7 +65,7 @@ formatPeekError (PeekError msgs) = T.unpack $
   T.intercalate "\n\t" (NonEmpty.toList msgs)
 
 -- | Function to retrieve a value from Lua's stack.
-type Peeker a = StackIndex -> Lua (Either PeekError a)
+type Peeker e a = StackIndex -> LuaE e (Either PeekError a)
 
 -- | Create a peek error from an error message.
 errorMsg :: Text -> PeekError
@@ -81,12 +81,13 @@ retrieving msg = first $ pushMsg ("retrieving " <> msg)
 
 -- | Force creation of a result, throwing an exception if that's
 -- not possible.
-force :: Either PeekError a -> Lua a
+force :: LuaError e => Either PeekError a -> LuaE e a
 force = either (throwMessage . formatPeekError) return
 
 -- | Convert an old peek funtion to a 'Peeker'.
-toPeeker :: (StackIndex -> Lua a)
-         -> Peeker a
+toPeeker :: LuaError e
+         => (StackIndex -> LuaE e a)
+         -> Peeker e a
 toPeeker op idx =
   (Right <$> op idx) <|> return (Left $ errorMsg "retrieving failed")
 
@@ -96,9 +97,9 @@ toPeeker op idx =
 -- using the 'Right' constructor, while a type mismatch results
 -- in @Left PeekError@ with the given error message.
 typeChecked :: Text                      -- ^ expected type
-            -> (StackIndex -> Lua Bool)  -- ^ pre-condition checker
-            -> Peeker a
-            -> Peeker a
+            -> (StackIndex -> LuaE e Bool)  -- ^ pre-condition checker
+            -> Peeker e a
+            -> Peeker e a
 typeChecked expectedType test peekfn idx = do
   v <- test idx
   if v
@@ -108,8 +109,8 @@ typeChecked expectedType test peekfn idx = do
 -- | Report the expected and actual type of the value under the given index if
 -- conversion failed.
 reportValueOnFailure :: Text
-                     -> (StackIndex -> Lua (Maybe a))
-                     -> Peeker a
+                     -> (StackIndex -> LuaE e (Maybe a))
+                     -> Peeker e a
 reportValueOnFailure expected peekMb idx = do
   res <- peekMb idx
   case res of
@@ -117,7 +118,7 @@ reportValueOnFailure expected peekMb idx = do
     Nothing -> Left  <$> mismatchError expected idx
 
 -- | Return a Result error containing a message about the assertion failure.
-mismatchError :: Text -> StackIndex -> Lua PeekError
+mismatchError :: Text -> StackIndex -> LuaE e PeekError
 mismatchError expected idx = do
   actualType  <- ltype idx >>= typename
   actualValue <- Utf8.toText <$> tostring' idx <* pop 1
@@ -126,7 +127,7 @@ mismatchError expected idx = do
     actualValue <> "' (" <> T.pack actualType <> ")"
 
 -- | Retrieves a 'Bool' as a Lua boolean.
-peekBool :: Peeker Bool
+peekBool :: Peeker e Bool
 peekBool = fmap Right . toboolean
 
 --
@@ -135,22 +136,22 @@ peekBool = fmap Right . toboolean
 
 -- | Like @'tostring', but ensures that the value at the given index is
 -- not silently converted to a string, as would happen with numbers.
-toByteString :: StackIndex -> Lua (Maybe ByteString)
+toByteString :: StackIndex -> LuaE e (Maybe ByteString)
 toByteString idx = do
   -- copy value, as tostring converts numbers to strings *in-place*.
   pushvalue idx
   tostring top <* pop 1
 
 -- | Retrieves a 'ByteString' as a raw string.
-peekByteString :: Peeker ByteString
+peekByteString :: Peeker e ByteString
 peekByteString = reportValueOnFailure "string" toByteString
 
 -- | Retrieves a lazy 'BL.ByteString' as a raw string.
-peekLazyByteString :: Peeker BL.ByteString
+peekLazyByteString :: Peeker e BL.ByteString
 peekLazyByteString = fmap (second BL.fromStrict) . peekByteString
 
 -- | Retrieves a 'String' from an UTF-8 encoded Lua string.
-peekString :: Peeker String
+peekString :: Peeker e String
 peekString = peekStringy
 
 -- | Retrieves a String-like value from an UTF-8 encoded Lua string.
@@ -158,11 +159,11 @@ peekString = peekStringy
 -- This should not be used to peek 'ByteString' values or other values
 -- for which construction via 'fromString' can result in loss of
 -- information.
-peekStringy :: IsString a => Peeker a
+peekStringy :: IsString a => Peeker e a
 peekStringy = fmap (second $ fromString . Utf8.toString) . peekByteString
 
 -- | Retrieves a 'T.Text' value as an UTF-8 encoded string.
-peekText :: Peeker T.Text
+peekText :: Peeker e T.Text
 peekText = fmap (second Utf8.toText) . peekByteString
 
 --
@@ -170,7 +171,7 @@ peekText = fmap (second Utf8.toText) . peekByteString
 --
 
 -- | Retrieves an 'Integral' value from the Lua stack.
-peekIntegral :: (Integral a, Read a) => Peeker a
+peekIntegral :: (Integral a, Read a) => Peeker e a
 peekIntegral idx =
   ltype idx >>= \case
     TypeNumber  -> second fromIntegral <$>
@@ -184,7 +185,7 @@ peekIntegral idx =
     _ -> Left <$> mismatchError "Integral" idx
 
 -- | Retrieve a 'RealFloat' (e.g., 'Float' or 'Double') from the stack.
-peekRealFloat :: (RealFloat a, Read a) => Peeker a
+peekRealFloat :: (RealFloat a, Read a) => Peeker e a
 peekRealFloat idx =
   ltype idx >>= \case
     TypeString  -> do
@@ -199,7 +200,7 @@ peekRealFloat idx =
 -- | Reads a numerically indexed table @t@ into a list, where the 'length' of
 -- the list is equal to @#t@. The operation will fail if a numerical field @n@
 -- with @1 ≤ n < #t@ is missing.
-peekList :: Peeker a -> Peeker [a]
+peekList :: LuaError e => Peeker e a -> Peeker e [a]
 peekList peekElement = typeChecked "table" istable $ \idx -> do
   let elementsAt [] = return (Right [])
       elementsAt (i : is) = do
@@ -212,13 +213,15 @@ peekList peekElement = typeChecked "table" istable $ \idx -> do
   elementsAt [1..listLength]
 
 -- | Retrieves a key-value Lua table as 'Map'.
-peekMap :: Ord a => Peeker a -> Peeker b -> Peeker (Map a b)
+peekMap :: (LuaError e, Ord a)
+        => Peeker e a -> Peeker e b -> Peeker e (Map a b)
 peekMap keyPeeker valuePeeker =
     fmap (retrieving "Map" . second Map.fromList)
   . peekKeyValuePairs keyPeeker valuePeeker
 
 -- | Read a table into a list of pairs.
-peekKeyValuePairs :: Peeker a -> Peeker b -> Peeker [(a, b)]
+peekKeyValuePairs :: LuaError e
+                  => Peeker e a -> Peeker e b -> Peeker e [(a, b)]
 peekKeyValuePairs keyPeeker valuePeeker =
   typeChecked "table" istable $ \idx -> do
     idx' <- absindex idx
@@ -235,7 +238,8 @@ peekKeyValuePairs keyPeeker valuePeeker =
 -- key to be on the top of the stack and the table at the given
 -- index @idx@. The next key, if it exists, is left at the top of
 -- the stack.
-nextPair :: Peeker a -> Peeker b -> Peeker (Maybe (a, b))
+nextPair :: LuaError e
+         => Peeker e a -> Peeker e b -> Peeker e (Maybe (a, b))
 nextPair keyPeeker valuePeeker idx = retrieving "key-value pair" <$> do
   hasNext <- next idx
   if not hasNext
@@ -249,7 +253,7 @@ nextPair keyPeeker valuePeeker idx = retrieving "key-value pair" <$> do
 -- | Retrieves a 'Set' from an idiomatic Lua representation. A
 -- set in Lua is idiomatically represented as a table with the
 -- elements as keys. Elements with falsy values are omitted.
-peekSet :: Ord a => Peeker a -> Peeker (Set a)
+peekSet :: (LuaError e, Ord a) => Peeker e a -> Peeker e (Set a)
 peekSet elementPeeker =
     fmap (retrieving "Set" .
           second (Set.fromList . map fst . filter snd))
@@ -261,8 +265,8 @@ peekSet elementPeeker =
 
 -- | Makes a result optional. Returns 'Nothing' if the Lua value
 -- is @nil@; otherwise applies the peeker and returns its result.
-optional :: Peeker a -- ^ peeker
-         -> Peeker (Maybe a)
+optional :: Peeker e a -- ^ peeker
+         -> Peeker e (Maybe a)
 optional peeker idx = do
   noValue <- Lua.isnoneornil idx
   if noValue

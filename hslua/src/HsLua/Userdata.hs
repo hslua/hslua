@@ -42,8 +42,8 @@ module HsLua.Userdata
 import Control.Monad (when)
 import Data.Data (Data, dataTypeName, dataTypeOf)
 import HsLua.Core
-  ( Lua, fromuserdata, newhsuserdata, newudmetatable, nth
-  , throwTypeMismatchError )
+  ( LuaE, LuaError, fromuserdata, newhsuserdata, newudmetatable
+  , nth, throwTypeMismatchError )
 
 import qualified HsLua.Core as Lua
 import qualified HsLua.Core.Utf8 as Utf8
@@ -51,7 +51,7 @@ import qualified HsLua.Core.Utf8 as Utf8
 -- | Push data by wrapping it into a userdata object.
 pushAny :: Data a
         => a
-        -> Lua ()
+        -> LuaE e ()
 pushAny x =
   let name = metatableName x
       pushMetatable = ensureUserdataMetatable name (return ())
@@ -59,9 +59,9 @@ pushAny x =
 
 -- | Push data by wrapping it into a userdata object, using the object at the
 -- top of the stack after performing the given operation as metatable.
-pushAnyWithMetatable :: Lua ()       -- ^ operation to push the metatable
+pushAnyWithMetatable :: LuaE e ()       -- ^ operation to push the metatable
                      -> a            -- ^ object to push to Lua.
-                     -> Lua ()
+                     -> LuaE e ()
 pushAnyWithMetatable mtOp x = do
   newhsuserdata x
   mtOp
@@ -72,35 +72,35 @@ pushAnyWithMetatable mtOp x = do
 -- The table will be created if it doesn't exist yet.
 ensureUserdataMetatable :: String     -- ^ name of the registered
                                       -- metatable which should be used.
-                        -> Lua ()     -- ^ set additional properties; this
+                        -> LuaE e ()     -- ^ set additional properties; this
                                       -- operation will be called with the newly
                                       -- created metadata table at the top of
                                       -- the stack.
-                        -> Lua ()
+                        -> LuaE e ()
 ensureUserdataMetatable name modMt = do
   mtCreated <- newudmetatable (Utf8.fromString name)
   -- Execute additional modifications on metatable
   when mtCreated modMt
 
 -- | Retrieve data which has been pushed with @'pushAny'@.
-toAny :: Data a => Lua.StackIndex -> Lua (Maybe a)
+toAny :: Data a => Lua.StackIndex -> LuaE e (Maybe a)
 toAny idx = toAny' undefined
  where
-  toAny' :: Data a => a -> Lua (Maybe a)
+  toAny' :: Data a => a -> LuaE e (Maybe a)
   toAny' x = toAnyWithName idx (metatableName x)
 
 -- | Retrieve data which has been pushed with @'pushAnyWithMetatable'@, where
 -- *name* must is the value of the @__name@ field of the metatable.
 toAnyWithName :: Lua.StackIndex
               -> String         -- ^ expected metatable name
-              -> Lua (Maybe a)
+              -> LuaE e (Maybe a)
 toAnyWithName idx name = fromuserdata idx (Utf8.fromString name)
 
 -- | Retrieve Haskell data which was pushed to Lua as userdata.
-peekAny :: Data a => Lua.StackIndex -> Lua a
+peekAny :: (LuaError e, Data a) => Lua.StackIndex -> LuaE e a
 peekAny idx = peek' undefined
  where
-  peek' :: Data a => a -> Lua a
+  peek' :: (LuaError e, Data a) => a -> LuaE e a
   peek' x = toAny idx >>= \case
     Just x' -> return x'
     Nothing -> do

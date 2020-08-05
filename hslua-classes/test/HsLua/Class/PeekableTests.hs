@@ -1,5 +1,5 @@
-
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 {-|
 Module      :  HsLua.Class.PeekableTests
 Copyright   :  © 2017-2021 Albert Krewinkel
@@ -27,15 +27,15 @@ tests :: TestTree
 tests = testGroup "Peekable"
   [ testGroup "Bool"
     ["literal true is truthy" ?: do
-        pushLuaExpr "true"
+        pushLuaExpr @Lua.Exception "true"
         peek top
 
     , "0 as a non-nil value is truthy" ?: do
-        pushnumber 0
+        pushnumber @Lua.Exception 0
         peek top
 
     , "nil is falsy" ?: do
-        pushnil
+        pushnil @Lua.Exception
         not <$> peek top
     ]
 

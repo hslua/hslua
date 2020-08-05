@@ -111,7 +111,7 @@ tests = testGroup "Module"
     ]
   ]
 
-mymath :: Module
+mymath :: Module Lua.Exception
 mymath = Module
   { moduleName = "mymath"
   , moduleDescription = "A math module."
@@ -119,17 +119,17 @@ mymath = Module
   , moduleFunctions = [ ("factorial", factorial)]
   }
 
-factorial :: DocumentedFunction
+factorial :: DocumentedFunction Lua.Exception
 factorial = toHsFnPrecursor (\n -> product [1..n])
   <#> factorialParam
   =#> factorialResult
 
-factorialParam :: Parameter Integer
+factorialParam :: Parameter Lua.Exception Integer
 factorialParam =
   parameter (peekIntegral @Integer) "integer"
     "n"
     "number for which the factorial is computed"
 
-factorialResult :: FunctionResults Integer
+factorialResult :: FunctionResults Lua.Exception Integer
 factorialResult =
   functionResult (pushIntegral @Integer) "integer" "factorial"

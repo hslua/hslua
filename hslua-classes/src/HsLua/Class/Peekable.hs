@@ -1,7 +1,9 @@
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP                 #-}
+{-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE FlexibleInstances   #-}
+{-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications    #-}
 {-|
 Module      : HsLua.Class.Peekable
 Copyright   : © 2007–2012 Gracjan Polak;
@@ -16,6 +18,7 @@ Sending haskell objects to the lua stack.
 -}
 module HsLua.Class.Peekable
   ( Peekable (..)
+  , PeekError (..)
   , peekKeyValuePairs
   , peekList
   , reportValueOnFailure
@@ -35,14 +38,19 @@ import qualified Data.ByteString.Lazy as BL
 import qualified HsLua.Peek as Peek
 import qualified HsLua.Core.Utf8 as Utf8
 
+#if !MIN_VERSION_base(4,12,0)
+import Data.Semigroup (Semigroup)
+#endif
+
 -- | Use @test@ to check whether the value at stack index @n@ has the
 -- correct type and use @peekfn@ to convert it to a haskell value if
 -- possible. Throws and exception if the test failes with the expected
 -- type name as part of the message.
-typeChecked :: String                   -- ^ expected type
-            -> (StackIndex -> Lua Bool) -- ^ pre-condition Checker
-            -> (StackIndex -> Lua a)    -- ^ retrieval function
-            -> StackIndex -> Lua a
+typeChecked :: LuaError e
+            => String                      -- ^ expected type
+            -> (StackIndex -> LuaE e Bool) -- ^ pre-condition Checker
+            -> (StackIndex -> LuaE e a)    -- ^ retrieval function
+            -> StackIndex -> LuaE e a
 typeChecked expectedType test peekfn idx = do
   v <- test idx
   if v
@@ -51,9 +59,10 @@ typeChecked expectedType test peekfn idx = do
 
 -- | Report the expected and actual type of the value under the given
 -- index if conversion failed.
-reportValueOnFailure :: String
-                     -> (StackIndex -> Lua (Maybe a))
-                     -> StackIndex -> Lua a
+reportValueOnFailure :: PeekError e
+                     => String
+                     -> (StackIndex -> LuaE e (Maybe a))
+                     -> StackIndex -> LuaE e a
 reportValueOnFailure expected peekMb idx = do
   res <- peekMb idx
   case res of
@@ -64,7 +73,7 @@ reportValueOnFailure expected peekMb idx = do
 class Peekable a where
   -- | Check if at index @n@ there is a convertible Lua value and if so return
   -- it.  Throws a @'Lua.Exception'@ otherwise.
-  peek :: StackIndex -> Lua a
+  peek :: PeekError e => StackIndex -> LuaE e a
 
 instance Peekable () where
   peek = reportValueOnFailure "nil" $ \idx -> do
@@ -124,7 +133,7 @@ instance (Ord a, Peekable a) => Peekable (Set a) where
     fmap (Set.fromList . map fst . filter snd) . peekKeyValuePairs
 
 -- | Read a table into a list
-peekList :: Peekable a => StackIndex -> Lua [a]
+peekList :: (PeekError e, Peekable a) => StackIndex -> LuaE e [a]
 peekList = typeChecked "table" istable $ \idx -> do
   let elementsAt [] = return []
       elementsAt (i : is) = do
@@ -134,8 +143,8 @@ peekList = typeChecked "table" istable $ \idx -> do
   inContext "Could not read list: " (elementsAt [1..listLength])
 
 -- | Read a table into a list of pairs.
-peekKeyValuePairs :: (Peekable a, Peekable b)
-                      => StackIndex -> Lua [(a, b)]
+peekKeyValuePairs :: (Peekable a, Peekable b, PeekError e)
+                  => StackIndex -> LuaE e [(a, b)]
 peekKeyValuePairs = typeChecked "table" istable $ \idx -> do
   let remainingPairs = do
         res <- nextPair (if idx < 0 then idx - 1 else idx)
@@ -149,8 +158,8 @@ peekKeyValuePairs = typeChecked "table" istable $ \idx -> do
 
 -- | Get the next key-value pair from a table. Assumes the last key to be on the
 -- top of the stack and the table at the given index @idx@.
-nextPair :: (Peekable a, Peekable b)
-         => StackIndex -> Lua (Maybe (a, b))
+nextPair :: (PeekError e, Peekable a, Peekable b)
+         => StackIndex -> LuaE e (Maybe (a, b))
 nextPair idx = do
   hasNext <- next idx
   if hasNext
@@ -162,11 +171,24 @@ nextPair idx = do
             -- removes the value, keeps the key
     else return Nothing
 
--- | Specify a name for the context in which a computation is run. The name is
--- added to the error message in case of an exception.
-inContext :: String -> Lua a -> Lua a
-inContext ctx op = Lua.errorConversion >>= \ec ->
-  Lua.addContextToException ec ctx op
+-- | Specify a name for the context in which a computation is run. The
+-- name is added to the error message in case of an exception.
+inContext :: forall e a. PeekError e
+          => String -> LuaE e a -> LuaE e a
+inContext ctx op = try op >>= \case
+  Left (err :: e) -> Catch.throwM $ exceptionFromMessage @e (ctx ++ messageFromException err)
+  Right x  -> return x
+
+-- | Exceptions that are to be used with 'peek' and similar functions
+-- must be instances of this class. It ensures that error can be amended
+-- with the context in which they happened.
+class (LuaError e, Semigroup e) => PeekError e where
+  exceptionFromMessage :: String -> e
+  messageFromException :: e -> String
+
+instance PeekError Lua.Exception where
+  exceptionFromMessage = Lua.Exception
+  messageFromException = Lua.exceptionMessage
 
 --
 -- Tuples
@@ -225,7 +247,8 @@ instance (Peekable a, Peekable b, Peekable c, Peekable d,
               <*> nthValue idx 7 <*> nthValue idx 8
 
 -- | Helper function to get the nth table value
-nthValue :: Peekable a => StackIndex -> Lua.Integer -> Lua a
+nthValue :: (PeekError e, Peekable a)
+         => StackIndex -> Lua.Integer -> LuaE e a
 nthValue idx n = do
   rawgeti idx n
   peek top `Catch.finally` pop 1

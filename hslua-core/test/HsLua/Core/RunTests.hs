@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
 {-|
 Module      :  HsLua.Core.RunTests
@@ -24,13 +25,10 @@ tests = testGroup "Run"
   [ testGroup "runEither"
     [ "Lua errors are caught" =:
       isLeft `shouldHoldForResultOf`
-        liftIO (runEither' (throwMessage "failing" :: Lua Bool))
+      liftIO (runEither (throwMessage "failing" :: Lua Bool))
 
     , "error-less code gives 'Right'" =:
       isRight `shouldHoldForResultOf`
-        liftIO (runEither' (pushboolean True *> toboolean top))
+        liftIO (runEither @Lua.Exception (pushboolean True *> toboolean top))
     ]
   ]
-
-runEither' :: Lua a -> IO (Either Lua.Exception a)
-runEither' = runEither

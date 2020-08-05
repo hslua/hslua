@@ -17,19 +17,15 @@ to terminate.
 module HsLua.Core
   ( -- * Run Lua computations
     run
-  , run'
   , runWith
   , runEither
   -- * Lua Computations
-  , Lua (..)
-  , runWithConverter
+  , LuaE (..)
+  , Lua
   , unsafeRunWith
   , liftIO
   , state
   , LuaEnvironment (..)
-  , ErrorConversion (..)
-  , errorConversion
-  , unsafeErrorConversion
   -- * Lua API types
   , CFunction
   , PreCFunction
@@ -185,6 +181,7 @@ module HsLua.Core
   , pushHaskellFunction
   , pushPreCFunction
   -- * Error handling
+  , LuaError (..)
   , Exception (..)
   , throwException
   , catchException

@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications  #-}
 {-|
 Module      :  HsLua.Class.PushableTests
 Copyright   :  © 2017-2021 Albert Krewinkel
@@ -64,7 +65,8 @@ tests = testGroup "Pushable"
             res <- Lua.islightuserdata (-1)
             Lua.liftIO $ freeStablePtr stblPtr
             return res
-      in assertBool "pointers must become light userdata" =<< Lua.run luaOp
+      in assertBool "pointers must become light userdata"
+         =<< Lua.run @Lua.Exception luaOp
     ]
 
   , testGroup "pushing a value increases stack size by one"
@@ -84,12 +86,13 @@ tests = testGroup "Pushable"
 -- | Takes a message, haskell value, and a representation of that value as lua
 -- string, assuming that the pushed values are equal within lua.
 assertLuaEqual :: Pushable a => String -> a -> ByteString -> Assertion
-assertLuaEqual msg x lit = assertBool msg =<< Lua.run
+assertLuaEqual msg x lit = assertBool msg =<< Lua.run @Lua.Exception
    (pushLuaExpr lit
    *> push x
    *> equal (nth 1) (nth 2))
 
 prop_pushIncrStackSizeByOne :: Pushable a => a -> Property
 prop_pushIncrStackSizeByOne x = monadicIO $ do
-  (oldSize, newSize) <- run $ Lua.run ((,) <$> gettop <*> (push x *> gettop))
+  (oldSize, newSize) <- run . Lua.run @Lua.Exception $
+    ((,) <$> gettop <*> (push x *> gettop))
   assert (newSize == succ oldSize)

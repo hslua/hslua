@@ -23,6 +23,7 @@ THE SOFTWARE.
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 {-| Tests for HsLua -}
 module HsLuaTests (tests) where
 
@@ -50,14 +51,14 @@ tests = testGroup "Lua integration tests"
   [ testCase "print version" .
     run $ do
       openlibs
-      void $ getglobal "assert"
+      void $ getglobal @Lua.Exception "assert"
       pushstring "Hello from "
-      void $ getglobal "_VERSION"
+      void $ getglobal @Lua.Exception "_VERSION"
       concat 2
       call 1 0
 
   , "getting a nested global works" ?: do
-      pushLuaExpr "{greeting = 'Moin'}"
+      pushLuaExpr @Lua.Exception "{greeting = 'Moin'}"
       setglobal "hamburg"
 
       getglobal' "hamburg.greeting"
@@ -67,7 +68,7 @@ tests = testGroup "Lua integration tests"
   , "setting a nested global works" ?: do
       let v = "Mitte"
       newtable
-      setglobal "berlin"
+      setglobal @Lua.Exception "berlin"
 
       pushstring v
       setglobal' "berlin.neighborhood"
@@ -75,7 +76,7 @@ tests = testGroup "Lua integration tests"
       return (Just v == v')
 
   , testCase "table reading" .
-    run $ do
+    run @Lua.Exception $ do
       openbase
       let tableStr = "{firstname = 'Jane', surname = 'Doe'}"
       pushLuaExpr $ "setmetatable(" <> tableStr <> ", {'yup'})"
@@ -168,7 +169,8 @@ tests = testGroup "Lua integration tests"
           result @?= Left (ExceptionWithNumber 42)
 
       , "pass exception through Lua" =: do
-          let frob = Catch.throwM (ExceptionWithMessage "borked") :: Lua NumResults
+          let frob :: LuaE CustomException NumResults
+              frob = Catch.throwM (ExceptionWithMessage "borked")
           result <- tryCustom $ do
             pushHaskellFunction frob
             call (NumArgs 0) (NumResults 0)
@@ -196,34 +198,25 @@ data CustomException =
 
 instance Catch.Exception CustomException
 
-customErrorConversion :: Lua.ErrorConversion
-customErrorConversion = Lua.ErrorConversion
-  { errorToException = errorToCustomException
-  , addContextToException = const id
-  , alternative = customAlternative
-  , exceptionToError = flip Catch.catch $ \case
-      ExceptionWithMessage m -> do
-        pushstring (Utf8.fromString m)
-        Lua.error
-      ExceptionWithNumber n  -> do
-        pushnumber n
-        Lua.error
-  }
+instance LuaError CustomException where
+  pushException = \case
+    ExceptionWithMessage m -> pushstring (Utf8.fromString m)
+    ExceptionWithNumber n  -> pushnumber n
+  peekException = do
+    Lua.tonumber Lua.top >>= \case
+      Just num -> do
+        Lua.pop 1
+        return (ExceptionWithNumber num)
+      _        -> do
+        l <- Lua.state
+        msg <- Lua.liftIO (Lua.errorMessage l)
+        return (ExceptionWithMessage (Utf8.toString msg))
 
-errorToCustomException :: Lua.State -> IO a
-errorToCustomException l = Lua.unsafeRunWith l $
-  Lua.tonumber Lua.top >>= \case
-    Just num -> do
-      Lua.pop 1
-      Catch.throwM (ExceptionWithNumber num)
-    _        -> do
-      msg <- Lua.liftIO (Lua.errorMessage l)
-      Catch.throwM (ExceptionWithMessage (Utf8.toString msg))
+tryCustom :: LuaE CustomException a -> IO (Either CustomException a)
+tryCustom = Catch.try . Lua.run
 
-tryCustom :: Lua a -> IO (Either CustomException a)
-tryCustom = Catch.try . Lua.run' customErrorConversion
-
-customAlternative :: Lua a -> Lua a -> Lua a
-customAlternative x y = Catch.try x >>= \case
-  Left (_ :: CustomException) -> y
-  Right x' -> return x'
+-- instance Lua
+-- customAlternative :: Lua a -> Lua a -> Lua a
+-- customAlternative x y = Catch.try x >>= \case
+--   Left (_ :: CustomException) -> y
+--   Right x' -> return x'

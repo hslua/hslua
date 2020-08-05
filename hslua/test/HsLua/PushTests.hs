@@ -122,14 +122,14 @@ tests = testGroup "Push"
   , testGroup "Collections"
     [ testGroup "pushList"
       [ testProperty "creates a table" $ \x -> monadicIO $ do
-          producesTable <- run $ Lua.run $ do
+          producesTable <- run $ Lua.run @Lua.Exception $ do
             pushList pushBool x
             listType <- Lua.ltype Lua.top
             return $ Lua.TypeTable == listType
           assert producesTable
 
       , testProperty "numeric indices start at 1" $ \list -> monadicIO $ do
-          retrievedList <- run $ Lua.run $ do
+          retrievedList <- run $ Lua.run @Lua.Exception $ do
             pushList (pushIntegral @Lua.Integer) list
             listIdx <- Lua.absindex Lua.top
             forM [1..(fromIntegral $ length list)] $ \n ->
@@ -139,7 +139,7 @@ tests = testGroup "Push"
           assert $ retrievedList == list
 
       , testProperty "table size equals list length" $ \list -> monadicIO $ do
-          tableSize <- run $ Lua.run $ do
+          tableSize <- run $ Lua.run @Lua.Exception $ do
             pushList pushString list
             Lua.rawlen Lua.top
           assert $ tableSize == length list
@@ -149,7 +149,7 @@ tests = testGroup "Push"
 
     , testGroup "pushSet"
       [ testProperty "creates a table" $ \x -> monadicIO $ do
-          producesTable <- run $ Lua.run $ do
+          producesTable <- run $ Lua.run @Lua.Exception $ do
             pushSet pushString x
             listType <- Lua.ltype Lua.top
             return $ Lua.TypeTable == listType
@@ -159,7 +159,7 @@ tests = testGroup "Push"
           case Set.lookupMin set of
             Nothing -> return ()
             Just el -> do
-              hasKey <- run $ Lua.run $ do
+              hasKey <- run $ Lua.run @Lua.Exception $ do
                 pushSet (pushIntegral @Lua.Integer) set
                 pushIntegral el
                 Lua.gettable (Lua.nth 2)
@@ -171,7 +171,7 @@ tests = testGroup "Push"
 
     , testGroup "pushMap"
       [ testProperty "creates a table" $ \m -> monadicIO $ do
-          producesTable <- run $ Lua.run $ do
+          producesTable <- run $ Lua.run @Lua.Exception $ do
             pushMap pushString pushString m
             listType <- Lua.ltype Lua.top
             return $ Lua.TypeTable == listType
@@ -181,7 +181,7 @@ tests = testGroup "Push"
           case Map.lookupMax m of
             Nothing -> return ()
             Just (k, v) -> do
-              tabVal <- run $ Lua.run $ do
+              tabVal <- run $ Lua.run @Lua.Exception $ do
                 pushMap pushText (pushRealFloat @Lua.Number) m
                 pushText k
                 Lua.gettable (Lua.nth 2)
@@ -218,7 +218,8 @@ assertLuaEqual action lit =
 
 
 -- | Verifies that the operation adds exactly one element to the Lua stack.
-testSingleElementProperty :: (Arbitrary a, Show a) => Pusher a -> TestTree
+testSingleElementProperty :: (Arbitrary a, Show a)
+                          => Pusher Lua.Exception a -> TestTree
 testSingleElementProperty push = testProperty "pushes single element" $ \x ->
   monadicIO $ do
     (oldSize, newSize) <- run . Lua.run $ do

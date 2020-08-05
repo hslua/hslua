@@ -20,7 +20,8 @@ module Test.Tasty.HsLua
   ) where
 
 import Data.ByteString (ByteString, append)
-import HsLua.Core (Lua, run, runEither, loadstring, call, multret)
+import HsLua.Core
+  (Lua, LuaE, LuaError, run, runEither, loadstring, call, multret)
 import Test.Tasty (TestTree)
 import Test.Tasty.HUnit
   (Assertion, HasCallStack, assertBool, assertFailure, testCase, (@?=))
@@ -34,12 +35,13 @@ import qualified HsLua.Core as Lua
 -- > run $ do
 -- >   pushLuaExpr "7 + 5"
 -- >   tointeger top
-pushLuaExpr :: ByteString -> Lua ()
+pushLuaExpr :: LuaError e => ByteString -> LuaE e ()
 pushLuaExpr expr = loadstring ("return " `append` expr) *> call 0 multret
 
 -- | Takes a value and a 'Lua' operation and turns them into an
 -- 'Assertion' which checks that the operation produces the given value.
-shouldBeResultOf :: (HasCallStack, Eq a, Show a) => a -> Lua a -> Assertion
+shouldBeResultOf :: (HasCallStack, Eq a, Show a)
+                 => a -> Lua a -> Assertion
 shouldBeResultOf expected luaOp = do
   errOrRes <- runEither luaOp
   case errOrRes of
@@ -72,12 +74,12 @@ shouldHoldForResultOf predicate luaOp = do
                             (predicate res)
 
 -- | Checks whether the operation returns 'True'.
-assertLuaBool :: HasCallStack => Lua Bool -> Assertion
+assertLuaBool :: HasCallStack => LuaE e Bool -> Assertion
 assertLuaBool luaOp = assertBool "" =<< run luaOp
 
 -- | Creates a new test case with the given name, checking whether the
 -- operation returns 'True'.
-luaTestBool :: HasCallStack => String -> Lua Bool -> TestTree
+luaTestBool :: HasCallStack => String -> LuaE e Bool -> TestTree
 luaTestBool msg luaOp = testCase msg $
   assertBool "Lua operation returned false" =<< run luaOp
 
@@ -87,6 +89,6 @@ luaTestBool msg luaOp = testCase msg $
 infix  3 =:
 
 -- | Infix alias for 'luaTestBool'.
-(?:) :: HasCallStack => String -> Lua Bool -> TestTree
+(?:) :: HasCallStack => String -> LuaE e Bool -> TestTree
 (?:) = luaTestBool
 infixr 3 ?:

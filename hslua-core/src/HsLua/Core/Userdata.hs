@@ -17,7 +17,7 @@ module HsLua.Core.Userdata
   ) where
 
 import Data.ByteString (ByteString)
-import HsLua.Core.Types (Lua, StackIndex, liftLua, fromLuaBool)
+import HsLua.Core.Types (LuaE, StackIndex, liftLua, fromLuaBool)
 import Lua.Userdata
   ( hslua_fromuserdata
   , hslua_newhsuserdata
@@ -28,7 +28,7 @@ import qualified Data.ByteString as B
 
 -- | Creates a new userdata wrapping the given Haskell object. The
 -- userdata is pushed to the top of the stack.
-newhsuserdata :: a -> Lua ()
+newhsuserdata :: a -> LuaE e ()
 newhsuserdata = liftLua . flip hslua_newhsuserdata
 
 -- | Creates and registers a new metatable for a userdata-wrapped
@@ -40,7 +40,7 @@ newhsuserdata = liftLua . flip hslua_newhsuserdata
 -- garbage collected in Lua.
 --
 -- The name may not contain a nul character.
-newudmetatable :: ByteString -> Lua Bool
+newudmetatable :: ByteString -> LuaE e Bool
 newudmetatable name = liftLua $ \l ->
   B.useAsCString name (fmap fromLuaBool . hslua_newudmetatable l)
 
@@ -50,6 +50,6 @@ newudmetatable name = liftLua $ \l ->
 -- The name may not contain a nul character.
 fromuserdata :: StackIndex  -- ^ stack index of userdata
              -> ByteString  -- ^ expected name of userdata object
-             -> Lua (Maybe a)
+             -> LuaE e (Maybe a)
 fromuserdata idx name = liftLua $ \l ->
   B.useAsCString name (hslua_fromuserdata l idx)

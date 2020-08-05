@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 {-|
 Module      : HsLua.Class.ExposableTests
 Copyright   : © 2017-2021 Albert Krewinkel
@@ -33,7 +34,7 @@ tests =
             i1 <- Lua.peek (-1)
             i2 <- Lua.peek (-2)
             return (i1 + i2)
-      Lua.registerHaskellFunction "add" $ toHaskellFunction add
+      Lua.registerHaskellFunction "add" $ toHaskellFunction @Lua.Exception add
       Lua.loadstring "return add(23, 5)" *> Lua.call 0 1
       Lua.peek Lua.top <* Lua.pop 1
 
@@ -44,13 +45,13 @@ tests =
       Lua.peek (-1) <* Lua.pop 1
 
   , "argument type errors are propagated" =:
-     ("Error during function call: could not read argument 2: "
+     ("Error during function call:\ncould not read argument 2: "
       ++ "expected integer, got 'true' (boolean)") `shouldBeErrorMessageOf` do
           Lua.registerHaskellFunction "integerOp" integerOperation
           pushLuaExpr "integerOp(23, true)"
 
   , "Error in Haskell function is converted into Lua error" =:
-    (False, "Error during function call: foo" :: String) `shouldBeResultOf` do
+    (False, "Error during function call:\nfoo" :: String) `shouldBeResultOf` do
       Lua.openlibs
       Lua.pushHaskellFunction $
         toHaskellFunction (Lua.throwException "foo" :: Lua ())

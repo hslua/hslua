@@ -34,7 +34,7 @@ tests = testGroup "Closures"
       tointeger top
 
   , "Haskell functions have the Lua type C function" ?: do
-      pushHaskellFunction $ return (0 :: NumResults)
+      pushHaskellFunction (return 0 :: Lua NumResults)
       iscfunction top
 
   -- The following test case will hang if there are issues with the way

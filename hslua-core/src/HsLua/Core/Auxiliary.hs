@@ -36,7 +36,8 @@ module HsLua.Core.Auxiliary
 import Control.Exception (IOException, try)
 import Data.ByteString (ByteString)
 import Foreign.C (withCString)
-import HsLua.Core.Types (Lua, Status, StackIndex, liftLua, multret)
+import HsLua.Core.Error (LuaError, throwTopMessageWithState)
+import HsLua.Core.Types (LuaE, Status, StackIndex, liftLua, multret)
 import Lua (top)
 import Lua.Auxiliary
 import Lua.Ersatz.Auxiliary
@@ -55,7 +56,7 @@ import qualified Foreign.Storable as Storable
 --
 -- Returns 'Lua.OK' on success, or an error if either loading of the
 -- string or calling of the thunk failed.
-dostring :: ByteString -> Lua Status
+dostring :: ByteString -> LuaE e Status
 dostring s = do
   loadRes <- loadstring s
   if loadRes == Lua.OK
@@ -65,7 +66,7 @@ dostring s = do
 -- | Loads and runs the given file. Note that the filepath is interpreted by
 -- Haskell, not Lua. The resulting chunk is named using the UTF8 encoded
 -- filepath.
-dofile :: FilePath -> Lua Status
+dofile :: FilePath -> LuaE e Status
 dofile fp = do
   loadRes <- loadfile fp
   if loadRes == Lua.OK
@@ -78,7 +79,7 @@ dofile fp = do
 -- nothing and returns TypeNil.
 getmetafield :: StackIndex -- ^ obj
              -> String     -- ^ e
-             -> Lua Lua.Type
+             -> LuaE e Lua.Type
 getmetafield obj e = liftLua $ \l ->
   withCString e $ fmap Lua.toType . luaL_getmetafield l obj
 
@@ -86,18 +87,18 @@ getmetafield obj e = liftLua $ \l ->
 -- registry (see @newmetatable@) (@nil@ if there is no metatable associated
 -- with that name). Returns the type of the pushed value.
 getmetatable' :: String -- ^ tname
-              -> Lua Lua.Type
+              -> LuaE e Lua.Type
 getmetatable' tname = liftLua $ \l ->
   withCString tname $ fmap Lua.toType . luaL_getmetatable l
 
 -- | Push referenced value from the table at the given index.
-getref :: StackIndex -> Reference -> Lua ()
+getref :: LuaError e => StackIndex -> Reference -> LuaE e ()
 getref idx ref' = Lua.rawgeti idx (fromIntegral (Lua.fromReference ref'))
 
 -- | Ensures that the value @t[fname]@, where @t@ is the value at index @idx@,
 -- is a table, and pushes that table onto the stack. Returns True if it finds a
 -- previous table there and False if it creates a new table.
-getsubtable :: StackIndex -> String -> Lua Bool
+getsubtable :: LuaError e => StackIndex -> String -> LuaE e Bool
 getsubtable idx fname = do
   -- This is a reimplementation of luaL_getsubtable from lauxlib.c.
   idx' <- Lua.absindex idx
@@ -120,7 +121,7 @@ getsubtable idx fname = do
 -- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadbuffer luaL_loadbuffer>.
 loadbuffer :: ByteString -- ^ Program to load
            -> String     -- ^ chunk name
-           -> Lua Status
+           -> LuaE e Status
 loadbuffer bs name = liftLua $ \l ->
   B.useAsCStringLen bs $ \(str, len) ->
   withCString name
@@ -143,7 +144,7 @@ loadbuffer bs name = liftLua $ \l ->
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadfile luaL_loadfile>.
 loadfile :: FilePath -- ^ filename
-         -> Lua Status
+         -> LuaE e Status
 loadfile fp = Lua.liftIO contentOrError >>= \case
   Right script -> loadbuffer script ("@" ++ fp)
   Left e -> do
@@ -165,7 +166,7 @@ loadfile fp = Lua.liftIO contentOrError >>= \case
 -- run it.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadstring>.
-loadstring :: ByteString -> Lua Status
+loadstring :: ByteString -> LuaE e Status
 loadstring s = loadbuffer s (Utf8.toString s)
 
 
@@ -183,7 +184,7 @@ loadstring s = loadbuffer s (Utf8.toString s)
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#luaL_newmetatable luaL_newmetatable>.
-newmetatable :: String -> Lua Bool
+newmetatable :: String -> LuaE e Bool
 newmetatable tname = liftLua $ \l ->
   Lua.fromLuaBool <$> withCString tname (luaL_newmetatable l)
 
@@ -212,7 +213,7 @@ newstate = hsluaL_newstate
 -- be different from any reference returned by @'ref'@.
 --
 -- See also: <https://www.lua.org/manual/5.3/manual.html#luaL_ref luaL_ref>.
-ref :: StackIndex -> Lua Reference
+ref :: StackIndex -> LuaE e Reference
 ref t = liftLua $ \l -> Lua.toReference <$> luaL_ref l t
 
 -- | Converts any Lua value at the given index to a @'ByteString'@ in a
@@ -222,14 +223,13 @@ ref t = liftLua $ \l -> Lua.toReference <$> luaL_ref l t
 -- If the value has a metatable with a @__tostring@ field, then @tolstring'@
 -- calls the corresponding metamethod with the value as argument, and uses the
 -- result of the call as its result.
-tostring' :: StackIndex -> Lua B.ByteString
+tostring' :: StackIndex -> LuaE e B.ByteString
 tostring' n = do
   l <- Lua.state
-  e <- Lua.errorConversion
   Lua.liftIO $ alloca $ \lenPtr -> do
     cstr <- hsluaL_tolstring l n lenPtr
     if cstr == nullPtr
-      then Lua.errorToException e l
+      then throwTopMessageWithState l
       else do
         cstrLen <- Storable.peek lenPtr
         B.packCStringLen (cstr, fromIntegral cstrLen)
@@ -237,7 +237,7 @@ tostring' n = do
 -- | Creates and pushes a traceback of the stack L1. If a message is given it
 -- appended at the beginning of the traceback. The level parameter tells at
 -- which level to start the traceback.
-traceback :: Lua.State -> Maybe String -> Int -> Lua ()
+traceback :: Lua.State -> Maybe String -> Int -> LuaE e ()
 traceback l1 msg level = liftLua $ \l ->
   case msg of
     Nothing -> luaL_traceback l l1 nullPtr (fromIntegral level)
@@ -252,6 +252,6 @@ traceback l1 msg level = liftLua $ \l ->
 -- <https://www.lua.org/manual/5.3/manual.html#luaL_unref luaL_unref>.
 unref :: StackIndex -- ^ idx
       -> Reference  -- ^ ref
-      -> Lua ()
+      -> LuaE e ()
 unref idx r = liftLua $ \l ->
   luaL_unref l idx (Lua.fromReference r)

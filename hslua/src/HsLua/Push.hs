@@ -37,32 +37,32 @@ import qualified Data.ByteString.Lazy as BL
 import qualified HsLua.Core.Utf8 as Utf8
 
 -- | Function to push a value to Lua's stack.
-type Pusher a = a -> Lua ()
+type Pusher e a = a -> LuaE e ()
 
 -- | Pushes a 'Bool' as a Lua boolean.
-pushBool :: Pusher Bool
+pushBool :: Pusher e Bool
 pushBool = pushboolean
 
 -- | Pushes a 'T.Text' value as an UTF-8 encoded string.
-pushText :: Pusher T.Text
+pushText :: Pusher e T.Text
 pushText = pushstring . Utf8.fromText
 
 -- | Pushes a 'ByteString' as a raw string.
-pushByteString :: Pusher ByteString
+pushByteString :: Pusher e ByteString
 pushByteString = pushstring
 
 -- | Pushes a lazy 'BL.ByteString' as a raw string.
-pushLazyByteString :: Pusher BL.ByteString
+pushLazyByteString :: Pusher e BL.ByteString
 pushLazyByteString = pushstring . BL.toStrict
 
 -- | Pushes a 'String' as an UTF-8 encoded Lua string.
-pushString :: String -> Lua ()
+pushString :: String -> LuaE e ()
 pushString = pushstring . Utf8.fromString
 
 -- | Pushes an @Integer@ to the Lua stack. Values representable as Lua
 -- integers are pushed as such; bigger integers are represented using
 -- their string representation.
-pushIntegral :: (Integral a, Show a) => a -> Lua ()
+pushIntegral :: (Integral a, Show a) => a -> LuaE e ()
 pushIntegral i =
   let maxInt = fromIntegral (maxBound :: Lua.Integer)
       minInt = fromIntegral (minBound :: Lua.Integer)
@@ -74,7 +74,7 @@ pushIntegral i =
 -- | Push a floating point number to the Lua stack. Uses a string
 -- representation for all types which do not match the float properties
 -- of the 'Lua.Number' type.
-pushRealFloat :: RealFloat a => a -> Lua ()
+pushRealFloat :: RealFloat a => a -> LuaE e ()
 pushRealFloat f =
   let
     number = 0 :: Lua.Number
@@ -86,26 +86,27 @@ pushRealFloat f =
      else pushString (showGFloat Nothing f "")
 
 -- | Push list of pairs as default key-value Lua table.
-pushKeyValuePairs :: Pusher a -> Pusher b -> Pusher [(a,b)]
+pushKeyValuePairs :: LuaError e
+                  => Pusher e a -> Pusher e b -> Pusher e [(a,b)]
 pushKeyValuePairs pushKey pushValue m = do
   let addValue (k, v) = pushKey k *> pushValue v *> rawset (-3)
   newtable
   mapM_ addValue m
 
 -- | Push list as numerically indexed table.
-pushList :: Pusher a -> [a] -> Lua ()
+pushList :: LuaError e => Pusher e a -> [a] -> LuaE e ()
 pushList push xs = do
   let setField i x = push x *> rawseti (-2) i
   newtable
   zipWithM_ setField [1..] xs
 
 -- | Push 'Map' as default key-value Lua table.
-pushMap :: Pusher a -> Pusher b -> Pusher (Map a b)
+pushMap :: LuaError e => Pusher e a -> Pusher e b -> Pusher e (Map a b)
 pushMap pushKey pushValue m = pushKeyValuePairs pushKey pushValue $ toList m
 
 -- | Push a 'Set' as idiomatic Lua set, i.e., as a table with the set
 -- elements as keys and @true@ as values.
-pushSet :: Pusher a -> Pusher (Set a)
+pushSet :: LuaError e => Pusher e a -> Pusher e (Set a)
 pushSet pushElement set = do
   let addItem item = pushElement item *> pushboolean True *> rawset (-3)
   newtable

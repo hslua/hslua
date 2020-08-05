@@ -6,6 +6,12 @@ Release pending.
 
 - Move module hierarchy from Foreign.Lua to HsLua.
 
+- Error handling has been reworked completely. The type of
+  exceptions used and handled by HsLua is now exposed to the type
+  system. The type `Lua` makes use of a default error type. Custom
+  error handling can be implemented by using the `LuaE` type with
+  an exception type that is an instance of class `LuaError`.
+
 - Renamed stack index helpers to `nth`, `nthTop`, `nthBottom`,
   `top`. The following have been *removed*: `stackTop`,
   `nthFromTop`, `nthFromBottom`.

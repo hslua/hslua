@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications  #-}
 {-| Tests for the auxiliary library.
 -}
 module HsLua.Core.AuxiliaryTests (tests) where
@@ -18,7 +19,7 @@ tests = testGroup "Auxiliary"
   [ testGroup "getsubtable"
     [ "gets a subtable from field" =:
       [5, 8] `shouldBeResultOf` do
-        pushLuaExpr "{foo = {5, 8}}"
+        pushLuaExpr @Lua.Exception "{foo = {5, 8}}"
         _ <- Lua.getsubtable Lua.top "foo"
         Lua.rawgeti (nth 1) 1
         Lua.rawgeti (nth 2) 2
@@ -34,11 +35,11 @@ tests = testGroup "Auxiliary"
         Lua.ltype Lua.top
 
     , "returns True if a table exists" ?: do
-        pushLuaExpr "{yep = {}}"
+        pushLuaExpr @Lua.Exception "{yep = {}}"
         Lua.getsubtable Lua.top "yep"
 
     , "returns False if field does not contain a table" ?: do
-        pushLuaExpr "{nope = 5}"
+        pushLuaExpr @Lua.Exception "{nope = 5}"
         not <$> Lua.getsubtable Lua.top "nope"
 
     ]

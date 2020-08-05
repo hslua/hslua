@@ -39,7 +39,7 @@ module HsLua.Call
 
 import Control.Monad.Except
 import Data.Text (Text)
-import HsLua.Core hiding (HaskellFunction, pushHaskellFunction)
+import HsLua.Core
 import HsLua.Peek
 import HsLua.Push
 import qualified Data.Text as T
@@ -47,7 +47,7 @@ import qualified HsLua.Core as Lua
 
 -- | Lua operation with an explicit error type and state (i.e.,
 -- without exceptions).
-type LuaExcept a = ExceptT PeekError Lua a
+type LuaExcept e a = ExceptT PeekError (LuaE e) a
 
 
 --
@@ -55,26 +55,26 @@ type LuaExcept a = ExceptT PeekError Lua a
 --
 
 -- | Result of a call to a Haskell function.
-data FunctionResult a
+data FunctionResult e a
   = FunctionResult
-  { fnResultPusher :: Pusher a
+  { fnResultPusher :: Pusher e a
   , fnResultDoc :: FunctionResultDoc
   }
 
 -- | List of function results in the order in which they are
 -- returned in Lua.
-type FunctionResults a = [FunctionResult a]
+type FunctionResults e a = [FunctionResult e a]
 
 -- | Function parameter.
-data Parameter a = Parameter
-  { parameterPeeker :: Peeker a
+data Parameter e a = Parameter
+  { parameterPeeker :: Peeker e a
   , parameterDoc    :: ParameterDoc
   }
 
 -- | Haskell equivallent to CFunction, i.e., function callable
 -- from Lua.
-data DocumentedFunction = DocumentedFunction
-  { callFunction :: Lua NumResults
+data DocumentedFunction e = DocumentedFunction
+  { callFunction :: LuaE e NumResults
   , functionDoc :: Maybe FunctionDoc
   }
 
@@ -112,18 +112,18 @@ data FunctionResultDoc = FunctionResultDoc
 --
 
 -- | Helper type used to create 'HaskellFunction's.
-data HsFnPrecursor a = HsFnPrecursor
-  { hsFnPrecursorAction :: LuaExcept a
+data HsFnPrecursor e a = HsFnPrecursor
+  { hsFnPrecursorAction :: LuaExcept e a
   , hsFnMaxParameterIdx :: StackIndex
   , hsFnParameterDocs :: [ParameterDoc]
   }
   deriving (Functor)
 
 -- | Create a HaskellFunction precursor from a pure function.
-toHsFnPrecursor :: a -> HsFnPrecursor a
+toHsFnPrecursor :: a -> HsFnPrecursor e a
 toHsFnPrecursor = toHsFnPrecursorWithStartIndex (StackIndex 0)
 
-toHsFnPrecursorWithStartIndex :: StackIndex -> a -> HsFnPrecursor a
+toHsFnPrecursorWithStartIndex :: StackIndex -> a -> HsFnPrecursor e a
 toHsFnPrecursorWithStartIndex idx f = HsFnPrecursor
   { hsFnPrecursorAction = return f
   , hsFnMaxParameterIdx = idx
@@ -131,9 +131,9 @@ toHsFnPrecursorWithStartIndex idx f = HsFnPrecursor
   }
 
 -- | Partially apply a parameter.
-applyParameter :: HsFnPrecursor (a -> b)
-               -> Parameter a
-               -> HsFnPrecursor b
+applyParameter :: HsFnPrecursor e (a -> b)
+               -> Parameter e a
+               -> HsFnPrecursor e b
 applyParameter bldr param = do
   let action = hsFnPrecursorAction bldr
   let i = hsFnMaxParameterIdx bldr + 1
@@ -151,9 +151,9 @@ applyParameter bldr param = do
 -- | Take a 'HaskellFunction' precursor and convert it into a full
 -- 'HaskellFunction', using the given 'FunctionResult's to return
 -- the result to Lua.
-returnResults :: HsFnPrecursor a
-              -> FunctionResults a
-              -> DocumentedFunction
+returnResults :: HsFnPrecursor e a
+              -> FunctionResults e a
+              -> DocumentedFunction e
 returnResults bldr fnResults = DocumentedFunction
   { callFunction = do
       hsResult <- runExceptT $ hsFnPrecursorAction bldr
@@ -173,14 +173,16 @@ returnResults bldr fnResults = DocumentedFunction
   }
 
 -- | Like @'returnResult'@, but returns only a single result.
-returnResult :: HsFnPrecursor a
-             -> FunctionResult a
-             -> DocumentedFunction
+returnResult :: HsFnPrecursor e a
+             -> FunctionResult e a
+             -> DocumentedFunction e
 returnResult bldr = returnResults bldr . (:[])
 
 -- | Updates the description of a Haskell function. Leaves the function
 -- unchanged if it has no documentation.
-updateFunctionDescription :: DocumentedFunction -> Text -> DocumentedFunction
+updateFunctionDescription :: DocumentedFunction e
+                          -> Text
+                          -> DocumentedFunction e
 updateFunctionDescription fn desc =
   case functionDoc fn of
     Nothing -> fn
@@ -194,19 +196,19 @@ updateFunctionDescription fn desc =
 infixl 8 <#>, =#>, #?
 
 -- | Inline version of @'applyParameter'@.
-(<#>) :: HsFnPrecursor (a -> b)
-      -> Parameter a
-      -> HsFnPrecursor b
+(<#>) :: HsFnPrecursor e (a -> b)
+      -> Parameter e a
+      -> HsFnPrecursor e b
 (<#>) = applyParameter
 
 -- | Inline version of @'returnResult'@.
-(=#>) :: HsFnPrecursor a
-      -> FunctionResults a
-      -> DocumentedFunction
+(=#>) :: HsFnPrecursor e a
+      -> FunctionResults e a
+      -> DocumentedFunction e
 (=#>) = returnResults
 
 -- | Inline version of @'updateFunctionDescription'@.
-(#?) :: DocumentedFunction -> Text -> DocumentedFunction
+(#?) :: DocumentedFunction e -> Text -> DocumentedFunction e
 (#?) = updateFunctionDescription
 
 --
@@ -244,7 +246,8 @@ renderResultDoc rd = mconcat
 -- Push to Lua
 --
 
-pushDocumentedFunction :: DocumentedFunction -> Lua ()
+pushDocumentedFunction :: LuaError e
+                       => DocumentedFunction e -> LuaE e ()
 pushDocumentedFunction = Lua.pushHaskellFunction . callFunction
 
 --
@@ -252,11 +255,11 @@ pushDocumentedFunction = Lua.pushHaskellFunction . callFunction
 --
 
 -- | Creates a parameter.
-parameter :: Peeker a     -- ^ method to retrieve value from Lua
+parameter :: Peeker e a   -- ^ method to retrieve value from Lua
           -> Text         -- ^ expected Lua type
           -> Text         -- ^ parameter name
           -> Text         -- ^ parameter description
-          -> Parameter a
+          -> Parameter e a
 parameter peeker type_ name desc = Parameter
   { parameterPeeker = peeker
   , parameterDoc = ParameterDoc
@@ -268,11 +271,11 @@ parameter peeker type_ name desc = Parameter
   }
 
 -- | Creates an optional parameter.
-optionalParameter :: Peeker a     -- ^ method to retrieve the value from Lua
+optionalParameter :: Peeker e a   -- ^ method to retrieve the value from Lua
                   -> Text         -- ^ expected Lua type
                   -> Text         -- ^ parameter name
                   -> Text         -- ^ parameter description
-                  -> Parameter (Maybe a)
+                  -> Parameter e (Maybe a)
 optionalParameter peeker type_ name desc = Parameter
   { parameterPeeker = optional peeker
   , parameterDoc = ParameterDoc
@@ -284,10 +287,10 @@ optionalParameter peeker type_ name desc = Parameter
   }
 
 -- | Creates a function result.
-functionResult :: Pusher a        -- ^ method to push the Haskell result to Lua
+functionResult :: Pusher e a      -- ^ method to push the Haskell result to Lua
                -> Text            -- ^ Lua type of result
                -> Text            -- ^ result description
-               -> FunctionResults a
+               -> FunctionResults e a
 functionResult pusher type_ desc = (:[]) $ FunctionResult
   { fnResultPusher = pusher
   , fnResultDoc = FunctionResultDoc

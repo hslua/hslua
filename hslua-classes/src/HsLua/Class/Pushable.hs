@@ -32,7 +32,7 @@ import qualified HsLua.Push as Push
 class Pushable a where
   -- | Pushes a value onto Lua stack, casting it into meaningfully nearest Lua
   -- type.
-  push :: a -> Lua ()
+  push :: LuaError e => a -> LuaE e ()
 
 instance Pushable () where
   push = const pushnil
@@ -86,7 +86,7 @@ instance Pushable a => Pushable (Set a) where
   push = pushSet push
 
 -- | Push list as numerically indexed table.
-pushList :: Pushable a => [a] -> Lua ()
+pushList :: (LuaError e, Pushable a) => [a] -> LuaE e ()
 pushList = Push.pushList push
 
 --
@@ -172,7 +172,7 @@ instance (Pushable a, Pushable b, Pushable c, Pushable d,
     addRawInt 8 h
 
 -- | Set numeric key/value in table at the top of the stack.
-addRawInt :: Pushable a => Lua.Integer -> a -> Lua ()
+addRawInt :: (LuaError e, Pushable a) => Lua.Integer -> a -> LuaE e ()
 addRawInt idx val = do
   push val
   rawseti (-2) idx

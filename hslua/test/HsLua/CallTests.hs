@@ -131,7 +131,7 @@ tests = testGroup "Call"
     ]
   ]
 
-factLuaAtIndex :: StackIndex -> DocumentedFunction
+factLuaAtIndex :: StackIndex -> DocumentedFunction Lua.Exception
 factLuaAtIndex idx =
   toHsFnPrecursorWithStartIndex idx factorial
   <#> factorialParam
@@ -141,7 +141,7 @@ factLuaAtIndex idx =
 factorial :: Integer -> Integer
 factorial n = product [1..n]
 
-factorialParam :: Parameter Integer
+factorialParam :: Parameter Lua.Exception Integer
 factorialParam = Parameter
   { parameterDoc = ParameterDoc
     { parameterName = "n"
@@ -152,13 +152,13 @@ factorialParam = Parameter
   , parameterPeeker = peekIntegral @Integer
   }
 
-factorialResult :: FunctionResults Integer
+factorialResult :: FunctionResults Lua.Exception Integer
 factorialResult = (:[]) $ FunctionResult
   (pushIntegral @Integer)
   (FunctionResultDoc "integer" "factorial")
 
 -- | Calculate the nth root of a number. Defaults to square root.
-nroot :: DocumentedFunction
+nroot :: DocumentedFunction Lua.Exception
 nroot = toHsFnPrecursor nroot'
   <#> parameter (peekRealFloat @Double) "number" "x" ""
   <#> optionalParameter (peekIntegral @Int) "integer" "n" ""

@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeApplications #-}
 {-|
 Module      : HsLua.ClassesTests
 Copyright   : © 2007–2012 Gracjan Polak;
@@ -126,7 +127,7 @@ prop_roundtripEqual x = monadicIO $ do
   assert (x == y)
 
 roundtrip :: (Peekable a, Pushable a) => a -> IO a
-roundtrip x = Lua.run $ do
+roundtrip x = Lua.run @Lua.Exception $ do
   push x
   peek (-1)
 
@@ -146,7 +147,7 @@ prop_stackPushingPulling t = monadicIO $ do
   assert =<< QCMonadic.run (runWith l $ checkstack (2 * fromIntegral nItems))
   -- Push elements
   QCMonadic.run $ forM_ [1..nItems] $ \n ->
-    runWith l $
+    runWith @Lua.Exception l $
     if n `elem` indices
       then push t
       else push n
@@ -154,7 +155,8 @@ prop_stackPushingPulling t = monadicIO $ do
   stackSize <- QCMonadic.run $ runWith l gettop
   assert $ fromStackIndex stackSize == fromIntegral nItems
   -- Peek all items
-  vals <- QCMonadic.run $ forM indices $ runWith l . peek . StackIndex . fromIntegral
+  vals <- QCMonadic.run $ forM indices $
+    runWith @Lua.Exception l . peek . StackIndex . fromIntegral
   -- Check that the stack size did not change after peeking
   newStackSize <- QCMonadic.run $ runWith l gettop
   assert $ stackSize == newStackSize

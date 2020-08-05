@@ -8,6 +8,12 @@
 
 Release pending.
 
+- Error handling has been reworked completely. The type of
+  exceptions used and handled by HsLua is now exposed to the type
+  system. The type `Lua` makes use of a default error type. Custom
+  error handling can be implemented by using the `LuaE` type with
+  an exception type that is an instance of class `LuaError`.
+
 - Added new module HsLua.Core.Userdata. It contains thin wrappers
   around the functions available for creating
   Haskell-value-wrapping userdata objects.

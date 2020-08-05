@@ -45,7 +45,7 @@ import qualified HsLua.Call as Call
 -- by the time this function is invoked.
 --
 -- Leaves a copy of the module on the stack.
-requirehs :: String -> Lua () -> Lua ()
+requirehs :: LuaError e => String -> LuaE e () -> LuaE e ()
 requirehs modname pushMod = do
   -- get table of loaded modules
   void $ getfield registryindex loadedTableRegistryField
@@ -64,7 +64,7 @@ requirehs modname pushMod = do
 
 -- | Registers a preloading function. Takes an module name and the
 -- Lua operation which produces the package.
-preloadhs :: String -> Lua NumResults -> Lua ()
+preloadhs :: LuaError e => String -> LuaE e NumResults -> LuaE e ()
 preloadhs name pushMod = do
   void $ getfield registryindex preloadTableRegistryField
   pushHaskellFunction pushMod
@@ -72,39 +72,39 @@ preloadhs name pushMod = do
   pop 1
 
 -- | Create a new module (i.e., a Lua table).
-create :: Lua ()
+create :: LuaE e ()
 create = newtable
 
 -- | Named and documented Lua module.
-data Module = Module
+data Module e = Module
   { moduleName :: Text
   , moduleDescription :: Text
-  , moduleFields :: [Field]
-  , moduleFunctions :: [(Text, DocumentedFunction)]
+  , moduleFields :: [Field e]
+  , moduleFunctions :: [(Text, DocumentedFunction e)]
   }
 
 -- | Self-documenting module field
-data Field = Field
+data Field e = Field
   { fieldName :: Text
   , fieldDescription :: Text
-  , fieldPushValue :: Lua ()
+  , fieldPushValue :: LuaE e ()
   }
 
 
 -- | Registers a 'Module'; leaves a copy of the module table on
 -- the stack.
-registerModule :: Module -> Lua ()
+registerModule :: LuaError e => Module e -> LuaE e ()
 registerModule mdl =
   requirehs (T.unpack $ moduleName mdl) (pushModule mdl)
 
 -- | Preload self-documenting module.
-preloadModule :: Module -> Lua ()
+preloadModule :: LuaError e => Module e -> LuaE e ()
 preloadModule mdl =
   preloadhs (T.unpack $ moduleName mdl) $ do
     pushModule mdl
     return (NumResults 1)
 
-pushModule :: Module -> Lua ()
+pushModule :: LuaError e => Module e -> LuaE e ()
 pushModule mdl = do
   create
   forM_ (moduleFunctions mdl) $ \(name, fn) -> do
@@ -113,7 +113,7 @@ pushModule mdl = do
     rawset (nth 3)
 
 -- | Renders module documentation as Markdown.
-render :: Module -> Text
+render :: Module e -> Text
 render mdl =
   let fields = moduleFields mdl
   in T.unlines
@@ -128,9 +128,9 @@ render mdl =
         (map (uncurry renderFunctionDoc) (moduleFunctions mdl))
 
 -- | Renders documentation of a function.
-renderFunctionDoc :: Text                -- ^ name
-                  -> DocumentedFunction  -- ^ function
-                  -> Text                -- ^ function docs
+renderFunctionDoc :: Text                  -- ^ name
+                  -> DocumentedFunction e  -- ^ function
+                  -> Text                  -- ^ function docs
 renderFunctionDoc name fn =
   case Call.functionDoc fn of
     Nothing -> ""
@@ -147,13 +147,13 @@ renderFunctionParams fd =
   $ Call.parameterDocs fd
 
 -- | Render documentation for fields as Markdown.
-renderFields :: [Field] -> Text
+renderFields :: [Field e] -> Text
 renderFields fs =
   if null fs
   then mempty
   else T.unlines $ map renderField fs
 
 -- | Renders documentation for a single field.
-renderField :: Field -> Text
+renderField :: Field e -> Text
 renderField f =
   "### " <> fieldName f <> "\n\n" <> fieldDescription f <> "\n"

@@ -1,3 +1,5 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 {-|
 Module      : HsLua.Class.Util
 Copyright   : © 2007–2012 Gracjan Polak;
@@ -22,8 +24,8 @@ module HsLua.Class.Util
   ) where
 
 import Data.List (groupBy)
-import HsLua.Core (Lua, NumResults, StackIndex, nth, top)
-import HsLua.Class.Peekable (Peekable (peek))
+import HsLua.Core (LuaE, LuaError, NumResults, StackIndex, nth, top)
+import HsLua.Class.Peekable (Peekable (peek), PeekError (exceptionFromMessage))
 import HsLua.Class.Pushable (Pushable (push))
 import Text.Read (readMaybe)
 
@@ -35,7 +37,7 @@ import qualified HsLua.Core as Lua
 -- > getglobal' "math.sin"
 --
 -- will return the function @sin@ in package @math@.
-getglobal' :: String -> Lua ()
+getglobal' :: LuaError e => String -> LuaE e ()
 getglobal' = getnested . splitdot
 
 -- | Like @setglobal@, but knows about packages and nested tables. E.g.
@@ -44,7 +46,7 @@ getglobal' = getnested . splitdot
 -- > setglobal' "mypackage.version"
 --
 -- All tables and fields, except for the last field, must exist.
-setglobal' :: String -> Lua ()
+setglobal' :: LuaError e => String -> LuaE e ()
 setglobal' s =
   case reverse (splitdot s) of
     [] ->
@@ -64,14 +66,14 @@ splitdot = filter (/= ".") . groupBy (\a b -> a /= '.' && b /= '.')
 -- | Pushes the value described by the strings to the stack; where the first
 -- value is the name of a global variable and the following strings are the
 -- field values in nested tables.
-getnested :: [String] -> Lua ()
+getnested :: LuaError e => [String] -> LuaE e ()
 getnested [] = return ()
 getnested (x:xs) = do
   _ <- Lua.getglobal x
   mapM_ (\a -> Lua.getfield top a *> Lua.remove (nth 2)) xs
 
 -- | Raise a Lua error, using the given value as the error object.
-raiseError :: Pushable a => a -> Lua NumResults
+raiseError :: (PeekError e, Pushable a) => a -> LuaE e NumResults
 raiseError e = do
   push e
   Lua.error
@@ -101,23 +103,22 @@ instance Pushable a => Pushable (Optional a) where
 
 -- | Get a value by retrieving a String from Lua, then using @'readMaybe'@ to
 -- convert the String into a Haskell value.
-peekRead :: Read a => StackIndex -> Lua a
+peekRead :: forall e a. (PeekError e, Read a)
+         => StackIndex -> LuaE e a
 peekRead idx = do
   s <- peek idx
   case readMaybe s of
     Just x -> return x
-    Nothing -> Lua.throwException ("Could not read: " ++ s)
+    Nothing -> Catch.throwM $ exceptionFromMessage @e ("Could not read: " ++ s)
 
 -- | Try to convert the value at the given stack index to a Haskell value.
--- Returns @Left@ with an error message on failure.
---
--- WARNING: this is not save to use with custom error handling!
-peekEither :: Peekable a => StackIndex -> Lua (Either String a)
-peekEither idx = either (Left . Lua.exceptionMessage) Right <$>
-                 Lua.try (peek idx)
+-- Returns 'Left' with the error on failure.
+peekEither :: (PeekError e, Peekable a)
+           => StackIndex -> LuaE e (Either e a)
+peekEither = Lua.try . peek
 
 -- | Get, then pop the value at the top of the stack. The pop operation is
 -- executed even if the retrieval operation failed.
-popValue :: Peekable a => Lua a
+popValue :: (PeekError e, Peekable a) => LuaE e a
 popValue = peek top `Catch.finally` Lua.pop 1
 {-# INLINABLE popValue #-}

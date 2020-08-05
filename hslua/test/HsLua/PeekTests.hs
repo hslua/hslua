@@ -208,7 +208,7 @@ tests = testGroup "Peek"
           peekList peekBool Lua.top
 
       , testProperty "list of strings" $ \lst -> monadicIO $ do
-          retrieved <- run $ Lua.run $ do
+          retrieved <- run $ Lua.run @Lua.Exception $ do
             Lua.newtable
             zipWithM_
               (\i s -> Lua.pushstring s *>
@@ -242,7 +242,7 @@ tests = testGroup "Peek"
               Lua.pushstring x
               Lua.pushboolean True
               Lua.rawset (Lua.nth 3)
-            peekSet peekByteString Lua.top
+            peekSet @Lua.Exception peekByteString Lua.top
           assert (retrieved == Right set)
 
       , "keys with falsy values are not in set" =:

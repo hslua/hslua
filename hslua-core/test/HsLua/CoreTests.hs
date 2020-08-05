@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications  #-}
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
 {-|
 Module      :  HsLua.CoreTests
@@ -48,33 +49,33 @@ tests = testGroup "Core module"
   , HsLua.Core.AuxiliaryTests.tests
   , testGroup "copy"
     [ "copies stack elements using positive indices" ?: do
-        pushLuaExpr "5, 4, 3, 2, 1"
+        pushLuaExpr @Lua.Exception "5, 4, 3, 2, 1"
         copy 4 3
         rawequal (nthBottom 4) (nthBottom 3)
 
     , "copies stack elements using negative indices" ?: do
-        pushLuaExpr "5, 4, 3, 2, 1"
+        pushLuaExpr @Lua.Exception "5, 4, 3, 2, 1"
         copy (-1) (-3)
         rawequal (-1) (-3)
     ]
 
   , testGroup "insert"
     [ "inserts stack elements using positive indices" ?: do
-        pushLuaExpr "1, 2, 3, 4, 5, 6, 7, 8, 9"
+        pushLuaExpr @Lua.Exception "1, 2, 3, 4, 5, 6, 7, 8, 9"
         insert 4
         movedEl <- tointeger (nthBottom 4)
         newTop <- tointeger (nth 1)
         return (movedEl == Just 9 && newTop == Just 8)
 
     , "inserts stack elements using negative indices" ?: do
-        pushLuaExpr "1, 2, 3, 4, 5, 6, 7, 8, 9"
+        pushLuaExpr @Lua.Exception "1, 2, 3, 4, 5, 6, 7, 8, 9"
         insert (-6)
         movedEl <- tointeger (nth 6)
         newTop <- tointeger (nth 1)
         return (movedEl == Just 9 && newTop == Just 8)
     ]
 
-  , testCase "absindex" . run $ do
+  , testCase "absindex" . run @Lua.Exception $ do
       pushLuaExpr "1, 2, 3, 4"
       liftIO . assertEqual "index from bottom doesn't change" (nthBottom 3)
         =<< absindex (nthBottom 3)
@@ -85,27 +86,27 @@ tests = testGroup "Core module"
 
   , "gettable gets a table value" =:
     Just 13.37 `shouldBeResultOf` do
-      pushLuaExpr "{sum = 13.37}"
+      pushLuaExpr @Lua.Exception "{sum = 13.37}"
       pushstring "sum"
       gettable (nth 2)
       tonumber top
 
   , "rawlen gives the length of a list" =:
     7 `shouldBeResultOf` do
-      pushLuaExpr "{1, 1, 2, 3, 5, 8, 13}"
+      pushLuaExpr @Lua.Exception "{1, 1, 2, 3, 5, 8, 13}"
       rawlen top
 
   , testGroup "Type checking"
     [ "isfunction" ?: do
-        pushLuaExpr "function () print \"hi!\" end"
+        pushLuaExpr @Lua.Exception "function () print \"hi!\" end"
         isfunction (-1)
 
-    , "isnil" ?: pushLuaExpr "nil" *> isnil (-1)
+    , "isnil" ?: pushLuaExpr @Lua.Exception "nil" *> isnil (-1)
 
     , "isnone" ?: isnone 5 -- stack index 5 does not exist
 
     , "isnoneornil" ?: do
-        pushLuaExpr "nil"
+        pushLuaExpr @Lua.Exception "nil"
         (&&) <$> isnoneornil 5 <*> isnoneornil (-1)
     ]
 
@@ -119,41 +120,41 @@ tests = testGroup "Core module"
     [ testGroup "tointeger"
       [ "tointeger returns numbers verbatim" =:
         Just 149 `shouldBeResultOf` do
-          pushLuaExpr "149"
+          pushLuaExpr @Lua.Exception "149"
           tointeger (-1)
 
       , "tointeger accepts strings coercible to integers" =:
         Just 451 `shouldBeResultOf` do
-          pushLuaExpr "'451'"
+          pushLuaExpr @Lua.Exception "'451'"
           tointeger (-1)
 
       , "tointeger returns Nothing when given a boolean" =:
         Nothing `shouldBeResultOf` do
-          pushLuaExpr "true"
+          pushLuaExpr @Lua.Exception "true"
           tointeger (-1)
       ]
 
     , testGroup "tonumber"
       [ "tonumber returns numbers verbatim" =:
         Just 14.9 `shouldBeResultOf` do
-          pushLuaExpr "14.9"
+          pushLuaExpr @Lua.Exception "14.9"
           tonumber (-1)
 
       , "tonumber accepts strings as numbers" =:
         Just 42.23 `shouldBeResultOf` do
-          pushLuaExpr "'42.23'"
+          pushLuaExpr @Lua.Exception "'42.23'"
           tonumber (-1)
 
       , "tonumber returns Nothing when given a boolean" =:
         Nothing `shouldBeResultOf` do
-          pushLuaExpr "true"
+          pushLuaExpr @Lua.Exception "true"
           tonumber (-1)
       ]
 
     , testGroup "tostring"
       [ "get a string" =:
         Just "a string" `shouldBeResultOf` do
-          pushLuaExpr "'a string'"
+          pushLuaExpr @Lua.Exception "'a string'"
           tostring top
 
       , "get a number as string" =:
@@ -170,7 +171,7 @@ tests = testGroup "Core module"
 
   , "setting and getting a global works" =:
     Just "Moin" `shouldBeResultOf` do
-      pushLuaExpr "{'Moin', Hello = 'World'}"
+      pushLuaExpr @Lua.Exception "{'Moin', Hello = 'World'}"
       setglobal "hamburg"
 
       -- get first field
@@ -181,7 +182,7 @@ tests = testGroup "Core module"
   , testGroup "get functions (Lua to stack)"
     [ "unicode characters in field name are ok" =:
       True `shouldBeResultOf` do
-        pushLuaExpr "{['\xE2\x9A\x94'] = true}"
+        pushLuaExpr @Lua.Exception "{['\xE2\x9A\x94'] = true}"
         getfield top "⚔"
         toboolean top
     ]
@@ -211,7 +212,7 @@ tests = testGroup "Core module"
         openlibs
         getglobal "coroutine"
         getfield top "resume"
-        pushLuaExpr "coroutine.create(function() coroutine.yield(9) end)"
+        pushLuaExpr @Lua.Exception "coroutine.create(function() coroutine.yield(9) end)"
         contThread <- fromMaybe (Prelude.error "not a thread at top of stack")
                       <$> tothread top
         call 1 0
@@ -378,7 +379,7 @@ tests = testGroup "Core module"
 
     , "raising an error in the error handler should give a 'double error'" =:
       ErrErr `shouldBeResultOf` do
-        pushLuaExpr "function () error 'error in error handler' end"
+        pushLuaExpr @Lua.Exception "function () error 'error in error handler' end"
         _ <- loadstring "error \"this fails\""
         pcall 0 0 (Just (nth 2))
     ]
@@ -394,7 +395,7 @@ tests = testGroup "Core module"
     ]
 
   , testProperty "lessthan works" $ \n1 n2 -> monadicIO $ do
-      luaCmp <- QCMonadic.run . run $ do
+      luaCmp <- QCMonadic.run . run @Lua.Exception $ do
         pushnumber n2
         pushnumber n1
         lessthan (-1) (-2) <* pop 2
@@ -428,7 +429,7 @@ tests = testGroup "Core module"
             _ <- try $ loadstring err *> call 0 0
             newtop <- gettop
             return (newtop - oldtop)
-      res <- run luaOp
+      res <- run @Lua.Exception luaOp
       assertEqual "error handling leaks values to the stack" 0 res
 
   , HsLua.Core.RunTests.tests
@@ -444,7 +445,7 @@ compareWith op luaOp n = compareLT .&&. compareEQ .&&. compareGT
     luaCmp <- QCMonadic.run . run $ do
       pushinteger $ n - 1
       pushinteger n
-      compare (-2) (-1) luaOp
+      compare @Lua.Exception (-2) (-1) luaOp
     assert $ luaCmp == op (n - 1) n
 
   compareEQ :: Property
@@ -452,7 +453,7 @@ compareWith op luaOp n = compareLT .&&. compareEQ .&&. compareGT
     luaCmp <- QCMonadic.run . run $ do
       pushinteger n
       pushinteger n
-      compare (-2) (-1) luaOp
+      compare @Lua.Exception (-2) (-1) luaOp
     assert $ luaCmp == op n n
 
   compareGT :: Property
@@ -460,5 +461,5 @@ compareWith op luaOp n = compareLT .&&. compareEQ .&&. compareGT
     luaRes <- QCMonadic.run . run $ do
       pushinteger $ n + 1
       pushinteger n
-      compare (-2) (-1) luaOp
+      compare @Lua.Exception (-2) (-1) luaOp
     assert $ luaRes == op (n + 1) n

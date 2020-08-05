@@ -1,7 +1,9 @@
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE CPP                   #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
 {-|
 Module      : HsLua.Class.Exposable
 Copyright   : © 2007–2012 Gracjan Polak,
@@ -21,26 +23,32 @@ module HsLua.Class.Exposable
   ) where
 
 import HsLua.Core as Lua
-import HsLua.Class.Peekable (Peekable (peek))
+import HsLua.Class.Peekable (Peekable (peek), PeekError (..))
 import HsLua.Class.Pushable (Pushable (push))
+import qualified Control.Monad.Catch as Catch
+
+#if !MIN_VERSION_base(4,12,0)
+import Data.Semigroup (Semigroup ((<>)))
+#endif
 
 -- | Operations and functions that can be pushed to the Lua stack. This
 -- is a helper function not intended to be used directly. Use the
 -- @'toHaskellFunction'@ wrapper instead.
-class Exposable a where
+class PeekError e => Exposable e a where
   -- | Helper function, called by @'toHaskellFunction'@. Should do a
   -- partial application of the argument at the given index to the
   -- underlying function. Recurses if necessary, causing further partial
   -- applications until the operation is a easily exposable to Lua.
-  partialApply :: StackIndex -> a -> Lua NumResults
+  partialApply :: StackIndex -> a -> LuaE e NumResults
 
-instance {-# OVERLAPPING #-} Exposable HaskellFunction where
+instance {-# OVERLAPPING #-} PeekError e =>
+         Exposable e (HaskellFunction e) where
   partialApply _ = id
 
-instance Pushable a => Exposable (Lua a) where
+instance (PeekError e, Pushable a) => Exposable e (LuaE e a) where
   partialApply _narg x = 1 <$ (x >>= push)
 
-instance (Peekable a, Exposable b) => Exposable (a -> b) where
+instance (Peekable a, Exposable e b) => Exposable e (a -> b) where
   partialApply narg f = getArg >>= partialApply (narg + 1) . f
     where
       getArg = Lua.withExceptionMessage (errorPrefix ++) (peek narg)
@@ -67,15 +75,17 @@ instance (Peekable a, Exposable b) => Exposable (a -> b) where
 --
 -- > toHaskellFunction (myFun `catchM` (\e -> raiseError (e :: FooException)))
 --
-toHaskellFunction :: Exposable a => a -> HaskellFunction
+toHaskellFunction :: forall e a. Exposable e a => a -> HaskellFunction e
 toHaskellFunction a = do
-  errConv <- Lua.errorConversion
-  let ctx = "Error during function call: "
-  Lua.exceptionToError errConv . Lua.addContextToException errConv ctx $
-    partialApply 1 a
+  let ctx = "Error during function call:"
+  -- Lua.exceptionToError errConv . Lua.addContextToException errConv ctx $
+  partialApply 1 a `Catch.catch` \(err :: e) ->
+    Catch.throwM (exceptionFromMessage ctx <> err)
+
 
 -- | Imports a Haskell function and registers it at global name.
-registerHaskellFunction :: Exposable a => String -> a -> Lua ()
+registerHaskellFunction :: Exposable e a
+                        => String -> a -> LuaE e ()
 registerHaskellFunction n f = do
   pushHaskellFunction $ toHaskellFunction f
   setglobal n

@@ -15,10 +15,12 @@ module HsLua.Core.Closures
   , pushHaskellFunction
   ) where
 
-import HsLua.Core.Types
-  ( Lua, PreCFunction, HaskellFunction, ErrorConversion (exceptionToError)
-  , errorConversion, liftLua, runWithConverter )
+import Prelude hiding (error)
+import HsLua.Core.Error (LuaError (..))
+import HsLua.Core.Functions (error)
+import HsLua.Core.Types (LuaE, PreCFunction, HaskellFunction, liftLua, runWith)
 import Lua.Call (hslua_pushhsfunction)
+import qualified Control.Monad.Catch as Catch
 
 -- | Converts a pre C function to a Lua function and pushes it to the
 -- stack.
@@ -26,7 +28,7 @@ import Lua.Call (hslua_pushhsfunction)
 -- Pre C functions collect parameters from the stack and return a @CInt@
 -- that represents number of return values left on the stack.
 -- See 'Lua.CFunction' for more info.
-pushPreCFunction :: PreCFunction -> Lua ()
+pushPreCFunction :: PreCFunction -> LuaE e ()
 pushPreCFunction preCFn = liftLua $ \l ->
   hslua_pushhsfunction l preCFn
 
@@ -47,8 +49,10 @@ pushPreCFunction preCFn = liftLua $ \l ->
 -- >     Just n  -> pushinteger (n `mod` 23)
 -- > pushHaskellFunction mod23
 -- > setglobal "mod23"
-pushHaskellFunction :: HaskellFunction -> Lua ()
+pushHaskellFunction :: LuaError e => HaskellFunction e -> LuaE e ()
 pushHaskellFunction fn = do
-  errConv <- errorConversion
-  let preCFn l = runWithConverter errConv l (exceptionToError errConv fn)
+  let preCFn l = runWith l (exceptionToError fn)
   pushPreCFunction preCFn
+
+exceptionToError :: LuaError e => HaskellFunction e -> HaskellFunction e
+exceptionToError op = op `Catch.catch` \e -> pushException e *> error
