@@ -25,8 +25,6 @@ module Foreign.Lua.Core.Error
     -- * Helpers for hslua C wrapper functions.
   , throwMessage
   , liftLuaThrow
-    -- * Signaling errors to Lua
-  , hsluaErrorRegistryField
   ) where
 
 import Control.Applicative (Alternative (..))
@@ -112,10 +110,6 @@ throwTopMessageWithState :: Lua.State -> IO a
 throwTopMessageWithState l = do
   msg <- Lua.liftIO (errorMessage l)
   Catch.throwM $ Exception (Utf8.toString msg)
-
--- | Registry field under which the special HsLua error indicator is stored.
-hsluaErrorRegistryField :: String
-hsluaErrorRegistryField = "HSLUA_ERR"
 
 -- | Takes a failable HsLua function and transforms it into a
 -- monadic 'Lua' operation. Throws an exception if an error
