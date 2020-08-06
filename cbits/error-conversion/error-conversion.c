@@ -61,22 +61,6 @@ int hslua_call_hs(lua_State *L)
   return nres;
 }
 
-/* *********************************************************************
- * Garbage Collection
- * *********************************************************************/
-
-/*
-** Free stable Haskell pointer in userdata.
-*/
-int hslua_userdata_gc(lua_State *L)
-{
-  HsStablePtr *userdata = lua_touserdata(L, 1);
-  if (userdata) {
-    hs_free_stable_ptr(*userdata);
-  }
-  return 0;
-}
-
 
 /* *********************************************************************
  * Transforming Lua errors to Haskell errors

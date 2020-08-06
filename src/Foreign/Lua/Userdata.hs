@@ -39,10 +39,11 @@ module Foreign.Lua.Userdata
   , metatableName
   ) where
 
--- import Control.Applicative (empty)
 import Control.Monad (when)
 import Data.Data (Data, dataTypeName, dataTypeOf)
 import Foreign.Lua.Core (Lua)
+import Foreign.Lua.Raw.Auxiliary (luaL_testudata)
+import Foreign.Lua.Raw.Userdata (hslua_userdata_gc_ptr)
 import Foreign.Lua.Types.Peekable (reportValueOnFailure)
 
 import qualified Foreign.Lua.Core as Lua
@@ -128,14 +129,3 @@ peekAny idx = peek' undefined
 -- the given type as userdata.  The argument is never evaluated.
 metatableName :: Data a => a -> String
 metatableName x = "HSLUA_" ++ dataTypeName (dataTypeOf x)
-
--- | Function to free the stable pointer in a userdata, ensuring the Haskell
--- value can be garbage collected. This function does not call back into
--- Haskell, making is safe to call even from functions imported as unsafe.
-foreign import ccall "&hslua_userdata_gc"
-  hslua_userdata_gc_ptr :: Lua.CFunction
-
--- | See
--- <https://www.lua.org/manual/5.3/manual.html#luaL_testudata luaL_testudata>
-foreign import ccall "luaL_testudata"
-  luaL_testudata :: Lua.State -> Lua.StackIndex -> C.CString -> IO (Ptr.Ptr ())

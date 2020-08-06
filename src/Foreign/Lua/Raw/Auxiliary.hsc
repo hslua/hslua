@@ -21,6 +21,7 @@ module Foreign.Lua.Raw.Auxiliary
   , luaL_newmetatable
   , luaL_newstate
   , luaL_ref
+  , luaL_testudata
   , luaL_traceback
   , luaL_unref
     -- * Registry fields
@@ -44,8 +45,6 @@ import qualified Foreign.C as C
 ##define SAFTY safe
 ##endif
 
-
---------------------------------------------------------------------------------
 -- * The Auxiliary Library
 
 -- | Key, in the registry, for table of loaded modules.
@@ -94,8 +93,13 @@ foreign import ccall SAFTY "lauxlib.h luaL_ref"
 foreign import ccall safe "error-conversion.h hsluaL_tolstring"
   hsluaL_tolstring :: Lua.State -> StackIndex -> Ptr CSize -> IO (Ptr CChar)
 
-foreign import capi unsafe "lauxlib.h luaL_traceback"
+foreign import capi SAFTY "lauxlib.h luaL_traceback"
   luaL_traceback :: Lua.State -> Lua.State -> CString -> CInt -> IO ()
 
 foreign import ccall SAFTY "lauxlib.h luaL_unref"
   luaL_unref :: Lua.State -> StackIndex -> CInt -> IO ()
+
+-- | See
+-- <https://www.lua.org/manual/5.3/manual.html#luaL_testudata luaL_testudata>
+foreign import capi SAFTY "lauxlib.h luaL_testudata"
+  luaL_testudata :: Lua.State -> StackIndex -> CString -> IO (Ptr ())

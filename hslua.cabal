@@ -98,8 +98,9 @@ library
                      , Foreign.Lua.Raw.Auxiliary
                      , Foreign.Lua.Raw.Constants
                      , Foreign.Lua.Raw.Error
-                     , Foreign.Lua.Raw.Types
                      , Foreign.Lua.Raw.Functions
+                     , Foreign.Lua.Raw.Types
+                     , Foreign.Lua.Raw.Userdata
                      , Foreign.Lua.Types
                      , Foreign.Lua.Types.Peekable
                      , Foreign.Lua.Types.Pushable
@@ -138,6 +139,7 @@ library
                      , FlexibleInstances
                      , ScopedTypeVariables
   c-sources:           cbits/error-conversion/error-conversion.c
+                     , cbits/error-conversion/hsuserdata.c
   include-dirs:        cbits/error-conversion
 
   if flag(system-lua) || flag(pkg-config)
