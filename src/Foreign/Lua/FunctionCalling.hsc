@@ -33,6 +33,7 @@ module Foreign.Lua.FunctionCalling
 import Data.ByteString (ByteString)
 import Foreign.C (CInt (..))
 import Foreign.Lua.Core as Lua
+import Foreign.Lua.Raw.Call (hslua_call_hs_ptr)
 import Foreign.Lua.Types
 import Foreign.Lua.Userdata ( ensureUserdataMetatable, pushAnyWithMetatable
                             , toAnyWithName )
@@ -149,11 +150,6 @@ pushHaskellFunction hsFn = do
   pushPreCFunction . flip (runWithConverter errConv) $ toHaskellFunction hsFn
   -- Convert userdata object into a CFuntion.
   pushcclosure hslua_call_hs_ptr 1
-
--- | Convert callable userdata at top of stack into a CFunction, translating
--- errors to Lua errors.  Use with @'pushcclosure'@.
-foreign import ccall "error-conversion.h &hslua_call_hs"
-  hslua_call_hs_ptr :: CFunction
 
 hsLuaFunctionName :: String
 hsLuaFunctionName = "HsLuaFunction"
