@@ -8,7 +8,7 @@
  * *********************************************************************/
 void hslua_pushhaskellerr(lua_State *L)
 {
-  lua_getfield(L, LUA_REGISTRYINDEX, "HSLUA_ERR");
+  lua_getfield(L, LUA_REGISTRYINDEX, HSLUA_ERR);
 }
 
 /*
@@ -62,9 +62,9 @@ int hslua_call_hs(lua_State *L)
 }
 
 
-/* *********************************************************************
+/* ***************************************************************
  * Transforming Lua errors to Haskell errors
- * *********************************************************************/
+ * ***************************************************************/
 
 /*
 ** compare
@@ -221,6 +221,21 @@ int hslua_next(lua_State *L, int index, int *status)
 /*
 ** Auxiliary Library
 */
+
+/*
+** newstate
+*/
+lua_State *hsluaL_newstate()
+{
+  lua_State *L = luaL_newstate();
+
+  /* add error value */
+  lua_createtable(L, 0, 0);
+  lua_setfield(L, LUA_REGISTRYINDEX, HSLUA_ERR);
+
+  return L;
+}
+
 
 /*
 ** tolstring'

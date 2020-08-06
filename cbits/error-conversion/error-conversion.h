@@ -1,6 +1,9 @@
 #include "lua.h"
 #include "lauxlib.h"
 
+#define HSLUA_ERR "HSLUA_ERR"
+#define HSLUA_HS_FUN_NAME "HsLuaFunction"
+
 int hslua_error(lua_State *L);
 
 int hslua_call_hs(lua_State *L);

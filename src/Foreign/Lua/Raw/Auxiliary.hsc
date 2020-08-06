@@ -14,12 +14,12 @@ Raw bindings to functions and constants of the auxiliary library.
 module Foreign.Lua.Raw.Auxiliary
   ( c_loaded_table
   , c_preload_table
+  , hsluaL_newstate
   , hsluaL_tolstring
   , luaL_getmetafield
   , luaL_getmetatable
   , luaL_loadbuffer
   , luaL_newmetatable
-  , luaL_newstate
   , luaL_ref
   , luaL_testudata
   , luaL_traceback
@@ -84,8 +84,8 @@ foreign import capi SAFTY "lauxlib.h luaL_loadbuffer"
 foreign import ccall SAFTY "lauxlib.h luaL_newmetatable"
   luaL_newmetatable :: Lua.State -> CString -> IO Lua.LuaBool
 
-foreign import ccall unsafe "lauxlib.h luaL_newstate"
-  luaL_newstate :: IO Lua.State
+foreign import ccall unsafe "lauxlib.h hsluaL_newstate"
+  hsluaL_newstate :: IO Lua.State
 
 foreign import ccall SAFTY "lauxlib.h luaL_ref"
   luaL_ref :: Lua.State -> StackIndex -> IO CInt

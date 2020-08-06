@@ -36,10 +36,9 @@ module Foreign.Lua.Core.Auxiliary
 import Control.Exception (IOException, try)
 import Data.ByteString (ByteString)
 import Foreign.C (withCString)
-import Foreign.Lua.Core.Error (hsluaErrorRegistryField)
 import Foreign.Lua.Core.Types (Lua, liftLua)
 import Foreign.Lua.Raw.Auxiliary
-import Foreign.Lua.Raw.Constants (multret, registryindex)
+import Foreign.Lua.Raw.Constants (multret)
 import Foreign.Lua.Raw.Types (Reference, StackIndex, Status)
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
@@ -199,12 +198,7 @@ newmetatable tname = liftLua $ \l ->
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#luaL_newstate luaL_newstate>.
 newstate :: IO Lua.State
-newstate = do
-  l <- luaL_newstate
-  Lua.unsafeRunWith l $ do
-    Lua.createtable 0 0
-    Lua.setfield registryindex hsluaErrorRegistryField
-    return l
+newstate = hsluaL_newstate
 
 -- | Creates and returns a reference, in the table at index @t@, for the object
 -- at the top of the stack (and pops the object).
