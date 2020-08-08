@@ -139,8 +139,9 @@ library
                      , FlexibleContexts
                      , FlexibleInstances
                      , ScopedTypeVariables
-  c-sources:           cbits/hslua/hslua.c
-                     , cbits/hslua/hsuserdata.c
+  c-sources:           cbits/hslua/hsuserdata.c
+                     , cbits/hslua/hslcall.c
+                     , cbits/hslua/hslua.c
   include-dirs:        cbits/hslua
   if flag(system-lua) || flag(pkg-config)
     if flag(pkg-config)
