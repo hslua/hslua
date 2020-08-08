@@ -16,7 +16,9 @@
 
 - ignore:
     name: "Use camelCase"
-    within: "Foreign.Lua.Raw.Call"
+    within:
+      - "Foreign.Lua.Raw.Call"
+      - "Foreign.Lua.Raw.Userdata"
 
 
 - modules:
