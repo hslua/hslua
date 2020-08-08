@@ -28,8 +28,9 @@ int hslua_error(lua_State *L)
 */
 int hslua_is_haskell_error(lua_State *L, int idx)
 {
+  int erridx = lua_absindex(L, idx);
   hslua_pushhaskellerr(L);
-  int is_err = lua_rawequal(L, idx, -1);
+  int is_err = lua_rawequal(L, erridx, -1);
   lua_pop(L, 1);        /* pop haskellerr used for equality test */
   return is_err;
 }
