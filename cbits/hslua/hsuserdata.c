@@ -1,5 +1,5 @@
 #include <HsFFI.h>
-#include "error-conversion.h"
+#include "hslua.h"
 
 /* ***************************************************************
  * Garbage Collection

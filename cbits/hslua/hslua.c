@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <HsFFI.h>
-#include "error-conversion.h"
+#include "hslua.h"
 
 /* *********************************************************************
  * Transforming Haskell errors to Lua errors

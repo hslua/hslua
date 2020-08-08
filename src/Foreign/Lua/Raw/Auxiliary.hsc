@@ -90,7 +90,7 @@ foreign import ccall unsafe "lauxlib.h hsluaL_newstate"
 foreign import ccall SAFTY "lauxlib.h luaL_ref"
   luaL_ref :: Lua.State -> StackIndex -> IO CInt
 
-foreign import ccall safe "error-conversion.h hsluaL_tolstring"
+foreign import ccall safe "hslua.h hsluaL_tolstring"
   hsluaL_tolstring :: Lua.State -> StackIndex -> Ptr CSize -> IO (Ptr CChar)
 
 foreign import capi SAFTY "lauxlib.h luaL_traceback"

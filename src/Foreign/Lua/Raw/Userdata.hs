@@ -24,7 +24,7 @@ import Foreign.Lua.Raw.Types
 
 -- | Convert callable userdata at top of stack into a CFunction,
 -- translating errors to Lua errors. Use with @'pushcclosure'@.
-foreign import ccall safe "error-conversion.h hslua_newuserdata"
+foreign import ccall safe "hslua.h hslua_newuserdata"
   hslua_newuserdata :: State       -- ^ Lua state
                     -> StablePtr a -- ^ Pointer to Haskell data
                     -> CString     -- ^ Userdata name (__name)
