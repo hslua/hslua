@@ -80,16 +80,12 @@ void *hslua_hs_fun_ptr(lua_State *L)
 ** Pushes a metatable for Haskell function wrapping userdata to
 ** the stack.
 */
-void hslua_newhsfunmetatable(lua_State *L)
+void hslua_registerhsfunmetatable(lua_State *L)
 {
-  if (luaL_newmetatable(L, HSLUA_HS_FUN_NAME)) {
-    lua_pushboolean(L, 1);
-    lua_setfield(L, -2, "__metatable");
-    lua_pushcfunction(L, &hslua_userdata_gc);
-    lua_setfield(L, -2, "__gc");
-    lua_pushcfunction(L, &hslua_call_wrapped_hs_fun);
-    lua_setfield(L, -2, "__call");
-  }
+  hslua_newudmetatable(L, HSLUA_HS_FUN_NAME);
+  lua_pushcfunction(L, &hslua_call_wrapped_hs_fun);
+  lua_setfield(L, -2, "__call");
+  lua_pop(L, 1);
 }
 
 /*
@@ -99,7 +95,6 @@ void hslua_newhsfunwrapper(lua_State *L, HsStablePtr fn)
 {
   HsStablePtr *ud = lua_newuserdata(L, sizeof fn);
   *ud = fn;
-  hslua_newhsfunmetatable(L);
-  lua_setmetatable(L, -2);
+  luaL_setmetatable(L, HSLUA_HS_FUN_NAME);
   lua_pushcclosure(L, &hslua_call_hs, 1);
 }

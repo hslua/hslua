@@ -3,8 +3,9 @@
 #include "hsuserdata.h"
 
 /* ***************************************************************
- * Garbage Collection
+ * Userdata Creation and Garbage Collection
  * ***************************************************************/
+
 /*
 ** Free stable Haskell pointer in userdata.
 **
@@ -20,16 +21,19 @@ int hslua_userdata_gc(lua_State *L)
   return 0;
 }
 
+/*
+** Creates a new userdata metatable for Haskell objects.
+*/
 int hslua_newudmetatable(lua_State *L, const char *tname)
 {
-  if (luaL_newmetatable(L, tname)) {
+  int created = luaL_newmetatable(L, tname);
+  if (created) {
     lua_pushboolean(L, 1);
     lua_setfield(L, -2, "__metatable");
     lua_pushcfunction(L, &hslua_userdata_gc);
     lua_setfield(L, -2, "__gc");
-    return 1;  /* new table created */
   }
-  return 0;    /* table not created */
+  return created;
 }
 
 /*

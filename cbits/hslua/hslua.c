@@ -175,6 +175,9 @@ lua_State *hsluaL_newstate()
   lua_createtable(L, 0, 0);
   lua_setfield(L, LUA_REGISTRYINDEX, HSLUA_ERR);
 
+  /* register HaskellFunction userdata metatable */
+  hslua_registerhsfunmetatable(L);
+
   return L;
 }
 
