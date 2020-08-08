@@ -1,6 +1,6 @@
 #include <HsFFI.h>
 #include "hslua.h"
-#include "hsuserdata.h"
+#include "hsludata.h"
 
 /* ***************************************************************
  * Userdata Creation and Garbage Collection
@@ -22,7 +22,8 @@ int hslua_userdata_gc(lua_State *L)
 }
 
 /*
-** Creates a new userdata metatable for Haskell objects.
+** Creates a new userdata metatable for Haskell objects, or gets
+** is from the registry if possible.
 */
 int hslua_newudmetatable(lua_State *L, const char *tname)
 {

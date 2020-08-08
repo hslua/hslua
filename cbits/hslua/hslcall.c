@@ -3,7 +3,7 @@
 #include <lauxlib.h>
 #include "hslua-export.h"
 #include "hslcall.h"
-#include "hsuserdata.h"
+#include "hsludata.h"
 
 /* ***************************************************************
  * Transforming Haskell errors to Lua errors

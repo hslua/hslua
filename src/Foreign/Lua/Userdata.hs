@@ -41,18 +41,17 @@ module Foreign.Lua.Userdata
 
 import Control.Monad (when)
 import Data.Data (Data, dataTypeName, dataTypeOf)
+import Foreign.C (withCString)
 import Foreign.Lua.Core (Lua)
 import Foreign.Lua.Core.Types (liftLua, fromLuaBool)
-import Foreign.Lua.Raw.Auxiliary (luaL_testudata)
-import Foreign.Lua.Raw.Userdata (hslua_newudmetatable)
+import Foreign.Lua.Raw.Userdata
+  ( hslua_fromuserdata
+  , hslua_newhsuserdata
+  , hslua_newudmetatable
+  )
 import Foreign.Lua.Types.Peekable (reportValueOnFailure)
 
 import qualified Foreign.Lua.Core as Lua
-import qualified Foreign.C as C
-import qualified Foreign.Ptr as Ptr
-import qualified Foreign.StablePtr as StablePtr
-import qualified Foreign.Storable as Storable
-
 
 -- | Push data by wrapping it into a userdata object.
 pushAny :: Data a
@@ -69,9 +68,7 @@ pushAnyWithMetatable :: Lua ()       -- ^ operation to push the metatable
                      -> a            -- ^ object to push to Lua.
                      -> Lua ()
 pushAnyWithMetatable mtOp x = do
-  xPtr <- Lua.liftIO (StablePtr.newStablePtr x)
-  udPtr <- Lua.newuserdata (Storable.sizeOf xPtr)
-  Lua.liftIO $ Storable.poke (Ptr.castPtr udPtr) xPtr
+  liftLua $ \l -> hslua_newhsuserdata l x
   mtOp
   Lua.setmetatable (Lua.nthFromTop 2)
   return ()
@@ -87,7 +84,7 @@ ensureUserdataMetatable :: String     -- ^ name of the registered
                         -> Lua ()
 ensureUserdataMetatable name modMt = do
   mtCreated <- liftLua $ \l ->
-    fromLuaBool <$> C.withCString name (hslua_newudmetatable l)
+    fromLuaBool <$> withCString name (hslua_newudmetatable l)
   -- Execute additional modifications on metatable
   when mtCreated modMt
 
@@ -103,14 +100,8 @@ toAny idx = toAny' undefined
 toAnyWithName :: Lua.StackIndex
               -> String         -- ^ expected metatable name
               -> Lua (Maybe a)
-toAnyWithName idx name = do
-  l <- Lua.state
-  udPtr <- Lua.liftIO (C.withCString name (luaL_testudata l idx))
-  if udPtr == Ptr.nullPtr
-    then return Nothing
-    else
-      fmap Just . Lua.liftIO $
-      Storable.peek (Ptr.castPtr udPtr) >>= StablePtr.deRefStablePtr
+toAnyWithName idx name = liftLua $ \l ->
+  withCString name (hslua_fromuserdata l idx)
 
 -- | Retrieve Haskell data which was pushed to Lua as userdata.
 peekAny :: Data a => Lua.StackIndex -> Lua a
