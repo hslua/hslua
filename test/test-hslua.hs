@@ -22,6 +22,7 @@ THE SOFTWARE.
 import Test.Tasty (TestTree, defaultMain, testGroup)
 
 import qualified Foreign.LuaTests
+import qualified Foreign.Lua.CallTests
 import qualified Foreign.Lua.CoreTests
 import qualified Foreign.Lua.FunctionCallingTests
 import qualified Foreign.Lua.ModuleTests
@@ -50,6 +51,7 @@ tests =
     ]
   , Foreign.Lua.UserdataTests.tests
   , Foreign.Lua.ModuleTests.tests
+  , Foreign.Lua.CallTests.tests
   , Foreign.LuaTests.tests
   , Foreign.Lua.PeekTests.tests
   ]

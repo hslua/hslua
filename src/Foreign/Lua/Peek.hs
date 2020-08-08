@@ -14,6 +14,8 @@ module Foreign.Lua.Peek
   , PeekError (..)
   , errorMsg
   , force
+  , formatPeekError
+  , pushMsg
   , toPeeker
   -- * Primitives
   , peekBool
