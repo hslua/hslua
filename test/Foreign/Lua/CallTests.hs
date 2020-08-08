@@ -45,6 +45,27 @@ tests = testGroup "Call"
         _ <- callFunction factLua
         peekText Lua.stackTop >>= force
     ]
+  , testGroup "use as C function"
+    [ "push factorial" =:
+      Lua.TypeFunction
+      `shouldBeResultOf` do
+        pushHaskellFunction $ factLuaAtIndex 0
+        Lua.ltype Lua.stackTop
+    , "call factorial" =:
+      120
+      `shouldBeResultOf` do
+        pushHaskellFunction $ factLuaAtIndex 0
+        Lua.pushinteger 5
+        Lua.call 1 1
+        peekIntegral @Integer Lua.stackTop >>= force
+    , "use from Lua" =:
+      24
+      `shouldBeResultOf` do
+        pushHaskellFunction $ factLuaAtIndex 0
+        Lua.setglobal "factorial"
+        Lua.loadstring "return factorial(4)" *> Lua.call 0 1
+        peekIntegral @Integer Lua.stackTop >>= force
+    ]
   , testGroup "documentation"
     [ "rendered docs" =:
       (T.unlines

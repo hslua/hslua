@@ -27,13 +27,17 @@ module Foreign.Lua.Call
   , ParameterDoc (..)
   , FunctionResultDoc (..)
   , render
+    -- * Pushing to Lua
+  , pushHaskellFunction
   ) where
 
 import Control.Monad.Except
 import Data.Text (Text)
 import Foreign.Lua.Core as Lua
+import Foreign.Lua.Core.Types (liftLua)
 import Foreign.Lua.Peek
 import Foreign.Lua.Push
+import Foreign.Lua.Raw.Call (hslua_pushhsfunction)
 import qualified Data.Text as T
 
 -- | Lua operation with an explicit error type and state (i.e.,
@@ -206,3 +210,13 @@ renderResultDoc rd = mconcat
   [ functionResultDescription rd
   , " (", functionResultType rd, ")\n"
   ]
+
+--
+-- Push to Lua
+--
+
+pushHaskellFunction :: HaskellFunction -> Lua ()
+pushHaskellFunction fn = do
+  errConv <- Lua.errorConversion
+  let hsFn = flip (runWithConverter errConv) $ callFunction fn
+  liftLua $ \l -> hslua_pushhsfunction l hsFn
