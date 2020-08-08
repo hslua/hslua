@@ -42,8 +42,9 @@ module Foreign.Lua.Userdata
 import Control.Monad (when)
 import Data.Data (Data, dataTypeName, dataTypeOf)
 import Foreign.Lua.Core (Lua)
+import Foreign.Lua.Core.Types (liftLua, fromLuaBool)
 import Foreign.Lua.Raw.Auxiliary (luaL_testudata)
-import Foreign.Lua.Raw.Userdata (hslua_userdata_gc_ptr)
+import Foreign.Lua.Raw.Userdata (hslua_newudmetatable)
 import Foreign.Lua.Types.Peekable (reportValueOnFailure)
 
 import qualified Foreign.Lua.Core as Lua
@@ -85,17 +86,10 @@ ensureUserdataMetatable :: String     -- ^ name of the registered
                                       -- the stack.
                         -> Lua ()
 ensureUserdataMetatable name modMt = do
-  mtCreated <- Lua.newmetatable name
-  when mtCreated $ do
-    -- Prevent accessing or changing the metatable with
-    -- getmetatable/setmetatable.
-    Lua.pushboolean True
-    Lua.setfield (Lua.nthFromTop 2) "__metatable"
-    -- Mark objects for finalization when collecting garbage.
-    Lua.pushcfunction hslua_userdata_gc_ptr
-    Lua.setfield (Lua.nthFromTop 2) "__gc"
-    -- Execute additional modifications on metatable
-    modMt
+  mtCreated <- liftLua $ \l ->
+    fromLuaBool <$> C.withCString name (hslua_newudmetatable l)
+  -- Execute additional modifications on metatable
+  when mtCreated modMt
 
 -- | Retrieve data which has been pushed with @'pushAny'@.
 toAny :: Data a => Lua.StackIndex -> Lua (Maybe a)

@@ -28,30 +28,13 @@ int hslua_newudmetatable(lua_State *L, const char *tname)
 {
   int created = luaL_newmetatable(L, tname);
   if (created) {
+    /* Prevent accessing or changing the metatable with
+     * getmetatable/setmetatable. */
     lua_pushboolean(L, 1);
     lua_setfield(L, -2, "__metatable");
+    /* Mark objects for finalization when collecting garbage. */
     lua_pushcfunction(L, &hslua_userdata_gc);
     lua_setfield(L, -2, "__gc");
   }
   return created;
-}
-
-/*
-** Creates a new userdata containing a Haskell value (or rather, a
-** stable pointer to a Haskell value) and pushes it to the stack.
-**
-** Returns `0` if the accompanying metatable already existed, and
-** `1` if it was newly created.
-*/
-int hslua_newuserdata(lua_State *L,
-                      HsStablePtr data,
-                      const char *tname)
-{
-  HsStablePtr *ud = lua_newuserdata(L, sizeof data);
-  *ud = data;
-  int mt_created = hslua_newudmetatable(L, tname);
-  lua_pushvalue(L, -1);    /* push another ref to mt onto stack */
-  lua_setmetatable(L, -3); /* set metatable for UD */
-
-  return mt_created;       /* whether metatable was created */
 }
