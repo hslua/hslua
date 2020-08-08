@@ -30,18 +30,17 @@ module Foreign.Lua.FunctionCalling
   , registerHaskellFunction
   ) where
 
-import Data.ByteString (ByteString)
 import Foreign.C (CInt (..))
 import Foreign.Lua.Core as Lua
-import Foreign.Lua.Raw.Call (hslua_call_hs_ptr)
+import Foreign.Lua.Core.Types (liftLua)
+import Foreign.Lua.Raw.Call
+  ( PreCFunction
+  , hslua_newhsfunwrapper
+  )
 import Foreign.Lua.Types
-import Foreign.Lua.Userdata ( ensureUserdataMetatable, pushAnyWithMetatable
-                            , toAnyWithName )
-import Foreign.Lua.Util (getglobal', popValue, raiseError)
+import Foreign.Lua.Util (getglobal', popValue)
 import Foreign.Ptr (freeHaskellFunPtr)
-
--- | Type of raw Haskell functions that can be made into 'CFunction's.
-type PreCFunction = Lua.State -> IO NumResults
+import Foreign.StablePtr (newStablePtr)
 
 -- | Haskell function that can be called from Lua.
 type HaskellFunction = Lua NumResults
@@ -147,36 +146,14 @@ registerHaskellFunction n f = do
 pushHaskellFunction :: ToHaskellFunction a => a -> Lua ()
 pushHaskellFunction hsFn = do
   errConv <- Lua.errorConversion
-  pushPreCFunction . flip (runWithConverter errConv) $ toHaskellFunction hsFn
-  -- Convert userdata object into a CFuntion.
-  pushcclosure hslua_call_hs_ptr 1
-
-hsLuaFunctionName :: String
-hsLuaFunctionName = "HsLuaFunction"
+  preCFn <- return . flip (runWithConverter errConv) $ toHaskellFunction hsFn
+  pushPreCFunction preCFn
 
 -- | Converts a pre C function to a Lua function and pushes it to the stack.
 --
 -- Pre C functions collect parameters from the stack and return
 -- a `CInt` that represents number of return values left on the stack.
 pushPreCFunction :: PreCFunction -> Lua ()
-pushPreCFunction f =
-  let pushMetatable = ensureUserdataMetatable hsLuaFunctionName $ do
-        -- ensure the userdata will be callable
-        pushcfunction hslua_call_wrapped_hs_fun_ptr
-        setfield (-2) "__call"
-  in pushAnyWithMetatable pushMetatable f
-
--- | Call the Haskell function stored in the userdata. This function is exported
--- as a C function and then re-imported in order to get a C function pointer.
-hslua_call_wrapped_hs_fun :: Lua.State -> IO NumResults
-hslua_call_wrapped_hs_fun l = do
-  mbFn <- unsafeRunWith l (toAnyWithName stackBottom hsLuaFunctionName
-                           <* remove stackBottom)
-  case mbFn of
-    Just fn -> fn l
-    Nothing -> unsafeRunWith l
-               (raiseError ("Could not call function" :: ByteString))
-
-foreign export ccall hslua_call_wrapped_hs_fun :: PreCFunction
-foreign import ccall "&hslua_call_wrapped_hs_fun"
-  hslua_call_wrapped_hs_fun_ptr :: CFunction
+pushPreCFunction preCFn = do
+  ptr <- Lua.liftIO $ newStablePtr preCFn
+  liftLua $ \l -> hslua_newhsfunwrapper l ptr

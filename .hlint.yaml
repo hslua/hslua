@@ -14,6 +14,10 @@
     name: "Reduce duplication"
     within: "Foreign.Lua.Types.Pushable"
 
+- ignore:
+    name: "Use camelCase"
+    within: "Foreign.Lua.Raw.Call"
+
 
 - modules:
   # Ensure names for qualified imports

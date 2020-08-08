@@ -12,12 +12,41 @@ Portability : non-portable (depends on GHC)
 Raw bindings to function call helpers.
 -}
 module Foreign.Lua.Raw.Call
-  ( hslua_call_hs_ptr
+  ( PreCFunction
+  , hslua_newhsfunwrapper
   ) where
 
-import Foreign.Lua.Raw.Types (CFunction)
+import Foreign.C (CInt (CInt))
+import Foreign.Ptr (Ptr, castPtr, nullPtr)
+import Foreign.StablePtr (StablePtr, deRefStablePtr)
+import Foreign.Storable (peek)
+import Foreign.Lua.Raw.Types
+  ( NumResults (NumResults)
+  , State (State)
+  )
 
--- | Convert callable userdata at top of stack into a CFunction,
--- translating errors to Lua errors. Use with @'pushcclosure'@.
-foreign import ccall safe "hslua.h &hslua_call_hs"
-  hslua_call_hs_ptr :: CFunction
+-- | Type of raw Haskell functions that can be made into
+-- 'CFunction's.
+type PreCFunction = State -> IO NumResults
+
+-- | Retrieve the pointer to a Haskell function from the wrapping
+-- userdata object.
+foreign import ccall "hslua.h hslua_hs_fun_ptr"
+  hslua_hs_fun_ptr :: State -> IO (Ptr ())
+
+foreign import ccall "hslua.h hslua_newhsfunwrapper"
+  hslua_newhsfunwrapper :: State -> StablePtr a -> IO ()
+
+-- | Call the Haskell function stored in the userdata. This
+-- function is exported as a C function, as the C code uses it as
+-- the @__call@ value of the wrapping userdata metatable.
+hslua_call_wrapped_hs_fun :: State -> IO NumResults
+hslua_call_wrapped_hs_fun l = do
+  udPtr <- hslua_hs_fun_ptr l
+  if udPtr == nullPtr
+    then error "Cannot call function; corrupted Lua object!"
+    else do
+      fn <- peek (castPtr udPtr) >>= deRefStablePtr
+      fn l
+
+foreign export ccall hslua_call_wrapped_hs_fun :: PreCFunction

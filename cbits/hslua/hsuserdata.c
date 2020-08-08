@@ -1,5 +1,6 @@
 #include <HsFFI.h>
 #include "hslua.h"
+#include "hsuserdata.h"
 
 /* ***************************************************************
  * Garbage Collection
