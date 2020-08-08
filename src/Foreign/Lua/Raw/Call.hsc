@@ -41,6 +41,7 @@ type HsFunction = State -> IO NumResults
 foreign import ccall SAFTY "hslua.h hslua_hs_fun_ptr"
   hslua_hs_fun_ptr :: State -> IO (Ptr ())
 
+-- | Pushes a new C function created from an 'HsFunction'.
 foreign import ccall SAFTY "hslua.h hslua_newhsfunction"
   hslua_newhsfunction :: State -> StablePtr a -> IO ()
 

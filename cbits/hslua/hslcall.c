@@ -1,6 +1,7 @@
 #include <HsFFI.h>
 #include <lua.h>
 #include <lauxlib.h>
+#include "hslua-export.h"
 #include "hslcall.h"
 #include "hsuserdata.h"
 
@@ -72,7 +73,7 @@ int hslua_call_hs(lua_State *L)
 */
 void *hslua_hs_fun_ptr(lua_State *L)
 {
-  void *fn = luaL_testudata(L, 1, HSLUA_HS_FUN_NAME);
+  void *fn = luaL_testudata(L, 1, HSLUA_HSFUN_NAME);
   lua_remove(L, 1);
   return fn;
 }
@@ -83,7 +84,7 @@ void *hslua_hs_fun_ptr(lua_State *L)
 */
 void hslua_registerhsfunmetatable(lua_State *L)
 {
-  hslua_newudmetatable(L, HSLUA_HS_FUN_NAME);
+  hslua_newudmetatable(L, HSLUA_HSFUN_NAME);
   lua_pushcfunction(L, &hslua_call_wrapped_hs_fun);
   lua_setfield(L, -2, "__call");
   lua_pop(L, 1);
@@ -96,6 +97,6 @@ void hslua_newhsfunction(lua_State *L, HsStablePtr fn)
 {
   HsStablePtr *ud = lua_newuserdata(L, sizeof fn);
   *ud = fn;
-  luaL_setmetatable(L, HSLUA_HS_FUN_NAME);
+  luaL_setmetatable(L, HSLUA_HSFUN_NAME);
   lua_pushcclosure(L, &hslua_call_hs, 1);
 }
