@@ -90,9 +90,9 @@ void hslua_registerhsfunmetatable(lua_State *L)
 }
 
 /*
-** Creates a new userdata value wrapping a Haskell function.
+** Creates a new C function from a Haskell function.
 */
-void hslua_newhsfunwrapper(lua_State *L, HsStablePtr fn)
+void hslua_newhsfunction(lua_State *L, HsStablePtr fn)
 {
   HsStablePtr *ud = lua_newuserdata(L, sizeof fn);
   *ud = fn;

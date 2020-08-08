@@ -33,14 +33,14 @@ module Foreign.Lua.FunctionCalling
 import Foreign.C (CInt (..))
 import Foreign.Lua.Core as Lua
 import Foreign.Lua.Core.Types (liftLua)
-import Foreign.Lua.Raw.Call
-  ( PreCFunction
-  , hslua_newhsfunwrapper
-  )
+import Foreign.Lua.Raw.Call (hslua_pushhsfunction)
 import Foreign.Lua.Types
 import Foreign.Lua.Util (getglobal', popValue)
 import Foreign.Ptr (freeHaskellFunPtr)
-import Foreign.StablePtr (newStablePtr)
+
+-- | Type of raw Haskell functions that can be made into
+-- 'CFunction's.
+type PreCFunction = State -> IO NumResults
 
 -- | Haskell function that can be called from Lua.
 type HaskellFunction = Lua NumResults
@@ -154,6 +154,5 @@ pushHaskellFunction hsFn = do
 -- Pre C functions collect parameters from the stack and return
 -- a `CInt` that represents number of return values left on the stack.
 pushPreCFunction :: PreCFunction -> Lua ()
-pushPreCFunction preCFn = do
-  ptr <- Lua.liftIO $ newStablePtr preCFn
-  liftLua $ \l -> hslua_newhsfunwrapper l ptr
+pushPreCFunction preCFn = liftLua $ \l ->
+  hslua_pushhsfunction l preCFn
