@@ -44,10 +44,12 @@ module Foreign.Lua.Core.Types
   , Integer (..)
   , Number (..)
   , StackIndex (..)
+  , nth
   , nthFromBottom
   , nthFromTop
   , stackTop
   , stackBottom
+  , top
   , NumArgs (..)
   , NumResults (..)
   , RelationalOperator (..)
@@ -145,14 +147,24 @@ nthFromTop :: CInt -> StackIndex
 nthFromTop n = StackIndex (-n)
 {-# INLINABLE nthFromTop #-}
 
+-- | Stack index of the nth element from the top of the stack.
+nth :: CInt -> StackIndex
+nth = nthFromTop
+{-# INLINABLE nth #-}
+
 -- | Stack index of the nth element from the bottom of the stack.
 nthFromBottom :: CInt -> StackIndex
 nthFromBottom = StackIndex
 {-# INLINABLE nthFromBottom #-}
 
 -- | Top of the stack
+top :: StackIndex
+top = -1
+{-# INLINABLE top #-}
+
+-- | Top of the stack
 stackTop :: StackIndex
-stackTop = -1
+stackTop = top
 {-# INLINABLE stackTop #-}
 
 -- | Bottom of the stack
