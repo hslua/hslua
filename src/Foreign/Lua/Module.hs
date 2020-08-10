@@ -17,6 +17,7 @@ module Foreign.Lua.Module
   , create
     -- * Module
   , Module (..)
+  , Field (..)
   , registerModule
     -- * Documentation
   , render
@@ -100,7 +101,15 @@ create = newtable
 data Module = Module
   { moduleName :: Text
   , moduleDescription :: Text
+  , moduleFields :: [Field]
   , moduleFunctions :: [(Text, HaskellFunction)]
+  }
+
+-- | Self-documenting module field
+data Field = Field
+  { fieldName :: Text
+  , fieldDescription :: Text
+  , fieldPushValue :: Lua ()
   }
 
 -- | Registers a 'Module'; leaves a copy of the module table on
@@ -116,15 +125,18 @@ registerModule mdl =
 
 -- | Renders module documentation as Markdown.
 render :: Module -> Text
-render mdl = T.unlines
-  [ "# " <> moduleName mdl
-  , ""
-  , moduleDescription mdl
-  , ""
-  , "## Functions"
-  , ""
-  ] <> T.intercalate "\n"
-       (map (uncurry renderFunctionDoc) (moduleFunctions mdl))
+render mdl =
+  let fields = moduleFields mdl
+  in T.unlines
+     [ "# " <> moduleName mdl
+     , ""
+     , moduleDescription mdl
+     , if null (moduleFields mdl) then "" else renderFields fields
+     , "## Functions"
+     , ""
+     ]
+     <> T.intercalate "\n"
+        (map (uncurry renderFunctionDoc) (moduleFunctions mdl))
 
 -- | Renders documentation of a function.
 renderFunctionDoc :: Text             -- ^ name
@@ -144,3 +156,15 @@ renderFunctionParams fd =
     T.intercalate ", "
   . map Call.parameterName
   $ Call.parameterDocs fd
+
+-- | Render documentation for fields as Markdown.
+renderFields :: [Field] -> Text
+renderFields fs =
+  if null fs
+  then mempty
+  else T.unlines $ map renderField fs
+
+-- | Renders documentation for a single field.
+renderField :: Field -> Text
+renderField f =
+  "### " <> fieldName f <> "\n\n" <> fieldDescription f <> "\n"

@@ -131,6 +131,7 @@ mymath :: Module
 mymath = Module
   { moduleName = "mymath"
   , moduleDescription = "A math module."
+  , moduleFields = []
   , moduleFunctions = [ ("factorial", factorial)]
   }
 
