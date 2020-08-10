@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 {-|
 Module      : Foreign.Lua.ModuleTests
 Copyright   : © 2019-2020 Albert Krewinkel
@@ -12,10 +13,15 @@ Tests creating and loading of modules with Haskell.
 module Foreign.Lua.ModuleTests (tests) where
 
 import Foreign.Lua (Lua)
-import Foreign.Lua.Module (addfield, addfunction, create, preloadhs, requirehs)
+import Foreign.Lua.Call hiding (render)
+import Foreign.Lua.Module
+import Foreign.Lua.Peek (peekIntegral)
+import Foreign.Lua.Push (pushIntegral)
 import Test.HsLua.Util ((=:), pushLuaExpr, shouldBeResultOf)
 import Test.Tasty (TestTree, testGroup)
+import Test.Tasty.HUnit ((@=?))
 
+import qualified Data.Text as T
 import qualified Foreign.Lua as Lua
 
 -- | Specifications for Attributes parsing functions.
@@ -79,4 +85,71 @@ tests = testGroup "Module"
         Lua.call 1 1
         Lua.peek Lua.stackTop
     ]
+  , testGroup "module type"
+    [ "register module" =:
+      1 `shouldBeResultOf` do
+        Lua.openlibs
+        old <- Lua.gettop
+        registerModule mymath
+        new <- Lua.gettop
+        return (new - old)
+
+    , "call module function" =:
+      Right 24 `shouldBeResultOf` do
+        Lua.openlibs
+        registerModule mymath
+        _ <- Lua.dostring $ mconcat
+             [ "local mymath = require 'mymath'\n"
+             , "return mymath.factorial(4)"
+             ]
+        peekIntegral @Integer Lua.stackTop
+    ]
+  , testGroup "documentation"
+    [ "module docs" =:
+      (T.intercalate "\n"
+        [ "# mymath"
+        , ""
+        , "A math module."
+        , ""
+        , "## Functions"
+        , ""
+        , "### factorial (n)"
+        , ""
+        , "Parameters:"
+        , ""
+        , "n"
+        , ":   number for which the factorial is computed (integer)"
+        , ""
+        , "Returns:"
+        , "factorial (integer)\n"
+        ] @=?
+        render mymath)
+    ]
   ]
+
+mymath :: Module
+mymath = Module
+  { moduleName = "mymath"
+  , moduleDescription = "A math module."
+  , moduleFunctions = [ ("factorial", factorial)]
+  }
+
+factorial :: HaskellFunction
+factorial = toHsFnPrecursor (\n -> product [1..n])
+  <#> factorialParam
+  =#> factorialResult
+
+factorialParam :: Parameter Integer
+factorialParam = Parameter
+  { parameterDoc = ParameterDoc
+    { parameterName = "n"
+    , parameterType = "integer"
+    , parameterDescription = "number for which the factorial is computed"
+    , parameterIsOptional = False
+    }
+  , parameterPeeker = peekIntegral @Integer
+  }
+
+factorialResult :: FunctionResult Integer
+factorialResult = FunctionResult (pushIntegral @Integer) . Just $
+  FunctionResultDoc "integer" "factorial"

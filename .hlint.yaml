@@ -25,6 +25,7 @@
   # Ensure names for qualified imports
   - {name: Data.ByteString, as: B}
   - {name: Data.ByteString.Char8, as: Char8}
+  - {name: Data.Text, as: T}
   - {name: Foreign.Lua, as: Lua}
 
 

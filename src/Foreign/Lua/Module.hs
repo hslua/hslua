@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : Foreign.Lua.Module
 Copyright   : © 2019-2020 Albert Krewinkel
@@ -14,24 +15,38 @@ module Foreign.Lua.Module
   , addfield
   , addfunction
   , create
+    -- * Module
+  , Module (..)
+  , registerModule
+    -- * Documentation
+  , render
   )
 where
 
-import Control.Monad (unless)
+import Control.Monad (unless, forM_)
+import Data.Text (Text)
+import Foreign.Lua.Call (HaskellFunction)
 import Foreign.Lua.Core
+import Foreign.Lua.Push (pushText)
 import Foreign.Lua.Types (Pushable, push)
-import Foreign.Lua.FunctionCalling (ToHaskellFunction, pushHaskellFunction)
+import Foreign.Lua.FunctionCalling
+  ( ToHaskellFunction
+  , pushHaskellFunction
+  )
+import qualified Data.Text as T
+import qualified Foreign.Lua.Call as Call
 
--- | Load a module, defined by a Haskell action, under the given name.
+-- | Load a module, defined by a Haskell action, under the given
+-- name.
 --
--- Similar to @luaL_required@: After checking "loaded" table, calls
--- @pushMod@ to push a module to the stack, and registers the result in
--- @package.loaded@ table.
+-- Similar to @luaL_required@: After checking "loaded" table,
+-- calls @pushMod@ to push a module to the stack, and registers
+-- the result in @package.loaded@ table.
 --
--- The @pushMod@ function must push exactly one element to the top of
--- the stack. This is not checked, but failure to do so will lead to
--- problems. Lua's @package@ module must have been loaded by the time
--- this function is invoked.
+-- The @pushMod@ function must push exactly one element to the top
+-- of the stack. This is not checked, but failure to do so will
+-- lead to problems. Lua's @package@ module must have been loaded
+-- by the time this function is invoked.
 --
 -- Leaves a copy of the module on the stack.
 requirehs :: String -> Lua () -> Lua ()
@@ -52,8 +67,8 @@ requirehs modname pushMod = do
 
   remove (nthFromTop 2)  -- remove table of loaded modules
 
--- | Registers a preloading function. Takes an module name and the Lua
--- operation which produces the package.
+-- | Registers a preloading function. Takes an module name and the
+-- Lua operation which produces the package.
 preloadhs :: String -> Lua NumResults -> Lua ()
 preloadhs name pushMod = do
   getfield registryindex preloadTableRegistryField
@@ -61,15 +76,16 @@ preloadhs name pushMod = do
   setfield (nthFromTop 2) name
   pop 1
 
--- | Add a string-indexed field to the table at the top of the stack.
+-- | Add a string-indexed field to the table at the top of the
+-- stack.
 addfield :: Pushable a => String -> a -> Lua ()
 addfield name value = do
   push name
   push value
   rawset (nthFromTop 3)
 
--- | Attach a function to the table at the top of the stack, using the
--- given name.
+-- | Attach a function to the table at the top of the stack, using
+-- the given name.
 addfunction :: ToHaskellFunction a => String -> a -> Lua ()
 addfunction name fn = do
   push name
@@ -79,3 +95,52 @@ addfunction name fn = do
 -- | Create a new module (i.e., a Lua table).
 create :: Lua ()
 create = newtable
+
+-- | Named and documented Lua module.
+data Module = Module
+  { moduleName :: Text
+  , moduleDescription :: Text
+  , moduleFunctions :: [(Text, HaskellFunction)]
+  }
+
+-- | Registers a 'Module'; leaves a copy of the module table on
+-- the stack.
+registerModule :: Module -> Lua ()
+registerModule mdl =
+  requirehs (T.unpack $ moduleName mdl) $ do
+    create
+    forM_ (moduleFunctions mdl) $ \(name, fn) -> do
+      pushText name
+      Call.pushHaskellFunction fn
+      rawset (nthFromTop 3)
+
+-- | Renders module documentation as Markdown.
+render :: Module -> Text
+render mdl = T.unlines
+  [ "# " <> moduleName mdl
+  , ""
+  , moduleDescription mdl
+  , ""
+  , "## Functions"
+  , ""
+  ] <> T.intercalate "\n"
+       (map (uncurry renderFunctionDoc) (moduleFunctions mdl))
+
+-- | Renders documentation of a function.
+renderFunctionDoc :: Text             -- ^ name
+                  -> HaskellFunction  -- ^ function
+                  -> Text             -- ^ function docs
+renderFunctionDoc name fn =
+  case Call.functionDoc fn of
+    Nothing -> ""
+    Just fnDoc -> T.intercalate "\n"
+      [ "### " <> name <> " (" <> renderFunctionParams fnDoc <> ")"
+      , ""
+      , Call.render fnDoc
+      ]
+
+renderFunctionParams :: Call.FunctionDoc -> Text
+renderFunctionParams fd =
+    T.intercalate ", "
+  . map Call.parameterName
+  $ Call.parameterDocs fd
