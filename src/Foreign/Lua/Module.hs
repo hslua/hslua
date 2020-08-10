@@ -19,6 +19,8 @@ module Foreign.Lua.Module
   , Module (..)
   , Field (..)
   , registerModule
+  , preloadModule
+  , pushModule
     -- * Documentation
   , render
   )
@@ -112,16 +114,27 @@ data Field = Field
   , fieldPushValue :: Lua ()
   }
 
+
 -- | Registers a 'Module'; leaves a copy of the module table on
 -- the stack.
 registerModule :: Module -> Lua ()
-registerModule mdl =
-  requirehs (T.unpack $ moduleName mdl) $ do
-    create
-    forM_ (moduleFunctions mdl) $ \(name, fn) -> do
-      pushText name
-      Call.pushHaskellFunction fn
-      rawset (nthFromTop 3)
+registerModule mdl = do
+  requirehs (T.unpack $ moduleName mdl) (pushModule mdl)
+
+-- | Preload self-documenting module.
+preloadModule :: Module -> Lua ()
+preloadModule mdl =
+  preloadhs (T.unpack $ moduleName mdl) $ do
+    pushModule mdl
+    return (NumResults 1)
+
+pushModule :: Module -> Lua ()
+pushModule mdl = do
+  create
+  forM_ (moduleFunctions mdl) $ \(name, fn) -> do
+    pushText name
+    Call.pushHaskellFunction fn
+    rawset (nthFromTop 3)
 
 -- | Renders module documentation as Markdown.
 render :: Module -> Text
