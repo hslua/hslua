@@ -52,7 +52,7 @@ type LuaExcept a = ExceptT PeekError Lua a
 -- | Result of a call to a Haskell function
 data FunctionResult a
   = FunctionResult
-  { fnResultPusher :: Pusher a
+  { fnResultPusher :: a -> Lua NumResults
   , fnResultDoc :: Maybe FunctionResultDoc
   }
 
@@ -151,9 +151,7 @@ returnResult bldr (FunctionResult push fnResDoc) = HaskellFunction
         Left err -> do
           pushString $ formatPeekError err
           Lua.error
-        Right x -> do
-          push x
-          return (NumResults 1)
+        Right x -> push x
   , functionDoc = Just $ FunctionDoc
     { parameterDocs = reverse $ hsFnParameterDocs bldr
     , functionResultDoc = fnResDoc

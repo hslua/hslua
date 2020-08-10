@@ -151,5 +151,6 @@ factorialParam = Parameter
   }
 
 factorialResult :: FunctionResult Integer
-factorialResult = FunctionResult (pushIntegral @Integer) . Just $
-  FunctionResultDoc "integer" "factorial"
+factorialResult = FunctionResult
+  (\i -> 1 <$ pushIntegral @Integer i) .
+  Just $ FunctionResultDoc "integer" "factorial"
