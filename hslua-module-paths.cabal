@@ -26,7 +26,10 @@ source-repository head
   location:            https://github.com/hslua/hslua-module-paths.git
 
 common common-options
-  build-depends:       base >= 4.9.1.0
+  build-depends:       base       >= 4.9.1  && < 5
+                     , filepath   >= 1.4    && < 1.5
+                     , hslua      >= 1.2    && < 1.3
+                     , text       >= 1.0    && < 1.3
   
   ghc-options:         -Wall
                        -Wcompat
@@ -48,7 +51,7 @@ common common-options
 library
   import:              common-options
   hs-source-dirs:      src
-  exposed-modules:     HsluaModulePaths
+  exposed-modules:     Foreign.Lua.Module.Paths
 
 test-suite hslua-module-paths-test
   import:              common-options
