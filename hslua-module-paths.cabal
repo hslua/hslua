@@ -1,0 +1,61 @@
+cabal-version:       2.4
+name:                hslua-module-paths
+version:             0.0.1
+synopsis:            Lua module to work with file paths.
+description:         Lua module to work with file paths.
+homepage:            https://github.com/hslua/hslua-module-paths
+bug-reports:         https://github.com/hslua/hslua-module-paths/issues
+license:             MIT
+license-file:        LICENSE
+author:              Albert Krewinkel
+maintainer:          Albert Krewinkel <albert@zeitkraut.de>
+copyright:           © 2020 Albert Krewinkel
+category:            Foreign
+build-type:          Simple
+extra-doc-files:     README.md
+                     CHANGELOG.md
+tested-with:         GHC == 8.0.2
+                   , GHC == 8.2.2
+                   , GHC == 8.4.4
+                   , GHC == 8.6.5
+                   , GHC == 8.8.3
+                   , GHC == 8.10.1
+
+source-repository head
+  type:                git
+  location:            https://github.com/hslua/hslua-module-paths.git
+
+common common-options
+  build-depends:       base >= 4.9.1.0
+  
+  ghc-options:         -Wall
+                       -Wcompat
+                       -Widentities
+                       -Wincomplete-uni-patterns
+                       -Wincomplete-record-updates
+  if impl(ghc >= 8.0)
+    ghc-options:       -Wredundant-constraints
+  if impl(ghc >= 8.2)
+    ghc-options:       -fhide-source-paths
+  if impl(ghc >= 8.4)
+    ghc-options:       -Wmissing-export-lists
+                       -Wpartial-fields
+  if impl(ghc >= 8.8)
+    ghc-options:       -Wmissing-deriving-strategies
+
+  default-language:    Haskell2010
+
+library
+  import:              common-options
+  hs-source-dirs:      src
+  exposed-modules:     HsluaModulePaths
+
+test-suite hslua-module-paths-test
+  import:              common-options
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  build-depends:       hslua-module-paths
+  ghc-options:         -threaded
+                       -rtsopts
+                       -with-rtsopts=-N

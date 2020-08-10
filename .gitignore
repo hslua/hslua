@@ -1,0 +1,10 @@
+# cabal
+/dist
+/dist-*
+/cabal.project.local
+/.ghc.environment.*
+
+# Stack
+/.stack-work/
+stack.yaml.lock
+
