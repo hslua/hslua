@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : Foreign.Lua.Module.Paths
@@ -29,6 +30,9 @@ module Foreign.Lua.Module.Paths (
   )
 where
 
+#if !MIN_VERSION_base(4,11,0)
+import Data.Semigroup (Semigroup(..))  -- includes (<>)
+#endif
 import Data.Text (Text)
 import Foreign.Lua (Lua, NumResults (..))
 import Foreign.Lua.Call
