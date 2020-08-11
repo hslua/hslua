@@ -1,0 +1,14 @@
+# HLint configuration file
+##########################
+
+# Lua functions use snake_case, not camelCase
+- ignore:
+    name: "Use camelCase"
+
+- modules:
+  # Ensure names for qualified imports
+  - {name: Data.Text, as: T}
+
+
+# Ban "module X(module X) where", to require a real export list
+- warn: {name: Use explicit module export list}
