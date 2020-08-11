@@ -9,18 +9,23 @@ on:
 
 jobs:
   build:
-    name: ghc ${{ matrix.ghc }}
+    name: ghc ${{ matrix.versions.ghc }}
     runs-on: ubuntu-16.04
     strategy:
       matrix:
-        cabal: ["2.4"]
-        ghc:
-          - "8.0.2"
-          - "8.2.2"
-          - "8.4.4"
-          - "8.6.5"
-          - "8.8.3"
-          - "8.10.1"
+        versions:
+          - ghc: '8.0.2'
+            cabal: '2.4'
+          - ghc: '8.2.2'
+            cabal: '2.4'
+          - ghc: '8.4.4'
+            cabal: '2.4'
+          - ghc: '8.6.5'
+            cabal: '3.2'
+          - ghc: '8.8.3'
+            cabal: '3.2'
+          - ghc: '8.10.1'
+            cabal: '3.2'
 
     steps:
     - uses: actions/checkout@v2
@@ -32,19 +37,19 @@ jobs:
     - uses: actions/setup-haskell@v1
       name: Setup Haskell
       with:
-        ghc-version: ${{ matrix.ghc }}
-        cabal-version: ${{ matrix.cabal }}
+        ghc-version: ${{ matrix.versions.ghc }}
+        cabal-version: ${{ matrix.versions.cabal }}
 
     - uses: actions/cache@v1
       name: Cache ~/.cabal/store
       with:
         path: ~/.cabal/store
-        key: ${{ runner.os }}-${{ matrix.ghc }}-cabal
+        key: ${{ runner.os }}-${{ matrix.versions.ghc }}-cabal
 
     - name: Build
       run: |
         cabal v2-update
-        cabal v2-build --enable-tests --enable-benchmarks
+        cabal v2-build --enable-tests
 
     - name: Test
       run: |
