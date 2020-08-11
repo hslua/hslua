@@ -22,6 +22,7 @@ module Foreign.Lua.Call
     -- * Operators
   , (<#>)
   , (=#>)
+  , (#?)
     -- * Documentation
   , FunctionDoc (..)
   , ParameterDoc (..)
@@ -75,7 +76,8 @@ data HaskellFunction = HaskellFunction
 
 -- | Documentation for a Haskell function
 data FunctionDoc = FunctionDoc
-  { parameterDocs     :: [ParameterDoc]
+  { functionDescription :: Text
+  , parameterDocs     :: [ParameterDoc]
   , functionResultDoc :: Maybe FunctionResultDoc
   }
   deriving (Eq, Ord, Show)
@@ -153,17 +155,26 @@ returnResult bldr (FunctionResult push fnResDoc) = HaskellFunction
           Lua.error
         Right x -> push x
   , functionDoc = Just $ FunctionDoc
-    { parameterDocs = reverse $ hsFnParameterDocs bldr
+    { functionDescription = ""
+    , parameterDocs = reverse $ hsFnParameterDocs bldr
     , functionResultDoc = fnResDoc
     }
   }
 
+-- | Updates the description of a Haskell function. Leaves the function
+-- unchanged if it has no documentation.
+updateFunctionDescription :: HaskellFunction -> Text -> HaskellFunction
+updateFunctionDescription fn desc =
+  case functionDoc fn of
+    Nothing -> fn
+    Just fnDoc ->
+      fn { functionDoc = Just $ fnDoc { functionDescription = desc} }
 
 --
 -- Operators
 --
 
-infixl 8 <#>, =#>
+infixl 8 <#>, =#>, #?
 
 -- | Inline version of @'applyParameter'@.
 (<#>) :: HsFnPrecursor (a -> b)
@@ -177,12 +188,17 @@ infixl 8 <#>, =#>
       -> HaskellFunction
 (=#>) = returnResult
 
+-- | Inline version of @'updateFunctionDescription'@.
+(#?) :: HaskellFunction -> Text -> HaskellFunction
+(#?) = updateFunctionDescription
+
 --
 -- Render documentation
 --
 
 render :: FunctionDoc -> Text
-render (FunctionDoc paramDocs resultDoc) =
+render (FunctionDoc desc paramDocs resultDoc) =
+  (if T.null desc then "" else desc <> "\n\n") <>
   renderParamDocs paramDocs <>
   case resultDoc of
     Nothing -> ""
