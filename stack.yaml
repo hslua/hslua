@@ -2,4 +2,4 @@ resolver: lts-15.5
 
 extra-deps:
   - git: https://github.com/hslua/hslua
-    commit: 156296140d2d6b28e2232d042313946a6f958573
+    commit: 15de70441715c79d106da164dd862e33182e2161

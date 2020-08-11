@@ -91,6 +91,92 @@ functions =
   , ("take_filename", take_filename)
   ]
 
+
+-- | See @System.FilePath.dropExtension@
+drop_extensions :: HaskellFunction
+drop_extensions = toHsFnPrecursor Path.dropExtension
+  <#> filepathParam
+  =#> filepathResult "The modified filepath without extension"
+  #? "Remove last extension, and the `.` preceding it."
+
+-- | See @System.FilePath.hasExtension@
+has_extension :: HaskellFunction
+has_extension = toHsFnPrecursor Path.hasExtension
+  <#> filepathParam
+  =#> booleanResult ("`true` iff `filepath` has an extension, " <>
+                     "`false` otherwise.")
+  #? "Does the given filename has an extension?"
+
+-- | See @System.FilePath.isAbsolute@
+is_absolute :: HaskellFunction
+is_absolute = toHsFnPrecursor Path.isAbsolute
+  <#> filepathParam
+  =#> booleanResult ("`true` iff `filepath` is an absolute path, " <>
+                     "`false` otherwise.")
+  #? "Checks whether a path is absolute, i.e. not fixed to a root."
+
+-- | See @System.FilePath.isRelative@
+is_relative :: HaskellFunction
+is_relative = toHsFnPrecursor Path.isRelative
+  <#> filepathParam
+  =#> booleanResult ("`true` iff `filepath` is a relative path, " <>
+                     "`false` otherwise.")
+  #? "Checks whether a path is relative or fixed to a root."
+
+-- | See @System.FilePath.joinPath@
+join_path :: HaskellFunction
+join_path = toHsFnPrecursor Path.joinPath
+  <#> Parameter
+      { parameterPeeker = peekList peekFilePath
+      , parameterDoc = ParameterDoc
+        { parameterName = "filepaths"
+        , parameterType = "list of strings"
+        , parameterDescription = "path components"
+        , parameterIsOptional = False
+        }
+      }
+  =#> filepathResult "The joined path."
+  #? "Join path elements back together by the directory separator."
+
+-- | See @System.FilePath.normalise@
+normalise :: HaskellFunction
+normalise = toHsFnPrecursor Path.normalise
+  <#> filepathParam
+  =#> filepathResult "The normalised path."
+  #? "Normalise a path."
+
+-- | See @System.FilePath.splitDirectories@
+split_directories :: HaskellFunction
+split_directories = toHsFnPrecursor Path.splitDirectories
+  <#> filepathParam
+  =#> filepathListResult "A list of all directory paths."
+  #? "Split a path by the directory separator."
+
+-- | See @System.FilePath.takeDirectory@
+take_directory :: HaskellFunction
+take_directory = toHsFnPrecursor Path.normalise
+  <#> filepathParam
+  =#> filepathResult "The filepath up to the last directory separator."
+  #? "Get the directory name; move up one level."
+
+-- | See @System.FilePath.takeExtensions@
+take_extensions :: HaskellFunction
+take_extensions = toHsFnPrecursor Path.takeExtensions
+  <#> filepathParam
+  =#> filepathResult "String of all extensions."
+  #? "Get all extensions."
+
+-- | See @System.FilePath.takeFilename@
+take_filename :: HaskellFunction
+take_filename = toHsFnPrecursor Path.takeFileName
+  <#> filepathParam
+  =#> filepathResult "File name part of the input path."
+  #? "Get the file name."
+
+--
+-- Parameters
+--
+
 peekFilePath :: Peeker FilePath
 peekFilePath = peekString
 
@@ -134,74 +220,3 @@ booleanResult desc = FunctionResult
     , functionResultDescription = desc
     }
   }
-
--- | See @System.FilePath.dropExtension@
-drop_extensions :: HaskellFunction
-drop_extensions = toHsFnPrecursor Path.dropExtension
-  <#> filepathParam
-  =#> filepathResult "The modified filepath without extension"
-
--- | See @System.FilePath.hasExtension@
-has_extension :: HaskellFunction
-has_extension = toHsFnPrecursor Path.hasExtension
-  <#> filepathParam
-  =#> booleanResult ("`true` iff `filepath` has an extension, " <>
-                     "`false` otherwise.")
-
--- | See @System.FilePath.isAbsolute@
-is_absolute :: HaskellFunction
-is_absolute = toHsFnPrecursor Path.isAbsolute
-  <#> filepathParam
-  =#> booleanResult ("`true` iff `filepath` is an absolute path, " <>
-                     "`false` otherwise.")
-
--- | See @System.FilePath.isRelative@
-is_relative :: HaskellFunction
-is_relative = toHsFnPrecursor Path.isRelative
-  <#> filepathParam
-  =#> booleanResult ("`true` iff `filepath` is a relative path, " <>
-                     "`false` otherwise.")
-
--- | See @System.FilePath.joinPath@
-join_path :: HaskellFunction
-join_path = toHsFnPrecursor Path.joinPath
-  <#> Parameter
-      { parameterPeeker = peekList peekFilePath
-      , parameterDoc = ParameterDoc
-        { parameterName = "filepaths"
-        , parameterType = "list of strings"
-        , parameterDescription = "path components"
-        , parameterIsOptional = False
-        }
-      }
-  =#> filepathResult "The joined path."
-
--- | See @System.FilePath.normalise@
-normalise :: HaskellFunction
-normalise = toHsFnPrecursor Path.normalise
-  <#> filepathParam
-  =#> filepathResult "The normalised path."
-
--- | See @System.FilePath.splitDirectories@
-split_directories :: HaskellFunction
-split_directories = toHsFnPrecursor Path.splitDirectories
-  <#> filepathParam
-  =#> filepathListResult "A list of all directory paths."
-
--- | See @System.FilePath.takeDirectory@
-take_directory :: HaskellFunction
-take_directory = toHsFnPrecursor Path.normalise
-  <#> filepathParam
-  =#> filepathResult "The filepath up to the last directory separator."
-
--- | See @System.FilePath.takeExtensions@
-take_extensions :: HaskellFunction
-take_extensions = toHsFnPrecursor Path.takeExtensions
-  <#> filepathParam
-  =#> filepathResult "String of all extensions."
-
--- | See @System.FilePath.takeFilename@
-take_filename :: HaskellFunction
-take_filename = toHsFnPrecursor Path.takeFileName
-  <#> filepathParam
-  =#> filepathResult "File name part of the input path."
