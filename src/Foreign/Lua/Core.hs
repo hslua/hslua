@@ -30,10 +30,12 @@ module Foreign.Lua.Core (
   , Lua.Number (..)
   -- ** Stack index
   , StackIndex (..)
+  , nth
   , nthFromBottom
   , nthFromTop
   , stackTop
   , stackBottom
+  , top
   -- ** Number of arguments and return values
   , NumArgs (..)
   , NumResults (..)
