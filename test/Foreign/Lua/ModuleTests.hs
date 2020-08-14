@@ -121,7 +121,8 @@ tests = testGroup "Module"
         , ":   number for which the factorial is computed (integer)"
         , ""
         , "Returns:"
-        , "factorial (integer)\n"
+        , ""
+        , " - factorial (integer)\n"
         ] @=?
         render mymath)
     ]
@@ -153,5 +154,5 @@ factorialParam = Parameter
 
 factorialResult :: FunctionResult Integer
 factorialResult = FunctionResult
-  (\i -> 1 <$ pushIntegral @Integer i) .
-  Just $ FunctionResultDoc "integer" "factorial"
+  (pushIntegral @Integer)
+  (FunctionResultDoc "integer" "factorial")

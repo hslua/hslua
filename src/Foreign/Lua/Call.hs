@@ -50,11 +50,11 @@ type LuaExcept a = ExceptT PeekError Lua a
 -- Function components
 --
 
--- | Result of a call to a Haskell function
+-- | Result of a call to a Haskell function.
 data FunctionResult a
   = FunctionResult
-  { fnResultPusher :: a -> Lua NumResults
-  , fnResultDoc :: Maybe FunctionResultDoc
+  { fnResultPusher :: Pusher a
+  , fnResultDoc :: FunctionResultDoc
   }
 
 -- | Function parameter.
@@ -77,8 +77,8 @@ data HaskellFunction = HaskellFunction
 -- | Documentation for a Haskell function
 data FunctionDoc = FunctionDoc
   { functionDescription :: Text
-  , parameterDocs     :: [ParameterDoc]
-  , functionResultDoc :: Maybe FunctionResultDoc
+  , parameterDocs       :: [ParameterDoc]
+  , functionResultDocs  :: [FunctionResultDoc]
   }
   deriving (Eq, Ord, Show)
 
@@ -141,25 +141,34 @@ applyParameter bldr param = do
     }
 
 -- | Take a 'HaskellFunction' precursor and convert it into a full
--- 'HaskellFunction', using the given 'FunctionResult' to return
+-- 'HaskellFunction', using the given 'FunctionResult's to return
 -- the result to Lua.
-returnResult :: HsFnPrecursor a
-             -> FunctionResult a
-             -> HaskellFunction
-returnResult bldr (FunctionResult push fnResDoc) = HaskellFunction
+returnResults :: HsFnPrecursor a
+              -> [FunctionResult a]
+              -> HaskellFunction
+returnResults bldr fnResults = HaskellFunction
   { callFunction = do
-      result <- runExceptT $ hsFnPrecursorAction bldr
-      case result of
+      hsResult <- runExceptT $ hsFnPrecursorAction bldr
+      case hsResult of
         Left err -> do
           pushString $ formatPeekError err
           Lua.error
-        Right x -> push x
+        Right x -> do
+          forM_ fnResults $ \(FunctionResult push _) -> push x
+          return $ NumResults (fromIntegral $ length fnResults)
+
   , functionDoc = Just $ FunctionDoc
     { functionDescription = ""
     , parameterDocs = reverse $ hsFnParameterDocs bldr
-    , functionResultDoc = fnResDoc
+    , functionResultDocs = map fnResultDoc fnResults
     }
   }
+
+-- | Like @'returnResult'@, but returns only a single result.
+returnResult :: HsFnPrecursor a
+             -> FunctionResult a
+             -> HaskellFunction
+returnResult bldr = returnResults bldr . (:[])
 
 -- | Updates the description of a Haskell function. Leaves the function
 -- unchanged if it has no documentation.
@@ -201,11 +210,8 @@ render (FunctionDoc desc paramDocs resultDoc) =
   (if T.null desc then "" else desc <> "\n\n") <>
   renderParamDocs paramDocs <>
   case resultDoc of
-    Nothing -> ""
-    Just rd -> mconcat
-      [ "\nReturns:\n"
-      , renderResultDoc rd
-      ]
+    [] -> ""
+    rd -> "\nReturns:\n\n" <> T.intercalate "\n" (map renderResultDoc rd)
 
 renderParamDocs :: [ParameterDoc] -> Text
 renderParamDocs pds = "Parameters:\n\n" <>
@@ -221,7 +227,8 @@ renderParamDoc pd = mconcat
 
 renderResultDoc :: FunctionResultDoc -> Text
 renderResultDoc rd = mconcat
-  [ functionResultDescription rd
+  [ " - "
+  , functionResultDescription rd
   , " (", functionResultType rd, ")\n"
   ]
 

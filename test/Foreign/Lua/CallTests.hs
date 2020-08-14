@@ -75,7 +75,8 @@ tests = testGroup "Call"
        , ":   number for which the factorial is computed (integer)"
        , ""
        , "Returns:"
-       , "factorial (integer)"
+       , ""
+       , " - factorial (integer)"
        ]
        @=?
        maybe "" render (functionDoc (factLuaAtIndex 0)))
@@ -105,5 +106,5 @@ factorialParam = Parameter
 
 factorialResult :: FunctionResult Integer
 factorialResult = FunctionResult
-  (\n -> 1 <$ pushIntegral @Integer n) .
-  Just $ FunctionResultDoc "integer" "factorial"
+  (pushIntegral @Integer)
+  (FunctionResultDoc "integer" "factorial")
