@@ -1,5 +1,15 @@
 # Revision history for tasty-lua
 
+## 0.2.3 -- 2020-08-14
+
+- CI now also builds with for GHC 8.10.
+
+- Errors are now explicitly converted to strings before matched
+  when using `error_matches`.
+
+- Relax version limits for tasty and hslua, allowing tasty-1.3.*
+  and hslua-1.2.*.
+
 ## 0.2.2 -- 2020-01-26
 
 - Avoid compilation warnings on GHC 8.2 and older. Monoid
