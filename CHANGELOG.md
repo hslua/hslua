@@ -1,5 +1,55 @@
 ## Changelog
 
+### 1.2.0
+
+Release pending
+
+- New module `Foreign.Lua.Call`: the module offers an alternative
+  method of exposing Haskell functions to Lua. The focus is on
+  maintainability: types and marshaling methods are made explicit;
+  the possibility of adding documentation and parameter names
+  improves error messages and allows for automatic documentation
+  extraction.
+
+  Work on this module is ongoing; the interface is likely to
+  change. Suggestions and feedback are welcome.
+
+- New types `Module`, `Field`, and new functions `registerModule`,
+  `preloadModule`, `pushModule`, and `render` exported from
+  `Foreign.Lua.Module`: this builds on the new `Call` module and
+  allows the creation of documented modules as well as automatic
+  generation of Markdown-formatted module documentation.
+
+- Export new items `nth` and `top` from Foreign.Lua.Core and
+  Foreign.Lua. They are short-hands for `nthFromTop` and
+  `stackTop`.
+
+- Performance improvements: Calling of Lua functions and creation
+  of Haskell data wrapping userdata has been sped up by about 10%.
+  This is mostly due to using of previously missed optimization
+  opportunities.
+
+- All foreign imports have been moved to into the new
+  `Foreign.Lua.Raw` module. This module will replace the current
+  `Foreign.Lua.Core` module in the future and will be distributed
+  as a separate package (likely starting with the 2.0 release);
+  the remaining parts of the current `Core` module will be
+  promoted one level in the module hierarchy.
+
+  The `Raw` module can be used whenever the full power of HsLua is
+  not needed.
+
+- Error-signaling of API wrapper functions has been changed:
+  instead of returning special integer values, functions now take
+  an additional pointer argument, which is set to the status
+  result of the computation.
+
+  The `Failable` type in Core.Error is no longer needed and has
+  been removed.
+
+- CI builds now include GHC 8.8 and GHC 8.10, ensuring that all
+  GHC 8.* versions are supported.
+
 ### 1.1.2
 
 Released 2020-06-27
