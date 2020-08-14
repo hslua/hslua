@@ -270,4 +270,15 @@ tests = testGroup "Peek"
           peekMap (peekIntegral @Int) peekText Lua.stackTop
       ]
     ]
+
+  , testGroup "combinators"
+    [ "optional with nil" =:
+      Right Nothing `shouldBeResultOf` do
+        Lua.pushnil
+        optional (peekString) Lua.top
+    , "optional with number" =:
+      Right (Just 23) `shouldBeResultOf` do
+        Lua.pushinteger 23
+        optional (peekIntegral @Int) Lua.top
+    ]
   ]

@@ -31,6 +31,8 @@ module Foreign.Lua.Peek
   , peekList
   , peekMap
   , peekSet
+  -- * Combinators
+  , optional
   ) where
 
 import Control.Applicative ((<|>))
@@ -242,3 +244,17 @@ peekSet elementPeeker =
     fmap (retrieving "Set" .
           second (Set.fromList . map fst . filter snd))
   . peekKeyValuePairs elementPeeker peekBool
+
+--
+-- Combinators
+--
+
+-- | Makes a result optional. Returns 'Nothing' if the Lua value
+-- is @nil@; otherwise applies the peeker and returns its result.
+optional :: Peeker a -- ^ peeker
+         -> Peeker (Maybe a)
+optional peeker idx = do
+  noValue <- Lua.isnoneornil idx
+  if noValue
+    then return $ Right Nothing
+    else fmap Just <$> peeker idx
