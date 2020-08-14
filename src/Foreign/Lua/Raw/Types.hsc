@@ -36,10 +36,6 @@ module Foreign.Lua.Raw.Types
   , Status (..)
   , StatusCode (..)
   , toStatus
-    -- * References
-  , Reference (..)
-  , fromReference
-  , toReference
   ) where
 
 #include "lua.h"
@@ -283,30 +279,3 @@ newtype NumArgs = NumArgs { fromNumArgs :: CInt }
 -- | The number of results returned by a function call.
 newtype NumResults = NumResults { fromNumResults :: CInt }
   deriving (Eq, Num, Ord, Show)
-
---
--- References
---
-
--- | Value signaling that no reference was created.
-refnil :: CInt
-refnil = #{const LUA_REFNIL}
-
--- | Reference to a stored value.
-data Reference =
-    Reference CInt -- ^ Reference to a stored value
-  | RefNil         -- ^ Reference to a nil value
-  deriving (Eq, Show)
-
--- | Convert a reference to its C representation.
-fromReference :: Reference -> CInt
-fromReference = \case
-  Reference x -> x
-  RefNil      -> refnil
-
--- | Create a reference from its C representation.
-toReference :: CInt -> Reference
-toReference x =
-  if x == refnil
-  then RefNil
-  else Reference x

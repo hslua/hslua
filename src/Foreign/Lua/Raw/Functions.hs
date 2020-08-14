@@ -17,11 +17,11 @@ import Foreign.C
 import Foreign.Lua.Raw.Types as Lua
 import Foreign.Ptr
 
-##ifdef ALLOW_UNSAFE_GC
-##define SAFTY unsafe
-##else
-##define SAFTY safe
-##endif
+#ifdef ALLOW_UNSAFE_GC
+#define SAFTY unsafe
+#else
+#define SAFTY safe
+#endif
 
 -- TODO: lua_getallocf, lua_setallocf
 -- TODO: Debugger functions
@@ -47,11 +47,11 @@ foreign import ccall "lua.h lua_close"
 -- * Basic stack manipulation
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_absindex lua_absindex>
-foreign import ccall unsafe "lua.h lua_absindex"
+foreign import ccall SAFTY "lua.h lua_absindex"
   lua_absindex :: Lua.State -> StackIndex -> IO StackIndex
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_gettop lua_gettop>
-foreign import ccall unsafe "lua.h lua_gettop"
+foreign import ccall SAFTY "lua.h lua_gettop"
   lua_gettop :: Lua.State -> IO StackIndex
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_settop lua_settop>
@@ -124,7 +124,7 @@ foreign import ccall SAFTY "lua.h lua_typename"
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_compare \
 -- @lua_compare@> which catches any @longjmp@s.
-foreign import capi "hslua.h hslua_compare"
+foreign import capi safe "hslua.h hslua_compare"
   hslua_compare :: Lua.State
                 -> StackIndex -> StackIndex -> CInt
                 -> Ptr StatusCode -> IO LuaBool
@@ -266,7 +266,7 @@ foreign import ccall "hslua.h hslua_getglobal"
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_settable \
 -- @lua_settable@> which catches any @longjmp@s.
-foreign import ccall "hslua.h hslua_settable"
+foreign import ccall safe "hslua.h hslua_settable"
   hslua_settable :: Lua.State -> StackIndex -> Ptr StatusCode -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawset lua_rawset>
@@ -283,7 +283,7 @@ foreign import ccall SAFTY "lua.h lua_setmetatable"
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_setglobal \
 -- @lua_setglobal@> which catches any @longjmp@s.
-foreign import ccall "hslua.h hslua_setglobal"
+foreign import ccall safe "hslua.h hslua_setglobal"
   hslua_setglobal :: Lua.State -> CString -> CSize -> Ptr StatusCode -> IO ()
 
 
@@ -293,7 +293,7 @@ foreign import ccall "hslua.h hslua_setglobal"
 -- lua_call is inherently unsafe, we do not support it.
 
 -- | See <https://www.lua.org/manual/5.1/manual.html#lua_pcall lua_pcall>
-foreign import capi "lua.h lua_pcall"
+foreign import capi safe "lua.h lua_pcall"
   lua_pcall :: Lua.State -> NumArgs -> NumResults -> StackIndex
             -> IO StatusCode
 
@@ -312,7 +312,7 @@ foreign import ccall safe "lua.h lua_load"
 -- lua_yield / lua_yieldk and lua_resume are currently not supported.
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_status lua_status>
-foreign import ccall unsafe "lua.h lua_status"
+foreign import ccall SAFTY "lua.h lua_status"
   lua_status :: Lua.State -> IO StatusCode
 
 
@@ -320,7 +320,7 @@ foreign import ccall unsafe "lua.h lua_status"
 -- * Garbage-collection functions and options
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_gc lua_gc>
-foreign import ccall "lua.h lua_gc"
+foreign import ccall safe "lua.h lua_gc"
   lua_gc :: Lua.State -> CInt -> CInt -> IO CInt
 
 
@@ -334,22 +334,22 @@ foreign import ccall "lua.h lua_gc"
 -- | Replacement for <https://lua.org/manual/5.3/manual.html#lua_error \
 -- @lua_error@>; it uses the HsLua error signaling convention instead of raw
 -- @longjmp@.
-foreign import ccall "hslua.h hslua_error"
+foreign import ccall SAFTY "hslua.h hslua_error"
   hslua_error :: Lua.State -> IO NumResults
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_next \
 -- @lua_next@> which catches any @longjmp@s.
-foreign import ccall "hslua.h hslua_next"
+foreign import ccall safe "hslua.h hslua_next"
   hslua_next :: Lua.State -> StackIndex -> Ptr StatusCode -> IO LuaBool
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_concat \
 -- @lua_concat@> which catches any @longjmp@s.
-foreign import ccall "hslua.h hslua_concat"
+foreign import ccall safe "hslua.h hslua_concat"
   hslua_concat :: Lua.State -> NumArgs -> Ptr StatusCode -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_pushglobaltable \
 -- lua_pushglobaltable>
-foreign import capi unsafe "lua.h lua_pushglobaltable"
+foreign import capi SAFTY "lua.h lua_pushglobaltable"
   lua_pushglobaltable :: Lua.State -> IO ()
 
 

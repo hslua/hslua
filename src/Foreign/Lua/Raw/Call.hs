@@ -26,11 +26,11 @@ import Foreign.Lua.Raw.Types
   , State (State)
   )
 
-##ifdef ALLOW_UNSAFE_GC
-##define SAFTY unsafe
-##else
-##define SAFTY safe
-##endif
+#ifdef ALLOW_UNSAFE_GC
+#define SAFTY unsafe
+#else
+#define SAFTY safe
+#endif
 
 -- | Type of raw Haskell functions that can be made into
 -- 'CFunction's.

@@ -17,25 +17,23 @@ module Foreign.Lua.Raw.Constants
   , noref
   ) where
 
+import Foreign.C (CInt (..))
 import Foreign.Lua.Raw.Types
-
-#include "lua.h"
-#include "lauxlib.h"
 
 -- | Alias for C constant @LUA_MULTRET@. See
 -- <https://www.lua.org/manual/5.3/#lua_call lua_call>.
-multret :: NumResults
-multret = NumResults $ #{const LUA_MULTRET}
+foreign import capi unsafe "lua.h value LUA_MULTRET"
+  multret :: NumResults
 
 -- | Alias for C constant @LUA_REGISTRYINDEX@. See
 -- <https://www.lua.org/manual/5.3/#3.5 Lua registry>.
-registryindex :: StackIndex
-registryindex = StackIndex $ #{const LUA_REGISTRYINDEX}
+foreign import capi unsafe "lua.h value LUA_REGISTRYINDEX"
+  registryindex :: StackIndex
 
 -- | Value signaling that no reference was created.
-refnil :: Int
-refnil = #{const LUA_REFNIL}
+foreign import capi unsafe "lauxlib.h value LUA_REFNIL"
+  refnil :: Int
 
 -- | Value signaling that no reference was found.
-noref :: Int
-noref = #{const LUA_NOREF}
+foreign import capi unsafe "lauxlib.h value LUA_NOREF"
+  noref :: Int

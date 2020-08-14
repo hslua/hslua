@@ -27,6 +27,10 @@ module Foreign.Lua.Raw.Auxiliary
     -- * Registry fields
   , loadedTableRegistryField
   , preloadTableRegistryField
+    -- * References
+  , Reference (..)
+  , fromReference
+  , toReference
   ) where
 
 import Foreign.C (CChar, CInt (CInt), CSize (CSize), CString)
@@ -39,11 +43,11 @@ import System.IO.Unsafe (unsafePerformIO)
 import qualified Foreign.C as C
 #endif
 
-##ifdef ALLOW_UNSAFE_GC
-##define SAFTY unsafe
-##else
-##define SAFTY safe
-##endif
+#ifdef ALLOW_UNSAFE_GC
+#define SAFTY unsafe
+#else
+#define SAFTY safe
+#endif
 
 -- * The Auxiliary Library
 
@@ -103,3 +107,29 @@ foreign import ccall SAFTY "lauxlib.h luaL_unref"
 -- <https://www.lua.org/manual/5.3/manual.html#luaL_testudata luaL_testudata>
 foreign import capi SAFTY "lauxlib.h luaL_testudata"
   luaL_testudata :: Lua.State -> StackIndex -> CString -> IO (Ptr ())
+
+--
+-- References
+--
+
+-- | Reference to a stored value.
+data Reference =
+    Reference CInt -- ^ Reference to a stored value
+  | RefNil         -- ^ Reference to a nil value
+  deriving (Eq, Show)
+
+foreign import capi SAFTY "lauxlib.h value LUA_REFNIL"
+  refnil :: CInt
+
+-- | Convert a reference to its C representation.
+fromReference :: Reference -> CInt
+fromReference = \case
+  Reference x -> x
+  RefNil      -> refnil
+
+-- | Create a reference from its C representation.
+toReference :: CInt -> Reference
+toReference x =
+  if x == refnil
+  then RefNil
+  else Reference x

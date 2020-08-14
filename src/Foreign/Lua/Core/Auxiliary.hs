@@ -39,7 +39,7 @@ import Foreign.C (withCString)
 import Foreign.Lua.Core.Types (Lua, liftLua)
 import Foreign.Lua.Raw.Auxiliary
 import Foreign.Lua.Raw.Constants (multret)
-import Foreign.Lua.Raw.Types (Reference, StackIndex, Status)
+import Foreign.Lua.Raw.Types (StackIndex, Status)
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 

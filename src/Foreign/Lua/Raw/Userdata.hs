@@ -28,11 +28,11 @@ import Foreign.Ptr (castPtr, nullPtr)
 import Foreign.StablePtr (newStablePtr, deRefStablePtr)
 import Foreign.Storable (peek, poke, sizeOf)
 
-##ifdef ALLOW_UNSAFE_GC
-##define SAFTY unsafe
-##else
-##define SAFTY safe
-##endif
+#ifdef ALLOW_UNSAFE_GC
+#define SAFTY unsafe
+#else
+#define SAFTY safe
+#endif
 
 -- | Creates and registers a new metatable for a userdata-wrapped
 -- Haskell value; checks whether a metatable of that name has been

@@ -69,6 +69,11 @@ import Control.Monad.Catch (MonadCatch, MonadMask, MonadThrow)
 import Control.Monad.Reader (ReaderT (..), MonadReader, MonadIO, asks, liftIO)
 import Foreign.C (CInt)
 import Foreign.Lua.Raw.Types
+import Foreign.Lua.Raw.Auxiliary
+  ( Reference (..)
+  , fromReference
+  , toReference
+  )
 
 -- | Define the ways in which exceptions and errors are handled.
 data ErrorConversion = ErrorConversion
