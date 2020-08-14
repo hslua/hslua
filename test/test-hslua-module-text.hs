@@ -1,5 +1,5 @@
 {-
-Copyright © 2017–2019 Albert Krewinkel
+Copyright © 2017–2020 Albert Krewinkel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@ THE SOFTWARE.
 -}
 {-# LANGUAGE OverloadedStrings #-}
 
-import Control.Monad (void, when)
+import Control.Monad (void)
 import Foreign.Lua (Lua)
 import Foreign.Lua.Module.Text (preloadTextModule, pushModuleText)
 import Test.Tasty (TestTree, defaultMain, testGroup)
