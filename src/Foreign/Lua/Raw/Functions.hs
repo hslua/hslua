@@ -37,7 +37,7 @@ import Foreign.Ptr
 -- lua_newstate is currently not supported.
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_close lua_close>
-foreign import ccall "lua.h lua_close"
+foreign import ccall safe "lua.h lua_close"
   lua_close :: Lua.State -> IO ()
 
 -- lua_newthread is currently not supported.
@@ -227,7 +227,7 @@ foreign import ccall SAFTY "lua.h lua_pushthread"
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_gettable \
 -- @lua_gettable@> which catches any @longjmp@s.
-foreign import ccall "hslua.h hslua_gettable"
+foreign import ccall safe "hslua.h hslua_gettable"
   hslua_gettable :: Lua.State -> StackIndex -> Ptr StatusCode -> IO ()
 
 -- | See <https://www.lua.org/manual/5.3/manual.html#lua_rawget lua_rawget>
@@ -252,7 +252,7 @@ foreign import ccall SAFTY "lua.h lua_getmetatable"
 
 -- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_getglobal \
 -- @lua_getglobal@> which catches any @longjmp@s.
-foreign import ccall "hslua.h hslua_getglobal"
+foreign import ccall safe "hslua.h hslua_getglobal"
   hslua_getglobal :: Lua.State -> CString -> CSize -> Ptr StatusCode -> IO ()
 
 

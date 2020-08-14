@@ -59,7 +59,7 @@ loadedTableRegistryField = "_LOADED"
 loadedTableRegistryField = unsafePerformIO (C.peekCString c_loaded_table)
 {-# NOINLINE loadedTableRegistryField #-}
 
-foreign import capi "lauxlib.h value LUA_LOADED_TABLE"
+foreign import capi unsafe "lauxlib.h value LUA_LOADED_TABLE"
   c_loaded_table :: CString
 #endif
 
@@ -71,7 +71,7 @@ preloadTableRegistryField = "_PRELOAD"
 preloadTableRegistryField = unsafePerformIO (C.peekCString c_preload_table)
 {-# NOINLINE preloadTableRegistryField #-}
 
-foreign import capi "lauxlib.h value LUA_PRELOAD_TABLE"
+foreign import capi unsafe "lauxlib.h value LUA_PRELOAD_TABLE"
   c_preload_table :: CString
 #endif
 

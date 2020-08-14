@@ -101,7 +101,7 @@ newCFunction f = do
   liftIO . mkWrapper . flip (Lua.runWithConverter e2e) . toHaskellFunction $ f
 
 -- | Turn a @'PreCFunction'@ into an actual @'CFunction'@.
-foreign import ccall "wrapper"
+foreign import ccall unsafe "wrapper"
   mkWrapper :: PreCFunction -> IO CFunction
 
 -- | Free function pointer created with @newcfunction@.
