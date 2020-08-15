@@ -118,7 +118,7 @@ data Field = Field
 -- | Registers a 'Module'; leaves a copy of the module table on
 -- the stack.
 registerModule :: Module -> Lua ()
-registerModule mdl = do
+registerModule mdl =
   requirehs (T.unpack $ moduleName mdl) (pushModule mdl)
 
 -- | Preload self-documenting module.

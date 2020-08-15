@@ -275,7 +275,7 @@ tests = testGroup "Peek"
     [ "optional with nil" =:
       Right Nothing `shouldBeResultOf` do
         Lua.pushnil
-        optional (peekString) Lua.top
+        optional peekString Lua.top
     , "optional with number" =:
       Right (Just 23) `shouldBeResultOf` do
         Lua.pushinteger 23
