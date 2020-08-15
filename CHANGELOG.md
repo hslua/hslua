@@ -1,5 +1,11 @@
 # Revision history for hslua-module-system
 
+## 0.2.2 -- 2020-08-15
+
+- Relaxed upper bound for hslua, allow `hslua-1.2.*`.
+- Improved documentation of internal types.
+- Use tasty-lua for unit tests.
+
 ## 0.2.1 -- 2019-05-04
 
 - Use module helpers made available with HsLua 1.0.3. This avoids
