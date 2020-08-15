@@ -1,6 +1,6 @@
 {-|
 Module      : Foreign.Lua.Module.SystemUtils
-Copyright   : © 2019 Albert Krewinkel
+Copyright   : © 2019-2020 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
 Stability   : alpha
