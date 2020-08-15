@@ -91,7 +91,7 @@ tests = testGroup "Call"
         , parameterIsOptional = False
         }
         @=?
-        parameterDoc (parameter peekText "test" "test param" "string")
+        parameterDoc (parameter peekText "string" "test" "test param")
       )
     , "optionalParameter doc" =:
       ( ParameterDoc
@@ -101,7 +101,7 @@ tests = testGroup "Call"
         , parameterIsOptional = True
         }
         @=?
-        parameterDoc (optionalParameter peekText "test" "test param" "string")
+        parameterDoc (optionalParameter peekText "string" "test" "test param")
       )
     , "functionResult doc" =:
       ( FunctionResultDoc

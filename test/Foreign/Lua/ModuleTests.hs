@@ -143,10 +143,9 @@ factorial = toHsFnPrecursor (\n -> product [1..n])
 
 factorialParam :: Parameter Integer
 factorialParam =
-  parameter (peekIntegral @Integer)
+  parameter (peekIntegral @Integer) "integer"
     "n"
     "number for which the factorial is computed"
-    "integer"
 
 factorialResult :: FunctionResult Integer
 factorialResult = head $

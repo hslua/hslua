@@ -252,11 +252,11 @@ pushHaskellFunction fn = do
 
 -- | Creates a parameter.
 parameter :: Peeker a     -- ^ method to retrieve value from Lua
+          -> Text         -- ^ expected Lua type
           -> Text         -- ^ parameter name
           -> Text         -- ^ parameter description
-          -> Text         -- ^ expected Lua type
           -> Parameter a
-parameter peeker name desc type_ = Parameter
+parameter peeker type_ name desc = Parameter
   { parameterPeeker = peeker
   , parameterDoc = ParameterDoc
     { parameterName = name
@@ -268,11 +268,11 @@ parameter peeker name desc type_ = Parameter
 
 -- | Creates an optional parameter.
 optionalParameter :: Peeker a     -- ^ method to retrieve the value from Lua
+                  -> Text         -- ^ expected Lua type
                   -> Text         -- ^ parameter name
                   -> Text         -- ^ parameter description
-                  -> Text         -- ^ expected Lua type
                   -> Parameter (Maybe a)
-optionalParameter peeker name desc type_ = Parameter
+optionalParameter peeker type_ name desc = Parameter
   { parameterPeeker = optional peeker
   , parameterDoc = ParameterDoc
     { parameterName = name
