@@ -1,5 +1,13 @@
 # Revision history for hslua-module-text
 
+## 0.3.0 -- 2020-08-15
+
+- Use self-documenting module. This allows to include
+  documentation with the module definition, and to auto-generate
+  documentation from that. Requires hslua-1.2.0 or newer.
+
+- Run CI tests with all GHC 8 versions, test stack builds.
+
 ## 0.2.1 -- 2019-05-04
 
 - Require at least HsLua v1.0.3: that version has better support
