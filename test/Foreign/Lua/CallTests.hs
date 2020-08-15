@@ -81,6 +81,29 @@ tests = testGroup "Call"
        @=?
        maybe "" render (functionDoc (factLuaAtIndex 0)))
     ]
+
+  , testGroup "helpers"
+    [ "parameter doc" =:
+      ( ParameterDoc
+        { parameterName = "test"
+        , parameterDescription = "test param"
+        , parameterType = "string"
+        , parameterIsOptional = False
+        }
+        @=?
+        parameterDoc (parameter peekText "test" "test param" "string")
+      )
+    , "optionalParameter doc" =:
+      ( ParameterDoc
+        { parameterName = "test"
+        , parameterDescription = "test param"
+        , parameterType = "string"
+        , parameterIsOptional = True
+        }
+        @=?
+        parameterDoc (optionalParameter peekText "test" "test param" "string")
+      )
+    ]
   ]
 
 factLuaAtIndex :: StackIndex -> HaskellFunction

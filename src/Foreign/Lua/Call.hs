@@ -30,6 +30,9 @@ module Foreign.Lua.Call
   , render
     -- * Pushing to Lua
   , pushHaskellFunction
+    -- * Convenience functions
+  , parameter
+  , optionalParameter
   ) where
 
 import Control.Monad.Except
@@ -241,3 +244,39 @@ pushHaskellFunction fn = do
   errConv <- Lua.errorConversion
   let hsFn = flip (runWithConverter errConv) $ callFunction fn
   liftLua $ \l -> hslua_pushhsfunction l hsFn
+
+--
+-- Convenience functions
+--
+
+-- | Creates a parameter.
+parameter :: Peeker a     -- ^ method to retrieve value from Lua
+          -> Text         -- ^ parameter name
+          -> Text         -- ^ parameter description
+          -> Text         -- ^ expected Lua type
+          -> Parameter a
+parameter peeker name desc type_ = Parameter
+  { parameterPeeker = peeker
+  , parameterDoc = ParameterDoc
+    { parameterName = name
+    , parameterDescription = desc
+    , parameterType = type_
+    , parameterIsOptional = False
+    }
+  }
+
+-- | Creates an optional parameter.
+optionalParameter :: Peeker a     -- ^ method to retrieve the value from Lua
+                  -> Text         -- ^ parameter name
+                  -> Text         -- ^ parameter description
+                  -> Text         -- ^ expected Lua type
+                  -> Parameter (Maybe a)
+optionalParameter peeker name desc type_ = Parameter
+  { parameterPeeker = optional peeker
+  , parameterDoc = ParameterDoc
+    { parameterName = name
+    , parameterDescription = desc
+    , parameterType = type_
+    , parameterIsOptional = True
+    }
+  }
