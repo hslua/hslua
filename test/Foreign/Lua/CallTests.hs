@@ -136,7 +136,7 @@ factorialParam = Parameter
   , parameterPeeker = peekIntegral @Integer
   }
 
-factorialResult :: FunctionResult Integer
-factorialResult = FunctionResult
+factorialResult :: FunctionResults Integer
+factorialResult = (:[]) $ FunctionResult
   (pushIntegral @Integer)
   (FunctionResultDoc "integer" "factorial")

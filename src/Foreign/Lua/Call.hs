@@ -19,6 +19,7 @@ module Foreign.Lua.Call
   , returnResult
   , Parameter (..)
   , FunctionResult (..)
+  , FunctionResults
     -- * Operators
   , (<#>)
   , (=#>)
@@ -60,6 +61,10 @@ data FunctionResult a
   { fnResultPusher :: Pusher a
   , fnResultDoc :: FunctionResultDoc
   }
+
+-- | List of function results in the order in which they are
+-- returned in Lua.
+type FunctionResults a = [FunctionResult a]
 
 -- | Function parameter.
 data Parameter a = Parameter
@@ -148,7 +153,7 @@ applyParameter bldr param = do
 -- 'HaskellFunction', using the given 'FunctionResult's to return
 -- the result to Lua.
 returnResults :: HsFnPrecursor a
-              -> [FunctionResult a]
+              -> FunctionResults a
               -> HaskellFunction
 returnResults bldr fnResults = HaskellFunction
   { callFunction = do
@@ -197,9 +202,9 @@ infixl 8 <#>, =#>, #?
 
 -- | Inline version of @'returnResult'@.
 (=#>) :: HsFnPrecursor a
-      -> FunctionResult a
+      -> FunctionResults a
       -> HaskellFunction
-(=#>) = returnResult
+(=#>) = returnResults
 
 -- | Inline version of @'updateFunctionDescription'@.
 (#?) :: HaskellFunction -> Text -> HaskellFunction
@@ -286,7 +291,7 @@ optionalParameter peeker type_ name desc = Parameter
 functionResult :: Pusher a        -- ^ method to push the Haskell result to Lua
                -> Text            -- ^ Lua type of result
                -> Text            -- ^ result description
-               -> [FunctionResult a]
+               -> FunctionResults a
 functionResult pusher type_ desc = (:[]) $ FunctionResult
   { fnResultPusher = pusher
   , fnResultDoc = FunctionResultDoc

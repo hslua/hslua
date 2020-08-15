@@ -147,6 +147,6 @@ factorialParam =
     "n"
     "number for which the factorial is computed"
 
-factorialResult :: FunctionResult Integer
-factorialResult = head $
+factorialResult :: FunctionResults Integer
+factorialResult =
   functionResult (pushIntegral @Integer) "integer" "factorial"
