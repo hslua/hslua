@@ -2,7 +2,7 @@
 
 ### 1.2.0
 
-Release pending
+Released 2020-08-15
 
 - New module `Foreign.Lua.Call`: the module offers an alternative
   method of exposing Haskell functions to Lua. The focus is on
