@@ -17,7 +17,7 @@ return {
       tasty.assert.are_equal(text.len 'Straße', 6)
     end),
     test('string with small letter e accute', function ()
-      tasty.assert.are_equal(text.len 'Chartie', 7)
+      tasty.assert.are_equal(text.len 'Charité', 7)
     end),
     test('Unicode snowman', function ()
       tasty.assert.are_equal(text.len '☃', 1)
