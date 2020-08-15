@@ -50,7 +50,18 @@ test-suite test-hslua-module-system
   type:                exitcode-stdio-1.0
   main-is:             test-hslua-module-system.hs
   hs-source-dirs:      test
-  ghc-options:         -Wall -threaded
+  ghc-options:         -Wall
+                       -Wincomplete-record-updates
+                       -Wnoncanonical-monad-instances
+                       -Wredundant-constraints
+  if impl(ghc >= 8.2)
+    ghc-options:         -Wcpp-undef
+                         -Werror=missing-home-modules
+  if impl(ghc >= 8.4)
+    ghc-options:         -Widentities
+                         -Wincomplete-uni-patterns
+                         -Wpartial-fields
+                         -fhide-source-paths
   build-depends:       base
                      , hslua
                      , hslua-module-system
