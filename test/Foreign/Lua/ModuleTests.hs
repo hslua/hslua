@@ -142,17 +142,12 @@ factorial = toHsFnPrecursor (\n -> product [1..n])
   =#> factorialResult
 
 factorialParam :: Parameter Integer
-factorialParam = Parameter
-  { parameterDoc = ParameterDoc
-    { parameterName = "n"
-    , parameterType = "integer"
-    , parameterDescription = "number for which the factorial is computed"
-    , parameterIsOptional = False
-    }
-  , parameterPeeker = peekIntegral @Integer
-  }
+factorialParam =
+  parameter (peekIntegral @Integer)
+    "n"
+    "number for which the factorial is computed"
+    "integer"
 
 factorialResult :: FunctionResult Integer
-factorialResult = FunctionResult
-  (pushIntegral @Integer)
-  (FunctionResultDoc "integer" "factorial")
+factorialResult = head $
+  functionResult (pushIntegral @Integer) "integer" "factorial"

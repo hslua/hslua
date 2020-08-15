@@ -103,6 +103,15 @@ tests = testGroup "Call"
         @=?
         parameterDoc (optionalParameter peekText "test" "test param" "string")
       )
+    , "functionResult doc" =:
+      ( FunctionResultDoc
+        { functionResultDescription = "int result"
+        , functionResultType = "integer"
+        }
+        @=?
+        (fnResultDoc . head $
+         functionResult (pushIntegral @Int) "integer" "int result")
+      )
     ]
   ]
 

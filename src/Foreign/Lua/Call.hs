@@ -33,6 +33,7 @@ module Foreign.Lua.Call
     -- * Convenience functions
   , parameter
   , optionalParameter
+  , functionResult
   ) where
 
 import Control.Monad.Except
@@ -278,5 +279,18 @@ optionalParameter peeker name desc type_ = Parameter
     , parameterDescription = desc
     , parameterType = type_
     , parameterIsOptional = True
+    }
+  }
+
+-- | Creates a function result.
+functionResult :: Pusher a        -- ^ method to push the Haskell result to Lua
+               -> Text            -- ^ Lua type of result
+               -> Text            -- ^ result description
+               -> [FunctionResult a]
+functionResult pusher type_ desc = (:[]) $ FunctionResult
+  { fnResultPusher = pusher
+  , fnResultDoc = FunctionResultDoc
+    { functionResultType = type_
+    , functionResultDescription = desc
     }
   }
