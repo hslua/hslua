@@ -5,6 +5,7 @@
 - Relaxed upper bound for hslua, allow `hslua-1.2.*`.
 - Improved documentation of internal types.
 - Use tasty-lua for unit tests.
+- Update CI to test with all GHC versions.
 
 ## 0.2.1 -- 2019-05-04
 
