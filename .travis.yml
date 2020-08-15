@@ -1,14 +1,28 @@
-sudo: false
+sudo: true
 language: haskell
 
-# Speed builds up by caching install requirements
+git:
+  depth: 5
+
+cabal: "2.4"
+
 cache:
   directories:
-  - $HOME/.ghc
-  - $HOME/.cabal
+  - "$HOME/.cabal/store"
+  - "$HOME/.stack"
+  - "$TRAVIS_BUILD_DIR/.stack-work"
 
-ghc:
-  - '8.0'
-  - '8.2'
-  - '8.4'
-  - '8.6'
+install:
+  # HLint check
+  - curl -sSL https://raw.github.com/ndmitchell/neil/master/misc/travis.sh | sh -s -- hlint .
+
+  - |
+    curl -sSL https://get.haskellstack.org/ | sh
+    stack --version
+    stack build \
+          --test \
+          --no-run-tests \
+          --ghc-options=-Werror
+
+script:
+  - stack test
