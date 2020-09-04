@@ -13,10 +13,11 @@ Tests for calling exposed Haskell functions.
 -}
 module Foreign.Lua.CallTests (tests) where
 
+import Data.Maybe (fromMaybe)
 import Foreign.Lua.Core (StackIndex)
 import Foreign.Lua.Call
-import Foreign.Lua.Peek (peekIntegral, peekText, force)
-import Foreign.Lua.Push (pushIntegral)
+import Foreign.Lua.Peek (peekIntegral, peekRealFloat, peekText, force)
+import Foreign.Lua.Push (pushIntegral, pushRealFloat)
 import Test.HsLua.Util ((=:), shouldBeResultOf)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit ((@=?))
@@ -65,6 +66,21 @@ tests = testGroup "Call"
         Lua.setglobal "factorial"
         Lua.loadstring "return factorial(4)" *> Lua.call 0 1
         peekIntegral @Integer Lua.stackTop >>= force
+
+    , "with setting an optional param" =:
+      8
+      `shouldBeResultOf` do
+        pushHaskellFunction nroot
+        Lua.setglobal "nroot"
+        Lua.loadstring "return nroot(64)" *> Lua.call 0 1
+        peekRealFloat @Double Lua.stackTop >>= force
+    , "with setting an optional param" =:
+      2
+      `shouldBeResultOf` do
+        pushHaskellFunction nroot
+        Lua.setglobal "nroot"
+        Lua.loadstring "return nroot(64, 6)" *> Lua.call 0 1
+        peekRealFloat @Double Lua.stackTop >>= force
     ]
   , testGroup "documentation"
     [ "rendered docs" =:
@@ -140,3 +156,15 @@ factorialResult :: FunctionResults Integer
 factorialResult = (:[]) $ FunctionResult
   (pushIntegral @Integer)
   (FunctionResultDoc "integer" "factorial")
+
+-- | Calculate the nth root of a number. Defaults to square root.
+nroot :: HaskellFunction
+nroot = toHsFnPrecursor nroot'
+  <#> parameter (peekRealFloat @Double) "number" "x" ""
+  <#> optionalParameter (peekIntegral @Int) "integer" "n" ""
+  =#> functionResult pushRealFloat "number" "nth root"
+  where
+    nroot' :: Double -> Maybe Int -> Double
+    nroot' x nOpt =
+      let n = fromMaybe 2 nOpt
+      in x ** (1 / fromIntegral n)
