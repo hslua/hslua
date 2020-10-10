@@ -21,8 +21,8 @@ used everywhere from servers over games and desktop applications up to security
 software and embedded devices. This package provides Haskell bindings to Lua,
 enable coders to embed the language into their programs, making them scriptable.
 
-HsLua ships with batteries included and includes the most recent Lua version
-(i.e., Lua 5.3.5). Cabal flags make it easy to compile against a system-wide Lua
+HsLua ships with batteries included and includes Lua 5.3.6. Cabal
+flags make it easy to compile against a system-wide Lua
 installation.
 
 
