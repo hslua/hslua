@@ -1,5 +1,13 @@
 ## Changelog
 
+### 1.2.1
+
+Release pending.
+
+- Upgrade included Lua version to new bug-fix release 5.3.6. See
+  the upstream documentation https://www.lua.org/bugs.html#5.3.5
+  for the bugs which have been fixed.
+
 ### 1.2.0
 
 Released 2020-08-15
