@@ -17,33 +17,33 @@ matrix:
     # Test GHC 8.2.2
     - env: LUAVER=default
       ghc: 8.2.2
-      cabal: 2.2
+      cabal: 2.4
 
-    # Test GHC 8.4.3
+    # Test GHC 8.4.4
     - env: LUAVER=default
-      ghc: 8.4.3
-      cabal: 2.2
+      ghc: 8.4.4
+      cabal: 2.4
 
     # Test GHC 8.6
     - env: LUAVER=default
       ghc: 8.6.5
-      cabal: 2.4
+      cabal: 3.2
 
     # Test GHC 8.8
     - env: LUAVER=default
-      ghc: 8.8.3
-      cabal: 3.0
+      ghc: 8.8.4
+      cabal: 3.2
 
     # Test GHC 8.10
     - env: LUAVER=default
-      ghc: 8.10.1
-      cabal: 3.2
+      ghc: 8.10.2
+      cabal: 3.4
 
     ## Test system Lua
     # Test system Lua 5.3
     - env: LUAVER=5.3.5
-      ghc: 8.8.3
-      cabal: 3.0
+      ghc: 8.8.4
+      cabal: 3.2
 
   # mark build as successful as soon as all required successes are in.
   fast_finish: true
