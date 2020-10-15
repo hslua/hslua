@@ -6,6 +6,8 @@ cache:
   - $HOME/.ghc
   - $HOME/.cabal
 
+dist: focal
+
 matrix:
   include:
     ## Test Compilers
