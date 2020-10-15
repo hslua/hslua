@@ -62,11 +62,6 @@ install:
 script:
   - CABAL_CONFIG_ARGS=""
   - |
-    # Enable coverage testing for the main repo only as it will fail otherwise.
-    if [ -n "${COVERAGE}" ] && [ "${TRAVIS_REPO_SLUG}" = "hslua/hslua" ]; then
-        CABAL_CONFIG_ARGS="--enable-library-coverage";
-    fi
-  - |
     case "$LUAVER" in
       (lua-5*):
           # Install Lua
