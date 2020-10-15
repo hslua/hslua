@@ -12,9 +12,7 @@ Portability : non-portable (depends on GHC)
 Raw bindings to functions and constants of the auxiliary library.
 -}
 module Foreign.Lua.Raw.Auxiliary
-  ( c_loaded_table
-  , c_preload_table
-  , hsluaL_newstate
+  ( hsluaL_newstate
   , hsluaL_tolstring
   , luaL_getmetafield
   , luaL_getmetatable
