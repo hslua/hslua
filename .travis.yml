@@ -78,5 +78,3 @@ script:
   - cabal new-build
   - cabal new-test
   - cabal sdist
-  # Run HLint
-  - curl -sL https://raw.github.com/ndmitchell/hlint/master/misc/travis.sh | sh -s .
