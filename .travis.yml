@@ -12,38 +12,32 @@ matrix:
   include:
     ## Test Compilers
     # Test GHC 8.0.2
-    - env: LUAVER=default
-      ghc: 8.0.2
-      cabal: 2.2
+    - ghc: 8.0.2
+      cabal: 2.4
 
     # Test GHC 8.2.2
-    - env: LUAVER=default
-      ghc: 8.2.2
+    - ghc: 8.2.2
       cabal: 2.4
 
     # Test GHC 8.4.4
-    - env: LUAVER=default
-      ghc: 8.4.4
+    - ghc: 8.4.4
       cabal: 2.4
 
     # Test GHC 8.6
-    - env: LUAVER=default
-      ghc: 8.6.5
+    - ghc: 8.6.5
       cabal: 3.2
 
     # Test GHC 8.8
-    - env: LUAVER=default
-      ghc: 8.8.4
+    - ghc: 8.8.4
       cabal: 3.2
 
     # Test GHC 8.10
-    - env: LUAVER=default
-      ghc: 8.10.2
+    - ghc: 8.10.2
       cabal: 3.4
 
     ## Test system Lua
     # Test system Lua 5.3
-    - env: LUAVER=5.3.5
+    - env: FLAGS="+hardcode-reg-keys +pkg-config +system-lua"
       ghc: 8.8.4
       cabal: 3.2
       addons:
@@ -58,20 +52,10 @@ before_install:
   - cabal update
 
 install:
-  - cabal new-build --only-dependencies --enable-tests --disable-optimization
+  - cabal v2-build --only-dependencies --enable-tests --disable-optimization
 
 script:
-  - CABAL_CONFIG_ARGS=""
-  - |
-    case "$LUAVER" in
-      (lua-5*):
-          # Compile and link using system-wide Lua
-          printf "constraint: hslua +hardcoded-reg-keys +system-lua\n" > cabal.project.local
-          ;;
-      (*):
-          cabal new-configure --enable-tests --disable-optimization
-    esac
-  - echo $CABAL_CONFIG_ARGS
-  - cabal new-build
-  - cabal new-test
-  - cabal sdist
+  - cabal v2-configure --flags "${FLAGS}" --enable-tests --disable-optimization
+  - cabal v2-build
+  - cabal v2-test
+  - cabal v2-sdist
