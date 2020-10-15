@@ -53,14 +53,9 @@ matrix:
   fast_finish: true
 
 before_install:
-  - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$HOME/.cabal/bin:$PATH
   - cabal update
 
 install:
-  - |
-    printf "$(ghc --version)"
-    printf " [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
-  - cabal --version
   - cabal new-build --only-dependencies --enable-tests --disable-optimization
 
 script:
