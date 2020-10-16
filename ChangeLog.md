@@ -1,5 +1,9 @@
 # Revision history for hslua-module-text
 
+## 0.3.0.1 -- 2020-10-16
+
+- Relaxed upper bound for hslua, allow `hslua-1.3.*`.
+
 ## 0.3.0 -- 2020-08-15
 
 - Use self-documenting module. This allows to include
