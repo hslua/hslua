@@ -36,14 +36,9 @@ matrix:
       cabal: 3.4
 
     ## Test system Lua
-    # Test system Lua 5.3
-    - env: FLAGS="+hardcode-reg-keys +pkg-config +system-lua"
+    - env: LUA=5.3.6 FLAGS="+hardcode-reg-keys +system-lua"
       ghc: 8.8.4
       cabal: 3.2
-      addons:
-        apt:
-          packages:
-            - liblua5.3-dev
 
   # mark build as successful as soon as all required successes are in.
   fast_finish: true
@@ -53,9 +48,27 @@ before_install:
 
 install:
   - cabal v2-build --only-dependencies --enable-tests --disable-optimization
+  - |
+    if [ -n "$LUA" ]; then
+        # Install Lua
+        wget http://www.lua.org/ftp/lua-${LUA}.tar.gz
+        tar -xf lua-${LUA}.tar.gz
+        cd lua-${LUA}
+        sed -i 's/^CFLAGS= -O2 -Wall/CFLAGS= -O2 -Wall -fPIC/' src/Makefile
+        make linux
+        make install INSTALL_TOP=${HOME}/usr
+        cd ..
+        export LD_LIBRARY_PATH=${HOME}/usr/lib:$LD_LIBRARY_PATH
+    fi
 
 script:
-  - cabal v2-configure --flags "${FLAGS}" --enable-tests --disable-optimization
+  - |
+    cabal v2-configure \
+          --flags "${FLAGS}" \
+          --enable-tests \
+          --disable-optimization \
+          --extra-include-dirs=${HOME}/usr/include \
+          --extra-lib-dirs=${HOME}/usr/lib
   - cabal v2-build
   - cabal v2-test
   - cabal v2-sdist
