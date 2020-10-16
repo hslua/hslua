@@ -2,7 +2,7 @@
 
 ### 1.3.0
 
-Release pending.
+Released 2020-10-16.
 
 - Upgrade included Lua version to new bug-fix release 5.3.6. See
   the upstream documentation https://www.lua.org/bugs.html#5.3.5
