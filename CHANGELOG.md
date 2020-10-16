@@ -1,5 +1,9 @@
 # Revision history for tasty-lua
 
+## 0.2.3.1 -- 2020-10-16
+
+- Relaxed upper bound for hslua, allow `hslua-1.3.*`.
+
 ## 0.2.3 -- 2020-08-14
 
 - CI now also builds with for GHC 8.10.
