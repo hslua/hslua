@@ -26,6 +26,7 @@ module Foreign.Lua.Peek
   , peekLazyByteString
   , peekString
   , peekText
+  , peekStringy
   -- * Collections
   , peekKeyValuePairs
   , peekList
@@ -42,6 +43,7 @@ import Data.List.NonEmpty (NonEmpty (..), (<|))
 import Data.Map (Map)
 import Data.Maybe (fromMaybe)
 import Data.Set (Set)
+import Data.String (IsString (fromString))
 import Data.Text (Text)
 import Foreign.Lua.Core as Lua
 import Text.Read (readMaybe)
@@ -147,9 +149,17 @@ peekByteString = reportValueOnFailure "string" toByteString
 peekLazyByteString :: Peeker BL.ByteString
 peekLazyByteString = fmap (second BL.fromStrict) . peekByteString
 
--- | Retrieves a 'String' as an UTF-8 encoded Lua string.
+-- | Retrieves a 'String' from an UTF-8 encoded Lua string.
 peekString :: Peeker String
-peekString = fmap (second Utf8.toString) . peekByteString
+peekString = peekStringy
+
+-- | Retrieves a String-like value from an UTF-8 encoded Lua string.
+--
+-- This should not be used to peek 'ByteString' values or other values
+-- for which construction via 'fromString' can result in loss of
+-- information.
+peekStringy :: IsString a => Peeker a
+peekStringy = fmap (second $ fromString . Utf8.toString) . peekByteString
 
 -- | Retrieves a 'T.Text' value as an UTF-8 encoded string.
 peekText :: Peeker T.Text

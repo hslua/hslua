@@ -24,6 +24,7 @@ import Test.QuickCheck.Monadic (monadicIO, run, assert)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck (testProperty)
 
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as Char8
 import qualified Data.List.NonEmpty as NonEmpty
 import qualified Data.Map as Map
@@ -177,6 +178,25 @@ tests = testGroup "Peek"
         isLeft `shouldHoldForResultOf` do
           _ <- Lua.pushthread
           peekString Lua.stackTop
+      ]
+
+    , testGroup "peekStringy"
+      [ testProperty "retrieve UTF-8 encoded string as Text" $ \txt ->
+          monadicIO $ do
+            retrieved <- run $ Lua.run $ do
+              Lua.pushstring (Utf8.fromText txt)
+              peekStringy @T.Text Lua.stackTop
+            assert (retrieved == Right txt)
+
+      , "retrieve ByteString" =:
+        Right "This is an ASCII string" `shouldBeResultOf` do
+          Lua.pushstring "This is an ASCII string"
+          peekStringy @BS.ByteString Lua.stackTop
+
+      , "fails on table" =:
+        isLeft `shouldHoldForResultOf` do
+          _ <- Lua.pushglobaltable
+          peekStringy @BS.ByteString Lua.stackTop
       ]
     ]
 
