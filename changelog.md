@@ -1,5 +1,11 @@
 # hslua-aeson
 
+## v1.0.3.1
+
+Released 2020-10-16.
+
+- Allow hslua-1.3.*.
+
 ## v1.0.3
 
 Released 2020-08-15.
