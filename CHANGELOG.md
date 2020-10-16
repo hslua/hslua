@@ -13,6 +13,9 @@ Release pending.
   flag `HARDCODE_REG_KEYS` is disabled, leading to compilation
   errors when the flag is enabled.
 
+- Add new function `peekStringy` to Peek module. It allows to peek
+  a value of any `IsString` type from an UTF-8 encoded string.
+
 - Various improvements to the continuous integration setup,
   including cleanup of the config files, version bumps to the
   ghc/cabal versions used for testing, and running the linter in a
