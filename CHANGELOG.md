@@ -1,5 +1,9 @@
 # Revision history for hslua-module-system
 
+## 0.2.2.1 -- 2020-10-16
+
+- Relaxed upper bound for hslua, allow `hslua-1.3.*`.
+
 ## 0.2.2 -- 2020-08-15
 
 - Relaxed upper bound for hslua, allow `hslua-1.2.*`.
