@@ -1,12 +1,22 @@
 ## Changelog
 
-### 1.2.1
+### 1.3.0
 
 Release pending.
 
 - Upgrade included Lua version to new bug-fix release 5.3.6. See
   the upstream documentation https://www.lua.org/bugs.html#5.3.5
   for the bugs which have been fixed.
+
+- Stop exporting `c_loaded_table` and `c_prelad_table` from module
+  Foreign.Lua.Raw.Auxiliary. Both values are defined only if the
+  flag `HARDCODE_REG_KEYS` is disabled, leading to compilation
+  errors when the flag is enabled.
+
+- Various improvements to the continuous integration setup,
+  including cleanup of the config files, version bumps to the
+  ghc/cabal versions used for testing, and running the linter in a
+  dedicated GitHub Action.
 
 ### 1.2.0
 
