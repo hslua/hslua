@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 module Prelude (
     module Prelude.Compat
   , Semigroup (..)
