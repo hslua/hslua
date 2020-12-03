@@ -6,6 +6,7 @@ on:
   pull_request: {}
   push:
     paths-ignore:
+      - .github/workflows/ci.yml
       - LICENSE
       - README.md
       - CHANGELOG.md

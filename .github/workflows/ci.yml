@@ -1,0 +1,78 @@
+name: CI
+
+# Trigger the workflow on push or pull request, but only for the
+# master branch
+on:
+  pull_request:
+  push:
+
+jobs:
+  build:
+    name: ghc ${{ matrix.versions.ghc }} lua ${{ matrix.versions.lua }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        versions:
+          - ghc: '8.0.2'
+            cabal: '2.4'
+            lua: 'default'
+          - ghc: '8.2.2'
+            cabal: '2.4'
+            lua: 'default'
+          - ghc: '8.4.4'
+            cabal: '2.4'
+            lua: 'default'
+          - ghc: '8.6.5'
+            cabal: '3.2'
+            lua: 'default'
+          - ghc: '8.8.4'
+            cabal: '3.2'
+            lua: 'default'
+          - ghc: '8.10.2'
+            cabal: '3.4'
+            lua: 'default'
+          - ghc: '8.8.4'
+            cabal: '3.2'
+            lua: '5.3.6'
+            flags: '+hardcode-reg-keys +system-lua'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup Haskell
+      uses: actions/setup-haskell@v1
+      with:
+        ghc-version: ${{ matrix.versions.ghc }}
+        cabal-version: ${{ matrix.versions.cabal }}
+
+    - uses: actions/cache@v1
+      name: Cache ~/.cabal/store
+      with:
+        path: ~/.cabal/store
+        key: ${{ runner.os }}-${{ matrix.versions.ghc }}-cabal
+
+    - name: Install Lua
+      if: matrix.versions.lua != ''
+      run: |
+        wget http://www.lua.org/ftp/lua-${{ matrix.versions.lua }}.tar.gz
+        tar -xf lua-${{ matrix.versions.lua }}.tar.gz
+        cd lua-${{ matrix.versions.lua }}
+        sed -i 's/^CFLAGS= -O2 -Wall/CFLAGS= -O2 -Wall -fPIC/' src/Makefile
+        make linux
+        make install INSTALL_TOP=${HOME}/usr
+        cd ..
+
+    - name: Build
+      run: |
+        cabal v2-configure \
+          --flags "${{ matrix.versions.flags }}" \
+          --enable-tests \
+          --disable-optimization \
+          --extra-include-dirs=${HOME}/usr/include \
+          --extra-lib-dirs=${HOME}/usr/lib
+        cabal v2-build
+
+    - name: Test
+      run: |
+        cabal v2-test --enable-tests
