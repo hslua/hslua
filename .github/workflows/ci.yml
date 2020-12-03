@@ -53,7 +53,7 @@ jobs:
         key: ${{ runner.os }}-${{ matrix.versions.ghc }}-cabal
 
     - name: Install Lua
-      if: matrix.versions.lua != ''
+      if: matrix.versions.lua != 'default'
       run: |
         wget http://www.lua.org/ftp/lua-${{ matrix.versions.lua }}.tar.gz
         tar -xf lua-${{ matrix.versions.lua }}.tar.gz
