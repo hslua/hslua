@@ -169,3 +169,5 @@ prop_stackPushingPulling t = monadicIO $ do
   assert $ stackSize == newStackSize
   -- Check that we were able to peek at all pushed elements
   forM_ vals $ assert . (== t)
+  -- Cleanup
+  QCMonadic.run (close l)
