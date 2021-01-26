@@ -109,7 +109,8 @@ functions =
   , ("is_relative", is_relative)
   , ("join", join)
   , ("normalise", normalise)
-  , ("split_directories", split_directories)
+  , ("split_path", split_path)
+  , ("split_search_path", split_search_path)
   , ("take_directory", take_directory)
   , ("take_extensions", take_extensions)
   , ("take_filename", take_filename)
@@ -169,12 +170,33 @@ normalise = toHsFnPrecursor Path.normalise
   =#> filepathResult "The normalised path."
   #? "Normalise a path."
 
--- | See @System.FilePath.splitDirectories@
-split_directories :: HaskellFunction
-split_directories = toHsFnPrecursor Path.splitDirectories
+-- | See @System.FilePath.splitDirectories@.
+--
+-- Note that this does /not/ wrap @'Path.splitPath'@, as that function
+-- adds trailing slashes to each directory, which is often inconvenient.
+split_path :: HaskellFunction
+split_path = toHsFnPrecursor Path.splitDirectories
   <#> filepathParam
-  =#> filepathListResult "A list of all directory paths."
+  =#> filepathListResult "List of all path components."
   #? "Split a path by the directory separator."
+
+-- | Wraps function @'Path.splitSearchPath'@.
+split_search_path :: HaskellFunction
+split_search_path = toHsFnPrecursor Path.splitSearchPath
+  <#> Parameter
+      { parameterPeeker = peekString
+      , parameterDoc = ParameterDoc
+        { parameterName = "search_path"
+        , parameterType = "string"
+        , parameterDescription = "platform-specific search path"
+        , parameterIsOptional = False
+        }
+      }
+  =#> filepathListResult "list of directories in search path"
+  #? ("Takes a string and splits it on the `search_path_separator` "
+      <> "character. Blank items are ignored on Windows, "
+      <> "and converted to `.` on Posix. "
+      <> "On Windows path elements are stripped of quotes.")
 
 -- | See @System.FilePath.takeDirectory@
 take_directory :: HaskellFunction
