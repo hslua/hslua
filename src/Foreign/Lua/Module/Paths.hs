@@ -49,7 +49,7 @@ import qualified System.FilePath as Path
 --
 
 description :: Text
-description = "Access to system information and functionality."
+description = "Module for file path manipulations."
 
 fields :: [Field]
 fields = []
