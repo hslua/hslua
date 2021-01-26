@@ -21,7 +21,7 @@ module Foreign.Lua.Module.Paths (
   , has_extension
   , is_absolute
   , is_relative
-  , join_path
+  , join
   , normalise
   , split_directories
   , take_directory
@@ -83,7 +83,7 @@ functions =
   , ("has_extension", has_extension)
   , ("is_absolute", is_absolute)
   , ("is_relative", is_relative)
-  , ("join_path", join_path)
+  , ("join", join)
   , ("normalise", normalise)
   , ("split_directories", split_directories)
   , ("take_directory", take_directory)
@@ -124,8 +124,8 @@ is_relative = toHsFnPrecursor Path.isRelative
   #? "Checks whether a path is relative or fixed to a root."
 
 -- | See @System.FilePath.joinPath@
-join_path :: HaskellFunction
-join_path = toHsFnPrecursor Path.joinPath
+join :: HaskellFunction
+join = toHsFnPrecursor Path.joinPath
   <#> Parameter
       { parameterPeeker = peekList peekFilePath
       , parameterDoc = ParameterDoc
