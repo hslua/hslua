@@ -177,9 +177,11 @@ take_filename = toHsFnPrecursor Path.takeFileName
 -- Parameters
 --
 
+-- | Retrieves a file path from the stack.
 peekFilePath :: Peeker FilePath
 peekFilePath = peekString
 
+-- | Filepath function parameter.
 filepathParam :: Parameter FilePath
 filepathParam = Parameter
   { parameterPeeker = peekFilePath
@@ -191,6 +193,7 @@ filepathParam = Parameter
     }
   }
 
+-- | Result of a function returning a file path.
 filepathResult :: Text -- ^ Description
                -> FunctionResult FilePath
 filepathResult desc = FunctionResult
@@ -201,6 +204,7 @@ filepathResult desc = FunctionResult
     }
   }
 
+-- | List of filepaths function result.
 filepathListResult :: Text -- ^ Description
                    -> FunctionResult [FilePath]
 filepathListResult desc = FunctionResult
@@ -211,6 +215,7 @@ filepathListResult desc = FunctionResult
     }
   }
 
+-- | Boolean function result.
 booleanResult :: Text -- ^ Description
               -> FunctionResult Bool
 booleanResult desc = FunctionResult
