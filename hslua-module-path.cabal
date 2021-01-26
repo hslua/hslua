@@ -58,8 +58,13 @@ test-suite hslua-module-path-test
   import:              common-options
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
-  main-is:             Spec.hs
-  build-depends:       hslua-module-path
+  main-is:             test-hslua-module-path.hs
+  build-depends:       base
+                     , hslua-module-path
+                     , tasty
+                     , tasty-hunit
+                     , tasty-lua  >= 0.2    && < 0.3
+                     , text
   ghc-options:         -threaded
                        -rtsopts
                        -with-rtsopts=-N
