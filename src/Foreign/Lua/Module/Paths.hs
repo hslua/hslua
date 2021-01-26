@@ -51,9 +51,6 @@ import qualified System.FilePath as Path
 description :: Text
 description = "Module for file path manipulations."
 
-fields :: [Field]
-fields = []
-
 documentedModule :: Module
 documentedModule = Module
   { moduleName = "paths"
@@ -72,6 +69,33 @@ preloadModule :: String -> Lua ()
 preloadModule name = Module.preloadModule $
   documentedModule { moduleName = T.pack name }
 
+--
+-- Fields
+--
+
+-- | Exported fields.
+fields :: [Field]
+fields =
+  [ separator
+  , search_path_separator
+  ]
+
+-- | Wrapper for @'Path.pathSeparator'@.
+separator :: Field
+separator = Field
+  { fieldName = "separator"
+  , fieldDescription = "The character that separates directories."
+  , fieldPushValue = pushString [Path.pathSeparator]
+  }
+
+-- | Wrapper for @'Path.searchPathSeparator'@.
+search_path_separator :: Field
+search_path_separator = Field
+  { fieldName = "search_path_separator"
+  , fieldDescription = "The character that is used to separate the entries in "
+                    <> "the `PATH` environment variable."
+  , fieldPushValue = pushString [Path.searchPathSeparator]
+  }
 
 --
 -- Functions
