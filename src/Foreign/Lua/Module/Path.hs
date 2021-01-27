@@ -31,15 +31,16 @@ module Foreign.Lua.Module.Path (
   )
 where
 
+import Control.Monad (forM_)
 #if !MIN_VERSION_base(4,11,0)
 import Data.Semigroup (Semigroup(..))  -- includes (<>)
 #endif
 import Data.Text (Text)
-import Foreign.Lua (Lua, NumResults (..))
+import Foreign.Lua (Lua, NumResults (..), nth, rawset)
 import Foreign.Lua.Call
 import Foreign.Lua.Module hiding (preloadModule, pushModule)
 import Foreign.Lua.Peek (Peeker, peekList, peekString)
-import Foreign.Lua.Push (pushBool, pushList, pushString)
+import Foreign.Lua.Push (pushBool, pushList, pushString, pushText)
 
 import qualified Data.Text as T
 import qualified Foreign.Lua.Module as Module
@@ -133,31 +134,31 @@ functions =
 drop_extensions :: HaskellFunction
 drop_extensions = toHsFnPrecursor Path.dropExtension
   <#> filepathParam
-  =#> filepathResult "The modified filepath without extension"
+  =#> [filepathResult "The modified filepath without extension"]
   #? "Remove last extension, and the `.` preceding it."
 
 -- | See @Path.hasExtension@
 has_extension :: HaskellFunction
 has_extension = toHsFnPrecursor Path.hasExtension
   <#> filepathParam
-  =#> booleanResult ("`true` iff `filepath` has an extension, " <>
-                     "`false` otherwise.")
+  =#> [booleanResult ("`true` iff `filepath` has an extension, " <>
+                      "`false` otherwise.")]
   #? "Does the given filename has an extension?"
 
 -- | See @Path.isAbsolute@
 is_absolute :: HaskellFunction
 is_absolute = toHsFnPrecursor Path.isAbsolute
   <#> filepathParam
-  =#> booleanResult ("`true` iff `filepath` is an absolute path, " <>
-                     "`false` otherwise.")
+  =#> [booleanResult ("`true` iff `filepath` is an absolute path, " <>
+                      "`false` otherwise.")]
   #? "Checks whether a path is absolute, i.e. not fixed to a root."
 
 -- | See @Path.isRelative@
 is_relative :: HaskellFunction
 is_relative = toHsFnPrecursor Path.isRelative
   <#> filepathParam
-  =#> booleanResult ("`true` iff `filepath` is a relative path, " <>
-                     "`false` otherwise.")
+  =#> [booleanResult ("`true` iff `filepath` is a relative path, " <>
+                      "`false` otherwise.")]
   #? "Checks whether a path is relative or fixed to a root."
 
 -- | See @Path.joinPath@
@@ -172,14 +173,14 @@ join = toHsFnPrecursor Path.joinPath
         , parameterIsOptional = False
         }
       }
-  =#> filepathResult "The joined path."
+  =#> [filepathResult "The joined path."]
   #? "Join path elements back together by the directory separator."
 
 -- | See @Path.normalise@
 normalise :: HaskellFunction
 normalise = toHsFnPrecursor Path.normalise
   <#> filepathParam
-  =#> filepathResult "The normalised path."
+  =#> [filepathResult "The normalised path."]
   #? "Normalise a path."
 
 -- | See @Path.splitDirectories@.
@@ -189,7 +190,7 @@ normalise = toHsFnPrecursor Path.normalise
 split_path :: HaskellFunction
 split_path = toHsFnPrecursor Path.splitDirectories
   <#> filepathParam
-  =#> filepathListResult "List of all path components."
+  =#> [filepathListResult "List of all path components."]
   #? "Split a path by the directory separator."
 
 -- | Wraps function @'Path.splitSearchPath'@.
@@ -204,7 +205,7 @@ split_search_path = toHsFnPrecursor Path.splitSearchPath
         , parameterIsOptional = False
         }
       }
-  =#> filepathListResult "list of directories in search path"
+  =#> [filepathListResult "list of directories in search path"]
   #? ("Takes a string and splits it on the `search_path_separator` "
       <> "character. Blank items are ignored on Windows, "
       <> "and converted to `.` on Posix. "
@@ -214,21 +215,21 @@ split_search_path = toHsFnPrecursor Path.splitSearchPath
 take_directory :: HaskellFunction
 take_directory = toHsFnPrecursor Path.normalise
   <#> filepathParam
-  =#> filepathResult "The filepath up to the last directory separator."
+  =#> [filepathResult "The filepath up to the last directory separator."]
   #? "Get the directory name; move up one level."
 
 -- | See @Path.takeExtensions@
 take_extensions :: HaskellFunction
 take_extensions = toHsFnPrecursor Path.takeExtensions
   <#> filepathParam
-  =#> filepathResult "String of all extensions."
+  =#> [filepathResult "String of all extensions."]
   #? "Get all extensions."
 
 -- | See @Path.takeFilename@
 take_filename :: HaskellFunction
 take_filename = toHsFnPrecursor Path.takeFileName
   <#> filepathParam
-  =#> filepathResult "File name part of the input path."
+  =#> [filepathResult "File name part of the input path."]
   #? "Get the file name."
 
 --
@@ -255,8 +256,8 @@ filepathParam = Parameter
 filepathResult :: Text -- ^ Description
                -> FunctionResult FilePath
 filepathResult desc = FunctionResult
-  { fnResultPusher = \fp -> 1 <$ pushString fp
-  , fnResultDoc = Just $ FunctionResultDoc
+  { fnResultPusher = \fp -> pushString fp
+  , fnResultDoc = FunctionResultDoc
     { functionResultType = "string"
     , functionResultDescription = desc
     }
@@ -266,8 +267,8 @@ filepathResult desc = FunctionResult
 filepathListResult :: Text -- ^ Description
                    -> FunctionResult [FilePath]
 filepathListResult desc = FunctionResult
-  { fnResultPusher = \fp -> 1 <$ pushList pushString fp
-  , fnResultDoc = Just $ FunctionResultDoc
+  { fnResultPusher = \fp -> pushList pushString fp
+  , fnResultDoc = FunctionResultDoc
     { functionResultType = "list of strings"
     , functionResultDescription = desc
     }
@@ -277,8 +278,8 @@ filepathListResult desc = FunctionResult
 booleanResult :: Text -- ^ Description
               -> FunctionResult Bool
 booleanResult desc = FunctionResult
-  { fnResultPusher = \b -> 1 <$ pushBool b
-  , fnResultDoc = Just $ FunctionResultDoc
+  { fnResultPusher = \b -> pushBool b
+  , fnResultDoc = FunctionResultDoc
     { functionResultType = "boolean"
     , functionResultDescription = desc
     }

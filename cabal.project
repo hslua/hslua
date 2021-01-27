@@ -1,6 +1,1 @@
 packages: hslua-module-path.cabal
-
-source-repository-package
-  type: git
-  location: https://github.com/hslua/hslua
-  tag: 15de70441715c79d106da164dd862e33182e2161
