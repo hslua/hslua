@@ -22,7 +22,7 @@ return {
   group 'splitting/joining' {
     test('split_path is inverse of join', function ()
       local paths = {'one', 'two', 'test'}
-      assert.are_same(path.split_path(path.join(paths)), paths)
+      assert.are_same(path.split(path.join(paths)), paths)
     end),
   },
   group 'extensions' {

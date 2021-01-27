@@ -23,7 +23,7 @@ module Foreign.Lua.Module.Path (
   , is_relative
   , join
   , normalise
-  , split_path
+  , split
   , split_search_path
   , take_directory
   , take_extensions
@@ -122,7 +122,7 @@ functions =
   , ("is_relative", is_relative)
   , ("join", join)
   , ("normalise", normalise)
-  , ("split_path", split_path)
+  , ("split", split)
   , ("split_search_path", split_search_path)
   , ("take_directory", take_directory)
   , ("take_extensions", take_extensions)
@@ -187,8 +187,8 @@ normalise = toHsFnPrecursor Path.normalise
 --
 -- Note that this does /not/ wrap @'Path.splitPath'@, as that function
 -- adds trailing slashes to each directory, which is often inconvenient.
-split_path :: HaskellFunction
-split_path = toHsFnPrecursor Path.splitDirectories
+split :: HaskellFunction
+split = toHsFnPrecursor Path.splitDirectories
   <#> filepathParam
   =#> [filepathListResult "List of all path components."]
   #? "Split a path by the directory separator."
