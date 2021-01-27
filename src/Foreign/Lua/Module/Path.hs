@@ -26,6 +26,7 @@ module Foreign.Lua.Module.Path (
   , split
   , split_extension
   , split_search_path
+  , treat_strings_as_paths
   )
 where
 
@@ -34,7 +35,9 @@ import Control.Monad (forM_)
 import Data.Semigroup (Semigroup(..))  -- includes (<>)
 #endif
 import Data.Text (Text)
-import Foreign.Lua (Lua, NumResults (..), nth, rawset)
+import Foreign.Lua
+  ( Lua, NumResults (..), getglobal, getmetatable, nth, pop, rawset, remove
+  , setfield, top )
 import Foreign.Lua.Call
 import Foreign.Lua.Module hiding (preloadModule, pushModule)
 import Foreign.Lua.Peek (Peeker, peekList, peekString)
@@ -123,6 +126,7 @@ functions =
   , ("split", split)
   , ("split_extension", split_extension)
   , ("split_search_path", split_search_path)
+  , ("treat_strings_as_paths", treat_strings_as_paths)
   ]
 
 -- | See @Path.takeDirectory@
@@ -235,6 +239,63 @@ split_search_path = toHsFnPrecursor Path.splitSearchPath
       <> "character. Blank items are ignored on Windows, "
       <> "and converted to `.` on Posix. "
       <> "On Windows path elements are stripped of quotes.")
+
+-- | Join two paths with a directory separator. Wraps @'Path.combine'@.
+combine :: HaskellFunction
+combine = toHsFnPrecursor Path.combine
+  <#> filepathParam
+  <#> filepathParam
+  =#> [filepathResult "combined paths"]
+  #? "Combine two paths with a path separator."
+
+-- | Adds an extension to a file path. Wraps @'Path.addExtension'@.
+add_extension :: HaskellFunction
+add_extension = toHsFnPrecursor Path.addExtension
+  <#> filepathParam
+  <#> Parameter
+      { parameterPeeker = peekString
+      , parameterDoc = ParameterDoc
+        { parameterName = "extension"
+        , parameterType = "string"
+        , parameterDescription = "an extension, with or without separator dot"
+        , parameterIsOptional = False
+        }
+      }
+  =#> [filepathResult "filepath with extension"]
+  #? "Adds an extension, even if there is already one."
+
+treat_strings_as_paths :: HaskellFunction
+treat_strings_as_paths = HaskellFunction
+  { callFunction = do
+      -- for some reason we can't just dump all functions into the
+      -- string metatable, but have to use the string module for
+      -- non-metamethods.
+      pushString ""
+      _ <- getmetatable top
+      remove (nth 2)  -- dummy string
+      pushHaskellFunction add_extension *> setfield (nth 2) "__add"
+      pushHaskellFunction combine       *> setfield (nth 2) "__div"
+      pop 1  -- string metatable
+
+      getglobal "string"
+      let pathFunctions =
+            [ ("directory", directory)
+            , ("filename", filename)
+            , ("is_absolute", is_absolute)
+            , ("is_relative", is_relative)
+            , ("normalize", normalize)
+            , ("split", split)
+            , ("split_extension", split_extension)
+            , ("split_search_path", split_search_path)
+            ]
+      forM_ pathFunctions $ \(key, fn) -> do
+        pushHaskellFunction fn
+        setfield (nth 2) key
+
+      return (0 :: NumResults)
+  , functionDoc = Nothing
+  }
+  #? "Augment the string module such that strings can be used as path objects."
 
 --
 -- Parameters

@@ -64,6 +64,20 @@ return {
         assert.is_truthy(path.is_relative(fp) == not path.is_absolute(fp))
       end
     end)
+  },
+
+  group 'strings as path objects' {
+    test('setup', path.treat_strings_as_paths),
+    test('split extension', function ()
+      local img = 'mandrill.jpg'
+      assert.are_equal(img:split_extension(), 'mandrill')
+    end),
+    test('conbine paths with `/`', function ()
+      assert.are_equal('a' / 'b', path.join{'a', 'b'})
+    end),
+    test('add extension with `+`', function ()
+      assert.are_equal('a' + 'b', path.join{'a.b'})
+    end),
   }
 
   -- group 'make_relative_path' {
