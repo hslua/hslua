@@ -25,18 +25,46 @@ return {
       assert.are_same(path.split(path.join(paths)), paths)
     end),
   },
-  group 'extensions' {
-    test('drop_extensions', function ()
-      assert.are_equal(path.drop_extensions 'image.jpg', 'image')
+
+  group 'split_extensions' {
+    test('filename', function ()
+      assert.are_equal(path.split_extension 'image.jpg', 'image')
     end),
-    test('has_extension', function ()
-      assert.is_truthy(path.has_extension 'thesis.tex')
-      assert.is_falsy(path.has_extension 'fstab')
+    test('extension', function ()
+      assert.is_truthy(select(2, path.split_extension 'thesis.tex'), '.tex')
+      assert.are_equal(select(2, path.split_extension 'fstab'), '')
     end),
-    test('take_extensions', function ()
-      assert.are_equal(path.take_extensions 'image.jpg', '.jpg')
+    test('concat gives inverts split', function ()
+      local filenames = {'/etc/passwd', '34a90-1.bat', 'backup.tar.gz'}
+      for _, filename in ipairs(filenames) do
+        local base, ext = path.split_extension(filename)
+        assert.are_equal(base .. ext, filename)
+      end
     end),
   },
+
+  group 'normalize' {
+    test('removes leading `./`', function ()
+      assert.are_equal(path.normalize('./a.md'), 'a.md')
+    end),
+    test('dedupe path separators', function ()
+      assert.are_equal(path.normalize('a//b'), path.join{'a', 'b'})
+    end)
+  },
+
+  group 'relative or absolute' {
+    test('xor', function ()
+      local test_paths = {
+        path.join{ 'hello', 'rudi'},
+        path.join{ '.', 'autoexec.bat'},
+        path.join{ 'C:', 'config.sys'},
+        path.join{ '/', 'etc', 'passwd'}
+      }
+      for _, fp in ipairs(test_paths) do
+        assert.is_truthy(path.is_relative(fp) == not path.is_absolute(fp))
+      end
+    end)
+  }
 
   -- group 'make_relative_path' {
   --   test('just the filename if file is within path', function()

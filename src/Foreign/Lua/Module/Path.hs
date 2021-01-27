@@ -17,17 +17,15 @@ module Foreign.Lua.Module.Path (
   , documentedModule
 
   -- * Path manipulations
-  , drop_extensions
-  , has_extension
+  , directory
+  , filename
   , is_absolute
   , is_relative
   , join
-  , normalise
+  , normalize
   , split
+  , split_extension
   , split_search_path
-  , take_directory
-  , take_extensions
-  , take_filename
   )
 where
 
@@ -116,34 +114,30 @@ search_path_separator = Field
 
 functions :: [(Text, HaskellFunction)]
 functions =
-  [ ("drop_extensions", drop_extensions)
-  , ("has_extension", has_extension)
+  [ ("directory", directory)
+  , ("filename", filename)
   , ("is_absolute", is_absolute)
   , ("is_relative", is_relative)
   , ("join", join)
-  , ("normalise", normalise)
+  , ("normalize", normalize)
   , ("split", split)
+  , ("split_extension", split_extension)
   , ("split_search_path", split_search_path)
-  , ("take_directory", take_directory)
-  , ("take_extensions", take_extensions)
-  , ("take_filename", take_filename)
   ]
 
-
--- | See @Path.dropExtension@
-drop_extensions :: HaskellFunction
-drop_extensions = toHsFnPrecursor Path.dropExtension
+-- | See @Path.takeDirectory@
+directory :: HaskellFunction
+directory = toHsFnPrecursor Path.normalise
   <#> filepathParam
-  =#> [filepathResult "The modified filepath without extension"]
-  #? "Remove last extension, and the `.` preceding it."
+  =#> [filepathResult "The filepath up to the last directory separator."]
+  #? "Get the directory name; move up one level."
 
--- | See @Path.hasExtension@
-has_extension :: HaskellFunction
-has_extension = toHsFnPrecursor Path.hasExtension
+-- | See @Path.takeFilename@
+filename :: HaskellFunction
+filename = toHsFnPrecursor Path.takeFileName
   <#> filepathParam
-  =#> [booleanResult ("`true` iff `filepath` has an extension, " <>
-                      "`false` otherwise.")]
-  #? "Does the given filename has an extension?"
+  =#> [filepathResult "File name part of the input path."]
+  #? "Get the file name."
 
 -- | See @Path.isAbsolute@
 is_absolute :: HaskellFunction
@@ -177,11 +171,18 @@ join = toHsFnPrecursor Path.joinPath
   #? "Join path elements back together by the directory separator."
 
 -- | See @Path.normalise@
-normalise :: HaskellFunction
-normalise = toHsFnPrecursor Path.normalise
+normalize :: HaskellFunction
+normalize = toHsFnPrecursor Path.normalise
   <#> filepathParam
-  =#> [filepathResult "The normalised path."]
-  #? "Normalise a path."
+  =#> [filepathResult "The normalized path."]
+  #? T.unlines
+     [ "Normalizes a path."
+     , ""
+     , "- `//` outside of the drive can be made blank"
+     , "- `/` becomes the `path.separator`"
+     , "- `./` -> \'\'"
+     , "- an empty path becomes `.`"
+     ]
 
 -- | See @Path.splitDirectories@.
 --
@@ -191,7 +192,31 @@ split :: HaskellFunction
 split = toHsFnPrecursor Path.splitDirectories
   <#> filepathParam
   =#> [filepathListResult "List of all path components."]
-  #? "Split a path by the directory separator."
+  #? "Splits a path by the directory separator."
+
+-- | See @Path.splitExtension@
+split_extension :: HaskellFunction
+split_extension = toHsFnPrecursor Path.splitExtension
+  <#> filepathParam
+  =#> [ FunctionResult
+        { fnResultPusher = pushString . fst
+        , fnResultDoc = FunctionResultDoc
+          { functionResultType = "string"
+          , functionResultDescription = "filepath without extension"
+          }
+        },
+        FunctionResult
+        { fnResultPusher = pushString . snd
+        , fnResultDoc = FunctionResultDoc
+          { functionResultType = "string"
+          , functionResultDescription = "extension or empty string"
+          }
+        }
+      ]
+  #? ("Splits the last extension from a file path and returns the parts. "
+      <> "The extension, if present, includes the leading separator; "
+      <> "if the path has no extension, then the empty string is returned "
+      <> "as the extension.")
 
 -- | Wraps function @'Path.splitSearchPath'@.
 split_search_path :: HaskellFunction
@@ -210,27 +235,6 @@ split_search_path = toHsFnPrecursor Path.splitSearchPath
       <> "character. Blank items are ignored on Windows, "
       <> "and converted to `.` on Posix. "
       <> "On Windows path elements are stripped of quotes.")
-
--- | See @Path.takeDirectory@
-take_directory :: HaskellFunction
-take_directory = toHsFnPrecursor Path.normalise
-  <#> filepathParam
-  =#> [filepathResult "The filepath up to the last directory separator."]
-  #? "Get the directory name; move up one level."
-
--- | See @Path.takeExtensions@
-take_extensions :: HaskellFunction
-take_extensions = toHsFnPrecursor Path.takeExtensions
-  <#> filepathParam
-  =#> [filepathResult "String of all extensions."]
-  #? "Get all extensions."
-
--- | See @Path.takeFilename@
-take_filename :: HaskellFunction
-take_filename = toHsFnPrecursor Path.takeFileName
-  <#> filepathParam
-  =#> [filepathResult "File name part of the input path."]
-  #? "Get the file name."
 
 --
 -- Parameters
