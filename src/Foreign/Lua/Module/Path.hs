@@ -1,7 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-|
-Module      : Foreign.Lua.Module.Paths
+Module      : Foreign.Lua.Module.Path
 Copyright   : © 2020 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
@@ -10,7 +10,7 @@ Portability : Requires GHC 8 or later.
 
 Lua module to work with file paths.
 -}
-module Foreign.Lua.Module.Paths (
+module Foreign.Lua.Module.Path (
   -- * Module
     pushModule
   , preloadModule
@@ -23,7 +23,8 @@ module Foreign.Lua.Module.Paths (
   , is_relative
   , join
   , normalise
-  , split_directories
+  , split_path
+  , split_search_path
   , take_directory
   , take_extensions
   , take_filename
@@ -53,17 +54,17 @@ description = "Module for file path manipulations."
 
 documentedModule :: Module
 documentedModule = Module
-  { moduleName = "paths"
+  { moduleName = "path"
   , moduleFields = fields
   , moduleDescription = description
   , moduleFunctions = functions
   }
 
--- | Pushes the @system@ module to the Lua stack.
+-- | Pushes the @path@ module to the Lua stack.
 pushModule :: Lua NumResults
 pushModule = 1 <$ Module.pushModule documentedModule
 
--- | Add the @system@ module under the given name to the table of
+-- | Add the @path@ module under the given name to the table of
 -- preloaded packages.
 preloadModule :: String -> Lua ()
 preloadModule name = Module.preloadModule $
@@ -117,14 +118,14 @@ functions =
   ]
 
 
--- | See @System.FilePath.dropExtension@
+-- | See @Path.dropExtension@
 drop_extensions :: HaskellFunction
 drop_extensions = toHsFnPrecursor Path.dropExtension
   <#> filepathParam
   =#> filepathResult "The modified filepath without extension"
   #? "Remove last extension, and the `.` preceding it."
 
--- | See @System.FilePath.hasExtension@
+-- | See @Path.hasExtension@
 has_extension :: HaskellFunction
 has_extension = toHsFnPrecursor Path.hasExtension
   <#> filepathParam
@@ -132,7 +133,7 @@ has_extension = toHsFnPrecursor Path.hasExtension
                      "`false` otherwise.")
   #? "Does the given filename has an extension?"
 
--- | See @System.FilePath.isAbsolute@
+-- | See @Path.isAbsolute@
 is_absolute :: HaskellFunction
 is_absolute = toHsFnPrecursor Path.isAbsolute
   <#> filepathParam
@@ -140,7 +141,7 @@ is_absolute = toHsFnPrecursor Path.isAbsolute
                      "`false` otherwise.")
   #? "Checks whether a path is absolute, i.e. not fixed to a root."
 
--- | See @System.FilePath.isRelative@
+-- | See @Path.isRelative@
 is_relative :: HaskellFunction
 is_relative = toHsFnPrecursor Path.isRelative
   <#> filepathParam
@@ -148,7 +149,7 @@ is_relative = toHsFnPrecursor Path.isRelative
                      "`false` otherwise.")
   #? "Checks whether a path is relative or fixed to a root."
 
--- | See @System.FilePath.joinPath@
+-- | See @Path.joinPath@
 join :: HaskellFunction
 join = toHsFnPrecursor Path.joinPath
   <#> Parameter
@@ -163,14 +164,14 @@ join = toHsFnPrecursor Path.joinPath
   =#> filepathResult "The joined path."
   #? "Join path elements back together by the directory separator."
 
--- | See @System.FilePath.normalise@
+-- | See @Path.normalise@
 normalise :: HaskellFunction
 normalise = toHsFnPrecursor Path.normalise
   <#> filepathParam
   =#> filepathResult "The normalised path."
   #? "Normalise a path."
 
--- | See @System.FilePath.splitDirectories@.
+-- | See @Path.splitDirectories@.
 --
 -- Note that this does /not/ wrap @'Path.splitPath'@, as that function
 -- adds trailing slashes to each directory, which is often inconvenient.
@@ -198,21 +199,21 @@ split_search_path = toHsFnPrecursor Path.splitSearchPath
       <> "and converted to `.` on Posix. "
       <> "On Windows path elements are stripped of quotes.")
 
--- | See @System.FilePath.takeDirectory@
+-- | See @Path.takeDirectory@
 take_directory :: HaskellFunction
 take_directory = toHsFnPrecursor Path.normalise
   <#> filepathParam
   =#> filepathResult "The filepath up to the last directory separator."
   #? "Get the directory name; move up one level."
 
--- | See @System.FilePath.takeExtensions@
+-- | See @Path.takeExtensions@
 take_extensions :: HaskellFunction
 take_extensions = toHsFnPrecursor Path.takeExtensions
   <#> filepathParam
   =#> filepathResult "String of all extensions."
   #? "Get all extensions."
 
--- | See @System.FilePath.takeFilename@
+-- | See @Path.takeFilename@
 take_filename :: HaskellFunction
 take_filename = toHsFnPrecursor Path.takeFileName
   <#> filepathParam

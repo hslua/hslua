@@ -1,19 +1,20 @@
 cabal-version:       2.4
-name:                hslua-module-paths
+name:                hslua-module-path
 version:             0.0.1
 synopsis:            Lua module to work with file paths.
 description:         Lua module to work with file paths.
-homepage:            https://github.com/hslua/hslua-module-paths
-bug-reports:         https://github.com/hslua/hslua-module-paths/issues
+homepage:            https://github.com/hslua/hslua-module-path
+bug-reports:         https://github.com/hslua/hslua-module-path/issues
 license:             MIT
 license-file:        LICENSE
 author:              Albert Krewinkel
 maintainer:          Albert Krewinkel <albert@zeitkraut.de>
-copyright:           © 2020 Albert Krewinkel
+copyright:           © 2020-2021 Albert Krewinkel
 category:            Foreign
 build-type:          Simple
 extra-doc-files:     README.md
                      CHANGELOG.md
+extra-source-files:  test/test-path.lua
 tested-with:         GHC == 8.0.2
                    , GHC == 8.2.2
                    , GHC == 8.4.4
@@ -23,7 +24,7 @@ tested-with:         GHC == 8.0.2
 
 source-repository head
   type:                git
-  location:            https://github.com/hslua/hslua-module-paths.git
+  location:            https://github.com/hslua/hslua-module-path.git
 
 common common-options
   build-depends:       base       >= 4.9.1  && < 5
@@ -51,14 +52,14 @@ common common-options
 library
   import:              common-options
   hs-source-dirs:      src
-  exposed-modules:     Foreign.Lua.Module.Paths
+  exposed-modules:     Foreign.Lua.Module.Path
 
-test-suite hslua-module-paths-test
+test-suite hslua-module-path-test
   import:              common-options
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
-  build-depends:       hslua-module-paths
+  build-depends:       hslua-module-path
   ghc-options:         -threaded
                        -rtsopts
                        -with-rtsopts=-N
