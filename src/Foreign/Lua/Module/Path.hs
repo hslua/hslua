@@ -62,13 +62,24 @@ documentedModule = Module
 
 -- | Pushes the @path@ module to the Lua stack.
 pushModule :: Lua NumResults
-pushModule = 1 <$ Module.pushModule documentedModule
+pushModule = 1 <$ pushModule' documentedModule
 
 -- | Add the @path@ module under the given name to the table of
 -- preloaded packages.
 preloadModule :: String -> Lua ()
 preloadModule name = Module.preloadModule $
   documentedModule { moduleName = T.pack name }
+
+-- | Helper function which pushes the module with its fields. This
+-- function should be removed once the respective hslua bug has been
+-- fixed.
+pushModule' :: Module -> Lua ()
+pushModule' mdl = do
+  Module.pushModule mdl
+  forM_ (moduleFields mdl) $ \field -> do
+    pushText (fieldName field)
+    fieldPushValue field
+    rawset (nth 3)
 
 --
 -- Fields

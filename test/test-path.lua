@@ -11,13 +11,12 @@ local assert = tasty.assert
 -- Check existence static fields
 return {
   group 'static fields' {
-    -- FIXME!!! these aren't working for some reason
-    -- test('separator', function ()
-    --   assert.are_equal(type(path.separator), 'string')
-    -- end),
-    -- test('search_path_separator', function ()
-    --   assert.are_equal(type(path.search_path_separator), 'string')
-    -- end),
+    test('separator', function ()
+      assert.are_equal(type(path.separator), 'string')
+    end),
+    test('search_path_separator', function ()
+      assert.are_equal(type(path.search_path_separator), 'string')
+    end),
   },
 
   group 'splitting/joining' {
