@@ -39,7 +39,7 @@ import Data.Semigroup (Semigroup(..))  -- includes (<>)
 import Data.Text (Text)
 import Foreign.Lua
   ( Lua, NumResults (..), getglobal, getmetatable, nth, pop, rawset, remove
-  , setfield, top )
+  , top )
 import Foreign.Lua.Call
 import Foreign.Lua.Module hiding (preloadModule, pushModule)
 import Foreign.Lua.Peek (Peeker, peekList, peekString)
@@ -266,33 +266,33 @@ add_extension = toHsFnPrecursor Path.addExtension
   =#> [filepathResult "filepath with extension"]
   #? "Adds an extension, even if there is already one."
 
+stringAugmentationFunctions :: [(String, HaskellFunction)]
+stringAugmentationFunctions =
+  [ ("directory", directory)
+  , ("filename", filename)
+  , ("is_absolute", is_absolute)
+  , ("is_relative", is_relative)
+  , ("normalize", normalize)
+  , ("split", split)
+  , ("split_extension", split_extension)
+  , ("split_search_path", split_search_path)
+  ]
+
 treat_strings_as_paths :: HaskellFunction
 treat_strings_as_paths = HaskellFunction
   { callFunction = do
+      let addField (k, v) =
+            pushString k *> pushHaskellFunction v *> rawset (nth 3)
       -- for some reason we can't just dump all functions into the
       -- string metatable, but have to use the string module for
       -- non-metamethods.
-      pushString ""
-      _ <- getmetatable top
-      remove (nth 2)  -- dummy string
-      pushHaskellFunction add_extension *> setfield (nth 2) "__add"
-      pushHaskellFunction combine       *> setfield (nth 2) "__div"
+      pushString "" *> getmetatable top *> remove (nth 2)
+      mapM_ addField $ [("__add", add_extension), ("__div", combine)]
       pop 1  -- string metatable
 
       getglobal "string"
-      let pathFunctions =
-            [ ("directory", directory)
-            , ("filename", filename)
-            , ("is_absolute", is_absolute)
-            , ("is_relative", is_relative)
-            , ("normalize", normalize)
-            , ("split", split)
-            , ("split_extension", split_extension)
-            , ("split_search_path", split_search_path)
-            ]
-      forM_ pathFunctions $ \(key, fn) -> do
-        pushHaskellFunction fn
-        setfield (nth 2) key
+      mapM_ addField stringAugmentationFunctions
+      pop 1 -- string module
 
       return (0 :: NumResults)
   , functionDoc = Nothing
