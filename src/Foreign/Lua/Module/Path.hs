@@ -17,6 +17,8 @@ module Foreign.Lua.Module.Path (
   , documentedModule
 
   -- * Path manipulations
+  , add_extension
+  , combine
   , directory
   , filename
   , is_absolute
