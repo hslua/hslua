@@ -78,32 +78,32 @@ return {
     test('add extension with `+`', function ()
       assert.are_equal('a' + 'b', path.join{'a.b'})
     end),
-  }
+  },
 
-  -- group 'make_relative_path' {
-  --   test('just the filename if file is within path', function()
-  --     assert.are_equal(
-  --       system.make_relative_path('/foo/bar/file.txt', '/foo/bar'),
-  --       'file.txt'
-  --     )
-  --   end),
-  --   test('no change if name outside of reference dir', function()
-  --     assert.are_equal(
-  --       system.make_relative_path('/foo/baz/file.txt', '/foo/bar'),
-  --       '/foo/baz/file.txt'
-  --     )
-  --   end),
-  --   test('base path defaults to current dir', function()
-  --     assert.are_equal(
-  --       system.make_relative_path(system.getwd() .. '/one/two.txt'),
-  --       'one/two.txt'
-  --     )
-  --   end),
-  --   test('return dot if both paths are the same', function()
-  --     assert.are_equal(
-  --       system.make_relative_path('/one/two/three', '/one/two/three/'),
-  --       '.'
-  --     )
-  --   end)
-  -- },
+  group 'make_relative' {
+    test('just the filename if file is within path', function()
+      assert.are_equal(
+        path.make_relative('/foo/bar/file.txt', '/foo/bar'),
+        'file.txt'
+      )
+    end),
+    test('no change if name outside of reference dir', function()
+      assert.are_equal(
+        path.make_relative('/foo/baz/file.txt', '/foo/bar'),
+        '/foo/baz/file.txt'
+      )
+    end),
+    test('use `..` when allowing unsafe operation', function()
+      assert.are_equal(
+        path.make_relative('/foo/baz/file.txt', '/foo/bar', true),
+        '../baz/file.txt'
+      )
+    end),
+    test('return dot if both paths are the same', function()
+      assert.are_equal(
+        path.make_relative('/one/two/three', '/one/two/three/'),
+        '.'
+      )
+    end)
+  },
 }

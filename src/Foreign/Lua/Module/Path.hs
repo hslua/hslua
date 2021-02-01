@@ -1,4 +1,5 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : Foreign.Lua.Module.Path
@@ -24,6 +25,7 @@ module Foreign.Lua.Module.Path (
   , is_absolute
   , is_relative
   , join
+  , make_relative
   , normalize
   , split
   , split_extension
@@ -33,16 +35,17 @@ module Foreign.Lua.Module.Path (
 where
 
 import Control.Monad (forM_)
+import Data.Char (toLower)
 #if !MIN_VERSION_base(4,11,0)
 import Data.Semigroup (Semigroup(..))  -- includes (<>)
 #endif
 import Data.Text (Text)
 import Foreign.Lua
-  ( Lua, NumResults (..), getglobal, getmetatable, nth, pop, rawset, remove
-  , top )
+  ( Lua, NumResults (..), getglobal, getmetatable, nth, pop, rawset
+  , remove, top )
 import Foreign.Lua.Call
 import Foreign.Lua.Module hiding (preloadModule, pushModule)
-import Foreign.Lua.Peek (Peeker, peekList, peekString)
+import Foreign.Lua.Peek (Peeker, peekBool, peekList, peekString)
 import Foreign.Lua.Push (pushBool, pushList, pushString, pushText)
 
 import qualified Data.Text as T
@@ -124,6 +127,7 @@ functions =
   , ("is_absolute", is_absolute)
   , ("is_relative", is_relative)
   , ("join", join)
+  , ("make_relative", make_relative)
   , ("normalize", normalize)
   , ("split", split)
   , ("split_extension", split_extension)
@@ -175,6 +179,33 @@ join = toHsFnPrecursor Path.joinPath
       }
   =#> [filepathResult "The joined path."]
   #? "Join path elements back together by the directory separator."
+
+make_relative :: HaskellFunction
+make_relative = toHsFnPrecursor makeRelative
+  <#> parameter
+        peekFilePath
+        "string"
+        "path"
+        "path to be made relative"
+  <#> parameter
+        peekFilePath
+        "string"
+        "root"
+        "root path"
+  <#> optionalParameter
+        peekBool
+        "boolean"
+        "unsafe"
+        "whether to allow `..` in the result."
+  =#> [filepathResult "contracted filename"]
+  #? mconcat
+     [ "Contract a filename, based on a relative path. Note that the "
+     , "resulting path will never introduce `..` paths, as the "
+     , "presence of symlinks means `../b` may not reach `a/b` if it "
+     , "starts from `a/c`. For a worked example see "
+     , "[this blog post](http://neilmitchell.blogspot.co.uk"
+     , "/2015/10/filepaths-are-subtle-symlinks-are-hard.html)."
+     ]
 
 -- | See @Path.normalise@
 normalize :: HaskellFunction
@@ -351,3 +382,48 @@ booleanResult desc = FunctionResult
     , functionResultDescription = desc
     }
   }
+
+--
+-- Helpers
+--
+
+-- | Alternative version of @'Path.makeRelative'@, which introduces @..@
+-- paths if desired.
+makeRelative :: FilePath      -- ^ path to be made relative
+             -> FilePath      -- ^ root directory from which to start
+             -> Maybe Bool    -- ^ whether to use unsafe relative paths.
+             -> FilePath
+makeRelative path root unsafe
+ | Path.equalFilePath root path = "."
+ | takeAbs root /= takeAbs path = path
+ | otherwise = go (dropAbs path) (dropAbs root)
+  where
+    go x "" = dropWhile Path.isPathSeparator x
+    go x y =
+      let (x1, x2) = breakPath x
+          (y1, y2) = breakPath y
+      in case () of
+        _ | Path.equalFilePath x1 y1 -> go x2 y2
+        _ | unsafe == Just True      -> Path.joinPath ["..", x1, go x2 y2]
+        _                            -> path
+
+    breakPath = both (dropWhile Path.isPathSeparator)
+              . break Path.isPathSeparator
+              . dropWhile Path.isPathSeparator
+
+    both f (a, b) = (f a, f b)
+
+    leadingPathSepOnWindows = \case
+      ""                  -> False
+      x | Path.hasDrive x -> False
+      c:_                 -> Path.isPathSeparator c
+
+    dropAbs x = if leadingPathSepOnWindows x then tail x else Path.dropDrive x
+
+    takeAbs x = if leadingPathSepOnWindows x
+                then [Path.pathSeparator]
+                else map (\y ->
+                            if Path.isPathSeparator y
+                            then Path.pathSeparator
+                            else toLower y)
+                         (Path.takeDrive x)
