@@ -16,17 +16,16 @@ Lua module to work with file paths.
 
 ## path
 
-### Fields
-
 Module for file path manipulations.
+
 #### separator
 
 The character that separates directories.
 
-#### search_path_separator
+#### search\_path\_separator
 
-The character that is used to separate the entries in the `PATH` environment variable.
-
+The character that is used to separate the entries in the `PATH`
+environment variable.
 
 ### Functions
 
@@ -36,12 +35,12 @@ Get the directory name; move up one level.
 
 Parameters:
 
-filepath
-:   path (string)
+filepath  
+path (string)
 
 Returns:
 
- - The filepath up to the last directory separator. (string)
+-   The filepath up to the last directory separator. (string)
 
 #### filename (filepath)
 
@@ -49,38 +48,40 @@ Get the file name.
 
 Parameters:
 
-filepath
-:   path (string)
+filepath  
+path (string)
 
 Returns:
 
- - File name part of the input path. (string)
+-   File name part of the input path. (string)
 
-#### is_absolute (filepath)
+#### is\_absolute (filepath)
 
-Checks whether a path is absolute, i.e. not fixed to a root.
+Checks whether a path is absolute, i.e. not fixed to a root.
 
 Parameters:
 
-filepath
-:   path (string)
+filepath  
+path (string)
 
 Returns:
 
- - `true` iff `filepath` is an absolute path, `false` otherwise. (boolean)
+-   `true` iff `filepath` is an absolute path, `false` otherwise.
+    (boolean)
 
-#### is_relative (filepath)
+#### is\_relative (filepath)
 
 Checks whether a path is relative or fixed to a root.
 
 Parameters:
 
-filepath
-:   path (string)
+filepath  
+path (string)
 
 Returns:
 
- - `true` iff `filepath` is a relative path, `false` otherwise. (boolean)
+-   `true` iff `filepath` is a relative path, `false` otherwise.
+    (boolean)
 
 #### join (filepaths)
 
@@ -88,31 +89,53 @@ Join path elements back together by the directory separator.
 
 Parameters:
 
-filepaths
-:   path components (list of strings)
+filepaths  
+path components (list of strings)
 
 Returns:
 
- - The joined path. (string)
+-   The joined path. (string)
+
+#### make\_relative (path, root, unsafe)
+
+Contract a filename, based on a relative path. Note that the resulting
+path will never introduce `..` paths, as the presence of symlinks means
+`../b` may not reach `a/b` if it starts from `a/c`. For a worked example
+see [this blog
+post](http://neilmitchell.blogspot.co.uk/2015/10/filepaths-are-subtle-symlinks-are-hard.html).
+
+Parameters:
+
+path  
+path to be made relative (string)
+
+root  
+root path (string)
+
+unsafe  
+whether to allow `..` in the result. (boolean)
+
+Returns:
+
+-   contracted filename (string)
 
 #### normalize (filepath)
 
 Normalizes a path.
 
-- `//` outside of the drive can be made blank
-- `/` becomes the `path.separator`
-- `./` -> ''
-- an empty path becomes `.`
-
+-   `//` outside of the drive can be made blank
+-   `/` becomes the `path.separator`
+-   `./` -&gt; ’’
+-   an empty path becomes `.`
 
 Parameters:
 
-filepath
-:   path (string)
+filepath  
+path (string)
 
 Returns:
 
- - The normalized path. (string)
+-   The normalized path. (string)
 
 #### split (filepath)
 
@@ -120,39 +143,41 @@ Splits a path by the directory separator.
 
 Parameters:
 
-filepath
-:   path (string)
+filepath  
+path (string)
 
 Returns:
 
- - List of all path components. (list of strings)
+-   List of all path components. (list of strings)
 
-#### split_extension (filepath)
+#### split\_extension (filepath)
 
-Splits the last extension from a file path and returns the parts. The extension, if present, includes the leading separator; if the path has no extension, then the empty string is returned as the extension.
+Splits the last extension from a file path and returns the parts. The
+extension, if present, includes the leading separator; if the path has
+no extension, then the empty string is returned as the extension.
 
 Parameters:
 
-filepath
-:   path (string)
+filepath  
+path (string)
 
 Returns:
 
- - filepath without extension (string)
+-   filepath without extension (string)
 
- - extension or empty string (string)
+-   extension or empty string (string)
 
-#### split_search_path (search_path)
+#### split\_search\_path (search\_path)
 
-Takes a string and splits it on the `search_path_separator` character. Blank items are ignored on Windows, and converted to `.` on Posix. On Windows path elements are stripped of quotes.
+Takes a string and splits it on the `search_path_separator` character.
+Blank items are ignored on Windows, and converted to `.` on Posix. On
+Windows path elements are stripped of quotes.
 
 Parameters:
 
-search_path
-:   platform-specific search path (string)
+search\_path  
+platform-specific search path (string)
 
 Returns:
 
- - list of directories in search path (list of strings)
-
-
+-   list of directories in search path (list of strings)
