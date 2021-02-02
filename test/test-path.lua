@@ -19,6 +19,70 @@ return {
     end),
   },
 
+  group 'directory' {
+    test('directory from file path', function ()
+      print(path.join{'/', '2020', 'img', 'mask.jpg'})
+      assert.are_equal(
+        path.directory(path.join{'/', '2020', 'img', 'mask.jpg'}),
+        path.join{'/', '2020', 'img'}
+      )
+    end),
+    test('drops trailing path sep', function ()
+      assert.are_equal(
+        path.directory(path.join{'this', 'that'} .. path.separator),
+        path.join{'this', 'that'}
+      )
+    end),
+    test('returns dot if given just a filename', function ()
+      assert.are_equal(
+        path.directory('index.html'),
+        '.'
+      )
+    end)
+  },
+
+  group 'filename' {
+    test('removes directories', function ()
+      assert.are_equal(
+        path.filename(path.join{'paper', 'refs.bib'}),
+        'refs.bib'
+      )
+      assert.are_equal(
+        path.filename(path.join{'www', '.htaccess'}),
+        '.htaccess'
+      )
+    end),
+    test('empty if no filename present', function ()
+      assert.are_equal(
+        path.filename(path.join{'usr', 'bin'} .. path.separator),
+        ''
+      )
+    end)
+  },
+
+  group 'is_absolute' {
+    test('network path is absolute', function ()
+      local paths = {'c:', 'Applications'}
+      assert.is_truthy(path.is_absolute '//foo/bar')
+    end),
+    test('pure filename is not absolute', function ()
+      assert.is_falsy(path.is_absolute '1337.txt')
+    end),
+  },
+
+  group 'is_relative' {
+    test('joined paths are relative', function ()
+      local paths = {'one', 'two', 'test'}
+      assert.is_truthy(path.is_relative(path.join(paths)))
+    end),
+    test('pure filename is relative', function ()
+      assert.is_truthy(path.is_relative '1337.txt')
+    end),
+    test('network path is not relative', function ()
+      assert.is_falsy(path.is_relative '//foo/bar')
+    end),
+  },
+
   group 'splitting/joining' {
     test('split_path is inverse of join', function ()
       local paths = {'one', 'two', 'test'}
