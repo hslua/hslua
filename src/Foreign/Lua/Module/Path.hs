@@ -137,10 +137,11 @@ functions =
 
 -- | See @Path.takeDirectory@
 directory :: HaskellFunction
-directory = toHsFnPrecursor Path.normalise
+directory = toHsFnPrecursor Path.takeDirectory
   <#> filepathParam
   =#> [filepathResult "The filepath up to the last directory separator."]
-  #? "Get the directory name; move up one level."
+  #? ("Gets the directory name, i.e., removes the last directory " <>
+      "separator and everything after from the given path.")
 
 -- | See @Path.takeFilename@
 filename :: HaskellFunction
