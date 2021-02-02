@@ -216,10 +216,12 @@ normalize = toHsFnPrecursor Path.normalise
   #? T.unlines
      [ "Normalizes a path."
      , ""
-     , "- `//` outside of the drive can be made blank"
-     , "- `/` becomes the `path.separator`"
-     , "- `./` -> \'\'"
-     , "- an empty path becomes `.`"
+     , " - `//` makes sense only as part of a (Windows) network drive;"
+     , "   elsewhere, multiple slashes are reduced to a single"
+     , "   `path.separator` (platform dependent)."
+     , " - `/` becomes `path.separator` (platform dependent)."
+     , " - `./` is removed."
+     , " - an empty path becomes `.`"
      ]
 
 -- | See @Path.splitDirectories@.
