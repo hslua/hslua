@@ -227,11 +227,11 @@ ref t = liftLua $ \l -> Lua.toReference <$> luaL_ref l t
 tostring' :: StackIndex -> Lua B.ByteString
 tostring' n = do
   l <- Lua.state
-  e2e <- Lua.errorToException <$> Lua.errorConversion
+  e <- Lua.errorConversion
   Lua.liftIO $ alloca $ \lenPtr -> do
     cstr <- hsluaL_tolstring l n lenPtr
     if cstr == nullPtr
-      then e2e l
+      then Lua.errorToException e l
       else do
         cstrLen <- Storable.peek lenPtr
         B.packCStringLen (cstr, fromIntegral cstrLen)

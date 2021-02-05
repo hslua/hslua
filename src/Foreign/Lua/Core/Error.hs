@@ -77,9 +77,9 @@ try = Catch.try
 -- expected to be at the top of the stack.
 throwErrorAsException :: Lua a
 throwErrorAsException = do
-  f <- Lua.errorToException <$> Lua.errorConversion
+  e <- Lua.errorConversion
   l <- Lua.state
-  Lua.liftIO (f l)
+  Lua.liftIO (Lua.errorToException e l)
 
 -- | Alias for `throwErrorAsException`; will be deprecated in the next
 -- mayor release.
@@ -93,13 +93,14 @@ throwMessage msg = do
   Lua.liftLua $ \l ->
     B.unsafeUseAsCStringLen (Utf8.fromString msg) $ \(msgPtr, z) ->
       lua_pushlstring l msgPtr (fromIntegral z)
-  Lua.errorConversion >>= Lua.liftLua . Lua.errorToException
+  e <- Lua.errorConversion
+  Lua.liftLua (Lua.errorToException e)
 
 instance Alternative Lua where
   empty = throwMessage "empty"
   x <|> y = do
-    alt <- Lua.alternative <$> Lua.errorConversion
-    x `alt` y
+    e <- Lua.errorConversion
+    Lua.alternative e x y
 
 -- | Convert the object at the top of the stack into a string and throw
 -- it as a HsLua @'Exception'@.
