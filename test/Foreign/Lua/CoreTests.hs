@@ -210,10 +210,14 @@ tests = testGroup "Core module"
       luaSt' <- peek stackTop
       return (luaSt == luaSt')
 
-  , "different threads are not equal in Haskell" ?: do
-      luaSt1 <- liftIO newstate
-      luaSt2 <- liftIO newstate
-      return (luaSt1 /= luaSt2)
+  , "different threads are not equal in Haskell" ?:
+    (liftIO $ do
+        luaSt1 <- newstate
+        luaSt2 <- newstate
+        let result = luaSt1 /= luaSt2
+        close luaSt1
+        close luaSt2
+        return result)
 
   , testGroup "thread status"
     [ "OK is base thread status" =:
