@@ -211,13 +211,13 @@ tests = testGroup "Core module"
       return (luaSt == luaSt')
 
   , "different threads are not equal in Haskell" ?:
-    (liftIO $ do
-        luaSt1 <- newstate
-        luaSt2 <- newstate
-        let result = luaSt1 /= luaSt2
-        close luaSt1
-        close luaSt2
-        return result)
+    liftIO
+      (do luaSt1 <- newstate
+          luaSt2 <- newstate
+          let result = luaSt1 /= luaSt2
+          close luaSt1
+          close luaSt2
+          return result)
 
   , testGroup "thread status"
     [ "OK is base thread status" =:
