@@ -44,7 +44,7 @@ tests =
   , Foreign.Lua.PushTests.tests
   , Foreign.Lua.FunctionCallingTests.tests
   , Foreign.Lua.UtilTests.tests
-  , testGroup "Sendings and receiving values from the stack"
+  , testGroup "Sending and receiving values from the stack"
     [ Foreign.Lua.TypesTests.tests
     , Foreign.Lua.Types.PeekableTests.tests
     , Foreign.Lua.Types.PushableTests.tests

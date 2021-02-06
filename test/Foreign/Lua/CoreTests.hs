@@ -76,7 +76,7 @@ tests = testGroup "Core module"
     ]
 
   , testGroup "insert"
-    [ "inserts stack elements using negative indices" ?: do
+    [ "inserts stack elements using positive indices" ?: do
         pushLuaExpr "1, 2, 3, 4, 5, 6, 7, 8, 9"
         insert (-6)
         movedEl <- peek (-6) :: Lua Lua.Integer
