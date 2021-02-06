@@ -1,7 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-|
 Module      : Foreign.Lua.Raw.Userdata
-Copyright   : © 2017-2020 Albert Krewinkel
+Copyright   : © 2017-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta

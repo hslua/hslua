@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-|
 Module      : Foreign.Lua.CallTests
-Copyright   : © 2020 Albert Krewinkel
+Copyright   : © 2020-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : alpha

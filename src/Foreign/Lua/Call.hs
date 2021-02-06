@@ -3,7 +3,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-|
 Module      : Foreign.Lua.Call
-Copyright   : © 2020 Albert Krewinkel
+Copyright   : © 2020-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : alpha

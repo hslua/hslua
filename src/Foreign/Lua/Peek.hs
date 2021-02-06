@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : Foreign.Lua.Peek
-Copyright   : © 2020 Albert Krewinkel
+Copyright   : © 2020-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta

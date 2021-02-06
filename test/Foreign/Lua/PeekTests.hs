@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-|
 Module      : Foreign.Lua.PeekTests
-Copyright   : © 2020 Albert Krewinkel
+Copyright   : © 2020-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : alpha
