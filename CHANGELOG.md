@@ -1,5 +1,15 @@
 ## Changelog
 
+### 1.3.0.1
+
+Released 2021-02-06.
+
+- Fixed build with GHC 9.0.1 (Simon Jakobi).
+
+- Improved test-suite; fixed memory leaks in some tests.
+
+- Moved CI to GitHub Actions.
+
 ### 1.3.0
 
 Released 2020-10-16.
