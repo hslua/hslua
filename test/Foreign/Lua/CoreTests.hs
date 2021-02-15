@@ -98,11 +98,11 @@ tests = testGroup "Core module"
 
     , "isnil" ?: pushLuaExpr "nil" *> isnil (-1)
 
-    , "isnone" ?: isnone 500 -- stack index 500 does not exist
+    , "isnone" ?: isnone 5 -- stack index 5 does not exist
 
     , "isnoneornil" ?: do
         pushLuaExpr "nil"
-        (&&) <$> isnoneornil 500 <*> isnoneornil (-1)
+        (&&) <$> isnoneornil 5 <*> isnoneornil (-1)
     ]
 
   , testCase "CFunction handling" . run $ do

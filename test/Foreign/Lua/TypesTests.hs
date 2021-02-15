@@ -152,7 +152,7 @@ prop_stackPushingPulling t = monadicIO $ do
   let indices = map getPositive indices'
   let nItems = (if null indices then 0 else last indices) :: Lua.Integer
   -- Make sure there's enough room in the stack
-  assert =<< QCMonadic.run (runWith l $ checkstack (fromIntegral nItems))
+  assert =<< QCMonadic.run (runWith l $ checkstack (2 * fromIntegral nItems))
   -- Push elements
   QCMonadic.run $ forM_ [1..nItems] $ \n ->
     runWith l $

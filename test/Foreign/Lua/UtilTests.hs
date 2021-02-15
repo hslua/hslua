@@ -47,7 +47,7 @@ tests = testGroup "Utilities"
 
   , "Optional can deal with nonexistent (none) values" =:
     Nothing `shouldBeResultOf`
-      fmap fromOptional (peek (nthFromBottom 200) :: Lua (Optional String))
+      fmap fromOptional (peek (nthFromBottom 20) :: Lua (Optional String))
 
   , "raiseError causes a Lua error" =:
     "test error message" `shouldBeErrorMessageOf` do
