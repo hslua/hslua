@@ -23,9 +23,9 @@ import Control.Monad
 import Data.ByteString (ByteString)
 import Data.Maybe (fromMaybe)
 import Foreign.Lua.Core.Error
-import Foreign.Lua.Core.RawBindings
 import Foreign.Lua.Core.Types as Lua
 import Foreign.Lua.Raw.Constants
+import Foreign.Lua.Raw.Functions
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 

@@ -89,7 +89,6 @@ library
                      , Foreign.Lua.Call
                      , Foreign.Lua.Core
                      , Foreign.Lua.Core.Error
-                     , Foreign.Lua.Core.RawBindings
                      , Foreign.Lua.Core.Types
                      , Foreign.Lua.FunctionCalling
                      , Foreign.Lua.Module

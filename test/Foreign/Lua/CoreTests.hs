@@ -29,9 +29,9 @@ import Test.Tasty.QuickCheck (testProperty)
 
 import qualified Prelude
 import qualified Data.ByteString as B
-import qualified Foreign.Lua.Core.RawBindings as LuaRaw
 import qualified Foreign.Lua.Core.AuxiliaryTests
 import qualified Foreign.Lua.Core.ErrorTests
+import qualified Foreign.Lua.Raw.Functions as LuaRaw
 import qualified Foreign.Marshal as Foreign
 import qualified Foreign.Ptr as Foreign
 import qualified Test.QuickCheck.Monadic as QCMonadic
