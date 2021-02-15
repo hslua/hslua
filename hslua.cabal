@@ -58,8 +58,11 @@ flag allow-unsafe-gc
   default:             True
   manual:              True
   description:         Allow optimizations which make Lua's garbage collection
-                       potentially unsafe; haskell finalizers must be handled
-                       with extreme care.
+                       potentially unsafe; enabling this should be safe if
+                       there are no callbacks into Haskell during Lua garbage
+                       collection cycles. The flag should be *disabled* if Lua
+                       objects can have Haskell finalizers, i.e., @__gc@
+                       metamethods that call Haskell function.
 
 flag export-dynamic
   default:             True

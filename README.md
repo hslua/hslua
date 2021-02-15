@@ -116,9 +116,16 @@ The following cabal build flags are supported:
 - `pkg-config`: Use *pkg-config* to discover library and include paths. Setting
   this flag implies `system-lua`.
 
-- `allow-unsafe-gc`: Allow optimizations which make Lua's garbage collection
-  potentially unsafe; haskell finalizers must be handled with extreme care. This
-  is *enabled* per default, as this is rarely a problem in practice.
+- `allow-unsafe-gc`: Allow optimizations which make Lua's garbage
+  collection potentially unsafe; enabling this should be safe if
+  there are no callbacks into Haskell during Lua garbage
+  collection cycles. The flag should be *disabled* if Lua objects
+  can have Haskell finalizers, i.e., `__gc` metamethods that call
+  Haskell function.
+
+  The flag is *enabled* per default, as Haskell functions are
+  rarely used in finalizers. It can help to disable the flag if
+  there are issues related to Lua's garbage collection.
 
 - `apicheck`: Compile Lua with its API checks enabled.
 
