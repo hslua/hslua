@@ -8,33 +8,41 @@ on:
 
 jobs:
   build:
-    name: ghc ${{ matrix.versions.ghc }} lua ${{ matrix.versions.lua }}
+    name: >-
+      ${{ matrix.versions.ghc }}; ${{ matrix.versions.lua }};
+      ${{ matrix.versions.flags }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
         versions:
           - ghc: '8.0.2'
             cabal: '2.4'
-            lua: 'default'
+            lua: 'bundled'
+            flags: '+apicheck'
           - ghc: '8.2.2'
             cabal: '2.4'
-            lua: 'default'
+            lua: 'bundled'
+            flags: '-system-lua'
           - ghc: '8.4.4'
             cabal: '2.4'
-            lua: 'default'
+            lua: 'bundled'
+            flags: '-export-dynamic'
           - ghc: '8.6.5'
             cabal: '3.2'
-            lua: 'default'
+            lua: 'bundled'
+            flags: '-allow-unsafe-gc'
           - ghc: '8.8.4'
             cabal: '3.2'
-            lua: 'default'
-          - ghc: '8.10.2'
+            lua: 'bundled'
+            flags: '-system-lua'
+          - ghc: '8.10.3'
             cabal: '3.4'
-            lua: 'default'
-          - ghc: '8.8.4'
-            cabal: '3.2'
             lua: '5.3.6'
             flags: '+hardcode-reg-keys +system-lua'
+          - ghc: '8.10.3'
+            cabal: '3.4'
+            lua: '5.3.6'
+            flags: '+system-lua'
 
     steps:
     - name: Checkout
@@ -52,8 +60,8 @@ jobs:
         path: ~/.cabal/store
         key: ${{ runner.os }}-${{ matrix.versions.ghc }}-cabal
 
-    - name: Install Lua
-      if: matrix.versions.lua != 'default'
+    - name: Install Lua from source
+      if: matrix.versions.lua != 'bundled' && matrix.versions.lua != 'system'
       run: |
         wget http://www.lua.org/ftp/lua-${{ matrix.versions.lua }}.tar.gz
         tar -xf lua-${{ matrix.versions.lua }}.tar.gz
