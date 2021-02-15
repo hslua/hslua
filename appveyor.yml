@@ -5,11 +5,11 @@ environment:
   matrix:
     - STACK_VERSION: "windows-i386"
       STACK_ROOT: "c:\\sr32"
-      STACK: "%STACK_ROOT%\\stack.exe"
+      STACK: "stack.exe"
       STACK_FLAGS: "--resolver=lts-17"
     - STACK_VERSION: "windows-x86_64"
       STACK_ROOT: "c:\\sr64"
-      STACK: "%STACK_ROOT%\\stack.exe"
+      STACK: "stack.exe"
       STACK_FLAGS: "--resolver=lts-17"
 
 matrix:
@@ -23,7 +23,7 @@ before_test:
   - set PATH=C:\Program Files\Git\mingw64\bin;%PATH%
 
   - curl -sS -ostack.zip -L --insecure https://get.haskellstack.org/stable/windows-x86_64.zip
-  - 7z x stack.zip -o%STACK_ROOT% stack.exe
+  - 7z x stack.zip stack.exe
 
 test_script:
   # The ugly echo "" hack is to avoid complaints about 0 being an invalid file
