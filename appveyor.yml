@@ -22,8 +22,8 @@ before_test:
   # http://help.appveyor.com/discussions/problems/6312-curl-command-not-found
   - set PATH=C:\Program Files\Git\mingw64\bin;%PATH%
 
-  - |
-    %STACK% --version || curl -sS -ostack.zip -L --insecure http://www.stackage.org/stack/%STACK_VERSION% && 7z e stack.zip -o"%STACK_ROOT%" stack.exe
+  - curl -sS -ostack.zip -L --insecure https://get.haskellstack.org/stable/windows-x86_64.zip
+  - 7z x stack.zip -o%STACK_ROOT% stack.exe
 
 test_script:
   # The ugly echo "" hack is to avoid complaints about 0 being an invalid file
