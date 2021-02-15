@@ -3,15 +3,24 @@ name: Lint
 # Trigger the workflow on push or pull request, but only for the
 # master branch
 on:
-  pull_request: {}
+  pull_request:
+    paths-ignore:
+      - '.github/workflows/ci.yml'
+      - 'appveyor.yml'
+      - '**/CHANGELOG.md'
+      - '**/LICENSE'
+      - '**/README.md'
+      - '**/stack.yaml'
+      - '**/*.cabal'
   push:
     paths-ignore:
-      - .github/workflows/ci.yml
-      - LICENSE
-      - README.md
-      - CHANGELOG.md
-      - stack.yaml
-      - .travis.yml
+      - '.github/workflows/ci.yml'
+      - 'appveyor.yml'
+      - '**/CHANGELOG.md'
+      - '**/LICENSE'
+      - '**/README.md'
+      - '**/stack.yaml'
+      - '**/*.cabal'
 
 jobs:
   lint:

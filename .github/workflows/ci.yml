@@ -4,7 +4,21 @@ name: CI
 # master branch
 on:
   pull_request:
+    paths-ignore:
+      - '.gitignore'
+      - '.hlint.yaml'
+      - 'appveyor.yml'
+      - '**/CHANGELOG.md'
+      - '**/LICENSE'
+      - '**/README.md'
   push:
+    paths-ignore:
+      - '.gitignore'
+      - '.hlint.yaml'
+      - 'appveyor.yml'
+      - '**/CHANGELOG.md'
+      - '**/LICENSE'
+      - '**/README.md'
 
 jobs:
   build:
