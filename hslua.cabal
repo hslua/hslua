@@ -88,7 +88,6 @@ library
   exposed-modules:     Foreign.Lua
                      , Foreign.Lua.Call
                      , Foreign.Lua.Core
-                     , Foreign.Lua.Core.Constants
                      , Foreign.Lua.Core.Error
                      , Foreign.Lua.Core.RawBindings
                      , Foreign.Lua.Core.Types

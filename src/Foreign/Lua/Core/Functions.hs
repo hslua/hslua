@@ -22,10 +22,10 @@ import Prelude hiding (EQ, LT, compare, concat, error)
 import Control.Monad
 import Data.ByteString (ByteString)
 import Data.Maybe (fromMaybe)
-import Foreign.Lua.Core.Constants
 import Foreign.Lua.Core.Error
 import Foreign.Lua.Core.RawBindings
 import Foreign.Lua.Core.Types as Lua
+import Foreign.Lua.Raw.Constants
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 
