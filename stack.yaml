@@ -1,4 +1,5 @@
 flags: {}
 packages:
 - '.'
+- 'core'
 resolver: 'lts-17.4'

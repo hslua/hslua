@@ -22,9 +22,7 @@ copyright:           © 2007–2012 Gracjan Polak;
                      © 2017-2021 Albert Krewinkel
 category:            Foreign
 build-type:          Simple
-extra-source-files:  cbits/lua-5.3.6/*.h
-                   , cbits/hslua/*.h
-                   , README.md
+extra-source-files:  README.md
                    , CHANGELOG.md
                    , test/lua/*.lua
 tested-with:         GHC == 8.0.2
@@ -38,55 +36,6 @@ source-repository head
   type:                git
   location:            https://github.com/hslua/hslua.git
 
-
-flag system-lua
-  default:             False
-  manual:              True
-  description:         Use the system-wide Lua instead of the bundled copy.
-
-flag apicheck
-  default:             False
-  manual:              True
-  description:         Compile Lua with -DLUA_USE_APICHECK.
-
-flag lua_32bits
-  default:             False
-  manual:              True
-  description:         Compile Lua with -DLUA_32BITS
-
-flag allow-unsafe-gc
-  default:             True
-  manual:              True
-  description:         Allow optimizations which make Lua's garbage collection
-                       potentially unsafe; enabling this should be safe if
-                       there are no callbacks into Haskell during Lua garbage
-                       collection cycles. The flag should be *disabled* if Lua
-                       objects can have Haskell finalizers, i.e., @__gc@
-                       metamethods that call Haskell function.
-
-flag export-dynamic
-  default:             True
-  manual:              True
-  description:         Add all symbols to dynamic symbol table; disabling this
-                       will make it possible to create fully static binaries,
-                       but renders loading of dynamic C libraries impossible.
-
-flag pkg-config
-  default:             False
-  manual:              True
-  description:         Use @pkg-config@ to discover library and include paths.
-                       Setting this flag implies `system-lua`.
-
-flag hardcode-reg-keys
-  default:             False
-  manual:              True
-
-  description:         Don't use CAPI to determine the names of certain registry
-                       key names but Use hard coded values for instead. This
-                       flag is required when compiling against Lua 5.3.3 or
-                       earlier, as those do not expose the necessary information
-                       in the @lauxlib.h@ header file.
-
 library
   exposed-modules:     Foreign.Lua
                      , Foreign.Lua.Call
@@ -97,13 +46,6 @@ library
                      , Foreign.Lua.Module
                      , Foreign.Lua.Peek
                      , Foreign.Lua.Push
-                     , Foreign.Lua.Raw.Auxiliary
-                     , Foreign.Lua.Raw.Call
-                     , Foreign.Lua.Raw.Constants
-                     , Foreign.Lua.Raw.Error
-                     , Foreign.Lua.Raw.Functions
-                     , Foreign.Lua.Raw.Types
-                     , Foreign.Lua.Raw.Userdata
                      , Foreign.Lua.Types
                      , Foreign.Lua.Types.Peekable
                      , Foreign.Lua.Types.Pushable
@@ -112,10 +54,18 @@ library
                      , Foreign.Lua.Util
   other-modules:       Foreign.Lua.Core.Auxiliary
                      , Foreign.Lua.Core.Functions
+  reexported-modules:  hslua-core:Foreign.Lua.Raw.Auxiliary
+                     , hslua-core:Foreign.Lua.Raw.Call
+                     , hslua-core:Foreign.Lua.Raw.Constants
+                     , hslua-core:Foreign.Lua.Raw.Error
+                     , hslua-core:Foreign.Lua.Raw.Functions
+                     , hslua-core:Foreign.Lua.Raw.Types
+                     , hslua-core:Foreign.Lua.Raw.Userdata
   build-depends:       base                 >= 4.8    && < 5
                      , bytestring           >= 0.10.2 && < 0.11
                      , containers           >= 0.5    && < 0.7
                      , exceptions           >= 0.8    && < 0.11
+                     , hslua-core           >= 1.0    && < 1.1
                      , mtl                  >= 2.2    && < 2.3
                      , text                 >= 1.0    && < 1.3
   hs-source-dirs:      src
@@ -132,91 +82,12 @@ library
                          -Wincomplete-uni-patterns
                          -Wpartial-fields
                          -fhide-source-paths
-  default-extensions:  CApiFFI
-                     , ForeignFunctionInterface
-                     , LambdaCase
-  other-extensions:    CPP
-                     , DeriveDataTypeable
+  default-extensions:  LambdaCase
+  other-extensions:    DeriveDataTypeable
                      , DeriveFunctor
                      , FlexibleContexts
                      , FlexibleInstances
                      , ScopedTypeVariables
-  c-sources:           cbits/hslua/hsludata.c
-                     , cbits/hslua/hslcall.c
-                     , cbits/hslua/hslua.c
-  include-dirs:        cbits/hslua
-  if flag(system-lua) || flag(pkg-config)
-    if flag(pkg-config)
-      pkgconfig-depends: lua5.3
-    else
-      extra-libraries:   lua
-      includes:          lua.h
-  else
-    include-dirs:        cbits/lua-5.3.6
-    c-sources:           cbits/lua-5.3.6/lapi.c
-                       , cbits/lua-5.3.6/lcode.c
-                       , cbits/lua-5.3.6/lctype.c
-                       , cbits/lua-5.3.6/ldebug.c
-                       , cbits/lua-5.3.6/ldo.c
-                       , cbits/lua-5.3.6/ldump.c
-                       , cbits/lua-5.3.6/lfunc.c
-                       , cbits/lua-5.3.6/lgc.c
-                       , cbits/lua-5.3.6/llex.c
-                       , cbits/lua-5.3.6/lmem.c
-                       , cbits/lua-5.3.6/lobject.c
-                       , cbits/lua-5.3.6/lopcodes.c
-                       , cbits/lua-5.3.6/lparser.c
-                       , cbits/lua-5.3.6/lstate.c
-                       , cbits/lua-5.3.6/lstring.c
-                       , cbits/lua-5.3.6/ltable.c
-                       , cbits/lua-5.3.6/ltm.c
-                       , cbits/lua-5.3.6/lundump.c
-                       , cbits/lua-5.3.6/lvm.c
-                       , cbits/lua-5.3.6/lzio.c
-
-                       , cbits/lua-5.3.6/lauxlib.c
-                       , cbits/lua-5.3.6/lbaselib.c
-                       , cbits/lua-5.3.6/lbitlib.c
-                       , cbits/lua-5.3.6/lcorolib.c
-                       , cbits/lua-5.3.6/ldblib.c
-                       , cbits/lua-5.3.6/liolib.c
-                       , cbits/lua-5.3.6/lmathlib.c
-                       , cbits/lua-5.3.6/lstrlib.c
-                       , cbits/lua-5.3.6/loslib.c
-                       , cbits/lua-5.3.6/ltablib.c
-                       , cbits/lua-5.3.6/lutf8lib.c
-                       , cbits/lua-5.3.6/loadlib.c
-                       , cbits/lua-5.3.6/linit.c
-
-  if os(linux)
-    cc-options:          -DLUA_USE_LINUX
-    if flag(export-dynamic)
-      ld-options:        -Wl,-E
-
-  if os(darwin)
-    cc-options:          -DLUA_USE_MACOSX
-
-  if os(freebsd)
-    cc-options:          -DLUA_USE_POSIX
-    if flag(export-dynamic)
-      ld-options:        -Wl,-E
-
-  if flag(lua_32bits)
-    cc-options:          -DLUA_32BITS
-
-  if flag(apicheck)
-    cc-options:          -DLUA_USE_APICHECK
-
-  if flag(allow-unsafe-gc)
-    cpp-options:         -DALLOW_UNSAFE_GC
-
-  if flag(hardcode-reg-keys)
-    cpp-options:         -DHARDCODE_REG_KEYS
-
-  if !impl(ghc >= 8.0)
-    build-depends:       fail                 >= 4.9    && < 5
-                       , semigroups           >= 0.18   && < 0.20
-
   if impl(ghc < 8.8)
     build-depends:       base-compat          >= 0.10
     hs-source-dirs:      prelude
@@ -261,15 +132,13 @@ test-suite test-hslua
                      , text                 >= 1.0    && < 1.3
                      -- for testing
                      , hslua
+                     , hslua-core
                      , QuickCheck           >= 2.7
                      , quickcheck-instances >= 0.3
                      , tasty                >= 0.11
                      , tasty-hunit          >= 0.9
                      , tasty-quickcheck     >= 0.8
 
-  if impl(ghc < 8.0)
-    build-depends:       fail                 >= 4.9    && < 5
-                       , semigroups           >= 0.18   && < 0.20
   if impl(ghc < 8.8)
     build-depends:       base-compat          >= 0.10
     hs-source-dirs:      prelude

@@ -105,55 +105,6 @@ these type classes. New instances can be defined for custom types using the
 functions in `Foreign.Lua.Core` (also exported in `Foreign.Lua`).
 
 
-Build flags
------------
-
-The following cabal build flags are supported:
-
-- `system-lua`: Use the locally installed Lua version instead of the version
-  shipped as part of HsLua.
-
-- `pkg-config`: Use *pkg-config* to discover library and include paths. Setting
-  this flag implies `system-lua`.
-
-- `allow-unsafe-gc`: Allow optimizations which make Lua's garbage
-  collection potentially unsafe; enabling this should be safe if
-  there are no callbacks into Haskell during Lua garbage
-  collection cycles. The flag should be *disabled* if Lua objects
-  can have Haskell finalizers, i.e., `__gc` metamethods that call
-  Haskell function.
-
-  The flag is *enabled* per default, as Haskell functions are
-  rarely used in finalizers. It can help to disable the flag if
-  there are issues related to Lua's garbage collection.
-
-- `apicheck`: Compile Lua with its API checks enabled.
-
-- `lua_32bits`: Compile Lua for a 32-bits system (e.g., i386, PowerPC G4).
-
-- `export-dynamic`: Add all symbols to dynamic symbol table; disabling this
-  will make it possible to create fully static binaries, but renders loading
-  of dynamic C libraries impossible.
-
-
-### Example: using a different lua version
-
-To use a system-wide installed Lua when linking hslua as a dependency,
-build/install your package using `--constraint="hslua +system-lua"`. For
-example, you can install Pandoc with hslua that uses system-wide Lua like
-this:
-
-``` sh
-cabal install pandoc --constraint="hslua +system-lua"
-```
-
-or with stack:
-
-``` sh
-stack install pandoc --flag=hslua:system-lua
-```
-
-
 Q&A
 ---
 
