@@ -1,16 +1,16 @@
-# hslua-core – bindings to Lua
+# lua
 
 [![Build status][GitHub Actions badge]][GitHub Actions]
 [![AppVeyor Status]](https://ci.appveyor.com/project/tarleb/hslua-r2y18)
-[![Hackage]](https://hackage.haskell.org/package/hslua-core)
+[![Hackage]](https://hackage.haskell.org/package/lua)
 
-The hslua-core package provides bindings, wrappers and types to
-combine Haskell and Lua.
+The *lua* package provides a Lua interpreter as well as bindings,
+wrappers and types to combine Haskell and Lua.
 
 [GitHub Actions badge]: https://img.shields.io/github/workflow/status/hslua/hslua/CI.svg?logo=github
 [GitHub Actions]: https://github.com/hslua/hslua/actions
 [AppVeyor Status]: https://ci.appveyor.com/api/projects/status/ldutrilgxhpcau94/branch/main?svg=true
-[Hackage]: https://img.shields.io/hackage/v/hslua-core.svg
+[Hackage]: https://img.shields.io/hackage/v/lua.svg
 
 
 Overview
@@ -24,9 +24,9 @@ embedded devices. This package provides Haskell bindings to Lua,
 enable coders to embed the language into their programs, making
 them scriptable.
 
-HsLua ships with batteries included and includes Lua 5.3.6. Cabal
-flags make it easy to compile against a system-wide Lua
-installation.
+*Lua* ships with the official Lua interpreter, version 5.3.6.
+Cabal flags allow to compile against a system-wide Lua
+installation instead, if desired.
 
 Build flags
 -----------
@@ -34,7 +34,7 @@ Build flags
 The following cabal build flags are supported:
 
 - `system-lua`: Use the locally installed Lua version instead of
-  the version shipped as part of hslua-core.
+  the version shipped as part of this package.
 
 - `pkg-config`: Use *pkg-config* to discover library and include
   paths. Setting this flag implies `system-lua`.
@@ -61,17 +61,17 @@ The following cabal build flags are supported:
 
 ### Example: using a different Lua version
 
-To use a system-wide installed Lua when linking hslua-core as a
+To use a system-wide installed Lua when linking *lua* as a
 dependency, build/install your package using
-`--constraint="hslua-core +system-lua"`. For example, you can
+`--constraint="lua +system-lua"`. For example, you can
 install Pandoc with hslua that uses system-wide Lua like this:
 
 ``` sh
-cabal install pandoc --constraint="hslua-core +system-lua"
+cabal install pandoc --constraint="lua +system-lua"
 ```
 
 or with stack:
 
 ``` sh
-stack install pandoc --flag=hslua-core:system-lua
+stack install pandoc --flag=lua:system-lua
 ```

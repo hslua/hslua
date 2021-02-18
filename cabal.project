@@ -1,1 +1,1 @@
-packages: core/hslua-core.cabal hslua.cabal
+packages: lua/lua.cabal hslua.cabal

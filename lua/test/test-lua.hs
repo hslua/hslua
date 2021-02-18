@@ -23,7 +23,7 @@ main = defaultMain tests
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
-tests = testGroup "hslua-core"
+tests = testGroup "lua"
   [ testGroup "state"
     [ "create and close" =: do
       l <- hsluaL_newstate

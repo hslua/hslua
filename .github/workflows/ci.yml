@@ -87,8 +87,8 @@ jobs:
         make install INSTALL_TOP=${HOME}/usr
         cd ..
 
-    - name: Build core
-      working-directory: core
+    - name: Build Lua
+      working-directory: lua
       run: |
         cabal v2-configure \
           --flags "${{ matrix.versions.flags }}" \
@@ -98,8 +98,8 @@ jobs:
           --extra-lib-dirs=${HOME}/usr/lib
         cabal v2-build
 
-    - name: Test core
-      working-directory: core
+    - name: Test Lua
+      working-directory: lua
       run: |
         cabal v2-test --enable-tests
 

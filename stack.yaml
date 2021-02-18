@@ -1,5 +1,5 @@
 flags: {}
 packages:
 - '.'
-- 'core'
+- 'lua'
 resolver: 'lts-17.4'

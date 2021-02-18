@@ -1,13 +1,13 @@
 cabal-version:       2.2
-name:                hslua-core
+name:                lua
 version:             1.0.0
-synopsis:            Bindings to Lua, an embeddable scripting language
-description:         HsLua core provides bindings and types to bridge
+synopsis:            Lua, an embeddable scripting language
+description:         This package provides bindings and types to bridge
                      Haskell and <https://www.lua.org/ Lua>.
                      .
-                     This package contains a full Lua interpreter version
-                     5.3.6. If you want to link it with a system-wide Lua
-                     installation, use the @system-lua@ flag.
+                     The full Lua interpreter version 5.3.6 is included.
+                     Alternatively, a system-wide Lua installation can be
+                     linked instead.
 homepage:            https://hslua.github.io/
 bug-reports:         https://github.com/hslua/hslua/issues
 license:             MIT
@@ -33,7 +33,7 @@ tested-with:         GHC == 8.0.2
 source-repository head
   type:                git
   location:            https://github.com/hslua/hslua.git
-  subdir:              core
+  subdir:              lua
 
 flag system-lua
   default:             False
@@ -188,11 +188,11 @@ library
   if flag(hardcode-reg-keys)
     cpp-options:         -DHARDCODE_REG_KEYS
 
-test-suite test-hslua-core
+test-suite test-lua
   import:              common-options
   type:                exitcode-stdio-1.0
-  main-is:             test-hslua-core.hs
+  main-is:             test-lua.hs
   hs-source-dirs:      test
-  build-depends:       hslua-core
+  build-depends:       lua
                      , tasty                >= 0.11
                      , tasty-hunit          >= 0.9

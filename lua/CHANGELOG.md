@@ -1,8 +1,8 @@
 # Changelog
 
-`hslua-core` uses [PVP Versioning][1].
+`lua` uses [PVP Versioning][1].
 
-## hslua-core 1.0
+## lua 1.0
 
 Release pending
 
