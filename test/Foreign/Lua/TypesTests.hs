@@ -141,7 +141,7 @@ roundtrip x = Lua.run $ do
 
 -- | More involved check that the Peekable and Pushable instances of a
 -- datatype work
-prop_stackPushingPulling :: (Show t, Eq t, Pushable t, Peekable t) => t -> Property
+prop_stackPushingPulling :: (Eq t, Pushable t, Peekable t) => t -> Property
 prop_stackPushingPulling t = monadicIO $ do
   -- Init Lua state
   l <- QCMonadic.run newstate
