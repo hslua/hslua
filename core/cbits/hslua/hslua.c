@@ -1,6 +1,6 @@
+#include <HsFFI.h>
 #include <stdio.h>
 #include <string.h>
-#include <HsFFI.h>
 #include "hslua.h"
 #include "hslcall.h"
 
