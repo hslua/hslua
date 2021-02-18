@@ -24,6 +24,9 @@ int hslua_userdata_gc(lua_State *L)
 /*
 ** Creates a new userdata metatable for Haskell objects, or gets
 ** is from the registry if possible.
+**
+** Returns `true` if the metatable was created, and `false` if it
+** already existed and was fetched from the registry.
 */
 int hslua_newudmetatable(lua_State *L, const char *tname)
 {

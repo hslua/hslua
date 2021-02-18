@@ -84,10 +84,11 @@ void *hslua_hs_fun_ptr(lua_State *L)
 */
 void hslua_registerhsfunmetatable(lua_State *L)
 {
-  hslua_newudmetatable(L, HSLUA_HSFUN_NAME);
-  lua_pushcfunction(L, &hslua_call_wrapped_hs_fun);
-  lua_setfield(L, -2, "__call");
-  lua_pop(L, 1);
+  if (hslua_newudmetatable(L, HSLUA_HSFUN_NAME)) {
+    lua_pushcfunction(L, &hslua_call_wrapped_hs_fun);
+    lua_setfield(L, -2, "__call");
+    lua_pop(L, 1);
+  }
 }
 
 /*
