@@ -74,14 +74,16 @@ flag pkg-config
                        Setting this flag implies `system-lua`.
 
 flag hardcode-reg-keys
-  default:             False
+  default:             True
   manual:              True
-
   description:         Don't use CAPI to determine the names of certain
-                       registry key names but Use hard coded values for
-                       instead. This flag is required when compiling against
-                       Lua 5.3.3 or earlier, as those do not expose the
+                       registry key names but use hard coded values instead.
+                       This flag is required when compiling against Lua 5.3.3
+                       or earlier, as those versions do not expose the
                        necessary information in the @lauxlib.h@ header file.
+                       Setting this flag should usually be unproblematic,
+                       except if the used Lua version has been patched
+                       heavily.
 
 common common-options
   default-language:    Haskell2010
