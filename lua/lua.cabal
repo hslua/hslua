@@ -104,7 +104,14 @@ common common-options
 
 library
   import:              common-options
-  exposed-modules:     Foreign.Lua.Raw.Auxiliary
+  exposed-modules:     Foreign.Lua.Auxiliary
+                     , Foreign.Lua.Call
+                     , Foreign.Lua.Constants
+                     , Foreign.Lua.Error
+                     , Foreign.Lua.Functions
+                     , Foreign.Lua.Types
+                     , Foreign.Lua.Userdata
+                     , Foreign.Lua.Raw.Auxiliary
                      , Foreign.Lua.Raw.Call
                      , Foreign.Lua.Raw.Constants
                      , Foreign.Lua.Raw.Error
