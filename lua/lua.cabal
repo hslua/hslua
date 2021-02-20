@@ -109,6 +109,8 @@ library
                      , Foreign.Lua.Call
                      , Foreign.Lua.Constants
                      , Foreign.Lua.Error
+                     , Foreign.Lua.Ersatz.Auxiliary
+                     , Foreign.Lua.Ersatz.Functions
                      , Foreign.Lua.Functions
                      , Foreign.Lua.Types
                      , Foreign.Lua.Userdata

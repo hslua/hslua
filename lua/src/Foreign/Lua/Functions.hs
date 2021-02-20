@@ -25,9 +25,85 @@ However, all function can trigger garbage collection. If that can lead
 to problems, then the package should be configured without flag
 @allow-unsafe-gc@.
 -}
-module Foreign.Lua.Functions where
+module Foreign.Lua.Functions
+  ( -- * State manipulation
+    lua_close
+    -- * Basic stack manipulation
+  , lua_absindex
+  , lua_gettop
+  , lua_settop
+  , lua_pushvalue
+  , lua_pop
+  , lua_copy
+  , lua_remove
+  , lua_insert
+  , lua_replace
+  , lua_checkstack
+    -- * Access functions (stack -> Haskell)
+  , lua_isnumber
+  , lua_isinteger
+  , lua_isstring
+  , lua_iscfunction
+  , lua_isuserdata
+  , lua_type
+  , lua_typename
+  , lua_rawequal
+  , lua_toboolean
+  , lua_tocfunction
+  , lua_tointegerx
+  , lua_tonumberx
+  , lua_tolstring
+  , lua_topointer
+  , lua_tothread
+  , lua_touserdata
+  , lua_rawlen
+    -- * Push functions (Haskell -> stack)
+  , lua_pushnil
+  , lua_pushnumber
+  , lua_pushinteger
+  , lua_pushlstring
+  , lua_pushcclosure
+  , lua_pushboolean
+  , lua_pushlightuserdata
+  , lua_pushthread
+    -- * Get functions (Lua -> stack)
+  , lua_rawget
+  , lua_rawgeti
+  , lua_createtable
+  , lua_newuserdata
+  , lua_getmetatable
+    -- * Set functions (stack -> Lua)
+  , lua_rawset
+  , lua_rawseti
+  , lua_setmetatable
+    -- * Load and run Lua code
+  , lua_pcall
+  , lua_load
+    -- * Coroutine functions
+  , lua_status
+    -- * Garbage-collection
+  , lua_gc
+    -- * Miscellaneous functions
+  , lua_pushglobaltable
+    -- * Lua Libraries
+  , luaL_openlibs
+  , lua_open_base_ptr
+  , lua_open_table_ptr
+  , lua_open_io_ptr
+  , lua_open_os_ptr
+  , lua_open_string_ptr
+  , lua_open_math_ptr
+  , lua_open_debug_ptr
+  , lua_open_package_ptr
+    -- * Ersatz functions
+  , module Foreign.Lua.Ersatz.Functions
+  , module Foreign.Lua.Ersatz.Auxiliary
+  )
+where
 
 import Foreign.C
+import Foreign.Lua.Ersatz.Auxiliary
+import Foreign.Lua.Ersatz.Functions
 import Foreign.Lua.Types as Lua
 import Foreign.Ptr
 
@@ -135,13 +211,6 @@ foreign import ccall SAFTY "lua.h lua_type"
 foreign import ccall SAFTY "lua.h lua_typename"
   lua_typename :: Lua.State -> TypeCode -> IO CString
 
--- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_compare \
--- @lua_compare@> which catches any Lua errors.
-foreign import capi safe "hslua.h hslua_compare"
-  hslua_compare :: Lua.State
-                -> StackIndex -> StackIndex -> CInt
-                -> Ptr StatusCode -> IO LuaBool
-
 -- | Wrapper of @lua_rawequal@. See the Lua docs at
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawequal>.
 foreign import ccall SAFTY "lua.h lua_rawequal"
@@ -240,12 +309,6 @@ foreign import ccall SAFTY "lua.h lua_pushthread"
 
 -- * Get functions (Lua -> stack)
 
--- | Wrapper around
--- <https://lua.org/manual/5.3/manual.html#lua_gettable lua_gettable>.
--- which catches any Lua errors.
-foreign import ccall safe "hslua.h hslua_gettable"
-  hslua_gettable :: Lua.State -> StackIndex -> Ptr StatusCode -> IO ()
-
 -- | Wrapper of @lua_rawget@. See the Lua docs at
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawget>.
 foreign import ccall SAFTY "lua.h lua_rawget"
@@ -271,19 +334,8 @@ foreign import ccall SAFTY "lua.h lua_newuserdata"
 foreign import ccall SAFTY "lua.h lua_getmetatable"
   lua_getmetatable :: Lua.State -> StackIndex -> IO LuaBool
 
--- | Wrapper around
--- <https://lua.org/manual/5.3/manual.html#lua_getglobal lua_getglobal>
--- which catches any Lua errors.
-foreign import ccall safe "hslua.h hslua_getglobal"
-  hslua_getglobal :: Lua.State -> CString -> CSize -> Ptr StatusCode -> IO ()
-
 
 -- * Set functions (stack -> Lua)
-
--- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_settable \
--- @lua_settable@> which catches any Lua errors.
-foreign import ccall safe "hslua.h hslua_settable"
-  hslua_settable :: Lua.State -> StackIndex -> Ptr StatusCode -> IO ()
 
 -- | Wrapper of @lua_rawset@. See the Lua docs at
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawset>.
@@ -299,11 +351,6 @@ foreign import ccall SAFTY "lua.h lua_rawseti"
 -- <https://www.lua.org/manual/5.3/manual.html#lua_setmetatable>.
 foreign import ccall SAFTY "lua.h lua_setmetatable"
   lua_setmetatable :: Lua.State -> StackIndex -> IO ()
-
--- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_setglobal \
--- @lua_setglobal@> which catches any Lua errors.
-foreign import ccall safe "hslua.h hslua_setglobal"
-  hslua_setglobal :: Lua.State -> CString -> CSize -> Ptr StatusCode -> IO ()
 
 
 -- * \'load\' and \'call\' functions (load and run Lua code)
@@ -338,24 +385,6 @@ foreign import ccall safe "lua.h lua_gc"
 
 
 -- * Miscellaneous functions
-
--- | Replacement for
--- <https://lua.org/manual/5.3/manual.html#lua_error lua_error>; it uses
--- the HsLua error signaling convention instead of raw Lua errors.
-foreign import ccall SAFTY "hslua.h hslua_error"
-  hslua_error :: Lua.State -> IO NumResults
-
--- | Wrapper around
--- <https://lua.org/manual/5.3/manual.html#lua_next lua_next> which
--- catches any Lua errors.
-foreign import ccall safe "hslua.h hslua_next"
-  hslua_next :: Lua.State -> StackIndex -> Ptr StatusCode -> IO LuaBool
-
--- | Wrapper around
--- <https://lua.org/manual/5.3/manual.html#lua_concat lua_concat>
--- which catches any Lua errors.
-foreign import ccall safe "hslua.h hslua_concat"
-  hslua_concat :: Lua.State -> NumArgs -> Ptr StatusCode -> IO ()
 
 -- | Wrapper of @lua_pushglobaltable@. See the Lua docs at
 -- <https://www.lua.org/manual/5.3/manual.html#lua_pushglobaltable>.

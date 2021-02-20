@@ -12,7 +12,9 @@ Portability : non-portable (depends on GHC)
 Raw bindings to functions and constants of the auxiliary library.
 -}
 module Foreign.Lua.Auxiliary
-  ( hsluaL_newstate
+  ( -- * Creating a Lua state
+    hsluaL_newstate
+    -- * The Auxiliary Library
   , hsluaL_tolstring
   , luaL_getmetafield
   , luaL_getmetatable
@@ -29,9 +31,11 @@ module Foreign.Lua.Auxiliary
   , Reference (..)
   , fromReference
   , toReference
+    -- * Ersatz functions
   ) where
 
 import Foreign.C (CChar, CInt (CInt), CSize (CSize), CString)
+import Foreign.Lua.Ersatz.Auxiliary (hsluaL_newstate, hsluaL_tolstring)
 import Foreign.Lua.Types (StackIndex)
 import Foreign.Ptr
 import qualified Foreign.Lua.Types as Lua
@@ -86,14 +90,8 @@ foreign import capi SAFTY "lauxlib.h luaL_loadbuffer"
 foreign import ccall SAFTY "lauxlib.h luaL_newmetatable"
   luaL_newmetatable :: Lua.State -> CString -> IO Lua.LuaBool
 
-foreign import ccall unsafe "lauxlib.h hsluaL_newstate"
-  hsluaL_newstate :: IO Lua.State
-
 foreign import ccall SAFTY "lauxlib.h luaL_ref"
   luaL_ref :: Lua.State -> StackIndex -> IO CInt
-
-foreign import ccall safe "hslua.h hsluaL_tolstring"
-  hsluaL_tolstring :: Lua.State -> StackIndex -> Ptr CSize -> IO (Ptr CChar)
 
 foreign import capi SAFTY "lauxlib.h luaL_traceback"
   luaL_traceback :: Lua.State -> Lua.State -> CString -> CInt -> IO ()
