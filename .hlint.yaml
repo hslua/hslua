@@ -3,22 +3,18 @@
 
 # Ignore warnings if the code is fine the way it is.
 - ignore:
-    name: "Use camelCase"
-    within: "Foreign.Lua.FunctionCalling"
-
-- ignore:
     name: "Avoid lambda using `infix`"
-    within: "Foreign.Lua.Core.Functions"
+    within: "HsLua.Core.Functions"
 
 - ignore:
     name: "Reduce duplication"
-    within: "Foreign.Lua.Types.Pushable"
+    within: "HsLua.Types.Pushable"
 
 - ignore:
     name: "Use camelCase"
     within:
-      - "Foreign.Lua.Raw.Call"
-      - "Foreign.Lua.Raw.Userdata"
+      - "Foreign.Lua.Call"
+      - "Foreign.Lua.Userdata"
 
 
 - modules:
