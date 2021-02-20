@@ -63,23 +63,23 @@ common common-options
 
 library
   import:              common-options
-  exposed-modules:     Foreign.Lua
-                     , Foreign.Lua.Call
-                     , Foreign.Lua.Core
-                     , Foreign.Lua.Core.Error
-                     , Foreign.Lua.Core.Types
-                     , Foreign.Lua.FunctionCalling
-                     , Foreign.Lua.Module
-                     , Foreign.Lua.Peek
-                     , Foreign.Lua.Push
-                     , Foreign.Lua.Types
-                     , Foreign.Lua.Types.Peekable
-                     , Foreign.Lua.Types.Pushable
-                     , Foreign.Lua.Userdata
-                     , Foreign.Lua.Utf8
-                     , Foreign.Lua.Util
-  other-modules:       Foreign.Lua.Core.Auxiliary
-                     , Foreign.Lua.Core.Functions
+  exposed-modules:     HsLua
+                     , HsLua.Call
+                     , HsLua.Core
+                     , HsLua.Core.Error
+                     , HsLua.Core.Types
+                     , HsLua.FunctionCalling
+                     , HsLua.Module
+                     , HsLua.Peek
+                     , HsLua.Push
+                     , HsLua.Types
+                     , HsLua.Types.Peekable
+                     , HsLua.Types.Pushable
+                     , HsLua.Userdata
+                     , HsLua.Utf8
+                     , HsLua.Util
+  other-modules:       HsLua.Core.Auxiliary
+                     , HsLua.Core.Functions
   reexported-modules:  lua:Foreign.Lua.Raw.Auxiliary
                      , lua:Foreign.Lua.Raw.Call
                      , lua:Foreign.Lua.Raw.Constants
@@ -101,20 +101,20 @@ test-suite test-hslua
   main-is:             test-hslua.hs
   hs-source-dirs:      test
   ghc-options:         -threaded
-  other-modules:       Foreign.LuaTests
-                     , Foreign.Lua.CallTests
-                     , Foreign.Lua.CoreTests
-                     , Foreign.Lua.Core.AuxiliaryTests
-                     , Foreign.Lua.Core.ErrorTests
-                     , Foreign.Lua.FunctionCallingTests
-                     , Foreign.Lua.ModuleTests
-                     , Foreign.Lua.PeekTests
-                     , Foreign.Lua.PushTests
-                     , Foreign.Lua.TypesTests
-                     , Foreign.Lua.Types.PeekableTests
-                     , Foreign.Lua.Types.PushableTests
-                     , Foreign.Lua.UserdataTests
-                     , Foreign.Lua.UtilTests
+  other-modules:       HsLuaTests
+                     , HsLua.CallTests
+                     , HsLua.CoreTests
+                     , HsLua.Core.AuxiliaryTests
+                     , HsLua.Core.ErrorTests
+                     , HsLua.FunctionCallingTests
+                     , HsLua.ModuleTests
+                     , HsLua.PeekTests
+                     , HsLua.PushTests
+                     , HsLua.TypesTests
+                     , HsLua.Types.PeekableTests
+                     , HsLua.Types.PushableTests
+                     , HsLua.UserdataTests
+                     , HsLua.UtilTests
                      , Test.HsLua.Arbitrary
                      , Test.HsLua.Util
   build-depends:       hslua

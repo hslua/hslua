@@ -23,9 +23,9 @@ THE SOFTWARE.
 {-| Instances for QuickCheck's Arbitrary. -}
 module Test.HsLua.Arbitrary () where
 
-import Foreign.Lua (Type)
+import HsLua (Type)
 import Test.QuickCheck (Arbitrary(arbitrary))
-import qualified Foreign.Lua as Lua
+import qualified HsLua as Lua
 import qualified Test.QuickCheck as QC
 
 instance Arbitrary Lua.Integer where

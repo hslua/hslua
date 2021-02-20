@@ -32,11 +32,11 @@ module Test.HsLua.Util
   ) where
 
 import Data.ByteString (ByteString)
-import Foreign.Lua ( Lua, run, runEither, loadstring, call, multret)
+import HsLua (Lua, run, runEither, loadstring, call, multret)
 import Test.Tasty (TestTree)
 import Test.Tasty.HUnit (Assertion, assertBool, assertFailure, testCase, (@?=))
 
-import qualified Foreign.Lua as Lua
+import qualified HsLua as Lua
 
 pushLuaExpr :: ByteString -> Lua ()
 pushLuaExpr expr = loadstring ("return " <> expr) *> call 0 multret

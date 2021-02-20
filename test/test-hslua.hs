@@ -21,18 +21,18 @@ THE SOFTWARE.
 -}
 import Test.Tasty (TestTree, defaultMain, testGroup)
 
-import qualified Foreign.LuaTests
-import qualified Foreign.Lua.CallTests
-import qualified Foreign.Lua.CoreTests
-import qualified Foreign.Lua.FunctionCallingTests
-import qualified Foreign.Lua.ModuleTests
-import qualified Foreign.Lua.PeekTests
-import qualified Foreign.Lua.PushTests
-import qualified Foreign.Lua.TypesTests
-import qualified Foreign.Lua.Types.PeekableTests
-import qualified Foreign.Lua.Types.PushableTests
-import qualified Foreign.Lua.UserdataTests
-import qualified Foreign.Lua.UtilTests
+import qualified HsLuaTests
+import qualified HsLua.CallTests
+import qualified HsLua.CoreTests
+import qualified HsLua.FunctionCallingTests
+import qualified HsLua.ModuleTests
+import qualified HsLua.PeekTests
+import qualified HsLua.PushTests
+import qualified HsLua.TypesTests
+import qualified HsLua.Types.PeekableTests
+import qualified HsLua.Types.PushableTests
+import qualified HsLua.UserdataTests
+import qualified HsLua.UtilTests
 
 main :: IO ()
 main = defaultMain $ testGroup "hslua" tests
@@ -40,18 +40,18 @@ main = defaultMain $ testGroup "hslua" tests
 -- | HSpec tests
 tests :: [TestTree]
 tests =
-  [ Foreign.Lua.CoreTests.tests
-  , Foreign.Lua.PushTests.tests
-  , Foreign.Lua.FunctionCallingTests.tests
-  , Foreign.Lua.UtilTests.tests
+  [ HsLua.CoreTests.tests
+  , HsLua.PushTests.tests
+  , HsLua.FunctionCallingTests.tests
+  , HsLua.UtilTests.tests
   , testGroup "Sending and receiving values from the stack"
-    [ Foreign.Lua.TypesTests.tests
-    , Foreign.Lua.Types.PeekableTests.tests
-    , Foreign.Lua.Types.PushableTests.tests
+    [ HsLua.TypesTests.tests
+    , HsLua.Types.PeekableTests.tests
+    , HsLua.Types.PushableTests.tests
     ]
-  , Foreign.Lua.UserdataTests.tests
-  , Foreign.Lua.ModuleTests.tests
-  , Foreign.Lua.CallTests.tests
-  , Foreign.LuaTests.tests
-  , Foreign.Lua.PeekTests.tests
+  , HsLua.UserdataTests.tests
+  , HsLua.ModuleTests.tests
+  , HsLua.CallTests.tests
+  , HsLuaTests.tests
+  , HsLua.PeekTests.tests
   ]
