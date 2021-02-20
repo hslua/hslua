@@ -124,24 +124,24 @@ tests = testGroup "Push"
       [ testProperty "creates a table" $ \x -> monadicIO $ do
           producesTable <- run $ Lua.run $ do
             pushList pushBool x
-            listType <- Lua.ltype Lua.stackTop
+            listType <- Lua.ltype Lua.top
             return $ Lua.TypeTable == listType
           assert producesTable
 
       , testProperty "numeric indices start at 1" $ \list -> monadicIO $ do
           retrievedList <- run $ Lua.run $ do
             pushList (pushIntegral @Lua.Integer) list
-            listIdx <- Lua.absindex Lua.stackTop
+            listIdx <- Lua.absindex Lua.top
             forM [1..(fromIntegral $ length list)] $ \n ->
               Lua.rawgeti listIdx n
-              *> (fromMaybe 0 <$> Lua.tointeger Lua.stackTop)
+              *> (fromMaybe 0 <$> Lua.tointeger Lua.top)
               <* Lua.pop 1
           assert $ retrievedList == list
 
       , testProperty "table size equals list length" $ \list -> monadicIO $ do
           tableSize <- run $ Lua.run $ do
             pushList pushString list
-            Lua.rawlen Lua.stackTop
+            Lua.rawlen Lua.top
           assert $ tableSize == length list
 
       , testSingleElementProperty (pushList pushText)
@@ -151,7 +151,7 @@ tests = testGroup "Push"
       [ testProperty "creates a table" $ \x -> monadicIO $ do
           producesTable <- run $ Lua.run $ do
             pushSet pushString x
-            listType <- Lua.ltype Lua.stackTop
+            listType <- Lua.ltype Lua.top
             return $ Lua.TypeTable == listType
           assert producesTable
 
@@ -162,8 +162,8 @@ tests = testGroup "Push"
               hasKey <- run $ Lua.run $ do
                 pushSet (pushIntegral @Lua.Integer) set
                 pushIntegral el
-                Lua.gettable (Lua.nthFromTop 2)
-                Lua.toboolean Lua.stackTop
+                Lua.gettable (Lua.nth 2)
+                Lua.toboolean Lua.top
               assert hasKey
 
       , testSingleElementProperty (pushSet pushText)
@@ -173,7 +173,7 @@ tests = testGroup "Push"
       [ testProperty "creates a table" $ \m -> monadicIO $ do
           producesTable <- run $ Lua.run $ do
             pushMap pushString pushString m
-            listType <- Lua.ltype Lua.stackTop
+            listType <- Lua.ltype Lua.top
             return $ Lua.TypeTable == listType
           assert producesTable
 
@@ -184,9 +184,9 @@ tests = testGroup "Push"
               tabVal <- run $ Lua.run $ do
                 pushMap pushText (pushRealFloat @Lua.Number) m
                 pushText k
-                Lua.gettable (Lua.nthFromTop 2)
+                Lua.gettable (Lua.nth 2)
                 fromMaybe (error "key not found") <$>
-                  Lua.tonumber Lua.stackTop
+                  Lua.tonumber Lua.top
               assert (tabVal == v)
 
       , testSingleElementProperty (pushMap pushText (pushRealFloat @Double))
@@ -201,13 +201,13 @@ assertLuaEqual action lit =
   let comparison = Lua.run $ do
         action
         pushLuaExpr lit
-        isSame <- Lua.rawequal (Lua.nthFromTop 1) (Lua.nthFromTop 2)
+        isSame <- Lua.rawequal (Lua.nth 1) (Lua.nth 2)
         if isSame
           then return Nothing
           else do
-            expectedType <- Lua.ltype (Lua.nthFromTop 1) >>= Lua.typename
-            actualType <- Lua.ltype (Lua.nthFromTop 2) >>= Lua.typename
-            actual <- Lua.tostring' (Lua.nthFromTop 2)
+            expectedType <- Lua.ltype (Lua.nth 1) >>= Lua.typename
+            actualType <- Lua.ltype (Lua.nth 2) >>= Lua.typename
+            actual <- Lua.tostring' (Lua.nth 2)
             return . Just $
               "Expected '" <> Utf8.toString lit <> "' (" <> expectedType <>
               ") but got '" <> Utf8.toString actual <> "'" <>

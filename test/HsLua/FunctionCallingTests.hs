@@ -50,7 +50,7 @@ tests = testGroup "FunctionCalling"
               return (i1 + i2)
         Lua.registerHaskellFunction "add" add
         Lua.loadstring "return add(23, 5)" *> Lua.call 0 1
-        Lua.peek Lua.stackTop <* Lua.pop 1
+        Lua.peek Lua.top <* Lua.pop 1
 
     , "push multi-argument haskell function to lua" =:
       (0 :: Lua.Integer) `shouldBeResultOf` do
@@ -70,7 +70,7 @@ tests = testGroup "FunctionCalling"
         Lua.pushinteger 71
         Lua.pushinteger 107
         Lua.call 2 1
-        Lua.peek Lua.stackTop <* Lua.pop 1
+        Lua.peek Lua.top <* Lua.pop 1
 
     , "Error in Haskell function is converted into Lua error" =:
       (False, "Error during function call: foo" :: String) `shouldBeResultOf` do
@@ -78,7 +78,7 @@ tests = testGroup "FunctionCalling"
         Lua.pushHaskellFunction (Lua.throwException "foo" :: Lua ())
         Lua.setglobal "throw_foo"
         Lua.loadstring "return pcall(throw_foo)" *> Lua.call 0 2
-        (,) <$> Lua.peek (Lua.nthFromTop 2) <*> Lua.peek (Lua.nthFromTop 1)
+        (,) <$> Lua.peek (Lua.nth 2) <*> Lua.peek (Lua.nth 1)
     ]
 
   , testGroup "call lua function from haskell"

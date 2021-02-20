@@ -46,7 +46,7 @@ tests = testGroup "Core module"
     [ "copies stack elements using positive indices" ?: do
         pushLuaExpr "5, 4, 3, 2, 1"
         copy 4 3
-        rawequal (nthFromBottom 4) (nthFromBottom 3)
+        rawequal (nthBottom 4) (nthBottom 3)
 
     , "copies stack elements using negative indices" ?: do
         pushLuaExpr "5, 4, 3, 2, 1"
@@ -72,10 +72,10 @@ tests = testGroup "Core module"
 
   , testCase "absindex" . run $ do
       pushLuaExpr "1, 2, 3, 4"
-      liftIO . assertEqual "index from bottom doesn't change" (nthFromBottom 3)
-        =<< absindex (nthFromBottom 3)
-      liftIO . assertEqual "index from top is made absolute" (nthFromBottom 2)
-        =<< absindex (nthFromTop 3)
+      liftIO . assertEqual "index from bottom doesn't change" (nthBottom 3)
+        =<< absindex (nthBottom 3)
+      liftIO . assertEqual "index from top is made absolute" (nthBottom 2)
+        =<< absindex (nth 3)
       liftIO . assertEqual "pseudo indices are left unchanged" registryindex
         =<< absindex registryindex
 
@@ -83,13 +83,13 @@ tests = testGroup "Core module"
     Just 13.37 `shouldBeResultOf` do
       pushLuaExpr "{sum = 13.37}"
       pushstring "sum"
-      gettable (nthFromTop 2)
-      tonumber stackTop
+      gettable (nth 2)
+      tonumber top
 
   , "rawlen gives the length of a list" =:
     7 `shouldBeResultOf` do
       pushLuaExpr "{1, 1, 2, 3, 5, 8, 13}"
-      rawlen stackTop
+      rawlen top
 
   , testGroup "Type checking"
     [ "isfunction" ?: do
@@ -150,17 +150,17 @@ tests = testGroup "Core module"
       [ "get a string" =:
         Just "a string" `shouldBeResultOf` do
           pushLuaExpr "'a string'"
-          tostring stackTop
+          tostring top
 
       , "get a number as string" =:
         Just "17.0" `shouldBeResultOf` do
           pushnumber 17
-          tostring stackTop
+          tostring top
 
       , "fail when looking at a boolean" =:
         Nothing `shouldBeResultOf` do
           pushboolean True
-          tostring stackTop
+          tostring top
       ]
     ]
 
@@ -171,22 +171,22 @@ tests = testGroup "Core module"
 
       -- get first field
       getglobal "hamburg"
-      rawgeti stackTop 1 -- first field
-      tostring stackTop
+      rawgeti top 1 -- first field
+      tostring top
 
   , testGroup "get functions (Lua to stack)"
     [ "unicode characters in field name are ok" =:
       True `shouldBeResultOf` do
         pushLuaExpr "{['\xE2\x9A\x94'] = true}"
-        getfield stackTop "⚔"
-        toboolean stackTop
+        getfield top "⚔"
+        toboolean top
     ]
 
   , "can push and receive a thread" ?: do
       luaSt <- state
       isMain <- pushthread
       liftIO (assertBool "pushing the main thread should return True" isMain)
-      luaSt' <- peek stackTop
+      luaSt' <- peek top
       return (luaSt == luaSt')
 
   , "different threads are not equal in Haskell" ?:
@@ -206,10 +206,10 @@ tests = testGroup "Core module"
       Yield `shouldBeResultOf` do
         openlibs
         getglobal "coroutine"
-        getfield stackTop "resume"
+        getfield top "resume"
         pushLuaExpr "coroutine.create(function() coroutine.yield(9) end)"
         contThread <- fromMaybe (Prelude.error "not a thread at top of stack")
-                      <$> tothread stackTop
+                      <$> tothread top
         call 1 0
         liftIO $ runWith contThread status
     ]
@@ -221,8 +221,8 @@ tests = testGroup "Core module"
           pushstring "yep"
           setglobal "TEST"
           pushglobaltable
-          getfield stackTop "TEST"
-          tostring' stackTop
+          getfield top "TEST"
+          tostring' top
       ]
     ]
 
@@ -231,30 +231,30 @@ tests = testGroup "Core module"
       [ "integers are converted in base10" =:
         "5" `shouldBeResultOf` do
           pushinteger 5
-          tostring' stackTop
+          tostring' top
 
       , "a nil value is converted into the literal string 'nil'" =:
         "nil" `shouldBeResultOf` do
           pushnil
-          tostring' stackTop
+          tostring' top
 
       , "strings are returned verbatim" =:
         "Hello\NULWorld" `shouldBeResultOf` do
           pushstring "Hello\NULWorld"
-          tostring' stackTop
+          tostring' top
 
       , "string for userdata shows the pointer value" =:
         ("userdata: " `B.isPrefixOf`) `shouldHoldForResultOf` do
           l <- state
           liftIO . Foreign.alloca $ \ptr ->
             runWith l (pushlightuserdata (ptr :: Foreign.Ptr Int))
-          tostring' stackTop
+          tostring' top
 
       , "string is also pushed to the stack" =:
         Just "true" `shouldBeResultOf` do
           pushboolean True
-          _ <- tostring' stackTop
-          tostring stackTop  -- note the use of tostring instead of tostring'
+          _ <- tostring' top
+          tostring top  -- note the use of tostring instead of tostring'
 
       , "errors during metamethod execution are caught" =:
         "'__tostring' must return a string" `shouldBeErrorMessageOf` do
@@ -262,7 +262,7 @@ tests = testGroup "Core module"
           let mt = "{__tostring = function() return nil end }"
           let tbl = "return setmetatable({}, " <> mt <> ")"
           openlibs <* dostring tbl
-          tostring' stackTop
+          tostring' top
       ]
 
     , testGroup "ref and unref"
@@ -277,7 +277,7 @@ tests = testGroup "Core module"
           cityref <- Lua.ref Lua.registryindex
           Lua.pushnil -- dummy op
           Lua.getref Lua.registryindex cityref
-          Lua.tostring Lua.stackTop
+          Lua.tostring Lua.top
 
       , "references become invalid after unref" =:
         Nothing `shouldBeResultOf` do
@@ -285,7 +285,7 @@ tests = testGroup "Core module"
           cityref <- Lua.ref Lua.registryindex
           Lua.unref Lua.registryindex cityref
           Lua.getref Lua.registryindex cityref
-          Lua.tostring Lua.stackTop
+          Lua.tostring Lua.top
       ]
     ]
 
@@ -321,7 +321,7 @@ tests = testGroup "Core module"
         Just "\NUL" `shouldBeResultOf` do
           _ <- loadbuffer "return '\NUL'" "test"
           call 0 1
-          tostring stackTop
+          tostring top
       ]
 
     , testGroup "loadfile"
@@ -340,7 +340,7 @@ tests = testGroup "Core module"
           getglobal "fib"
           pushinteger 6
           call 1 1
-          peek stackTop
+          peek top
       ]
 
     , testGroup "dofile"
@@ -362,7 +362,7 @@ tests = testGroup "Core module"
           getglobal "fib"
           pushinteger 8
           call 1 1
-          peek stackTop
+          peek top
       ]
     ]
 
@@ -376,7 +376,7 @@ tests = testGroup "Core module"
       ErrErr `shouldBeResultOf` do
         pushLuaExpr "function () error 'error in error handler' end"
         _ <- loadstring "error \"this fails\""
-        pcall 0 0 (Just (nthFromTop 2))
+        pcall 0 0 (Just (nth 2))
     ]
 
   , testCase "garbage collection" . run $

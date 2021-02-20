@@ -139,7 +139,7 @@ toByteString :: StackIndex -> Lua (Maybe ByteString)
 toByteString idx = do
   -- copy value, as tostring converts numbers to strings *in-place*.
   pushvalue idx
-  tostring stackTop <* pop 1
+  tostring top <* pop 1
 
 -- | Retrieves a 'ByteString' as a raw string.
 peekByteString :: Peeker ByteString
@@ -203,7 +203,7 @@ peekList :: Peeker a -> Peeker [a]
 peekList peekElement = typeChecked "table" istable $ \idx -> do
   let elementsAt [] = return (Right [])
       elementsAt (i : is) = do
-        eitherX <- rawgeti idx i *> peekElement (nthFromTop 1) <* pop 1
+        eitherX <- rawgeti idx i *> peekElement top <* pop 1
         case eitherX of
           Right x  -> second (x:) <$> elementsAt is
           Left err -> return . Left $
@@ -241,8 +241,8 @@ nextPair keyPeeker valuePeeker idx = retrieving "key-value pair" <$> do
   if not hasNext
     then return $ Right Nothing
     else do
-      key   <- retrieving "key"   <$> keyPeeker   (nthFromTop 2)
-      value <- retrieving "value" <$> valuePeeker (nthFromTop 1)
+      key   <- retrieving "key"   <$> keyPeeker   (nth 2)
+      value <- retrieving "value" <$> valuePeeker (nth 1)
       pop 1    -- remove value, leave the key
       return $ curry Just <$> key <*> value
 

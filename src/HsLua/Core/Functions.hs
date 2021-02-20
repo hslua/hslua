@@ -763,7 +763,7 @@ setfield :: StackIndex -> String -> Lua ()
 setfield i s = do
   absidx <- absindex i
   pushstring (Utf8.fromString s)
-  insert (nthFromTop 2)
+  insert (nthTop 2)
   settable absidx
 
 -- | Pops a value from the stack and sets it as the new value of global @name@.

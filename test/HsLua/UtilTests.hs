@@ -36,16 +36,16 @@ tests = testGroup "Utilities"
   [ "Optional return the value if it exists" =:
     (Just "Moin" :: Maybe String) `shouldBeResultOf` do
       push ("Moin" :: String)
-      fromOptional <$> peek stackTop
+      fromOptional <$> peek top
 
   , "Optional can deal with nil values" =:
     (Nothing :: Maybe String) `shouldBeResultOf` do
       pushnil
-      fromOptional <$> peek stackTop
+      fromOptional <$> peek top
 
   , "Optional can deal with nonexistent (none) values" =:
     Nothing `shouldBeResultOf`
-      fmap fromOptional (peek (nthFromBottom 20) :: Lua (Optional String))
+      fmap fromOptional (peek (nthBottom 20) :: Lua (Optional String))
 
   , "raiseError causes a Lua error" =:
     "test error message" `shouldBeErrorMessageOf` do
@@ -67,13 +67,13 @@ tests = testGroup "Utilities"
     [ "return right result on success" =:
       Right (5 :: Lua.Integer) `shouldBeResultOf` do
         pushinteger 5
-        peekEither stackTop
+        peekEither top
 
     , "return error message on failure" =:
       Left "Could not read list: expected integer, got 'false' (boolean)"
       `shouldBeResultOf` do
         pushLuaExpr "{1, false}"
-        peekEither stackTop :: Lua (Either String [Lua.Integer])
+        peekEither top :: Lua (Either String [Lua.Integer])
     ]
 
   , testGroup "popValue"
@@ -98,7 +98,7 @@ tests = testGroup "Utilities"
 
     , "error messages equals that of peek" ?: do
         Lua.pushstring "not a number"
-        p1 <- Lua.try (Lua.peek Lua.stackTop :: Lua Lua.Integer)
+        p1 <- Lua.try (Lua.peek Lua.top :: Lua Lua.Integer)
         p2 <- Lua.try (Lua.popValue :: Lua Lua.Integer)
         return (p1 == p2)
     ]

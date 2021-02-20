@@ -28,7 +28,7 @@ module HsLua.Util
 
 import Control.Exception (bracket, try)
 import Data.List (groupBy)
-import HsLua.Core (Lua, NumResults, StackIndex)
+import HsLua.Core (Lua, NumResults, StackIndex, nth, top)
 import HsLua.Types (Peekable, Pushable)
 import Text.Read (readMaybe)
 
@@ -98,8 +98,8 @@ setglobal' s =
       Lua.setglobal s
     (lastField : xs) -> do
       getnested (reverse xs)
-      Lua.pushvalue (Lua.nthFromTop 2)
-      Lua.setfield (Lua.nthFromTop 2) lastField
+      Lua.pushvalue (nth 2)
+      Lua.setfield (nth 2) lastField
       Lua.pop 1
 
 -- | Gives the list of the longest substrings not containing dots.
@@ -113,7 +113,7 @@ getnested :: [String] -> Lua ()
 getnested [] = return ()
 getnested (x:xs) = do
   Lua.getglobal x
-  mapM_ (\a -> Lua.getfield Lua.stackTop a *> Lua.remove (Lua.nthFromTop 2)) xs
+  mapM_ (\a -> Lua.getfield top a *> Lua.remove (nth 2)) xs
 
 -- | Raise a Lua error, using the given value as the error object.
 raiseError :: Pushable a => a -> Lua NumResults
@@ -164,5 +164,5 @@ peekEither idx = either (Left . Lua.exceptionMessage) Right <$>
 -- | Get, then pop the value at the top of the stack. The pop operation is
 -- executed even if the retrieval operation failed.
 popValue :: Peekable a => Lua a
-popValue = Lua.peek Lua.stackTop `Catch.finally` Lua.pop 1
+popValue = Lua.peek top `Catch.finally` Lua.pop 1
 {-# INLINABLE popValue #-}

@@ -40,22 +40,22 @@ tests = testGroup "Peek"
     [ "True" =:
       Right True `shouldBeResultOf` do
         Lua.pushboolean True
-        peekBool Lua.stackTop
+        peekBool Lua.top
 
     , "False" =:
       Right False `shouldBeResultOf` do
         Lua.pushboolean False
-        peekBool Lua.stackTop
+        peekBool Lua.top
 
     , "Numbers are truthy" =:
       Right True `shouldBeResultOf` do
         Lua.pushnumber 0
-        peekBool Lua.stackTop
+        peekBool Lua.top
 
     , "Nil is falsy" =:
       Right False `shouldBeResultOf` do
         Lua.pushnil
-        peekBool Lua.stackTop
+        peekBool Lua.top
 
     -- no tests for failing cases, this function always succeeds.
     ]
@@ -64,53 +64,53 @@ tests = testGroup "Peek"
     [ "negative Int" =:
       Right (-5) `shouldBeResultOf` do
         Lua.pushinteger (-5)
-        peekIntegral @Int Lua.stackTop
+        peekIntegral @Int Lua.top
 
     , "Int as string" =:
       Right 720 `shouldBeResultOf` do
         Lua.pushstring "720"
-        peekIntegral @Int Lua.stackTop
+        peekIntegral @Int Lua.top
 
     , "fail on boolean" =:
       let msg = "expected Integral, got 'true' (boolean)"
       in Left (errorMsg msg) `shouldBeResultOf` do
         Lua.pushboolean True
-        peekIntegral @Int Lua.stackTop
+        peekIntegral @Int Lua.top
 
     , "fail on non-numeric string" =:
       let msg = "expected Integral, got 'not a number' (string)"
       in Left (errorMsg msg) `shouldBeResultOf` do
         Lua.pushstring "not a number"
-        peekIntegral @Integer Lua.stackTop
+        peekIntegral @Integer Lua.top
     ]
 
   , testGroup "peekRealFloat"
     [ "negative Float" =:
       Right (-13.37) `shouldBeResultOf` do
         Lua.pushnumber (-13.37)
-        peekRealFloat @Float Lua.stackTop
+        peekRealFloat @Float Lua.top
 
     , "number as string" =:
       Right (-720.0) `shouldBeResultOf` do
         Lua.pushstring "-720"
-        peekRealFloat @Float Lua.stackTop
+        peekRealFloat @Float Lua.top
 
     , "scientific notation string" =:
       Right 0.00071 `shouldBeResultOf` do
         Lua.pushstring "7.1e-4"
-        peekRealFloat @Float Lua.stackTop
+        peekRealFloat @Float Lua.top
 
     , "fail on boolean" =:
       let msg = "expected RealFloat, got 'true' (boolean)"
       in Left (errorMsg msg) `shouldBeResultOf` do
         Lua.pushboolean True
-        peekRealFloat @Float Lua.stackTop
+        peekRealFloat @Float Lua.top
 
     , "fail on non-numeric string" =:
       let msg = "expected RealFloat, got 'not a number' (string)"
       in Left (errorMsg msg) `shouldBeResultOf` do
         Lua.pushstring "not a number"
-        peekRealFloat @Double Lua.stackTop
+        peekRealFloat @Double Lua.top
     ]
 
   , testGroup "Strings"
@@ -118,13 +118,13 @@ tests = testGroup "Peek"
       [ testProperty "retrieve any string" $ \bs -> monadicIO $ do
           retrieved <- run $ Lua.run $ do
             Lua.pushstring bs
-            peekByteString Lua.stackTop
+            peekByteString Lua.top
           assert (retrieved == Right bs)
 
       , testProperty "retrieve integer as string" $ \n -> monadicIO $ do
           retrieved <- run . Lua.run $ do
             Lua.pushinteger n
-            peekByteString Lua.stackTop
+            peekByteString Lua.top
           let numberAsByteString = Char8.pack . show @Integer . fromIntegral $ n
           assert (retrieved == Right numberAsByteString)
 
@@ -132,26 +132,26 @@ tests = testGroup "Peek"
       let msg = "expected string, got 'true' (boolean)"
       in Left (errorMsg msg) `shouldBeResultOf` do
         Lua.pushboolean True
-        peekByteString Lua.stackTop
+        peekByteString Lua.top
       ]
 
     , testGroup "peekText"
       [ testProperty "retrieve any string" $ \bs -> monadicIO $ do
           retrieved <- run $ Lua.run $ do
             Lua.pushstring bs
-            peekText Lua.stackTop
+            peekText Lua.top
           assert (retrieved == Right (Utf8.toText bs))
 
       , testProperty "retrieve UTF-8 encoded Text" $ \txt -> monadicIO $ do
           retrieved <- run $ Lua.run $ do
             Lua.pushstring (Utf8.fromText txt)
-            peekText Lua.stackTop
+            peekText Lua.top
           assert (retrieved == Right txt)
 
       , testProperty "retrieve integer as Text" $ \n -> monadicIO $ do
           retrieved <- run . Lua.run $ do
             Lua.pushinteger n
-            peekText Lua.stackTop
+            peekText Lua.top
           let numberAsByteString = T.pack . show @Integer . fromIntegral $ n
           assert (retrieved == Right numberAsByteString)
 
@@ -159,25 +159,25 @@ tests = testGroup "Peek"
         let msg = "expected string, got 'nil' (nil)"
         in Left (errorMsg msg) `shouldBeResultOf` do
           Lua.pushnil
-          peekByteString Lua.stackTop
+          peekByteString Lua.top
       ]
 
     , testGroup "peekString"
       [ testProperty "retrieve UTF-8 encoded string" $ \txt -> monadicIO $ do
           retrieved <- run $ Lua.run $ do
             Lua.pushstring (Utf8.fromString txt)
-            peekString Lua.stackTop
+            peekString Lua.top
           assert (retrieved == Right txt)
 
       , "fails on table" =:
         isLeft `shouldHoldForResultOf` do
           _ <- Lua.pushglobaltable
-          peekString Lua.stackTop
+          peekString Lua.top
 
       , "fails on thread" =:
         isLeft `shouldHoldForResultOf` do
           _ <- Lua.pushthread
-          peekString Lua.stackTop
+          peekString Lua.top
       ]
 
     , testGroup "peekStringy"
@@ -185,18 +185,18 @@ tests = testGroup "Peek"
           monadicIO $ do
             retrieved <- run $ Lua.run $ do
               Lua.pushstring (Utf8.fromText txt)
-              peekStringy @T.Text Lua.stackTop
+              peekStringy @T.Text Lua.top
             assert (retrieved == Right txt)
 
       , "retrieve ByteString" =:
         Right "This is an ASCII string" `shouldBeResultOf` do
           Lua.pushstring "This is an ASCII string"
-          peekStringy @B.ByteString Lua.stackTop
+          peekStringy @B.ByteString Lua.top
 
       , "fails on table" =:
         isLeft `shouldHoldForResultOf` do
           _ <- Lua.pushglobaltable
-          peekStringy @B.ByteString Lua.stackTop
+          peekStringy @B.ByteString Lua.top
       ]
     ]
 
@@ -205,35 +205,35 @@ tests = testGroup "Peek"
       [ "empty list" =:
         Right [] `shouldBeResultOf` do
           Lua.newtable
-          peekList peekBool Lua.stackTop
+          peekList peekBool Lua.top
 
       , testProperty "list of strings" $ \lst -> monadicIO $ do
           retrieved <- run $ Lua.run $ do
             Lua.newtable
             zipWithM_
               (\i s -> Lua.pushstring s *>
-                       Lua.rawseti (Lua.nthFromTop 2) i)
+                       Lua.rawseti (Lua.nth 2) i)
               [1..]
               lst
-            peekList peekByteString Lua.stackTop
+            peekList peekByteString Lua.top
           assert (retrieved == Right lst)
 
       , "string keys are not in list" =:
         Right [] `shouldBeResultOf` do
           pushLuaExpr "{['1'] = 'hello', ['2'] = 'world'}"
-          peekList peekByteString Lua.stackTop
+          peekList peekByteString Lua.top
 
       , "missing pair causes an error" =:
         isLeft `shouldHoldForResultOf` do
           pushLuaExpr "{[1] = 'hello', [2] = 'world', [4] = 'nope'}"
-          peekList peekByteString Lua.stackTop
+          peekList peekByteString Lua.top
       ]
 
     , testGroup "peekSet"
       [ "empty set" =:
         Right Set.empty `shouldBeResultOf` do
           Lua.newtable
-          peekSet peekBool Lua.stackTop
+          peekSet peekBool Lua.top
 
       , testProperty "set of strings" $ \set -> monadicIO $ do
           retrieved <- run $ Lua.run $ do
@@ -241,14 +241,14 @@ tests = testGroup "Peek"
             forM_ (Set.toList set) $ \x -> do
               Lua.pushstring x
               Lua.pushboolean True
-              Lua.rawset (Lua.nthFromTop 3)
-            peekSet peekByteString Lua.stackTop
+              Lua.rawset (Lua.nth 3)
+            peekSet peekByteString Lua.top
           assert (retrieved == Right set)
 
       , "keys with falsy values are not in set" =:
         Right (Set.fromList [1,3]) `shouldBeResultOf` do
           pushLuaExpr "{['1'] = 'hello', ['2'] = false, [3] = 5}"
-          peekSet (peekIntegral @Int) Lua.stackTop
+          peekSet (peekIntegral @Int) Lua.top
 
       , "fails if element peeker fails" =:
         let errorStack = [ "retrieving Set"
@@ -257,19 +257,19 @@ tests = testGroup "Peek"
                          , "expected string, got 'true' (boolean)"]
         in Left (PeekError $ NonEmpty.fromList errorStack) `shouldBeResultOf` do
           pushLuaExpr "{ NaN = true, [true] = false }"
-          peekSet peekText Lua.stackTop
+          peekSet peekText Lua.top
       ]
 
     , testGroup "peekMap"
       [ "empty map" =:
         Right Map.empty `shouldBeResultOf` do
           Lua.newtable
-          peekMap peekText peekText Lua.stackTop
+          peekMap peekText peekText Lua.top
 
       , "tables become maps" =:
         Right (Map.fromList [("one", 1), ("two", 2)]) `shouldBeResultOf` do
           pushLuaExpr "{ one = 1, two = 2}"
-          peekMap peekText (peekIntegral @Int) Lua.stackTop
+          peekMap peekText (peekIntegral @Int) Lua.top
 
       , "fails if key peeker fails" =:
         let errorStack = [ "retrieving Map"
@@ -278,7 +278,7 @@ tests = testGroup "Peek"
                          , "expected Integral, got 'NaN' (string)"]
         in Left (PeekError $ NonEmpty.fromList errorStack) `shouldBeResultOf` do
           pushLuaExpr "{ NaN = true }"
-          peekMap (peekIntegral @Int) peekBool Lua.stackTop
+          peekMap (peekIntegral @Int) peekBool Lua.top
 
       , "fails if value peeker fails" =:
         let errorStack = [ "retrieving Map"
@@ -287,7 +287,7 @@ tests = testGroup "Peek"
                          , "expected string, got 'true' (boolean)"]
         in Left (PeekError $ NonEmpty.fromList errorStack) `shouldBeResultOf` do
           pushLuaExpr "{ [42] = true }"
-          peekMap (peekIntegral @Int) peekText Lua.stackTop
+          peekMap (peekIntegral @Int) peekText Lua.top
       ]
     ]
 

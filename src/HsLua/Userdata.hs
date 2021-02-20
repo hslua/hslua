@@ -42,7 +42,7 @@ module HsLua.Userdata
 import Control.Monad (when)
 import Data.Data (Data, dataTypeName, dataTypeOf)
 import Foreign.C (withCString)
-import HsLua.Core (Lua)
+import HsLua.Core (Lua, nth)
 import HsLua.Core.Types (liftLua, fromLuaBool)
 import Foreign.Lua.Userdata
   ( hslua_fromuserdata
@@ -70,7 +70,7 @@ pushAnyWithMetatable :: Lua ()       -- ^ operation to push the metatable
 pushAnyWithMetatable mtOp x = do
   liftLua $ \l -> hslua_newhsuserdata l x
   mtOp
-  Lua.setmetatable (Lua.nthFromTop 2)
+  Lua.setmetatable (nth 2)
   return ()
 
 -- | Push the metatable used to define the behavior of the given value in Lua.

@@ -44,12 +44,6 @@ module HsLua.Core.Types
   , Integer (..)
   , Number (..)
   , StackIndex (..)
-  , nth
-  , nthFromBottom
-  , nthFromTop
-  , stackTop
-  , stackBottom
-  , top
   , NumArgs (..)
   , NumResults (..)
   , RelationalOperator (..)
@@ -61,13 +55,18 @@ module HsLua.Core.Types
   , Reference (..)
   , fromReference
   , toReference
+    -- * Stack index helpers
+  , nthTop
+  , nthBottom
+  , nth
+  , top
   ) where
 
 import Prelude hiding (Integer)
 
 import Control.Monad.Catch (MonadCatch, MonadMask, MonadThrow)
 import Control.Monad.Reader (ReaderT (..), MonadReader, MonadIO, asks, liftIO)
-import Foreign.C (CInt)
+import Foreign.Lua (nth, nthBottom, nthTop, top)
 import Foreign.Lua.Types
 import Foreign.Lua.Auxiliary
   ( Reference (..)
@@ -146,33 +145,3 @@ unsafeErrorConversion = ErrorConversion
   , alternative = const
   , exceptionToError = id
   }
-
--- | Stack index of the nth element from the top of the stack.
-nthFromTop :: CInt -> StackIndex
-nthFromTop n = StackIndex (-n)
-{-# INLINABLE nthFromTop #-}
-
--- | Stack index of the nth element from the top of the stack.
-nth :: CInt -> StackIndex
-nth = nthFromTop
-{-# INLINABLE nth #-}
-
--- | Stack index of the nth element from the bottom of the stack.
-nthFromBottom :: CInt -> StackIndex
-nthFromBottom = StackIndex
-{-# INLINABLE nthFromBottom #-}
-
--- | Top of the stack
-top :: StackIndex
-top = -1
-{-# INLINABLE top #-}
-
--- | Top of the stack
-stackTop :: StackIndex
-stackTop = top
-{-# INLINABLE stackTop #-}
-
--- | Bottom of the stack
-stackBottom :: StackIndex
-stackBottom = 1
-{-# INLINABLE stackBottom #-}

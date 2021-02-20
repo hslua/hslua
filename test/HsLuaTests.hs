@@ -188,7 +188,7 @@ tests = testGroup "lua integration tests"
                 openlibs
                 pushLuaExpr errTbl
                 pushnumber 23
-                gettable (Lua.nthFromTop 2) :: Lua ()
+                gettable (Lua.nth 2) :: Lua ()
           result <- tryCustom comp
           result @?= Left (ExceptionWithNumber 23)
 
@@ -196,7 +196,7 @@ tests = testGroup "lua integration tests"
           let frob n = do
                 pushLuaExpr errTbl
                 pushnumber n
-                gettable (Lua.nthFromTop 2) :: Lua ()
+                gettable (Lua.nth 2) :: Lua ()
           result <- tryCustom $ do
             openlibs
             registerHaskellFunction "frob" frob
@@ -214,15 +214,15 @@ tests = testGroup "lua integration tests"
           let msg = "expected integer, got '1.1' (number)"
           result <- tryCustom $ do
             pushnumber 1.1
-            peek stackTop :: Lua Lua.Integer
+            peek top :: Lua Lua.Integer
           result @?= Left (ExceptionWithMessage msg)
 
       , "alternative" =: do
           result <- tryCustom $ do
             pushstring "NaN"
             pushnumber 13.37
-            (<|>) (peek (nthFromTop 2) :: Lua Number)
-                  (peek stackTop :: Lua Number)
+            (<|>) (peek (nth 2) :: Lua Number)
+                  (peek top :: Lua Number)
           result @?= Right 13.37
       ]
     ]
@@ -259,7 +259,7 @@ customErrorConversion = Lua.ErrorConversion
 
 errorToCustomException :: Lua.State -> IO a
 errorToCustomException l = Lua.unsafeRunWith l $
-  Lua.tonumber Lua.stackTop >>= \case
+  Lua.tonumber Lua.top >>= \case
     Just num -> do
       Lua.pop 1
       Catch.throwM (ExceptionWithNumber num)

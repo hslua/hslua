@@ -50,45 +50,45 @@ tests = testGroup "Userdata"
     [ "metatable is named Dummy" =:
       Just "HSLUA_Dummy" `shouldBeResultOf` do
         pushAny (Dummy 23 "Nichts ist wie es scheint")
-        _ <- Lua.getmetatable Lua.stackTop
-        Lua.getfield Lua.stackTop "__name"
-        Lua.tostring Lua.stackTop
+        _ <- Lua.getmetatable Lua.top
+        Lua.getfield Lua.top "__name"
+        Lua.tostring Lua.top
 
     , "userdata is named Dummy" =:
       ("HSLUA_Dummy" `B.isPrefixOf`) `shouldHoldForResultOf` do
         pushAny (Dummy 23 "Nichts ist wie es scheint")
-        Lua.tostring' Lua.stackTop
+        Lua.tostring' Lua.top
     ]
 
   , testGroup "toAny"
     [ "get back pushed value" =:
       Just (Dummy 0 "zero") `shouldBeResultOf` do
         pushAny (Dummy 0 "zero")
-        toAny Lua.stackTop
+        toAny Lua.top
 
     , "fail on boolean" =:
       (Nothing :: Maybe Dummy) `shouldBeResultOf` do
         Lua.pushboolean False
-        toAny Lua.stackTop
+        toAny Lua.top
 
     , "fail on wrong userdata" =:
       (Nothing :: Maybe Dummy) `shouldBeResultOf` do
         pushAny (0 :: Word64)
-        toAny Lua.stackTop
+        toAny Lua.top
     ]
 
   , testGroup "Peekable & Pushable"
     [ "push and peek" =:
       Dummy 5 "sum of digits" `shouldBeResultOf` do
         Lua.push (Dummy 5 "sum of digits")
-        Lua.peek Lua.stackTop
+        Lua.peek Lua.top
     ]
 
   , testGroup "roundtrip"
     [ "roundtrip dummy" =:
       Just (Dummy 42 "answer") `shouldBeResultOf` do
         pushAny (Dummy 42 "answer")
-        toAny Lua.stackTop
+        toAny Lua.top
     ]
   ]
 

@@ -58,17 +58,17 @@ requirehs modname pushMod = do
   getfield registryindex loadedTableRegistryField
 
   -- Check whether module has already been loaded.
-  getfield stackTop modname  -- LOADED[modname]
-  alreadyLoaded <- toboolean stackTop
+  getfield top modname  -- LOADED[modname]
+  alreadyLoaded <- toboolean top
 
   unless alreadyLoaded $ do
     pop 1  -- remove field
     pushMod  -- push module
-    pushvalue stackTop  -- make copy of module
+    pushvalue top  -- make copy of module
     -- add module under the given name (LOADED[modname] = module)
-    setfield (nthFromTop 3) modname
+    setfield (nth 3) modname
 
-  remove (nthFromTop 2)  -- remove table of loaded modules
+  remove (nth 2)  -- remove table of loaded modules
 
 -- | Registers a preloading function. Takes an module name and the
 -- Lua operation which produces the package.
@@ -76,7 +76,7 @@ preloadhs :: String -> Lua NumResults -> Lua ()
 preloadhs name pushMod = do
   getfield registryindex preloadTableRegistryField
   pushHaskellFunction pushMod
-  setfield (nthFromTop 2) name
+  setfield (nth 2) name
   pop 1
 
 -- | Add a string-indexed field to the table at the top of the
@@ -85,7 +85,7 @@ addfield :: Pushable a => String -> a -> Lua ()
 addfield name value = do
   push name
   push value
-  rawset (nthFromTop 3)
+  rawset (nth 3)
 
 -- | Attach a function to the table at the top of the stack, using
 -- the given name.
@@ -93,7 +93,7 @@ addfunction :: ToHaskellFunction a => String -> a -> Lua ()
 addfunction name fn = do
   push name
   pushHaskellFunction fn
-  rawset (nthFromTop 3)
+  rawset (nth 3)
 
 -- | Create a new module (i.e., a Lua table).
 create :: Lua ()
@@ -134,7 +134,7 @@ pushModule mdl = do
   forM_ (moduleFunctions mdl) $ \(name, fn) -> do
     pushText name
     Call.pushHaskellFunction fn
-    rawset (nthFromTop 3)
+    rawset (nth 3)
 
 -- | Renders module documentation as Markdown.
 render :: Module -> Text

@@ -13,7 +13,7 @@ Test for the interoperability between haskell and lua.
 module HsLua.Types.PushableTests (tests) where
 
 import Data.ByteString (ByteString)
-import HsLua (Pushable (push), gettop, equal, nthFromTop)
+import HsLua (Pushable (push), gettop, equal, nth)
 import Foreign.StablePtr (castStablePtrToPtr, freeStablePtr, newStablePtr)
 
 import Test.HsLua.Arbitrary ()
@@ -86,7 +86,7 @@ assertLuaEqual :: Pushable a => String -> a -> ByteString -> Assertion
 assertLuaEqual msg x lit = assertBool msg =<< Lua.run
    (pushLuaExpr lit
    *> push x
-   *> equal (nthFromTop 1) (nthFromTop 2))
+   *> equal (nth 1) (nth 2))
 
 prop_pushIncrStackSizeByOne :: Pushable a => a -> Property
 prop_pushIncrStackSizeByOne x = monadicIO $ do

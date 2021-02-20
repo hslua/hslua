@@ -30,11 +30,9 @@ module HsLua.Core (
   , Lua.Number (..)
   -- ** Stack index
   , StackIndex (..)
+  , nthTop
+  , nthBottom
   , nth
-  , nthFromBottom
-  , nthFromTop
-  , stackTop
-  , stackBottom
   , top
   -- ** Number of arguments and return values
   , NumArgs (..)

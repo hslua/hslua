@@ -27,34 +27,34 @@ tests = testGroup "Peekable"
   [ testGroup "Bool"
     ["literal true is truthy" ?: do
         pushLuaExpr "true"
-        peek stackTop
+        peek top
 
     , "0 as a non-nil value is truthy" ?: do
         pushnumber 0
-        peek stackTop
+        peek top
 
     , "nil is falsy" ?: do
         pushnil
-        not <$> peek stackTop
+        not <$> peek top
     ]
 
   , testGroup "Lua.Integer"
     [ "integer can be peeked" =:
       (5 :: Lua.Integer) `shouldBeResultOf` do
         pushnumber 5.0
-        peek stackTop
+        peek top
     ]
 
   , testGroup "Prelude.Integer"
     [ "small integer can be peeked" =:
       (23 :: Prelude.Integer) `shouldBeResultOf` do
         pushnumber 23
-        peek stackTop
+        peek top
 
     , "very large integer can be peeked" =:
       (10000000000000000000001 :: Prelude.Integer) `shouldBeResultOf` do
         pushstring "10000000000000000000001"
-        peek stackTop
+        peek top
     ]
 
   , testGroup "peekKeyValuePairs"
@@ -62,18 +62,18 @@ tests = testGroup "Peekable"
       -- list of numbers can be retrieved as pair of strings
       [("1", "2"), ("2", "4"), ("3", "8"), ("4", "16")] `shouldBeResultOf` do
         pushLuaExpr "{2, 4, 8, 16}"
-        peekKeyValuePairs stackTop :: Lua [(String, String)]
+        peekKeyValuePairs top :: Lua [(String, String)]
 
     , "peek string pairs" =:
       Set.fromList [("foo", "bar"), ("qux", "quux")] `shouldBeResultOf` do
         pushLuaExpr "{foo = 'bar', qux = 'quux'}"
-        Set.fromList <$> (peekKeyValuePairs stackTop :: Lua [(String, String)])
+        Set.fromList <$> (peekKeyValuePairs top :: Lua [(String, String)])
 
     , "stack is left unchanged" =:
       0 `shouldBeResultOf` do
         pushLuaExpr "{foo = 'bar', qux = 'quux'}"
         topBefore <- gettop
-        _ <- peekKeyValuePairs stackTop :: Lua [(String, String)]
+        _ <- peekKeyValuePairs top :: Lua [(String, String)]
         topAfter <- gettop
         return (topAfter - topBefore)
     ]
@@ -82,29 +82,29 @@ tests = testGroup "Peekable"
     [ "error is thrown if boolean is given instead of stringy value" =:
       "expected string, got 'false' (boolean)" `shouldBeErrorMessageOf` do
         pushboolean False
-        peek stackTop :: Lua ByteString
+        peek top :: Lua ByteString
 
     , "floating point numbers cannot be peeked as integer" =:
       "expected integer, got '23.1' (number)" `shouldBeErrorMessageOf` do
         pushnumber 23.1
-        peek stackTop :: Lua Lua.Integer
+        peek top :: Lua Lua.Integer
 
     , "booleans cannot be retrieved as numbers" =:
       "expected number, got 'false' (boolean)" `shouldBeErrorMessageOf` do
         pushboolean False
-        peek stackTop :: Lua Lua.Number
+        peek top :: Lua Lua.Number
 
     , "list cannot be read if a peeking at list element fails" =:
       "Could not read list: expected number, got 'true' (boolean)"
       `shouldBeErrorMessageOf` do
         pushLuaExpr "{1, 5, 23, true, 42}"
-        peek stackTop :: Lua [Lua.Number]
+        peek top :: Lua [Lua.Number]
 
     , "stack is unchanged if getting a list fails" =:
       0 `shouldBeResultOf` do
         pushLuaExpr "{true, 1, 1, 2, 3, 5, 8}"
         topBefore <- gettop
-        _ <- peekList stackTop :: Lua [Bool]
+        _ <- peekList top :: Lua [Bool]
         topAfter <- gettop
         return (topAfter - topBefore)
 
@@ -112,7 +112,7 @@ tests = testGroup "Peekable"
       0 `shouldBeResultOf` do
         pushLuaExpr "{foo = 'bar', baz = false}"
         topBefore <- gettop
-        _ <- try (peekKeyValuePairs stackTop :: Lua [(String, String)])
+        _ <- try (peekKeyValuePairs top :: Lua [(String, String)])
         topAfter <- gettop
         return (topAfter - topBefore)
     ]

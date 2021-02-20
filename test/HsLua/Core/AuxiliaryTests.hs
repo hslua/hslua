@@ -16,23 +16,23 @@ tests = testGroup "Auxiliary"
     [ "gets a subtable from field" =:
       [1, 2, 3, 5, 8] `shouldBeResultOf` do
         pushLuaExpr "{foo = {1, 2, 3, 5, 8}}"
-        _ <- Lua.getsubtable Lua.stackTop "foo"
-        Lua.peek Lua.stackTop :: Lua.Lua [Int]
+        _ <- Lua.getsubtable Lua.top "foo"
+        Lua.peek Lua.top :: Lua.Lua [Int]
 
     , "creates new table at field if necessary" =:
       Lua.TypeTable `shouldBeResultOf` do
         Lua.newtable
-        _ <- Lua.getsubtable Lua.stackTop "new"
-        Lua.getfield (Lua.nthFromTop 2) "new"
-        Lua.ltype Lua.stackTop
+        _ <- Lua.getsubtable Lua.top "new"
+        Lua.getfield (Lua.nth 2) "new"
+        Lua.ltype Lua.top
 
     , "returns True if a table exists" ?: do
         pushLuaExpr "{yep = {}}"
-        Lua.getsubtable Lua.stackTop "yep"
+        Lua.getsubtable Lua.top "yep"
 
     , "returns False if field does not contain a table" ?: do
         pushLuaExpr "{nope = 5}"
-        not <$> Lua.getsubtable Lua.stackTop "nope"
+        not <$> Lua.getsubtable Lua.top "nope"
 
     ]
 
@@ -41,14 +41,14 @@ tests = testGroup "Auxiliary"
       ("testing" :: String) `shouldBeResultOf` do
         Lua.newtable
         pushLuaExpr "{foo = 'testing'}"
-        Lua.setmetatable (Lua.nthFromTop 2)
-        _ <- Lua.getmetafield Lua.stackTop "foo"
-        Lua.peek Lua.stackTop
+        Lua.setmetatable (Lua.nth 2)
+        _ <- Lua.getmetafield Lua.top "foo"
+        Lua.peek Lua.top
 
     , "returns TypeNil if the object doesn't have a metatable" =:
       Lua.TypeNil `shouldBeResultOf` do
         Lua.newtable
-        Lua.getmetafield Lua.stackTop "foo"
+        Lua.getmetafield Lua.top "foo"
     ]
 
   , testGroup "getmetatable'"
@@ -56,12 +56,12 @@ tests = testGroup "Auxiliary"
       [("__name" :: String, "testing" :: String)] `shouldBeResultOf` do
         Lua.newmetatable "testing" *> Lua.pop 1
         _ <- Lua.getmetatable' "testing"
-        Lua.peekKeyValuePairs Lua.stackTop
+        Lua.peekKeyValuePairs Lua.top
 
     , "returns nil if there is no such metatable" =:
       Lua.TypeNil `shouldBeResultOf` do
         _ <- Lua.getmetatable' "nope"
-        Lua.ltype Lua.stackTop
+        Lua.ltype Lua.top
 
     , "returns TypeTable if metatable exists" =:
       Lua.TypeTable `shouldBeResultOf` do

@@ -35,7 +35,7 @@ tests = testGroup "Call"
         factLua <- factLuaAtIndex <$> Lua.gettop
         Lua.pushinteger 6
         _ <- callFunction factLua
-        peekIntegral @Integer Lua.stackTop >>= force
+        peekIntegral @Integer Lua.top >>= force
 
     , "error message" =:
       mconcat [ "retrieving function argument n"
@@ -44,28 +44,28 @@ tests = testGroup "Call"
         factLua <- factLuaAtIndex <$> Lua.gettop
         Lua.pushboolean True
         _ <- callFunction factLua
-        peekText Lua.stackTop >>= force
+        peekText Lua.top >>= force
     ]
   , testGroup "use as C function"
     [ "push factorial" =:
       Lua.TypeFunction
       `shouldBeResultOf` do
         pushHaskellFunction $ factLuaAtIndex 0
-        Lua.ltype Lua.stackTop
+        Lua.ltype Lua.top
     , "call factorial" =:
       120
       `shouldBeResultOf` do
         pushHaskellFunction $ factLuaAtIndex 0
         Lua.pushinteger 5
         Lua.call 1 1
-        peekIntegral @Integer Lua.stackTop >>= force
+        peekIntegral @Integer Lua.top >>= force
     , "use from Lua" =:
       24
       `shouldBeResultOf` do
         pushHaskellFunction $ factLuaAtIndex 0
         Lua.setglobal "factorial"
         Lua.loadstring "return factorial(4)" *> Lua.call 0 1
-        peekIntegral @Integer Lua.stackTop >>= force
+        peekIntegral @Integer Lua.top >>= force
 
     , "with setting an optional param" =:
       8
@@ -73,14 +73,14 @@ tests = testGroup "Call"
         pushHaskellFunction nroot
         Lua.setglobal "nroot"
         Lua.loadstring "return nroot(64)" *> Lua.call 0 1
-        peekRealFloat @Double Lua.stackTop >>= force
+        peekRealFloat @Double Lua.top >>= force
     , "with setting an optional param" =:
       2
       `shouldBeResultOf` do
         pushHaskellFunction nroot
         Lua.setglobal "nroot"
         Lua.loadstring "return nroot(64, 6)" *> Lua.call 0 1
-        peekRealFloat @Double Lua.stackTop >>= force
+        peekRealFloat @Double Lua.top >>= force
     ]
   , testGroup "documentation"
     [ "rendered docs" =:

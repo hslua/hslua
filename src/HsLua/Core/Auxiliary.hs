@@ -37,6 +37,7 @@ import Control.Exception (IOException, try)
 import Data.ByteString (ByteString)
 import Foreign.C (withCString)
 import HsLua.Core.Types (Lua, liftLua)
+import Foreign.Lua (top)
 import Foreign.Lua.Auxiliary
 import Foreign.Lua.Constants (multret)
 import Foreign.Lua.Types (StackIndex, Status)
@@ -103,13 +104,13 @@ getsubtable idx fname = do
   idx' <- Lua.absindex idx
   Lua.pushstring (Utf8.fromString fname)
   Lua.gettable idx'
-  isTbl <- Lua.istable Lua.stackTop
+  isTbl <- Lua.istable top
   if isTbl
     then return True
     else do
       Lua.pop 1
       Lua.newtable
-      Lua.pushvalue Lua.stackTop -- copy to be left at top
+      Lua.pushvalue top -- copy to be left at top
       Lua.setfield idx' fname
       return False
 

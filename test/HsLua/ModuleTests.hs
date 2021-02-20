@@ -42,7 +42,7 @@ tests = testGroup "Module"
         Lua.openlibs
         requirehs "test.module" (Lua.push testModule)
         pushLuaExpr "require 'test.module'"
-        Lua.peek Lua.stackTop
+        Lua.peek Lua.top
     ]
 
   , testGroup "preloadhs"
@@ -60,30 +60,30 @@ tests = testGroup "Module"
         Lua.openlibs
         preloadhs "test.module" (1 <$ Lua.push testModule)
         pushLuaExpr "require 'test.module'"
-        Lua.peek Lua.stackTop
+        Lua.peek Lua.top
     ]
 
   , testGroup "creation helpers"
     [ "create produces a table" =:
       Lua.TypeTable `shouldBeResultOf` do
         create
-        Lua.ltype Lua.stackTop
+        Lua.ltype Lua.top
 
     , "addfield modifies table" =:
       Lua.Integer 23 `shouldBeResultOf` do
         create
         addfield "field_name" (23 :: Int)
-        Lua.getfield Lua.stackTop "field_name"
-        Lua.peek Lua.stackTop
+        Lua.getfield Lua.top "field_name"
+        Lua.peek Lua.top
 
     , "addfunction modifies table" =:
       Lua.Integer 5 `shouldBeResultOf` do
         create
         addfunction "minus18" (return . subtract 18 :: Int -> Lua Int)
-        Lua.getfield Lua.stackTop "minus18"
+        Lua.getfield Lua.top "minus18"
         Lua.pushinteger 23
         Lua.call 1 1
-        Lua.peek Lua.stackTop
+        Lua.peek Lua.top
     ]
   , testGroup "module type"
     [ "register module" =:
@@ -102,7 +102,7 @@ tests = testGroup "Module"
              [ "local mymath = require 'mymath'\n"
              , "return mymath.factorial(4)"
              ]
-        peekIntegral @Integer Lua.stackTop
+        peekIntegral @Integer Lua.top
     ]
   , testGroup "documentation"
     [ "module docs" =:

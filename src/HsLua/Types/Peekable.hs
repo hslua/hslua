@@ -135,7 +135,7 @@ peekList :: Peekable a => StackIndex -> Lua [a]
 peekList = typeChecked "table" istable $ \idx -> do
   let elementsAt [] = return []
       elementsAt (i : is) = do
-        x <- (rawgeti idx i *> peek (nthFromTop 1)) `Catch.finally` pop 1
+        x <- (rawgeti idx i *> peek top) `Catch.finally` pop 1
         (x:) <$> elementsAt is
   listLength <- fromIntegral <$> rawlen idx
   inContext "Could not read list: " (elementsAt [1..listLength])
@@ -162,9 +162,9 @@ nextPair idx = do
   hasNext <- next idx
   if hasNext
     then let pair = (,) <$> inContext "Could not read key of key-value pair: "
-                                      (peek (nthFromTop 2))
+                                      (peek (nth 2))
                         <*> inContext "Could not read value of key-value pair: "
-                                      (peek (nthFromTop 1))
+                                      (peek (nth 1))
          in Just <$> pair `Catch.finally` pop 1
             -- removes the value, keeps the key
     else return Nothing
@@ -235,4 +235,4 @@ instance (Peekable a, Peekable b, Peekable c, Peekable d,
 nthValue :: Peekable a => StackIndex -> Lua.Integer -> Lua a
 nthValue idx n = do
   rawgeti idx n
-  peek (-1) `Catch.finally` pop 1
+  peek top `Catch.finally` pop 1
