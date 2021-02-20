@@ -31,7 +31,7 @@ import qualified Prelude
 import qualified Data.ByteString as B
 import qualified HsLua.Core.AuxiliaryTests
 import qualified HsLua.Core.ErrorTests
-import qualified Foreign.Lua.Raw.Functions as LuaRaw
+import qualified Foreign.Lua.Functions as LuaRaw
 import qualified Foreign.Marshal as Foreign
 import qualified Foreign.Ptr as Foreign
 import qualified Test.QuickCheck.Monadic as QCMonadic

@@ -12,7 +12,7 @@ Portability : non-portable (depends on GHC)
 
 The core Lua types, including mappings of Lua types to Haskell.
 
-This module has mostly been moved to @'Foreign.Lua.Raw.Types'@ and
+This module has mostly been moved to @'Foreign.Lua.Types'@ and
 currently re-exports that module. This module might be removed in
 the future.
 -}
@@ -68,8 +68,8 @@ import Prelude hiding (Integer)
 import Control.Monad.Catch (MonadCatch, MonadMask, MonadThrow)
 import Control.Monad.Reader (ReaderT (..), MonadReader, MonadIO, asks, liftIO)
 import Foreign.C (CInt)
-import Foreign.Lua.Raw.Types
-import Foreign.Lua.Raw.Auxiliary
+import Foreign.Lua.Types
+import Foreign.Lua.Auxiliary
   ( Reference (..)
   , fromReference
   , toReference

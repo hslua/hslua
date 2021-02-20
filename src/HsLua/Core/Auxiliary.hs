@@ -37,9 +37,9 @@ import Control.Exception (IOException, try)
 import Data.ByteString (ByteString)
 import Foreign.C (withCString)
 import HsLua.Core.Types (Lua, liftLua)
-import Foreign.Lua.Raw.Auxiliary
-import Foreign.Lua.Raw.Constants (multret)
-import Foreign.Lua.Raw.Types (StackIndex, Status)
+import Foreign.Lua.Auxiliary
+import Foreign.Lua.Constants (multret)
+import Foreign.Lua.Types (StackIndex, Status)
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 

@@ -33,7 +33,7 @@ module HsLua.FunctionCalling
 import Foreign.C (CInt (..))
 import HsLua.Core as Lua
 import HsLua.Core.Types (liftLua)
-import Foreign.Lua.Raw.Call (hslua_pushhsfunction)
+import Foreign.Lua.Call (hslua_pushhsfunction)
 import HsLua.Types
 import HsLua.Util (getglobal', popValue)
 import Foreign.Ptr (freeHaskellFunPtr)

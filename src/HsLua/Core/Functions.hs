@@ -24,8 +24,8 @@ import Data.ByteString (ByteString)
 import Data.Maybe (fromMaybe)
 import HsLua.Core.Error
 import HsLua.Core.Types as Lua
-import Foreign.Lua.Raw.Constants
-import Foreign.Lua.Raw.Functions
+import Foreign.Lua.Constants
+import Foreign.Lua.Functions
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 

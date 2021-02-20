@@ -30,8 +30,8 @@ module HsLua.Core.Error
 import Control.Applicative (Alternative (..))
 import Data.Typeable (Typeable)
 import HsLua.Core.Types (Lua)
-import Foreign.Lua.Raw.Error (errorMessage)
-import Foreign.Lua.Raw.Functions (lua_pushlstring)
+import Foreign.Lua.Error (errorMessage)
+import Foreign.Lua.Functions (lua_pushlstring)
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 
