@@ -3,7 +3,7 @@
 #include "hsludata.h"
 
 /* ***************************************************************
- * Userdata Creation and Garbage Collection
+ * Userdata for Haskell values
  * ***************************************************************/
 
 /*
