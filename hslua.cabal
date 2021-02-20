@@ -1,13 +1,12 @@
 cabal-version:       2.2
 name:                hslua
-version:             1.3.0.1
+version:             2.0.0
 synopsis:            Bindings to Lua, an embeddable scripting language
-description:         HsLua provides bindings, wrappers, types, and helper
-                     functions to bridge Haskell and <https://www.lua.org/ Lua>.
+description:         HsLua provides wrappers and helpers
+                     to bridge Haskell and <https://www.lua.org/ Lua>.
                      .
-                     This package contains a full Lua interpreter version 5.3.6.
-                     If you want to link it with a system-wide Lua installation,
-                     use the @system-lua@ flag.
+                     It builds upon the /lua/ package, which allows to bundle
+                     a Lua interpreter with a Haskell program.
                      .
                      <https://github.com/hslua/hslua-examples Example programs>
                      are available in a separate repository.
