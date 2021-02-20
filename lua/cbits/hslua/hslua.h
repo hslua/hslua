@@ -24,10 +24,3 @@ int hslua_next(lua_State *L, int index, int *status);
 
 /* auxiliary library */
 const char *hsluaL_tolstring(lua_State *L, int index, size_t *len);
-
-/*
-** function calling
-*/
-
-/* Wraps a Haskell function with an userdata object.  */
-void hslua_newhsfunwrapper(lua_State *L, HsStablePtr fn);
