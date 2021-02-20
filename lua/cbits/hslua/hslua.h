@@ -1,5 +1,4 @@
 #include "lua.h"
-#include "lauxlib.h"
 
 int hslua_error(lua_State *L);
 
@@ -20,7 +19,3 @@ void hslua_setglobal(lua_State *L, const char *k, size_t len, int *status);
 void hslua_settable(lua_State *L, int index, int *status);
 
 int hslua_next(lua_State *L, int index, int *status);
-
-
-/* auxiliary library */
-const char *hsluaL_tolstring(lua_State *L, int index, size_t *len);

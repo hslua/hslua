@@ -1,5 +1,6 @@
 #include <HsFFI.h>
 #include <lua.h>
+#include <lauxlib.h>
 
 /* ***************************************************************
  * Userdata for Haskell values

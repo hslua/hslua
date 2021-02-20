@@ -21,8 +21,8 @@ import Foreign.Lua.Types (StackIndex)
 import Foreign.Ptr (Ptr)
 import qualified Foreign.Lua.Types as Lua
 
-foreign import ccall unsafe "lauxlib.h hsluaL_newstate"
+foreign import ccall unsafe "hslauxlib.h hsluaL_newstate"
   hsluaL_newstate :: IO Lua.State
 
-foreign import ccall safe "hslua.h hsluaL_tolstring"
+foreign import ccall safe "hslauxlib.h hsluaL_tolstring"
   hsluaL_tolstring :: Lua.State -> StackIndex -> Ptr CSize -> IO (Ptr CChar)

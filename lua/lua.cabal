@@ -130,6 +130,7 @@ library
                      , GeneralizedNewtypeDeriving
   c-sources:           cbits/hslua/hsludata.c
                      , cbits/hslua/hslcall.c
+                     , cbits/hslua/hslauxlib.c
                      , cbits/hslua/hslua.c
   include-dirs:        cbits/hslua
   if flag(system-lua) || flag(pkg-config)

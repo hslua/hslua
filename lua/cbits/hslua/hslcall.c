@@ -1,7 +1,7 @@
 #include <HsFFI.h>
 #include <lua.h>
 #include <lauxlib.h>
-#include "hslua-export.h"
+#include "hslexport.h"
 #include "hslcall.h"
 #include "hsludata.h"
 
