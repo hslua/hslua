@@ -102,6 +102,19 @@ common common-options
                          -Wpartial-fields
                          -fhide-source-paths
 
+  if flag(lua_32bits)
+    cc-options:          -DLUA_32BITS
+
+  if flag(apicheck)
+    cc-options:          -DLUA_USE_APICHECK
+
+  if flag(allow-unsafe-gc)
+    cpp-options:         -DALLOW_UNSAFE_GC
+
+  if flag(hardcode-reg-keys)
+    cpp-options:         -DHARDCODE_REG_KEYS
+
+
 library
   import:              common-options
   exposed-modules:     Foreign.Lua
@@ -188,18 +201,6 @@ library
     cc-options:          -DLUA_USE_POSIX
     if flag(export-dynamic)
       ld-options:        -Wl,-E
-
-  if flag(lua_32bits)
-    cc-options:          -DLUA_32BITS
-
-  if flag(apicheck)
-    cc-options:          -DLUA_USE_APICHECK
-
-  if flag(allow-unsafe-gc)
-    cpp-options:         -DALLOW_UNSAFE_GC
-
-  if flag(hardcode-reg-keys)
-    cpp-options:         -DHARDCODE_REG_KEYS
 
 test-suite test-lua
   import:              common-options
