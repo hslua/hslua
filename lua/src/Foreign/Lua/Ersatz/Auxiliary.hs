@@ -16,7 +16,7 @@ module Foreign.Lua.Ersatz.Auxiliary
   , hsluaL_tolstring
   ) where
 
-import Foreign.C (CChar, CInt (CInt), CSize (CSize))
+import Foreign.C (CChar, CInt (CInt), CSize)
 import Foreign.Lua.Types (StackIndex)
 import Foreign.Ptr (Ptr)
 import qualified Foreign.Lua.Types as Lua
