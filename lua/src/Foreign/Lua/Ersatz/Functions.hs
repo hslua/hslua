@@ -48,14 +48,15 @@ import Foreign.Ptr
 --  - LUA_OPLT: compares for less than (<)
 --  - LUA_OPLE: compares for less or equal (<=)
 --
--- Wrapper around <https://lua.org/manual/5.3/manual.html#lua_compare \
--- @lua_compare@> which catches any Lua errors.
+-- This function wraps @lua_compare@ and takes an additional parameter
+-- @status@; if it is not @NULL@, then the return value is set to the
+-- status after calling @lua_compare@.
 foreign import capi safe "hslua.h hslua_compare"
   hslua_compare :: Lua.State
                 -> StackIndex     -- ^ index 1
                 -> StackIndex     -- ^ index 2
                 -> OPCode         -- ^ operator
-                -> Ptr StatusCode
+                -> Ptr StatusCode -- ^ status
                 -> IO LuaBool
 
 --

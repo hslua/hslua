@@ -19,6 +19,11 @@ int hslua__compare(lua_State *L)
   return 1;
 }
 
+/*
+** Compares two values on the stack. Behaves mostly like lua_compare,
+** but takes an additional parameter `status`, the referent of which is
+** assigned the result of calling the helper function.
+ */
 int hslua_compare(lua_State *L, int index1, int index2, int op, int *status)
 {
   index1 = lua_absindex(L, index1);
@@ -27,8 +32,11 @@ int hslua_compare(lua_State *L, int index1, int index2, int op, int *status)
   lua_pushvalue(L, index1);
   lua_pushvalue(L, index2);
   lua_pushinteger(L, op);
-  *status = lua_pcall(L, 3, 1, 0);
-  if (*status != LUA_OK) {
+  int outcome = lua_pcall(L, 3, 1, 0);
+  if (status != NULL) {
+    *status = outcome;
+  }
+  if (outcome != LUA_OK) {
     return 0;
   }
   int result = lua_tointeger(L, -1);
