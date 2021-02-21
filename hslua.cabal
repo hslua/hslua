@@ -80,13 +80,7 @@ library
                      , HsLua.Util
   other-modules:       HsLua.Core.Auxiliary
                      , HsLua.Core.Functions
-  reexported-modules:  lua:Foreign.Lua.Raw.Auxiliary
-                     , lua:Foreign.Lua.Raw.Call
-                     , lua:Foreign.Lua.Raw.Constants
-                     , lua:Foreign.Lua.Raw.Error
-                     , lua:Foreign.Lua.Raw.Functions
-                     , lua:Foreign.Lua.Raw.Types
-                     , lua:Foreign.Lua.Raw.Userdata
+  reexported-modules:  lua:Foreign.Lua
   hs-source-dirs:      src
   default-extensions:  LambdaCase
   other-extensions:    DeriveDataTypeable

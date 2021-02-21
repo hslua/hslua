@@ -128,13 +128,6 @@ library
                      , Foreign.Lua.Lib
                      , Foreign.Lua.Types
                      , Foreign.Lua.Userdata
-                     , Foreign.Lua.Raw.Auxiliary
-                     , Foreign.Lua.Raw.Call
-                     , Foreign.Lua.Raw.Constants
-                     , Foreign.Lua.Raw.Error
-                     , Foreign.Lua.Raw.Functions
-                     , Foreign.Lua.Raw.Types
-                     , Foreign.Lua.Raw.Userdata
   hs-source-dirs:      src
   default-extensions:  CApiFFI
                      , ForeignFunctionInterface
