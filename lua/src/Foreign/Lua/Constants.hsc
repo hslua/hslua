@@ -16,6 +16,15 @@ module Foreign.Lua.Constants
   , registryindex
   , refnil
   , noref
+    -- * Status codes
+  , pattern LUA_OK
+  , pattern LUA_YIELD
+  , pattern LUA_ERRRUN
+  , pattern LUA_ERRSYNTAX
+  , pattern LUA_ERRMEM
+  , pattern LUA_ERRGCMM
+  , pattern LUA_ERRERR
+  , pattern LUA_ERRFILE
     -- * Garbage-collection options
   , pattern LUA_GCSTOP
   , pattern LUA_GCRESTART
@@ -29,6 +38,8 @@ module Foreign.Lua.Constants
   ) where
 
 #include "lua.h"
+-- required only for LUA_ERRFILE
+#include "lauxlib.h"
 
 import Foreign.C (CInt (..))
 import Foreign.Lua.Types
@@ -50,6 +61,45 @@ foreign import capi unsafe "lauxlib.h value LUA_REFNIL"
 -- | Value signaling that no reference was found.
 foreign import capi unsafe "lauxlib.h value LUA_NOREF"
   noref :: Int
+
+--
+-- Status codes
+--
+
+-- | Success.
+pattern LUA_OK :: StatusCode
+pattern LUA_OK = StatusCode #{const LUA_OK}
+
+-- | Yielding / suspended coroutine.
+pattern LUA_YIELD :: StatusCode
+pattern LUA_YIELD = StatusCode #{const LUA_YIELD}
+
+-- | A runtime error.
+pattern LUA_ERRRUN :: StatusCode
+pattern LUA_ERRRUN = StatusCode #{const LUA_ERRRUN}
+
+-- | A syntax error.
+pattern LUA_ERRSYNTAX :: StatusCode
+pattern LUA_ERRSYNTAX = StatusCode #{const LUA_ERRSYNTAX}
+
+-- | Memory allocation error. For such errors, Lua does not call the
+-- message handler.
+pattern LUA_ERRMEM :: StatusCode
+pattern LUA_ERRMEM = StatusCode #{const LUA_ERRMEM}
+
+-- | Error while running a @__gc@ metamethod. For such errors, Lua does
+-- not call the message handler (as this kind of error typically has no
+-- relation with the function being called).
+pattern LUA_ERRGCMM :: StatusCode
+pattern LUA_ERRGCMM = StatusCode #{const LUA_ERRGCMM}
+
+-- | Error while running the message handler.
+pattern LUA_ERRERR :: StatusCode
+pattern LUA_ERRERR = StatusCode #{const LUA_ERRERR}
+
+-- | File related error (e.g., the file cannot be opened or read).
+pattern LUA_ERRFILE :: StatusCode
+pattern LUA_ERRFILE = StatusCode #{const LUA_ERRFILE}
 
 --
 -- Garbage-collection options

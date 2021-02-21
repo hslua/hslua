@@ -36,12 +36,11 @@ module HsLua.Core.Auxiliary
 import Control.Exception (IOException, try)
 import Data.ByteString (ByteString)
 import Foreign.C (withCString)
-import HsLua.Core.Types (Lua, liftLua)
+import HsLua.Core.Types (Lua, Status, StackIndex, liftLua)
 import Foreign.Lua (top)
 import Foreign.Lua.Auxiliary
 import Foreign.Lua.Ersatz.Auxiliary
 import Foreign.Lua.Constants (multret)
-import Foreign.Lua.Types (StackIndex, Status)
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 

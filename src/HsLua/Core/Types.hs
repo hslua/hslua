@@ -1,4 +1,5 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE LambdaCase                 #-}
 {-# LANGUAGE RankNTypes                 #-}
 {-|
 Module      : HsLua.Core.Types
@@ -68,6 +69,7 @@ import Prelude hiding (Integer)
 import Control.Monad.Catch (MonadCatch, MonadMask, MonadThrow)
 import Control.Monad.Reader (ReaderT (..), MonadReader, MonadIO, asks, liftIO)
 import Foreign.Lua (nth, nthBottom, nthTop, top)
+import Foreign.Lua.Constants
 import Foreign.Lua.Types
 import Foreign.Lua.Auxiliary
   ( Reference (..)
@@ -146,6 +148,32 @@ unsafeErrorConversion = ErrorConversion
   , alternative = const
   , exceptionToError = id
   }
+
+-- | Lua status values.
+data Status
+  = OK        -- ^ success
+  | Yield     -- ^ yielding / suspended coroutine
+  | ErrRun    -- ^ a runtime rror
+  | ErrSyntax -- ^ syntax error during precompilation
+  | ErrMem    -- ^ memory allocation (out-of-memory) error.
+  | ErrErr    -- ^ error while running the message handler.
+  | ErrGcmm   -- ^ error while running a @__gc@ metamethod.
+  | ErrFile   -- ^ opening or reading a file failed.
+  deriving (Eq, Show)
+
+-- | Convert C integer constant to @'Status'@.
+toStatus :: StatusCode -> Status
+toStatus = \case
+  LUA_OK        -> OK
+  LUA_YIELD     -> Yield
+  LUA_ERRRUN    -> ErrRun
+  LUA_ERRSYNTAX -> ErrSyntax
+  LUA_ERRMEM    -> ErrMem
+  LUA_ERRGCMM   -> ErrGcmm
+  LUA_ERRERR    -> ErrErr
+  LUA_ERRFILE   -> ErrFile
+  StatusCode n  -> error $ "Cannot convert (" ++ show n ++ ") to Status"
+{-# INLINABLE toStatus #-}
 
 -- | Enumeration used by @gc@ function.
 data GCCONTROL

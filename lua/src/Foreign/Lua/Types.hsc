@@ -33,17 +33,13 @@ module Foreign.Lua.Types
   , NumResults (..)
   , RelationalOperator (..)
   , fromRelationalOperator
-  , Status (..)
   , StatusCode (..)
-  , toStatus
     -- * Garbage-Collection
   , GCCode (..)
   )
 where
 
 #include "lua.h"
--- required only for LUA_ERRFILE
-#include "lauxlib.h"
 
 import Prelude hiding (Integer, EQ, LT)
 
@@ -219,32 +215,6 @@ fromRelationalOperator LE = #{const LUA_OPLE}
 --
 -- * Status
 --
-
--- | Lua status values.
-data Status
-  = OK        -- ^ success
-  | Yield     -- ^ yielding / suspended coroutine
-  | ErrRun    -- ^ a runtime rror
-  | ErrSyntax -- ^ syntax error during precompilation
-  | ErrMem    -- ^ memory allocation (out-of-memory) error.
-  | ErrErr    -- ^ error while running the message handler.
-  | ErrGcmm   -- ^ error while running a @__gc@ metamethod.
-  | ErrFile   -- ^ opening or reading a file failed.
-  deriving (Eq, Show)
-
--- | Convert C integer constant to @'Status'@.
-toStatus :: StatusCode -> Status
-toStatus (StatusCode c) = case c of
-  #{const LUA_OK}        -> OK
-  #{const LUA_YIELD}     -> Yield
-  #{const LUA_ERRRUN}    -> ErrRun
-  #{const LUA_ERRSYNTAX} -> ErrSyntax
-  #{const LUA_ERRMEM}    -> ErrMem
-  #{const LUA_ERRGCMM}   -> ErrGcmm
-  #{const LUA_ERRERR}    -> ErrErr
-  #{const LUA_ERRFILE}   -> ErrFile
-  n -> error $ "Cannot convert (" ++ show n ++ ") to Status"
-{-# INLINABLE toStatus #-}
 
 -- | Integer code used to signal the status of a thread or computation.
 -- See @'Status'@.
