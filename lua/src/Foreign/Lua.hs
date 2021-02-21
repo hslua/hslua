@@ -15,11 +15,21 @@ module Foreign.Lua
   , nthBottom
   , nth
   , top
+    -- * Standard Lua libraries
+  , luaopen_base
+  , luaopen_table
+  , luaopen_io
+  , luaopen_os
+  , luaopen_string
+  , luaopen_math
+  , luaopen_debug
+  , luaopen_package
   ) where
 
 import Foreign.C (CInt)
 import Foreign.Lua.Auxiliary (hsluaL_newstate)
 import Foreign.Lua.Functions (lua_close)
+import Foreign.Lua.Lib
 import Foreign.Lua.Types (StackIndex (StackIndex), State)
 
 -- | Runs operations on a new Lua @'Lua.State'@. The state is created

@@ -39,6 +39,7 @@ import Foreign.C (withCString)
 import HsLua.Core.Types (Lua, liftLua)
 import Foreign.Lua (top)
 import Foreign.Lua.Auxiliary
+import Foreign.Lua.Ersatz.Auxiliary
 import Foreign.Lua.Constants (multret)
 import Foreign.Lua.Types (StackIndex, Status)
 import Foreign.Marshal.Alloc (alloca)

@@ -125,6 +125,7 @@ library
                      , Foreign.Lua.Ersatz.Auxiliary
                      , Foreign.Lua.Ersatz.Functions
                      , Foreign.Lua.Functions
+                     , Foreign.Lua.Lib
                      , Foreign.Lua.Types
                      , Foreign.Lua.Userdata
                      , Foreign.Lua.Raw.Auxiliary

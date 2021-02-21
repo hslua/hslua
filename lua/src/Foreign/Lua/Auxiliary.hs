@@ -19,6 +19,7 @@ module Foreign.Lua.Auxiliary
   , luaL_getmetafield
   , luaL_getmetatable
   , luaL_loadbuffer
+  , luaL_openlibs
   , luaL_newmetatable
   , luaL_ref
   , luaL_testudata
@@ -89,6 +90,12 @@ foreign import capi SAFTY "lauxlib.h luaL_loadbuffer"
 
 foreign import ccall SAFTY "lauxlib.h luaL_newmetatable"
   luaL_newmetatable :: Lua.State -> CString -> IO Lua.LuaBool
+
+-- | Opens all standard Lua libraries into the given state.
+--
+-- <https://www.lua.org/manual/5.3/manual.html#luaL_openlibs>
+foreign import ccall unsafe "lualib.h luaL_openlibs"
+  luaL_openlibs :: Lua.State -> IO ()
 
 foreign import ccall SAFTY "lauxlib.h luaL_ref"
   luaL_ref :: Lua.State -> StackIndex -> IO CInt

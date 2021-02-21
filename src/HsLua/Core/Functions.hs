@@ -24,8 +24,10 @@ import Data.ByteString (ByteString)
 import Data.Maybe (fromMaybe)
 import HsLua.Core.Error
 import HsLua.Core.Types as Lua
+import Foreign.Lua.Auxiliary (luaL_openlibs)
 import Foreign.Lua.Constants
 import Foreign.Lua.Functions
+import Foreign.Lua.Lib
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 
@@ -486,56 +488,56 @@ openlibs = liftLua luaL_openlibs
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_base luaopen_base>.
 openbase :: Lua ()
-openbase = pushcfunction lua_open_base_ptr *> call 0 multret
+openbase = pushcfunction luaopen_base *> call 0 multret
 
 -- | Pushes Lua's /debug/ library onto the stack.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_debug luaopen_debug>.
 opendebug :: Lua ()
-opendebug = pushcfunction lua_open_debug_ptr *> call 0 multret
+opendebug = pushcfunction luaopen_debug *> call 0 multret
 
 -- | Pushes Lua's /io/ library onto the stack.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_io luaopen_io>.
 openio :: Lua ()
-openio = pushcfunction lua_open_io_ptr *> call 0 multret
+openio = pushcfunction luaopen_io *> call 0 multret
 
 -- | Pushes Lua's /math/ library onto the stack.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_math luaopen_math>.
 openmath :: Lua ()
-openmath = pushcfunction lua_open_math_ptr *> call 0 multret
+openmath = pushcfunction luaopen_math *> call 0 multret
 
 -- | Pushes Lua's /os/ library onto the stack.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_os luaopen_os>.
 openos :: Lua ()
-openos = pushcfunction lua_open_os_ptr *> call 0 multret
+openos = pushcfunction luaopen_os *> call 0 multret
 
 -- | Pushes Lua's /package/ library onto the stack.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_package luaopen_package>.
 openpackage :: Lua ()
-openpackage = pushcfunction lua_open_package_ptr *> call 0 multret
+openpackage = pushcfunction luaopen_package *> call 0 multret
 
 -- | Pushes Lua's /string/ library onto the stack.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_string luaopen_string>.
 openstring :: Lua ()
-openstring = pushcfunction lua_open_string_ptr *> call 0 multret
+openstring = pushcfunction luaopen_string *> call 0 multret
 
 -- | Pushes Lua's /table/ library onto the stack.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_table luaopen_table>.
 opentable :: Lua ()
-opentable = pushcfunction lua_open_table_ptr *> call 0 multret
+opentable = pushcfunction luaopen_table *> call 0 multret
 
 -- | Calls a function in protected mode.
 --

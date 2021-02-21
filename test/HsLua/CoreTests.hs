@@ -17,6 +17,7 @@ import Prelude hiding (compare)
 
 import Control.Monad (forM_)
 import Data.Maybe (fromMaybe)
+import Foreign.Lua.Lib (luaopen_debug)
 import HsLua as Lua
 import Test.HsLua.Arbitrary ()
 import Test.HsLua.Util ( (?:), (=:), shouldBeErrorMessageOf, shouldBeResultOf
@@ -31,7 +32,6 @@ import qualified Prelude
 import qualified Data.ByteString as B
 import qualified HsLua.Core.AuxiliaryTests
 import qualified HsLua.Core.ErrorTests
-import qualified Foreign.Lua.Functions as LuaRaw
 import qualified Foreign.Marshal as Foreign
 import qualified Foreign.Ptr as Foreign
 import qualified Test.QuickCheck.Monadic as QCMonadic
@@ -106,10 +106,10 @@ tests = testGroup "Core module"
     ]
 
   , testCase "CFunction handling" . run $ do
-      pushcfunction LuaRaw.lua_open_debug_ptr
+      pushcfunction luaopen_debug
       liftIO . assertBool "not recognized as CFunction" =<< iscfunction (-1)
       liftIO . assertEqual "CFunction changed after receiving it from the stack"
-        (Just LuaRaw.lua_open_debug_ptr) =<< tocfunction (-1)
+        (Just luaopen_debug) =<< tocfunction (-1)
 
   , testGroup "getting values"
     [ testGroup "tointeger"

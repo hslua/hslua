@@ -86,16 +86,6 @@ module Foreign.Lua.Functions
   , lua_gc
     -- * Miscellaneous functions
   , lua_pushglobaltable
-    -- * Lua Libraries
-  , luaL_openlibs
-  , lua_open_base_ptr
-  , lua_open_table_ptr
-  , lua_open_io_ptr
-  , lua_open_os_ptr
-  , lua_open_string_ptr
-  , lua_open_math_ptr
-  , lua_open_debug_ptr
-  , lua_open_package_ptr
     -- * Ersatz functions
   , module Foreign.Lua.Ersatz.Functions
   , module Foreign.Lua.Ersatz.Auxiliary
@@ -679,43 +669,3 @@ foreign import ccall safe "lua.h lua_gc"
 -- <https://www.lua.org/manual/5.3/manual.html#lua_pushglobaltable>
 foreign import capi unsafe "lua.h lua_pushglobaltable"
   lua_pushglobaltable :: Lua.State -> IO ()
-
-
--- * Lua Libraries
-
--- | Wrapper of @luaL_openlibs@. See the Lua docs at
--- <https://www.lua.org/manual/5.3/manual.html#luaL_openlibs>.
-foreign import ccall unsafe "lualib.h luaL_openlibs"
-  luaL_openlibs :: Lua.State -> IO ()
-
--- | Point to function opening the base library.
-foreign import ccall unsafe "lualib.h &luaopen_base"
-  lua_open_base_ptr :: CFunction
-
--- | Point to function opening the table library.
-foreign import ccall unsafe "lualib.h &luaopen_table"
-  lua_open_table_ptr :: CFunction
-
--- | Point to function opening the io library.
-foreign import ccall unsafe "lualib.h &luaopen_io"
-  lua_open_io_ptr :: CFunction
-
--- | Point to function opening the os library.
-foreign import ccall unsafe "lualib.h &luaopen_os"
-  lua_open_os_ptr :: CFunction
-
--- | Point to function opening the string library.
-foreign import ccall unsafe "lualib.h &luaopen_string"
-  lua_open_string_ptr :: CFunction
-
--- | Point to function opening the math library.
-foreign import ccall unsafe "lualib.h &luaopen_math"
-  lua_open_math_ptr :: CFunction
-
--- | Point to function opening the debug library.
-foreign import ccall unsafe "lualib.h &luaopen_debug"
-  lua_open_debug_ptr :: CFunction
-
--- | Point to function opening the package library.
-foreign import ccall unsafe "lualib.h &luaopen_package"
-  lua_open_package_ptr :: CFunction
