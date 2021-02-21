@@ -25,6 +25,10 @@ module Foreign.Lua.Constants
   , pattern LUA_ERRGCMM
   , pattern LUA_ERRERR
   , pattern LUA_ERRFILE
+    -- * Relational operator codes
+  , pattern LUA_OPEQ
+  , pattern LUA_OPLT
+  , pattern LUA_OPLE
     -- * Garbage-collection options
   , pattern LUA_GCSTOP
   , pattern LUA_GCRESTART
@@ -100,6 +104,22 @@ pattern LUA_ERRERR = StatusCode #{const LUA_ERRERR}
 -- | File related error (e.g., the file cannot be opened or read).
 pattern LUA_ERRFILE :: StatusCode
 pattern LUA_ERRFILE = StatusCode #{const LUA_ERRFILE}
+
+--
+-- Comparison operators
+--
+
+-- | Compares for equality (==)
+pattern LUA_OPEQ :: OPCode
+pattern LUA_OPEQ = OPCode #{const LUA_OPEQ}
+
+-- | Compares for less than (<)
+pattern LUA_OPLT :: OPCode
+pattern LUA_OPLT = OPCode #{const LUA_OPLT}
+
+-- | Compares for less or equal (<=)
+pattern LUA_OPLE :: OPCode
+pattern LUA_OPLE = OPCode #{const LUA_OPLE}
 
 --
 -- Garbage-collection options

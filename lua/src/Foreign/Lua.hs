@@ -29,10 +29,13 @@ module Foreign.Lua
   , StackIndex (..)
   , NumArgs (..)
   , NumResults (..)
-  , RelationalOperator (..)
-  , fromRelationalOperator
+    -- ** Relational operator codes
+  , OPCode (..)
+  , pattern LUA_OPEQ
+  , pattern LUA_OPLT
+  , pattern LUA_OPLE
   , StatusCode (..)
-    -- * Status codes
+    -- ** Status codes
   , pattern LUA_OK
   , pattern LUA_YIELD
   , pattern LUA_ERRRUN

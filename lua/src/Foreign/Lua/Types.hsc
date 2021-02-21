@@ -31,8 +31,7 @@ module Foreign.Lua.Types
   , StackIndex (..)
   , NumArgs (..)
   , NumResults (..)
-  , RelationalOperator (..)
-  , fromRelationalOperator
+  , OPCode (..)
   , StatusCode (..)
     -- * Garbage-Collection
   , GCCode (..)
@@ -41,7 +40,7 @@ where
 
 #include "lua.h"
 
-import Prelude hiding (Integer, EQ, LT)
+import Prelude hiding (Integer)
 
 import Data.Int (#{type LUA_INTEGER})
 import Foreign.C (CChar, CInt, CSize)
@@ -194,36 +193,15 @@ toType (TypeCode c) = case c of
   _ -> error ("No Type corresponding to " ++ show c)
 
 --
--- * Relational Operator
+-- Relational Operator
 --
 
--- | Lua comparison operations.
-data RelationalOperator
-  = EQ -- ^ Correponds to lua's equality (==) operator.
-  | LT -- ^ Correponds to lua's strictly-lesser-than (<) operator
-  | LE -- ^ Correponds to lua's lesser-or-equal (<=) operator
-  deriving (Eq, Ord, Show)
-
--- | Convert relation operator to its C representation.
-fromRelationalOperator :: RelationalOperator -> CInt
-fromRelationalOperator EQ = #{const LUA_OPEQ}
-fromRelationalOperator LT = #{const LUA_OPLT}
-fromRelationalOperator LE = #{const LUA_OPLE}
-{-# INLINABLE fromRelationalOperator #-}
-
-
---
--- * Status
---
+-- | Relational operator code.
+newtype OPCode = OPCode CInt deriving (Eq, Storable)
 
 -- | Integer code used to signal the status of a thread or computation.
 -- See @'Status'@.
 newtype StatusCode = StatusCode CInt deriving (Eq, Storable)
-
-
---
--- Garbage collection
---
 
 -- | Garbage-collection options.
 newtype GCCode = GCCode CInt deriving (Eq, Storable)

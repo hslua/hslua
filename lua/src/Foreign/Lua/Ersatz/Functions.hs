@@ -36,12 +36,27 @@ import Foreign.Ptr
 #define SAFTY safe
 #endif
 
--- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_compare \
+-- | Compares two Lua values. Returns @1@ if the value at index @index1@
+-- satisfies op when compared with the value at index @index2@,
+-- following the semantics of the corresponding Lua operator (that is,
+-- it may call metamethods). Otherwise returns @0@. Also returns @0@ if
+-- any of the indices is not valid.
+--
+-- The value of op must be one of the following constants:
+--
+--  - LUA_OPEQ: compares for equality (==)
+--  - LUA_OPLT: compares for less than (<)
+--  - LUA_OPLE: compares for less or equal (<=)
+--
+-- Wrapper around <https://lua.org/manual/5.3/manual.html#lua_compare \
 -- @lua_compare@> which catches any Lua errors.
 foreign import capi safe "hslua.h hslua_compare"
   hslua_compare :: Lua.State
-                -> StackIndex -> StackIndex -> CInt
-                -> Ptr StatusCode -> IO LuaBool
+                -> StackIndex     -- ^ index 1
+                -> StackIndex     -- ^ index 2
+                -> OPCode         -- ^ operator
+                -> Ptr StatusCode
+                -> IO LuaBool
 
 --
 -- Get functions (Lua -> stack)

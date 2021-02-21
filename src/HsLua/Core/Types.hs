@@ -64,7 +64,7 @@ module HsLua.Core.Types
   , top
   ) where
 
-import Prelude hiding (Integer)
+import Prelude hiding (Integer, EQ, LT)
 
 import Control.Monad.Catch (MonadCatch, MonadMask, MonadThrow)
 import Control.Monad.Reader (ReaderT (..), MonadReader, MonadIO, asks, liftIO)
@@ -174,6 +174,30 @@ toStatus = \case
   LUA_ERRFILE   -> ErrFile
   StatusCode n  -> error $ "Cannot convert (" ++ show n ++ ") to Status"
 {-# INLINABLE toStatus #-}
+
+--
+-- Relational Operator
+--
+
+-- | Lua comparison operations.
+data RelationalOperator
+  = EQ -- ^ Correponds to Lua's equality (==) operator.
+  | LT -- ^ Correponds to Lua's strictly-lesser-than (<) operator
+  | LE -- ^ Correponds to Lua's lesser-or-equal (<=) operator
+  deriving (Eq, Ord, Show)
+
+-- | Convert relation operator to its C representation.
+fromRelationalOperator :: RelationalOperator -> OPCode
+fromRelationalOperator = \case
+  EQ -> LUA_OPEQ
+  LT -> LUA_OPLT
+  LE -> LUA_OPLE
+{-# INLINABLE fromRelationalOperator #-}
+
+
+--
+-- Garbage collection
+--
 
 -- | Enumeration used by @gc@ function.
 data GCCONTROL

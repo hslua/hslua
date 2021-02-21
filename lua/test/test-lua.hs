@@ -18,7 +18,9 @@ import Data.IORef (newIORef, readIORef, writeIORef)
 #endif
 
 import Foreign.C.String (peekCString, withCStringLen)
+import Foreign.Marshal (alloca)
 import Foreign.Ptr (nullPtr)
+import Foreign.Storable as Storable
 import Foreign.Lua
 import Foreign.Lua.Call
 import Test.Tasty (TestTree, defaultMain, testGroup)
@@ -97,6 +99,40 @@ tests = testGroup "lua"
       ("_LOADED"  @=? loadedTableRegistryField)
     , "preloadTableRegistryField" =:
       ("_PRELOAD" @=? preloadTableRegistryField)
+    ]
+
+  , testGroup "compare"
+    [ "equality" =: do
+        b <- withNewState $ \l -> do
+          lua_pushinteger l 42
+          lua_pushnumber l 42
+          hslua_compare l (nth 2) (nth 1) LUA_OPEQ nullPtr
+        true @=? b
+
+    , "less then" =: do
+        b <- withNewState $ \l -> do
+          lua_pushinteger l (-2)
+          lua_pushnumber l 3
+          hslua_compare l (nth 2) (nth 1) LUA_OPLT nullPtr
+        true @=? b
+
+    , "not less then" =: do
+        b <- withNewState $ \l -> do
+          lua_pushinteger l 42
+          lua_pushnumber l 42
+          hslua_compare l (nth 2) (nth 1) LUA_OPLT nullPtr
+        false @=? b
+
+    , "less then or equal" =: do
+        b <- withNewState $ \l -> do
+          lua_pushinteger l 23
+          lua_pushnumber l 42
+          alloca $ \statusPtr -> do
+            result <- hslua_compare l (nth 2) (nth 1) LUA_OPLE statusPtr
+            status <- Storable.peek statusPtr
+            assertBool "comparison failed" (LUA_OK == status)
+            return result
+        true @=? b
     ]
 
   , testGroup "garbage-collection"
