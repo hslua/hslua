@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE PatternSynonyms            #-}
 {-|
 Module      : Foreign.Lua.Types
 Copyright   : © 2007–2012 Gracjan Polak;
@@ -15,7 +16,6 @@ The core Lua types, including mappings of Lua types to Haskell.
 module Foreign.Lua.Types
   ( State (..)
   , Reader
-  , GCCONTROL (..)
   , Type (..)
   , TypeCode (..)
   , fromType
@@ -36,7 +36,10 @@ module Foreign.Lua.Types
   , Status (..)
   , StatusCode (..)
   , toStatus
-  ) where
+    -- * Garbage-Collection
+  , GCCode (..)
+  )
+where
 
 #include "lua.h"
 -- required only for LUA_ERRFILE
@@ -249,20 +252,11 @@ newtype StatusCode = StatusCode CInt deriving (Eq, Storable)
 
 
 --
--- * Gargabe Collection Control
+-- Garbage collection
 --
 
--- | Enumeration used by @gc@ function.
-data GCCONTROL
-  = GCSTOP
-  | GCRESTART
-  | GCCOLLECT
-  | GCCOUNT
-  | GCCOUNTB
-  | GCSTEP
-  | GCSETPAUSE
-  | GCSETSTEPMUL
-  deriving (Enum, Eq, Ord, Show)
+-- | Garbage-collection options.
+newtype GCCode = GCCode CInt deriving (Eq, Storable)
 
 -- | A stack index
 newtype StackIndex = StackIndex { fromStackIndex :: CInt }

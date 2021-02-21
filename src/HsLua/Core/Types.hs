@@ -30,6 +30,7 @@ module HsLua.Core.Types
   , unsafeRunWith
   , unsafeErrorConversion
   , GCCONTROL (..)
+  , toGCCode
   , Type (..)
   , TypeCode (..)
   , fromType
@@ -145,3 +146,28 @@ unsafeErrorConversion = ErrorConversion
   , alternative = const
   , exceptionToError = id
   }
+
+-- | Enumeration used by @gc@ function.
+data GCCONTROL
+  = GCSTOP
+  | GCRESTART
+  | GCCOLLECT
+  | GCCOUNT
+  | GCCOUNTB
+  | GCSTEP
+  | GCSETPAUSE
+  | GCSETSTEPMUL
+  | GCISRUNNING
+  deriving (Enum, Eq, Ord, Show)
+
+toGCCode :: GCCONTROL -> GCCode
+toGCCode = \case
+  GCSTOP       -> LUA_GCSTOP
+  GCRESTART    -> LUA_GCRESTART
+  GCCOLLECT    -> LUA_GCCOLLECT
+  GCCOUNT      -> LUA_GCCOUNT
+  GCCOUNTB     -> LUA_GCCOUNTB
+  GCSTEP       -> LUA_GCSTEP
+  GCSETPAUSE   -> LUA_GCSETPAUSE
+  GCSETSTEPMUL -> LUA_GCSETSTEPMUL
+  GCISRUNNING  -> LUA_GCISRUNNING

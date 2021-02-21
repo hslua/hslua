@@ -19,13 +19,11 @@ import Data.IORef (newIORef, readIORef, writeIORef)
 
 import Foreign.C.String (peekCString, withCStringLen)
 import Foreign.Ptr (nullPtr)
-import Foreign.Lua (nth, top, withNewState)
-import Foreign.Lua.Auxiliary
+import Foreign.Lua
 import Foreign.Lua.Call
-import Foreign.Lua.Functions
-import Foreign.Lua.Types
 import Test.Tasty (TestTree, defaultMain, testGroup)
-import Test.Tasty.HUnit ( Assertion, testCase, (@=?) )
+import Test.Tasty.HUnit
+  ( Assertion, assertBool, testCase, (@=?) )
 
 -- | Runs tests.
 main :: IO ()
@@ -99,6 +97,26 @@ tests = testGroup "lua"
       ("_LOADED"  @=? loadedTableRegistryField)
     , "preloadTableRegistryField" =:
       ("_PRELOAD" @=? preloadTableRegistryField)
+    ]
+
+  , testGroup "garbage-collection"
+    [ "stop, restart GC"  =: do
+        counts <- withNewState $ \l -> do
+          lua_createtable l 0 0
+          _  <- lua_gc l LUA_GCSTOP 0
+          lua_pop l 1
+          kb1 <- lua_gc l LUA_GCCOUNT 0
+          b1  <- lua_gc l LUA_GCCOUNTB 0
+          _   <- lua_gc l LUA_GCCOLLECT 0
+          kb2 <- lua_gc l LUA_GCCOUNT 0
+          b2  <- lua_gc l LUA_GCCOUNTB 0
+          return (b1 + 1024 * kb1, b2 + 1024 * kb2)
+        assertBool "first count should be larger" (fst counts > snd counts)
+    , "count memory" =: do
+        count <- withNewState $ \l -> do
+          lua_gc l LUA_GCCOUNT 0
+        assertBool "memory consumption not between 0 and 10 kB"
+                   (count > 0 && count < 10)
     ]
 
   , testGroup "Haskell functions"

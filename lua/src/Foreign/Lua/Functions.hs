@@ -659,7 +659,7 @@ foreign import ccall unsafe "lua.h lua_status"
 -- See the Lua docs at
 -- <https://www.lua.org/manual/5.3/manual.html#lua_gc>.
 foreign import ccall safe "lua.h lua_gc"
-  lua_gc :: Lua.State -> CInt -> CInt -> IO CInt
+  lua_gc :: Lua.State -> GCCode {- ^ what -} -> CInt {- ^ data -} -> IO CInt
 
 
 -- * Miscellaneous functions

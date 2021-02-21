@@ -1,3 +1,4 @@
+{-# LANGUAGE PatternSynonyms #-}
 {-|
 Module      : Foreign.Lua
 Copyright   : © 2021 Albert Krewinkel
@@ -13,7 +14,6 @@ module Foreign.Lua
     -- * Types
   , State (..)
   , Reader
-  , GCCONTROL (..)
   , Type (..)
   , TypeCode (..)
   , fromType
@@ -31,9 +31,16 @@ module Foreign.Lua
   , NumResults (..)
   , RelationalOperator (..)
   , fromRelationalOperator
-  , Status (..)
   , StatusCode (..)
-  , toStatus
+    -- * Status codes
+  , pattern LUA_OK
+  , pattern LUA_YIELD
+  , pattern LUA_ERRRUN
+  , pattern LUA_ERRSYNTAX
+  , pattern LUA_ERRMEM
+  , pattern LUA_ERRGCMM
+  , pattern LUA_ERRERR
+  , pattern LUA_ERRFILE
 
     -- * Constants
   , multret
@@ -105,6 +112,16 @@ module Foreign.Lua
   , lua_status
     -- ** Garbage-collection
   , lua_gc
+  , GCCode (..)
+  , pattern LUA_GCSTOP
+  , pattern LUA_GCRESTART
+  , pattern LUA_GCCOLLECT
+  , pattern LUA_GCCOUNT
+  , pattern LUA_GCCOUNTB
+  , pattern LUA_GCSTEP
+  , pattern LUA_GCSETPAUSE
+  , pattern LUA_GCSETSTEPMUL
+  , pattern LUA_GCISRUNNING
     -- ** Miscellaneous functions
   , lua_pushglobaltable
 

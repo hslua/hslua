@@ -234,7 +234,7 @@ error = liftLua hslua_error
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_gc lua_gc>.
 gc :: GCCONTROL -> Int -> Lua Int
 gc what data' = liftLua $ \l ->
-  fromIntegral <$> lua_gc l (fromIntegral (fromEnum what)) (fromIntegral data')
+  fromIntegral <$> lua_gc l (toGCCode what) (fromIntegral data')
 
 -- | Pushes onto the stack the value @t[k]@, where @t@ is the value at the given
 -- stack index. As in Lua, this function may trigger a metamethod for the
