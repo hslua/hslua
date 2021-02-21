@@ -12,11 +12,8 @@ Portability : non-portable (depends on GHC)
 Raw bindings to functions and constants of the auxiliary library.
 -}
 module Foreign.Lua.Auxiliary
-  ( -- * Creating a Lua state
-    hsluaL_newstate
-    -- * The Auxiliary Library
-  , hsluaL_tolstring
-  , luaL_getmetafield
+  ( -- * The Auxiliary Library
+    luaL_getmetafield
   , luaL_getmetatable
   , luaL_loadbuffer
   , luaL_openlibs
@@ -25,18 +22,16 @@ module Foreign.Lua.Auxiliary
   , luaL_testudata
   , luaL_traceback
   , luaL_unref
-    -- * Registry fields
+    -- ** Registry fields
   , loadedTableRegistryField
   , preloadTableRegistryField
-    -- * References
+    -- ** References
   , Reference (..)
   , fromReference
   , toReference
-    -- * Ersatz functions
   ) where
 
 import Foreign.C (CChar, CInt (CInt), CSize (CSize), CString)
-import Foreign.Lua.Ersatz.Auxiliary (hsluaL_newstate, hsluaL_tolstring)
 import Foreign.Lua.Types (StackIndex)
 import Foreign.Ptr
 import qualified Foreign.Lua.Types as Lua

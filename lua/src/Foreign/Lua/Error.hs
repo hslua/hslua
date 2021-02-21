@@ -14,8 +14,8 @@ module Foreign.Lua.Error
   ) where
 
 import Data.ByteString (ByteString)
-import Foreign.Lua.Auxiliary (hsluaL_tolstring)
 import Foreign.Lua.Functions (lua_pop)
+import Foreign.Lua.Ersatz.Auxiliary (hsluaL_tolstring)
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr (nullPtr)
 
