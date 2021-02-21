@@ -38,6 +38,16 @@ tests = testGroup "lua"
     [ "create and close" =: do
       l <- hsluaL_newstate
       lua_close l
+
+    , "newthread" =: do
+        (a, b) <- withNewState $ \l -> do
+          l1 <- lua_newthread l
+          lua_pushnumber l 5
+          lua_pushnumber l1 23
+          (,) <$> lua_tonumberx l  top nullPtr
+              <*> lua_tonumberx l1 top nullPtr
+        5  @=? a
+        23 @=? b
     ]
 
   , testGroup "booleans"

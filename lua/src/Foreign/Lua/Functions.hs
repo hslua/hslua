@@ -28,6 +28,7 @@ to problems, then the package should be configured without flag
 module Foreign.Lua.Functions
   ( -- * State manipulation
     lua_close
+  , lua_newthread
     -- * Basic stack manipulation
   , lua_absindex
   , lua_gettop
@@ -115,11 +116,29 @@ import Foreign.Ptr
 
 -- * State manipulation
 
--- | Wrapper of @lua_close@. See the Lua docs at
+-- | Destroys all objects in the given Lua state (calling the
+-- corresponding garbage-collection metamethods, if any) and frees all
+-- dynamic memory used by this state. In several platforms, you may not
+-- need to call this function, because all resources are naturally
+-- released when the host program ends. On the other hand, long-running
+-- programs that create multiple states, such as daemons or web servers,
+-- will probably need to close states as soon as they are not needed.
+--
 -- <https://www.lua.org/manual/5.3/manual.html#lua_close>.
 foreign import ccall safe "lua.h lua_close"
   lua_close :: Lua.State -> IO ()
 
+-- | Creates a new thread, pushes it on the stack, and returns a
+-- 'Lua.State' that represents this new thread. The new thread returned
+-- by this function shares with the original thread its global
+-- environment, but has an independent execution stack.
+--
+-- There is no explicit function to close or to destroy a thread.
+-- Threads are subject to garbage collection, like any Lua object.
+--
+-- <https://www.lua.org/manual/5.3/manual.html#lua_newthread>
+foreign import ccall SAFTY "lua.h lua_newthread"
+  lua_newthread :: Lua.State -> IO Lua.State
 
 -- * Basic stack manipulation
 
