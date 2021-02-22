@@ -62,13 +62,13 @@ tests = testGroup "lua"
 
   , testGroup "booleans"
     [ "push and retrieve" =: do
-        true `shouldBeResultOf` \l -> do
-          lua_pushboolean l true
+        TRUE `shouldBeResultOf` \l -> do
+          lua_pushboolean l TRUE
           lua_toboolean l top
 
     , "type" =: do
         LUA_TBOOLEAN `shouldBeResultOf` \l -> do
-          lua_pushboolean l false
+          lua_pushboolean l FALSE
           lua_type l top
     ]
 
@@ -92,11 +92,10 @@ tests = testGroup "lua"
           peekCString =<< lua_tolstring l top nullPtr
 
     , "type" =: do
-        ty <- withNewState $ \l -> do
+        LUA_TSTRING `shouldBeResultOf` \l -> do
           withCStringLen "Olsen Olsen" $ \(ptr, len) ->
             lua_pushlstring l ptr (fromIntegral len)
           lua_type l top
-        LUA_TSTRING @=? ty
     ]
 
   , testGroup "constants"
@@ -108,25 +107,25 @@ tests = testGroup "lua"
 
   , testGroup "compare"
     [ "equality" =: do
-        true `shouldBeResultOf` \l -> do
+        TRUE `shouldBeResultOf` \l -> do
           lua_pushinteger l 42
           lua_pushnumber l 42
           hslua_compare l (nth 2) (nth 1) LUA_OPEQ nullPtr
 
     , "less then" =: do
-        true `shouldBeResultOf` \l -> do
+        TRUE `shouldBeResultOf` \l -> do
           lua_pushinteger l (-2)
           lua_pushnumber l 3
           hslua_compare l (nth 2) (nth 1) LUA_OPLT nullPtr
 
     , "not less then" =: do
-        false `shouldBeResultOf` \l -> do
+        FALSE `shouldBeResultOf` \l -> do
           lua_pushinteger l 42
           lua_pushnumber l 42
           hslua_compare l (nth 2) (nth 1) LUA_OPLT nullPtr
 
     , "less then or equal" =: do
-        true `shouldBeResultOf` \l -> do
+        TRUE `shouldBeResultOf` \l -> do
           lua_pushinteger l 23
           lua_pushnumber l 42
           alloca $ \statusPtr -> do
@@ -146,7 +145,7 @@ tests = testGroup "lua"
             lua_pushlstring l ptr (fromIntegral len)
           lua_rawget l (nth 2)
           -- push boolean
-          lua_pushboolean l true
+          lua_pushboolean l TRUE
           status <- lua_pcall l (NumArgs 1) (NumResults 1) 0
           assertBool "call status" (status == LUA_OK)
           peekCString =<< lua_tolstring l top nullPtr
@@ -160,7 +159,7 @@ tests = testGroup "lua"
             lua_pushlstring l ptr (fromIntegral len)
           lua_rawget l (nth 2)
           -- push boolean
-          lua_pushboolean l true
+          lua_pushboolean l TRUE
           lua_pcall l (NumArgs 1) (NumResults 1) 0
     ]
 

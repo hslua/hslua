@@ -39,8 +39,6 @@ module HsLua.Core.Types
   , liftIO
   , CFunction
   , LuaBool (..)
-  , false
-  , true
   , fromLuaBool
   , toLuaBool
   , Integer (..)
@@ -257,6 +255,21 @@ fromRelationalOperator = \case
   LE -> LUA_OPLE
 {-# INLINABLE fromRelationalOperator #-}
 
+--
+-- Boolean
+--
+
+-- | Convert a @'LuaBool'@ to a Haskell @'Bool'@.
+fromLuaBool :: LuaBool -> Bool
+fromLuaBool FALSE = False
+fromLuaBool _     = True
+{-# INLINABLE fromLuaBool #-}
+
+-- | Convert a Haskell @'Bool'@ to a @'LuaBool'@.
+toLuaBool :: Bool -> LuaBool
+toLuaBool True  = TRUE
+toLuaBool False = FALSE
+{-# INLINABLE toLuaBool #-}
 
 --
 -- Garbage collection

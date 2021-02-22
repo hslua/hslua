@@ -53,6 +53,9 @@ module Foreign.Lua.Constants
     -- * Predefined references
   , pattern LUA_REFNIL
   , pattern LUA_NOREF
+    -- * Boolean
+  , pattern TRUE
+  , pattern FALSE
   ) where
 
 import Foreign.C (CInt (..))
@@ -226,3 +229,15 @@ pattern LUA_REFNIL = #{const LUA_NOREF}
 -- | Value signaling that no reference was found.
 pattern LUA_NOREF :: CInt
 pattern LUA_NOREF = #{const LUA_NOREF}
+
+--
+-- Booleans
+--
+
+-- | Value which Lua usually uses as 'True'.
+pattern TRUE :: LuaBool
+pattern TRUE = LuaBool 1
+
+-- | Value which Lua usually uses as 'False'.
+pattern FALSE :: LuaBool
+pattern FALSE = LuaBool 0

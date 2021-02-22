@@ -38,14 +38,14 @@ module Foreign.Lua
     -- * Types
   , State (..)
   , Reader
+    -- ** Base Lua types
   , CFunction
-  , LuaBool (..)
-  , false
-  , true
-  , fromLuaBool
-  , toLuaBool
   , Lua.Integer (..)
   , Number (..)
+    -- *** Booleans
+  , LuaBool (..)
+  , pattern TRUE
+  , pattern FALSE
     -- ** Stack indices
   , StackIndex (..)
   , pattern LUA_REGISTRYINDEX
