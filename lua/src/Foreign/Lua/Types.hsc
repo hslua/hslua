@@ -46,7 +46,8 @@ import GHC.Generics (Generic)
 -- reentrant: it has no global variables. All information about a state is
 -- accessible through this structure.
 --
--- Synonym for @lua_State *@. See <https://www.lua.org/manual/5.3/#lua_State lua_State>.
+-- Synonym for @lua_State *@. See
+-- <https://www.lua.org/manual/5.3/#lua_State lua_State>.
 newtype State = State (Ptr ()) deriving (Eq, Generic)
 
 -- |  Type for C functions.
@@ -65,10 +66,11 @@ newtype State = State (Ptr ()) deriving (Eq, Generic)
 -- Lua. Like a Lua function, a C function called by Lua can also return
 -- many results.
 --
--- See <https://www.lua.org/manual/5.3/manual.html#lua_CFunction lua_CFunction>.
+-- See
+-- <https://www.lua.org/manual/5.3/manual.html#lua_CFunction lua_CFunction>.
 type CFunction = FunPtr (State -> IO NumResults)
 
--- | The reader function used by @'Foreign.Lua.Core.Functions.load'@.
+-- | The reader function used by @'Foreign.Lua.load'@.
 -- Every time it needs another piece of the chunk, lua_load calls the
 -- reader, passing along its data parameter. The reader must return a
 -- pointer to a block of memory with a new piece of the chunk and set
@@ -82,8 +84,8 @@ type Reader = FunPtr (State -> Ptr () -> Ptr CSize -> IO (Ptr CChar))
 
 -- |  The type of integers in Lua.
 --
--- By default this type is @'Int64'@, but that can be changed to different
--- values in lua. (See @LUA_INT_TYPE@ in @luaconf.h@.)
+-- By default this type is @'Int64'@, but that can be changed to
+-- different values in lua. (See @LUA_INT_TYPE@ in @luaconf.h@.)
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_Integer lua_Integer>.
 newtype Integer = Integer #{type LUA_INTEGER}
@@ -91,20 +93,17 @@ newtype Integer = Integer #{type LUA_INTEGER}
 
 -- |  The type of floats in Lua.
 --
--- By default this type is @'Double'@, but that can be changed in Lua to a
--- single float or a long double. (See @LUA_FLOAT_TYPE@ in @luaconf.h@.)
+-- By default this type is @'Double'@, but that can be changed in Lua to
+-- a single float or a long double. (See @LUA_FLOAT_TYPE@ in
+-- @luaconf.h@.)
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_Number lua_Number>.
 newtype Number = Number #{type LUA_NUMBER}
   deriving (Eq, Floating, Fractional, Num, Ord, Real, RealFloat, RealFrac, Show)
 
-
---
--- LuaBool
---
-
--- | Boolean value returned by a Lua C API function. This is a @'CInt'@ and
--- interpreted as @'False'@ iff the value is @0@, @'True'@ otherwise.
+-- | Boolean value returned by a Lua C API function. This is a @'CInt'@
+-- and should be interpreted as @'False'@ iff the value is @0@, @'True'@
+-- otherwise.
 newtype LuaBool = LuaBool CInt
   deriving (Eq, Storable, Show)
 
