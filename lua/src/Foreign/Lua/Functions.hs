@@ -564,19 +564,32 @@ foreign import ccall unsafe "lua.h lua_setmetatable"
 
 -- | Calls a function in protected mode.
 --
--- Both @nargs@ and @nresults@ have the same meaning as in @'lua_call'@.
--- If there are no errors during the call, @lua_pcall@ behaves exactly
--- like @'call'@. However, if there is any error, @pcall@ catches it,
--- pushes a single value on the stack (the error message), and returns
--- the error code. Like @'lua_call'@, @lua_pcall@ always removes the
--- function and its arguments from the stack.
+-- To call a function you must use the following protocol: first, the
+-- function to be called is pushed onto the stack; then, the arguments
+-- to the function are pushed in direct order; that is, the first
+-- argument is pushed first. Finally you call @lua_pcall@; @nargs@ is
+-- the number of arguments that you pushed onto the stack. All arguments
+-- and the function value are popped from the stack when the function is
+-- called. The function results are pushed onto the stack when the
+-- function returns. The number of results is adjusted to @nresults@,
+-- unless @nresults@ is @'Foreign.Lua.LUA_MULTRET'@. In this case, all
+-- results from the function are pushed. Lua takes care that the
+-- returned values fit into the stack space. The function results are
+-- pushed onto the stack in direct order (the first result is pushed
+-- first), so that after the call the last result is on the top of the
+-- stack.
+--
+-- If there is any error, @lua_pcall@ catches it, pushes a single value
+-- on the stack (the error message), and returns the error code.
+-- @lua_pcall@ always removes the function and its arguments from the
+-- stack.
 --
 -- If @msgh@ is @0@, then the error object returned on the stack is
--- exactly the original error object. Otherwise, when @msgh@ is @Just
--- idx@, the stack index @idx@ is the location of a message handler.
--- (This index cannot be a pseudo-index.) In case of runtime errors,
--- this function will be called with the error object and its return
--- value will be the object returned on the stack by @'lua_pcall'@.
+-- exactly the original error object. Otherwise, @msgh@ is the location
+-- of a message handler. (This index cannot be a pseudo-index.) In case
+-- of runtime errors, this function will be called with the error object
+-- and its return value will be the object returned on the stack by
+-- @'lua_pcall'@.
 --
 -- Typically, the message handler is used to add more debug information
 -- to the error object, such as a stack traceback. Such information

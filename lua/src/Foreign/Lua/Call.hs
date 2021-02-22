@@ -33,7 +33,7 @@ import Foreign.Lua.Types
 #endif
 
 -- | Type of raw Haskell functions that can be made into
--- 'CFunction's.
+-- 'Foreign.Lua.CFunction's.
 type HsFunction = State -> IO NumResults
 
 -- | Retrieve the pointer to a Haskell function from the wrapping
@@ -45,6 +45,9 @@ foreign import ccall SAFTY "hslua.h hslua_hs_fun_ptr"
 foreign import ccall SAFTY "hslua.h hslua_newhsfunction"
   hslua_newhsfunction :: State -> StablePtr a -> IO ()
 
+-- | Pushes a Haskell operation as a Lua function. The Haskell operation
+-- is expected to follow the custom error protocol, i.e., it must signal
+-- errors with @'Foreign.Lua.hslua_error'@.
 hslua_pushhsfunction :: State -> HsFunction -> IO ()
 hslua_pushhsfunction l preCFn =
   newStablePtr preCFn >>= hslua_newhsfunction l

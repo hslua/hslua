@@ -65,7 +65,7 @@ import Foreign.Lua.Types
 -- Special values
 --
 
--- | Option for multiple returns in @'lua_pcall'@ and @'lua_call'@.
+-- | Option for multiple returns in @'Foreign.Lua.lua_pcall'@.
 pattern LUA_MULTRET :: NumResults
 pattern LUA_MULTRET = NumResults (#{const LUA_MULTRET})
 

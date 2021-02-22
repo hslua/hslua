@@ -140,7 +140,6 @@ newtype TypeCode = TypeCode { fromTypeCode :: CInt }
 newtype OPCode = OPCode CInt deriving (Eq, Storable)
 
 -- | Integer code used to signal the status of a thread or computation.
--- See @'Status'@.
 newtype StatusCode = StatusCode CInt deriving (Eq, Storable)
 
 -- | Garbage-collection options.
