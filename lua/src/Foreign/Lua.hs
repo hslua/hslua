@@ -22,9 +22,13 @@ module Foreign.Lua
   , toLuaBool
   , Lua.Integer (..)
   , Number (..)
+    -- ** Stack indices
   , StackIndex (..)
+  , pattern LUA_REGISTRYINDEX
+    -- ** Function calling
   , NumArgs (..)
   , NumResults (..)
+  , pattern LUA_MULTRET
     -- ** Basic types
   , TypeCode (..)
   , pattern LUA_TNONE
@@ -52,12 +56,6 @@ module Foreign.Lua
   , pattern LUA_ERRGCMM
   , pattern LUA_ERRERR
   , pattern LUA_ERRFILE
-
-    -- * Constants
-  , multret
-  , registryindex
-  , refnil
-  , noref
 
     -- * Stack index helpers
   , nthTop
@@ -151,6 +149,8 @@ module Foreign.Lua
   , preloadTableRegistryField
     -- ** References
   , Reference (..)
+  , pattern LUA_REFNIL
+  , pattern LUA_NOREF
   , fromReference
   , toReference
 

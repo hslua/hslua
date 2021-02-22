@@ -191,4 +191,3 @@ import HsLua.Core.Auxiliary
 import HsLua.Core.Error
 import HsLua.Core.Functions
 import HsLua.Core.Types as Lua
-import Foreign.Lua.Constants

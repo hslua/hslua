@@ -25,7 +25,6 @@ import Data.Maybe (fromMaybe)
 import HsLua.Core.Error
 import HsLua.Core.Types as Lua
 import Foreign.Lua.Auxiliary (luaL_openlibs)
-import Foreign.Lua.Constants
 import Foreign.Lua.Functions
 import Foreign.Lua.Lib
 import Foreign.Marshal.Alloc (alloca)

@@ -46,8 +46,10 @@ module HsLua.Core.Types
   , Integer (..)
   , Number (..)
   , StackIndex (..)
+  , registryindex
   , NumArgs (..)
   , NumResults (..)
+  , multret
   , RelationalOperator (..)
   , fromRelationalOperator
   , Status (..)
@@ -57,6 +59,8 @@ module HsLua.Core.Types
   , Reference (..)
   , fromReference
   , toReference
+  , noref
+  , refnil
     -- * Stack index helpers
   , nthTop
   , nthBottom
@@ -282,3 +286,23 @@ toGCCode = \case
   GCSETPAUSE   -> LUA_GCSETPAUSE
   GCSETSTEPMUL -> LUA_GCSETSTEPMUL
   GCISRUNNING  -> LUA_GCISRUNNING
+
+--
+-- Special values
+--
+
+-- | Option for multiple returns in @'pcall'@.
+multret :: NumResults
+multret = LUA_MULTRET
+
+-- | Pseudo stack index of the Lua registry.
+registryindex :: StackIndex
+registryindex = LUA_REGISTRYINDEX
+
+-- | Value signaling that no reference was created.
+refnil :: Int
+refnil = fromIntegral LUA_REFNIL
+
+-- | Value signaling that no reference was found.
+noref :: Int
+noref = fromIntegral LUA_NOREF

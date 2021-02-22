@@ -12,10 +12,10 @@ Portability : ForeignFunctionInterface
 Lua constants
 -}
 module Foreign.Lua.Constants
-  ( multret
-  , registryindex
-  , refnil
-  , noref
+  ( -- * Special values
+    pattern LUA_MULTRET
+    -- * Pseudo-indices
+  , pattern LUA_REGISTRYINDEX
     -- * Basic types
   , pattern LUA_TNONE
   , pattern LUA_TNIL
@@ -50,32 +50,28 @@ module Foreign.Lua.Constants
   , pattern LUA_GCSETPAUSE
   , pattern LUA_GCSETSTEPMUL
   , pattern LUA_GCISRUNNING
+    -- * Predefined references
+  , pattern LUA_REFNIL
+  , pattern LUA_NOREF
   ) where
-
-#include "lua.h"
--- required only for LUA_ERRFILE
-#include "lauxlib.h"
 
 import Foreign.C (CInt (..))
 import Foreign.Lua.Types
 
--- | Alias for C constant @LUA_MULTRET@. See
--- <https://www.lua.org/manual/5.3/#lua_call lua_call>.
-foreign import capi unsafe "lua.h value LUA_MULTRET"
-  multret :: NumResults
+#include "lua.h"
+#include "lauxlib.h"
 
--- | Alias for C constant @LUA_REGISTRYINDEX@. See
--- <https://www.lua.org/manual/5.3/#3.5 Lua registry>.
-foreign import capi unsafe "lua.h value LUA_REGISTRYINDEX"
-  registryindex :: StackIndex
+--
+-- Special values
+--
 
--- | Value signaling that no reference was created.
-foreign import capi unsafe "lauxlib.h value LUA_REFNIL"
-  refnil :: Int
+-- | Option for multiple returns in @'lua_pcall'@ and @'lua_call'@.
+pattern LUA_MULTRET :: NumResults
+pattern LUA_MULTRET = NumResults (#{const LUA_MULTRET})
 
--- | Value signaling that no reference was found.
-foreign import capi unsafe "lauxlib.h value LUA_NOREF"
-  noref :: Int
+-- | Stack index of the Lua registry.
+pattern LUA_REGISTRYINDEX :: StackIndex
+pattern LUA_REGISTRYINDEX = StackIndex (#{const LUA_REGISTRYINDEX})
 
 --
 -- Type of Lua values
@@ -218,3 +214,15 @@ pattern LUA_GCSETSTEPMUL = GCCode #{const LUA_GCSETSTEPMUL}
 -- (i.e., not stopped).
 pattern LUA_GCISRUNNING :: GCCode
 pattern LUA_GCISRUNNING = GCCode #{const LUA_GCISRUNNING}
+
+--
+-- Special registry values
+--
+
+-- | Value signaling that no reference was created.
+pattern LUA_REFNIL :: CInt
+pattern LUA_REFNIL = #{const LUA_NOREF}
+
+-- | Value signaling that no reference was found.
+pattern LUA_NOREF :: CInt
+pattern LUA_NOREF = #{const LUA_NOREF}
