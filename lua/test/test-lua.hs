@@ -40,51 +40,44 @@ tests = testGroup "lua"
       lua_close l
 
     , "newthread" =: do
-        (a, b) <- withNewState $ \l -> do
+        (5, 23) `shouldBeResultOf` \l -> do
           l1 <- lua_newthread l
           lua_pushnumber l 5
           lua_pushnumber l1 23
           (,) <$> lua_tonumberx l  top nullPtr
               <*> lua_tonumberx l1 top nullPtr
-        5  @=? a
-        23 @=? b
     ]
 
   , testGroup "booleans"
     [ "push and retrieve" =: do
-        b <- withNewState $ \l -> do
+        true `shouldBeResultOf` \l -> do
           lua_pushboolean l true
           lua_toboolean l top
-        true @=? b
 
     , "type" =: do
-        ty <- withNewState $ \l -> do
+        LUA_TBOOLEAN `shouldBeResultOf` \l -> do
           lua_pushboolean l false
           lua_type l top
-        LUA_TBOOLEAN @=? ty
     ]
 
   , testGroup "numbers"
     [ "push and retrieve" =: do
-        i <- withNewState $ \l -> do
+        5 `shouldBeResultOf` \l -> do
           lua_pushinteger l 5
           lua_tointegerx l top nullPtr
-        5 @=? i
 
     , "type" =: do
-        ty <- withNewState $ \l -> do
+        LUA_TNUMBER `shouldBeResultOf` \l -> do
           lua_pushinteger l 0
           lua_type l top
-        LUA_TNUMBER @=? ty
     ]
 
   , testGroup "strings"
     [ "push and retrieve" =: do
-        str <- withNewState $ \l -> do
+        "testing" `shouldBeResultOf` \l -> do
           withCStringLen "testing" $ \(ptr, len) ->
             lua_pushlstring l ptr (fromIntegral len)
           peekCString =<< lua_tolstring l top nullPtr
-        "testing" @=? str
 
     , "type" =: do
         ty <- withNewState $ \l -> do
@@ -103,28 +96,25 @@ tests = testGroup "lua"
 
   , testGroup "compare"
     [ "equality" =: do
-        b <- withNewState $ \l -> do
+        true `shouldBeResultOf` \l -> do
           lua_pushinteger l 42
           lua_pushnumber l 42
           hslua_compare l (nth 2) (nth 1) LUA_OPEQ nullPtr
-        true @=? b
 
     , "less then" =: do
-        b <- withNewState $ \l -> do
+        true `shouldBeResultOf` \l -> do
           lua_pushinteger l (-2)
           lua_pushnumber l 3
           hslua_compare l (nth 2) (nth 1) LUA_OPLT nullPtr
-        true @=? b
 
     , "not less then" =: do
-        b <- withNewState $ \l -> do
+        false `shouldBeResultOf` \l -> do
           lua_pushinteger l 42
           lua_pushnumber l 42
           hslua_compare l (nth 2) (nth 1) LUA_OPLT nullPtr
-        false @=? b
 
     , "less then or equal" =: do
-        b <- withNewState $ \l -> do
+        true `shouldBeResultOf` \l -> do
           lua_pushinteger l 23
           lua_pushnumber l 42
           alloca $ \statusPtr -> do
@@ -132,7 +122,6 @@ tests = testGroup "lua"
             status <- Storable.peek statusPtr
             assertBool "comparison failed" (LUA_OK == status)
             return result
-        true @=? b
     ]
 
   , testGroup "garbage-collection"
@@ -161,12 +150,11 @@ tests = testGroup "lua"
             lua_pushinteger l $ n + 5
             return (NumResults 1)
       in "call Haskell function" =: do
-        result <- withNewState $ \l -> do
+        23 `shouldBeResultOf` \l -> do
           hslua_pushhsfunction l add5
           lua_pushinteger l 18
           void $ lua_pcall l (NumArgs 1) (NumResults 1) 0
           lua_tointegerx l (nth 1) nullPtr
-        23 @=? result
 
 #ifndef ALLOW_UNSAFE_GC
     , "Haskell function as finalizer" =: do
@@ -174,7 +162,7 @@ tests = testGroup "lua"
         let sendMessage _ = do
               writeIORef msg "HI MOM!"
               return (NumResults 0)
-        result <- withNewState $ \l -> do
+        "HI MOM!" `shouldBeResultOf` \l -> do
           -- create dummy table
           lua_createtable l 0 0
           -- create metatable with Haskell __gc function
@@ -204,7 +192,6 @@ tests = testGroup "lua"
             lua_pop l 2
           -- the GC should have run now, check the message
           readIORef msg
-        "HI MOM!" @=? result
 #endif
     ]
   ]
@@ -212,3 +199,8 @@ tests = testGroup "lua"
 infix  3 =:
 (=:) :: String -> Assertion -> TestTree
 (=:) = testCase
+
+shouldBeResultOf :: (Eq a, Show a) => a -> (State -> IO a) -> Assertion
+shouldBeResultOf expected luaOp = do
+  result <- withNewState luaOp
+  expected @=? result
