@@ -47,7 +47,12 @@ tests = testGroup "lua"
           (,) <$> lua_tonumberx l  top nullPtr
               <*> lua_tonumberx l1 top nullPtr
 
-    , "type" =: do
+    , "type check" =: do
+        TRUE `shouldBeResultOf` \l -> do
+          _ <- lua_newthread l
+          lua_isthread l top
+
+    , "thread type is LUA_TTHREAD" =: do
         LUA_TTHREAD `shouldBeResultOf` \l -> do
           _ <- lua_newthread l
           lua_type l top
@@ -66,6 +71,11 @@ tests = testGroup "lua"
           lua_pushboolean l TRUE
           lua_toboolean l top
 
+    , "check" =: do
+        TRUE `shouldBeResultOf` \l -> do
+          lua_pushboolean l FALSE
+          lua_isboolean l top
+
     , "type" =: do
         LUA_TBOOLEAN `shouldBeResultOf` \l -> do
           lua_pushboolean l FALSE
@@ -73,15 +83,64 @@ tests = testGroup "lua"
     ]
 
   , testGroup "numbers"
-    [ "push and retrieve" =: do
+    [ "push and retrieve integer" =: do
         5 `shouldBeResultOf` \l -> do
           lua_pushinteger l 5
           lua_tointegerx l top nullPtr
+
+    , "push and retrieve float" =: do
+        (-0.1) `shouldBeResultOf` \l -> do
+          lua_pushnumber l (-0.1)
+          lua_tonumberx l top nullPtr
+
+    , "check for integer" =: do
+        (TRUE, FALSE) `shouldBeResultOf` \l -> do
+          lua_pushinteger l 0
+          t <- lua_isinteger l top
+          lua_pushnil l
+          f <- lua_isinteger l top
+          return (t, f)
+
+    , "check for number" =: do
+        (TRUE, FALSE) `shouldBeResultOf` \l -> do
+          lua_pushinteger l 0
+          t <- lua_isnumber l top
+          lua_pushnil l
+          f <- lua_isnumber l top
+          return (t, f)
 
     , "type" =: do
         LUA_TNUMBER `shouldBeResultOf` \l -> do
           lua_pushinteger l 0
           lua_type l top
+    ]
+
+  , testGroup "nil"
+    [ "push and type check" =:
+      (TRUE, FALSE) `shouldBeResultOf` \l -> do
+        lua_pushnil l
+        t <- lua_isnil l top
+        lua_pushglobaltable l
+        f <- lua_isnil l top
+        return (t, f)
+
+    , "type is LUA_TNIL" =:
+      LUA_TNIL `shouldBeResultOf` \l -> do
+        lua_pushnil l
+        lua_type l top
+    ]
+
+  , testGroup "none"
+    [ "invalid index is 'none'" =:
+      TRUE `shouldBeResultOf` \l -> lua_isnone l 1
+
+    , "valid index is not none" =:
+      FALSE `shouldBeResultOf` \l -> do
+        lua_pushnil l
+        lua_isnone l 1
+
+    , "invalid index has type LUA_TNONE" =:
+      LUA_TNONE `shouldBeResultOf` \l -> lua_type l 9
     ]
 
   , testGroup "strings"
@@ -95,6 +154,18 @@ tests = testGroup "lua"
         LUA_TSTRING `shouldBeResultOf` \l -> do
           withCStringLen "Olsen Olsen" $ \(ptr, len) ->
             lua_pushlstring l ptr (fromIntegral len)
+          lua_type l top
+    ]
+
+  , testGroup "tables"
+    [ "check type" =: do
+        TRUE `shouldBeResultOf` \l -> do
+          lua_createtable l 0 0
+          lua_istable l top
+
+    , "has type LUA_TTABLE" =: do
+        LUA_TTABLE `shouldBeResultOf` \l -> do
+          lua_createtable l 0 0
           lua_type l top
     ]
 

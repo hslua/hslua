@@ -35,10 +35,18 @@ module Foreign.Lua.Functions
   , lua_getmetatable
   , lua_gettop
   , lua_insert
+  , lua_isboolean
   , lua_iscfunction
+  , lua_isfunction
   , lua_isinteger
+  , lua_islightuserdata
+  , lua_isnil
+  , lua_isnone
+  , lua_isnoneornil
   , lua_isnumber
   , lua_isstring
+  , lua_istable
+  , lua_isthread
   , lua_isuserdata
   , lua_load
   , lua_newthread
@@ -184,38 +192,96 @@ foreign import ccall unsafe "lua.h lua_gettop"
 foreign import capi unsafe "lua.h lua_insert"
   lua_insert :: Lua.State -> StackIndex -> IO ()
 
--- | Returns @True@ if the value at the given index is a C function, and
--- @False@ otherwise.
+-- | Returns @'Foreign.Lua.TRUE'@ if the value at the given index is a
+-- boolean, and @'Foreign.Lua.FALSE'@ otherwise.
+--
+-- <https://www.lua.org/manual/5.3/manual.html#lua_isboolean>
+foreign import capi unsafe "lua.h lua_isboolean"
+  lua_isboolean :: Lua.State -> StackIndex -> IO LuaBool
+
+-- | Returns @'Foreign.Lua.TRUE'@ if the value at the given index is a C
+-- function, and @'Foreign.Lua.FALSE'@ otherwise.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_iscfunction>
 foreign import ccall unsafe "lua.h lua_iscfunction"
   lua_iscfunction :: Lua.State -> StackIndex -> IO LuaBool
 
--- | Returns @'TRUE'@ if the value at the given index is an integer
--- (that is, the value is a number and is represented as an integer),
--- and @'FALSE'@ otherwise.
+-- | Returns @'Foreign.Lua.TRUE'@ if the value at the given index is a
+-- function (either C or Lua), and @'Foreign.Lua.FALSE'@ otherwise.
+--
+-- <https://www.lua.org/manual/5.3/manual.html#lua_isfunction>
+foreign import capi unsafe "lua.h lua_isfunction"
+  lua_isfunction :: Lua.State -> StackIndex -> IO LuaBool
+
+-- | Returns @'Foreign.Lua.TRUE'@ if the value at the given index is an
+-- integer (that is, the value is a number and is represented as an
+-- integer), and @'Foreign.Lua.FALSE'@ otherwise.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isinteger>
 foreign import ccall unsafe "lua.h lua_isinteger"
   lua_isinteger :: Lua.State -> StackIndex -> IO LuaBool
 
--- | Returns @'TRUE'@ if the value at the given index is a number or a
--- string convertible to a number, and @'FALSE'@ otherwise.
+-- | Returns @'Foreign.Lua.TRUE'@ if the value at the given index is a
+-- light userdata, and @'Foreign.Lua.FALSE'@ otherwise.
+--
+-- <https://www.lua.org/manual/5.3/manual.html#lua_islightuserdata>
+foreign import capi unsafe "lua.h lua_islightuserdata"
+  lua_islightuserdata :: Lua.State -> StackIndex -> IO LuaBool
+
+-- | Returns @'Foreign.Lua.TRUE'@ if the value at the given index is
+-- __nil__, and @'Foreign.Lua.FALSE'@ otherwise.
+--
+-- <https://www.lua.org/manual/5.3/manual.html#lua_isnil>
+foreign import capi unsafe "lua.h lua_isnil"
+  lua_isnil :: Lua.State -> StackIndex -> IO LuaBool
+
+-- | Returns @'Foreign.Lua.TRUE'@ if the given index is not valid, and
+-- @'Foreign.Lua.FALSE'@ otherwise.
+--
+-- <https://www.lua.org/manual/5.3/manual.html#lua_isnone>
+foreign import capi unsafe "lua.h lua_isnone"
+  lua_isnone :: Lua.State -> StackIndex -> IO LuaBool
+
+-- | Returns @'Foreign.Lua.TRUE'@ if the given index is not valid or if
+-- the value at the given index is __nil__, and @'Foreign.Lua.FALSE'@
+-- otherwise.
+--
+-- <https://www.lua.org/manual/5.3/manual.html#lua_isnoneornil>
+foreign import capi unsafe "lua.h lua_isnoneornil"
+  lua_isnoneornil :: Lua.State -> StackIndex -> IO LuaBool
+
+-- | Returns @'Foreign.Lua.TRUE'@ if the value at the given index is a
+-- number or a string convertible to a number, and @'Foreign.Lua.FALSE'@
+-- otherwise.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isnumber>
 foreign import ccall unsafe "lua.h lua_isnumber"
   lua_isnumber :: Lua.State -> StackIndex -> IO LuaBool
 
--- | Returns @True@ if the value at the given index is a string or a
--- number (which is always convertible to a string), and @False@
--- otherwise.
+-- | Returns @'Foreign.Lua.TRUE'@ if the value at the given index is a
+-- string or a number (which is always convertible to a string), and
+-- @'Foreign.Lua.FALSE'@ otherwise.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isstring>
 foreign import ccall unsafe "lua.h lua_isstring"
   lua_isstring :: Lua.State -> StackIndex -> IO LuaBool
 
--- | Returns @True@ if the value at the given index is a userdata
--- (either full or light), and @False@ otherwise.
+-- | Returns @'Foreign.Lua.TRUE'@ if the value at the given index is a
+-- table, and @'Foreign.Lua.FALSE'@ otherwise.
+--
+-- <https://www.lua.org/manual/5.3/manual.html#lua_istable>
+foreign import capi unsafe "lua.h lua_istable"
+  lua_istable :: Lua.State -> StackIndex -> IO LuaBool
+
+-- | Returns @'Foreign.Lua.TRUE'@ if the value at the given index is a
+-- thread, and @'Foreign.Lua.FALSE'@ otherwise.
+--
+-- <https://www.lua.org/manual/5.3/manual.html#lua_isthread>
+foreign import capi unsafe "lua.h lua_isthread"
+  lua_isthread :: Lua.State -> StackIndex -> IO LuaBool
+
+-- | Returns @'Foreign.Lua.TRUE'@ if the value at the given index is a
+-- userdata (either full or light), and @'Foreign.Lua.FALSE'@ otherwise.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isuserdata>
 foreign import ccall unsafe "lua.h lua_isuserdata"

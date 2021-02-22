@@ -24,9 +24,7 @@ import Data.ByteString (ByteString)
 import Data.Maybe (fromMaybe)
 import HsLua.Core.Error
 import HsLua.Core.Types as Lua
-import Foreign.Lua.Auxiliary (luaL_openlibs)
-import Foreign.Lua.Functions
-import Foreign.Lua.Lib
+import Foreign.Lua
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 
@@ -309,7 +307,7 @@ insert index = liftLua $ \l -> lua_insert l index
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isboolean lua_isboolean>.
 isboolean :: StackIndex -> Lua Bool
-isboolean n = (== TypeBoolean) <$> ltype n
+isboolean n = liftLua $ \l -> fromLuaBool <$> lua_isboolean l n
 
 -- | Returns @True@ if the value at the given index is a C function, and @False@
 -- otherwise.

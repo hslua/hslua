@@ -102,11 +102,19 @@ module Foreign.Lua
   , lua_replace
   , lua_checkstack
     -- ** Access functions (stack → Haskell)
+  , lua_isnil
+  , lua_isboolean
   , lua_isnumber
   , lua_isinteger
   , lua_isstring
+  , lua_isfunction
+  , lua_istable
   , lua_iscfunction
   , lua_isuserdata
+  , lua_islightuserdata
+  , lua_isthread
+  , lua_isnone
+  , lua_isnoneornil
   , lua_type
   , lua_typename
   , lua_rawequal
