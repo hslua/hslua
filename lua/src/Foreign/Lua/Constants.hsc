@@ -16,6 +16,17 @@ module Foreign.Lua.Constants
   , registryindex
   , refnil
   , noref
+    -- * Basic types
+  , pattern LUA_TNONE
+  , pattern LUA_TNIL
+  , pattern LUA_TBOOLEAN
+  , pattern LUA_TLIGHTUSERDATA
+  , pattern LUA_TNUMBER
+  , pattern LUA_TSTRING
+  , pattern LUA_TTABLE
+  , pattern LUA_TFUNCTION
+  , pattern LUA_TUSERDATA
+  , pattern LUA_TTHREAD
     -- * Status codes
   , pattern LUA_OK
   , pattern LUA_YIELD
@@ -65,6 +76,49 @@ foreign import capi unsafe "lauxlib.h value LUA_REFNIL"
 -- | Value signaling that no reference was found.
 foreign import capi unsafe "lauxlib.h value LUA_NOREF"
   noref :: Int
+
+--
+-- Type of Lua values
+--
+-- | Non-valid stack index
+pattern LUA_TNONE :: TypeCode
+pattern LUA_TNONE = TypeCode (#{const LUA_TNONE})
+
+-- | Type of Lua's @nil@ value
+pattern LUA_TNIL :: TypeCode
+pattern LUA_TNIL = TypeCode (#{const LUA_TNIL})
+
+-- | Type of Lua booleans
+pattern LUA_TBOOLEAN :: TypeCode
+pattern LUA_TBOOLEAN = TypeCode (#{const LUA_TBOOLEAN})
+
+-- | Type of light userdata
+pattern LUA_TLIGHTUSERDATA :: TypeCode
+pattern LUA_TLIGHTUSERDATA = TypeCode (#{const LUA_TLIGHTUSERDATA})
+
+-- | Type of Lua numbers. See @'Lua.Number'@
+pattern LUA_TNUMBER :: TypeCode
+pattern LUA_TNUMBER = TypeCode (#{const LUA_TNUMBER})
+
+-- | Type of Lua string values
+pattern LUA_TSTRING :: TypeCode
+pattern LUA_TSTRING = TypeCode (#{const LUA_TSTRING})
+
+-- | Type of Lua tables
+pattern LUA_TTABLE :: TypeCode
+pattern LUA_TTABLE = TypeCode (#{const LUA_TTABLE})
+
+-- | Type of functions, either normal or @'CFunction'@
+pattern LUA_TFUNCTION :: TypeCode
+pattern LUA_TFUNCTION = TypeCode (#{const LUA_TFUNCTION})
+
+-- | Type of full user data
+pattern LUA_TUSERDATA :: TypeCode
+pattern LUA_TUSERDATA = TypeCode (#{const LUA_TUSERDATA})
+
+-- | Type of Lua threads
+pattern LUA_TTHREAD :: TypeCode
+pattern LUA_TTHREAD = TypeCode (#{const LUA_TTHREAD})
 
 --
 -- Status codes

@@ -14,10 +14,6 @@ module Foreign.Lua
     -- * Types
   , State (..)
   , Reader
-  , Type (..)
-  , TypeCode (..)
-  , fromType
-  , toType
   , CFunction
   , LuaBool (..)
   , false
@@ -29,6 +25,18 @@ module Foreign.Lua
   , StackIndex (..)
   , NumArgs (..)
   , NumResults (..)
+    -- ** Basic types
+  , TypeCode (..)
+  , pattern LUA_TNONE
+  , pattern LUA_TNIL
+  , pattern LUA_TBOOLEAN
+  , pattern LUA_TLIGHTUSERDATA
+  , pattern LUA_TNUMBER
+  , pattern LUA_TSTRING
+  , pattern LUA_TTABLE
+  , pattern LUA_TFUNCTION
+  , pattern LUA_TUSERDATA
+  , pattern LUA_TTHREAD
     -- ** Relational operator codes
   , OPCode (..)
   , pattern LUA_OPEQ

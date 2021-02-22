@@ -149,6 +149,65 @@ unsafeErrorConversion = ErrorConversion
   , exceptionToError = id
   }
 
+
+--
+-- Type of Lua values
+--
+
+-- | Enumeration used as type tag.
+-- See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>.
+data Type
+  = TypeNone           -- ^ non-valid stack index
+  | TypeNil            -- ^ type of Lua's @nil@ value
+  | TypeBoolean        -- ^ type of Lua booleans
+  | TypeLightUserdata  -- ^ type of light userdata
+  | TypeNumber         -- ^ type of Lua numbers. See @'Lua.Number'@
+  | TypeString         -- ^ type of Lua string values
+  | TypeTable          -- ^ type of Lua tables
+  | TypeFunction       -- ^ type of functions, either normal or @'CFunction'@
+  | TypeUserdata       -- ^ type of full user data
+  | TypeThread         -- ^ type of Lua threads
+  deriving (Bounded, Eq, Ord, Show)
+
+instance Enum Type where
+  fromEnum = fromIntegral . fromTypeCode . fromType
+  toEnum = toType . TypeCode . fromIntegral
+
+-- | Convert a Lua 'Type' to a type code which can be passed to the C
+-- API.
+fromType :: Type -> TypeCode
+fromType = \case
+  TypeNone          -> LUA_TNONE
+  TypeNil           -> LUA_TNIL
+  TypeBoolean       -> LUA_TBOOLEAN
+  TypeLightUserdata -> LUA_TLIGHTUSERDATA
+  TypeNumber        -> LUA_TNUMBER
+  TypeString        -> LUA_TSTRING
+  TypeTable         -> LUA_TTABLE
+  TypeFunction      -> LUA_TFUNCTION
+  TypeUserdata      -> LUA_TUSERDATA
+  TypeThread        -> LUA_TTHREAD
+
+-- | Convert numerical code to Lua 'Type'.
+toType :: TypeCode -> Type
+toType = \case
+  LUA_TNONE          -> TypeNone
+  LUA_TNIL           -> TypeNil
+  LUA_TBOOLEAN       -> TypeBoolean
+  LUA_TLIGHTUSERDATA -> TypeLightUserdata
+  LUA_TNUMBER        -> TypeNumber
+  LUA_TSTRING        -> TypeString
+  LUA_TTABLE         -> TypeTable
+  LUA_TFUNCTION      -> TypeFunction
+  LUA_TUSERDATA      -> TypeUserdata
+  LUA_TTHREAD        -> TypeThread
+  TypeCode c         -> error ("No Type corresponding to " ++ show c)
+
+
+--
+-- Thread status
+--
+
 -- | Lua status values.
 data Status
   = OK        -- ^ success

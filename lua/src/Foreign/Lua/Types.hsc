@@ -16,10 +16,7 @@ The core Lua types, including mappings of Lua types to Haskell.
 module Foreign.Lua.Types
   ( State (..)
   , Reader
-  , Type (..)
   , TypeCode (..)
-  , fromType
-  , toType
   , CFunction
   , LuaBool (..)
   , false
@@ -135,66 +132,9 @@ toLuaBool True  = true
 toLuaBool False = false
 {-# INLINABLE toLuaBool #-}
 
-
---
--- * Type of Lua values
---
-
--- | Enumeration used as type tag.
--- See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>.
-data Type
-  = TypeNone           -- ^ non-valid stack index
-  | TypeNil            -- ^ type of lua's @nil@ value
-  | TypeBoolean        -- ^ type of lua booleans
-  | TypeLightUserdata  -- ^ type of light userdata
-  | TypeNumber         -- ^ type of lua numbers. See @'Lua.Number'@
-  | TypeString         -- ^ type of lua string values
-  | TypeTable          -- ^ type of lua tables
-  | TypeFunction       -- ^ type of functions, either normal or @'CFunction'@
-  | TypeUserdata       -- ^ type of full user data
-  | TypeThread         -- ^ type of lua threads
-  deriving (Bounded, Eq, Ord, Show)
-
--- | Integer code used to encode the type of a lua value.
+-- | Integer code used to encode the type of a Lua value.
 newtype TypeCode = TypeCode { fromTypeCode :: CInt }
   deriving (Eq, Ord, Show)
-
-instance Enum Type where
-  fromEnum = fromIntegral . fromTypeCode . fromType
-  toEnum = toType . TypeCode . fromIntegral
-
--- | Convert a lua Type to a type code which can be passed to the C API.
-fromType :: Type -> TypeCode
-fromType tp = TypeCode $ case tp of
-  TypeNone          -> #{const LUA_TNONE}
-  TypeNil           -> #{const LUA_TNIL}
-  TypeBoolean       -> #{const LUA_TBOOLEAN}
-  TypeLightUserdata -> #{const LUA_TLIGHTUSERDATA}
-  TypeNumber        -> #{const LUA_TNUMBER}
-  TypeString        -> #{const LUA_TSTRING}
-  TypeTable         -> #{const LUA_TTABLE}
-  TypeFunction      -> #{const LUA_TFUNCTION}
-  TypeUserdata      -> #{const LUA_TUSERDATA}
-  TypeThread        -> #{const LUA_TTHREAD}
-
--- | Convert numerical code to lua type.
-toType :: TypeCode -> Type
-toType (TypeCode c) = case c of
-  #{const LUA_TNONE}          -> TypeNone
-  #{const LUA_TNIL}           -> TypeNil
-  #{const LUA_TBOOLEAN}       -> TypeBoolean
-  #{const LUA_TLIGHTUSERDATA} -> TypeLightUserdata
-  #{const LUA_TNUMBER}        -> TypeNumber
-  #{const LUA_TSTRING}        -> TypeString
-  #{const LUA_TTABLE}         -> TypeTable
-  #{const LUA_TFUNCTION}      -> TypeFunction
-  #{const LUA_TUSERDATA}      -> TypeUserdata
-  #{const LUA_TTHREAD}        -> TypeThread
-  _ -> error ("No Type corresponding to " ++ show c)
-
---
--- Relational Operator
---
 
 -- | Relational operator code.
 newtype OPCode = OPCode CInt deriving (Eq, Storable)

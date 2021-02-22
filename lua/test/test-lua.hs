@@ -61,7 +61,7 @@ tests = testGroup "lua"
         ty <- withNewState $ \l -> do
           lua_pushboolean l false
           lua_type l top
-        TypeBoolean @=? toType ty
+        LUA_TBOOLEAN @=? ty
     ]
 
   , testGroup "numbers"
@@ -75,7 +75,7 @@ tests = testGroup "lua"
         ty <- withNewState $ \l -> do
           lua_pushinteger l 0
           lua_type l top
-        TypeNumber @=? toType ty
+        LUA_TNUMBER @=? ty
     ]
 
   , testGroup "strings"
@@ -91,7 +91,7 @@ tests = testGroup "lua"
           withCStringLen "Olsen Olsen" $ \(ptr, len) ->
             lua_pushlstring l ptr (fromIntegral len)
           lua_type l top
-        TypeString @=? toType ty
+        LUA_TSTRING @=? ty
     ]
 
   , testGroup "constants"
@@ -147,7 +147,7 @@ tests = testGroup "lua"
           kb2 <- lua_gc l LUA_GCCOUNT 0
           b2  <- lua_gc l LUA_GCCOUNTB 0
           return (b1 + 1024 * kb1, b2 + 1024 * kb2)
-        assertBool "first count should be larger" (fst counts > snd counts)
+        assertBool "first count should be larger" (uncurry (>) counts)
     , "count memory" =: do
         count <- withNewState $ \l -> do
           lua_gc l LUA_GCCOUNT 0
