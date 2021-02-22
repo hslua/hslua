@@ -34,7 +34,7 @@ main = defaultMain tests
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
 tests = testGroup "lua"
-  [ testGroup "state"
+  [ testGroup "thread"
     [ "create and close" =: do
       l <- hsluaL_newstate
       lua_close l
@@ -46,6 +46,18 @@ tests = testGroup "lua"
           lua_pushnumber l1 23
           (,) <$> lua_tonumberx l  top nullPtr
               <*> lua_tonumberx l1 top nullPtr
+
+    , "type" =: do
+        LUA_TTHREAD `shouldBeResultOf` \l -> do
+          _ <- lua_newthread l
+          lua_type l top
+
+    , "pushing" =: do
+        LUA_TTHREAD `shouldBeResultOf` \l -> do
+          newl <- lua_newthread l
+          lua_pop l 1
+          _ <- lua_pushthread newl
+          lua_type newl top
     ]
 
   , testGroup "booleans"
@@ -122,6 +134,34 @@ tests = testGroup "lua"
             status <- Storable.peek statusPtr
             assertBool "comparison failed" (LUA_OK == status)
             return result
+    ]
+
+  , testGroup "function calling"
+    [ "call `type(true)`" =: do
+        "boolean" `shouldBeResultOf` \l -> do
+          luaL_openlibs l
+          -- push function `type`
+          lua_pushglobaltable l
+          withCStringLen "type" $ \(ptr, len) ->
+            lua_pushlstring l ptr (fromIntegral len)
+          lua_rawget l (nth 2)
+          -- push boolean
+          lua_pushboolean l true
+          status <- lua_pcall l (NumArgs 1) (NumResults 1) 0
+          assertBool "call status" (status == LUA_OK)
+          peekCString =<< lua_tolstring l top nullPtr
+
+    , "call type" =: do
+        (== LUA_ERRRUN) `shouldHoldForResultOf` \l -> do
+          luaL_openlibs l
+          -- push function `error`
+          lua_pushglobaltable l
+          withCStringLen "error" $ \(ptr, len) ->
+            lua_pushlstring l ptr (fromIntegral len)
+          lua_rawget l (nth 2)
+          -- push boolean
+          lua_pushboolean l true
+          lua_pcall l (NumArgs 1) (NumResults 1) 0
     ]
 
   , testGroup "garbage-collection"
@@ -204,3 +244,8 @@ shouldBeResultOf :: (Eq a, Show a) => a -> (State -> IO a) -> Assertion
 shouldBeResultOf expected luaOp = do
   result <- withNewState luaOp
   expected @=? result
+
+shouldHoldForResultOf :: (a -> Bool) -> (State -> IO a) -> Assertion
+shouldHoldForResultOf predicate luaOp = do
+  result <- withNewState luaOp
+  assertBool "predicate does not hold" (predicate result)
