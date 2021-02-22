@@ -8,9 +8,33 @@ Stability   : beta
 Portability : portable
 
 Extend Haskell programs with a Lua interpreter.
+
+This package provides the basic building blocks to integrate Lua into a
+Haskell program. The library is kept very close to the C Lua API, and
+users familiar with the C API should have no problem using it.
+
+However, there are important differences of which users must be aware:
+The method for error signaling used in Lua, based on @setjmp@ and
+@longjmp@, is incompatible with the Haskell FFI. All errors /must/ be
+handled at language boundaries, as failure to do so will lead to
+unrecoverable crashes. Therefore, C API functions which can throw Lua
+errors are not exported directly. Non-error throwing @hslua_@ versions
+are provided instead. The @hslua@ ersatz functions have worse
+performance than the original versions.
+
+The Haskell FFI requires all C function that can call back into to be
+imported @safe@ly. Some of the Lua functions may, directly or
+indirectly, call a Haskell function, so they are always imported with
+the @safe@ keyword.
+
+Many API functions can trigger garbage collection. This will lead to
+problems if Haskell functions are used as part of finalizers (i.e.,
+@__gc@ metamethods). Haskell in finalizers is not supported by default,
+but can be enabled by unsetting the @allow-unsafe-gc@ flag.
 -}
 module Foreign.Lua
-  ( withNewState
+  ( -- * Run Lua operations
+    withNewState
     -- * Types
   , State (..)
   , Reader

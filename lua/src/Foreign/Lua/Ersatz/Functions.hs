@@ -44,9 +44,9 @@ import Foreign.Ptr
 --
 -- The value of op must be one of the following constants:
 --
---  - LUA_OPEQ: compares for equality (==)
---  - LUA_OPLT: compares for less than (<)
---  - LUA_OPLE: compares for less or equal (<=)
+--  - 'Foreign.Lua.Constants.LUA_OPEQ': compares for equality (==)
+--  - 'Foreign.Lua.Constants.LUA_OPLT': compares for less than (<)
+--  - 'Foreign.Lua.Constants.LUA_OPLE': compares for less or equal (<=)
 --
 -- This function wraps @lua_compare@ and takes an additional parameter
 -- @status@; if it is not @NULL@, then the return value is set to the

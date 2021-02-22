@@ -21,8 +21,12 @@ import Foreign.Lua.Types (StackIndex)
 import Foreign.Ptr (Ptr)
 import qualified Foreign.Lua.Types as Lua
 
+-- | Creates a new Lua state and set extra registry values for error
+-- bookkeeping.
 foreign import ccall unsafe "hslauxlib.h hsluaL_newstate"
   hsluaL_newstate :: IO Lua.State
 
+-- | Converts object to string, respecting any metamethods; returns
+-- @NULL@ if an error occurs.
 foreign import ccall safe "hslauxlib.h hsluaL_tolstring"
   hsluaL_tolstring :: Lua.State -> StackIndex -> Ptr CSize -> IO (Ptr CChar)

@@ -43,7 +43,7 @@ const char *hsluaL_tolstring(lua_State *L, int index, size_t *len)
   lua_pushcfunction(L, hsluaL__tolstring);
   lua_insert(L, -2);
   int res = lua_pcall(L, 1, 1, 0);
-  if (res != 0) {
+  if (res != LUA_OK) {
     /* error */
     return NULL;
   }
