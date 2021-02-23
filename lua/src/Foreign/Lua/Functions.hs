@@ -187,8 +187,7 @@ foreign import ccall SAFTY "lua.h lua_getglobal"
 {-# WARNING lua_getglobal
       [ "This is an unsafe function, errors will lead to a program crash;"
       , "consider using hslua_getglobal instead."
-      ]
-#-}
+      ] #-}
 
 -- | If the value at the given index has a metatable, the function
 -- pushes that metatable onto the stack and returns @1@. Otherwise, the
@@ -221,8 +220,7 @@ foreign import ccall SAFTY "lua.h lua_gettable"
 {-# WARNING lua_gettable
       [ "This is an unsafe function, errors will lead to a program crash;"
       , "consider using hslua_gettable instead."
-      ]
-#-}
+      ] #-}
 
 -- | Returns the index of the top element in the stack. Because indices
 -- start at 1, this result is equal to the number of elements in the
@@ -626,8 +624,7 @@ foreign import ccall SAFTY "lua.h lua_setglobal"
 {-# WARNING lua_setglobal
       [ "This is an unsafe function, errors will lead to a program crash;"
       , "consider using hslua_getglobal instead."
-      ]
-#-}
+      ] #-}
 
 -- | Pops a table from the stack and sets it as the new metatable for
 -- the value at the given index.
@@ -657,8 +654,7 @@ foreign import ccall SAFTY "lua.h lua_settable"
 {-# WARNING lua_settable
       [ "This is an unsafe function, errors will lead to a program crash;"
       , "consider using hslua_settable instead."
-      ]
-#-}
+      ] #-}
 
 -- | Accepts any index, or 0, and sets the stack top to this index. If
 -- the new top is larger than the old one, then the new elements are

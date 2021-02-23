@@ -18,9 +18,8 @@ import Data.IORef (newIORef, readIORef, writeIORef)
 #endif
 
 import Foreign.C.String (peekCString, withCStringLen)
-import Foreign.Ptr (Ptr)
 import Foreign.Marshal (alloca)
-import Foreign.Ptr (nullPtr)
+import Foreign.Ptr (Ptr, nullPtr)
 import Foreign.Storable as Storable
 import Foreign.Lua
 import Foreign.Lua.Call
