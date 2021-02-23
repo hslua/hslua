@@ -32,6 +32,7 @@ module Foreign.Lua.Functions
   , lua_copy
   , lua_createtable
   , lua_gc
+  , lua_getglobal
   , lua_getmetatable
   , lua_gettable
   , lua_gettop
@@ -72,6 +73,7 @@ module Foreign.Lua.Functions
   , lua_rawseti
   , lua_remove
   , lua_replace
+  , lua_setglobal
   , lua_setmetatable
   , lua_settable
   , lua_settop
@@ -169,6 +171,25 @@ foreign import ccall SAFTY "lua.h lua_createtable"
 foreign import ccall safe "lua.h lua_gc"
   lua_gc :: Lua.State -> GCCode {- ^ what -} -> CInt {- ^ data -} -> IO CInt
 
+-- | Pushes onto the stack the value of the global name. Returns the
+-- type of that value.
+--
+-- __WARNING__: @lua_getglobal@ is unsafe in Haskell: if the call to a
+-- metamethod triggers an error, then that error cannot be handled and
+-- will lead to an unrecoverable program crash. Consider using the
+-- @'Foreign.Lua.hslua_getglobal'@ ersatz function instead. Likewise, the
+-- metamethod may not call a Haskell function unless the library was
+-- compiled without @allow-unsafe-gc@.
+--
+-- <https://www.lua.org/manual/5.3/manual.html#lua_getglobal>.
+foreign import ccall SAFTY "lua.h lua_getglobal"
+  lua_getglobal :: State -> CString {- ^ name -} -> IO TypeCode
+{-# WARNING lua_getglobal
+      [ "This is an unsafe function, errors will lead to a program crash;"
+      , "consider using hslua_getglobal instead."
+      ]
+#-}
+
 -- | If the value at the given index has a metatable, the function
 -- pushes that metatable onto the stack and returns @1@. Otherwise, the
 -- function returns @0@ and pushes nothing on the stack.
@@ -190,7 +211,7 @@ foreign import ccall unsafe "lua.h lua_getmetatable"
 -- __WARNING__: @lua_gettable@ is unsafe in Haskell: if the call to a
 -- metamethod triggers an error, then that error cannot be handled and
 -- will lead to an unrecoverable program crash. Consider using the
--- @'Foreign.Lua.hslua_settable'@ ersatz function instead. Likewise, the
+-- @'Foreign.Lua.hslua_gettable'@ ersatz function instead. Likewise, the
 -- metamethod may not call a Haskell function unless the library was
 -- compiled without @allow-unsafe-gc@.
 --
@@ -588,6 +609,25 @@ foreign import capi unsafe "lua.h lua_remove"
 -- <https://www.lua.org/manual/5.3/manual.html#lua_replace>
 foreign import capi unsafe "lua.h lua_replace"
   lua_replace :: Lua.State -> StackIndex -> IO ()
+
+-- | Pops a value from the stack and sets it as the new value of global
+-- @name@.
+--
+-- __WARNING__: @lua_setglobal@ is unsafe in Haskell: if the call to a
+-- metamethod triggers an error, then that error cannot be handled and
+-- will lead to an unrecoverable program crash. Consider using the
+-- @'Foreign.Lua.hslua_setglobal'@ ersatz function instead. Likewise,
+-- the global metamethod may not call a Haskell function unless the
+-- library was compiled without @allow-unsafe-gc@.
+--
+-- <https://www.lua.org/manual/5.3/manual.html#lua_setglobal>.
+foreign import ccall SAFTY "lua.h lua_setglobal"
+  lua_setglobal :: State -> CString {- ^ name -} -> IO ()
+{-# WARNING lua_setglobal
+      [ "This is an unsafe function, errors will lead to a program crash;"
+      , "consider using hslua_getglobal instead."
+      ]
+#-}
 
 -- | Pops a table from the stack and sets it as the new metatable for
 -- the value at the given index.

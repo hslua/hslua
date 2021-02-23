@@ -11,10 +11,11 @@ Tests for bindings to unsafe functions.
 -}
 module Foreign.Lua.UnsafeTests (tests) where
 
-import Foreign.C.String (withCStringLen)
+import Foreign.C.String (withCString, withCStringLen)
 import Foreign.Ptr (nullPtr)
 import Foreign.Lua
-import Foreign.Lua.Functions (lua_gettable, lua_settable)
+import Foreign.Lua.Functions
+  ( lua_getglobal, lua_gettable, lua_setglobal, lua_settable )
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (Assertion, HasCallStack, testCase, (@=?) )
 
@@ -80,6 +81,24 @@ tests = testGroup "Unsafe"
           lua_pushinteger l 1
           lua_rawget l (nth 2)
           lua_tointegerx l top nullPtr
+    ]
+
+  , testGroup "globals"
+    [ "get global from base library" =:
+      LUA_TFUNCTION `shouldBeResultOf` \l -> do
+        luaL_openlibs l
+        withCString "print" $ \ptr ->
+          lua_getglobal l ptr
+
+    , "set global" =:
+      13.37 `shouldBeResultOf` \l -> do
+        lua_pushnumber l 13.37
+        withCString "foo" $ lua_setglobal l
+        lua_pushglobaltable l
+        withCStringLen "foo" $ \(ptr, len) ->
+          lua_pushlstring l ptr (fromIntegral len)
+        lua_rawget l (nth 2)
+        lua_tonumberx l top nullPtr
     ]
   ]
 
