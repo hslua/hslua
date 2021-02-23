@@ -167,6 +167,16 @@ tests = testGroup "lua"
         LUA_TTABLE `shouldBeResultOf` \l -> do
           lua_createtable l 0 0
           lua_type l top
+
+    , "set and get integer field" =: do
+        (-23) `shouldBeResultOf` \l -> do
+          lua_createtable l 0 0
+          lua_pushinteger l 5
+          lua_pushinteger l (-23)
+          lua_rawset l (nth 3)
+          lua_pushinteger l 5
+          lua_rawget l (nth 2)
+          lua_tointegerx l top nullPtr
     ]
 
   , testGroup "constants"
