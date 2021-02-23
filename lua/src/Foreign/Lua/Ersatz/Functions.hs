@@ -63,30 +63,39 @@ foreign import capi safe "hslua.h hslua_compare"
 -- Get functions (Lua -> stack)
 --
 
--- | Wrapper around
--- <https://lua.org/manual/5.3/manual.html#lua_gettable lua_gettable>.
--- which catches any Lua errors.
+-- | Behaves like @'Foreign.Lua.Functions.lua_gettable'@, but prevents
+-- unrecoverable program crashes by calling that function through
+-- @'Foreign.Lua.lua_pcall'@. Takes an additional status code pointer
+-- that is set to the status returned by @lua_pcall@.
 foreign import ccall safe "hslua.h hslua_gettable"
-  hslua_gettable :: Lua.State -> StackIndex -> Ptr StatusCode -> IO ()
+  hslua_gettable :: Lua.State -> StackIndex -> Ptr StatusCode -> IO TypeCode
 
-
--- | Wrapper around
--- <https://lua.org/manual/5.3/manual.html#lua_getglobal lua_getglobal>
--- which catches any Lua errors.
+-- | Behaves like @'Foreign.Lua.Functions.lua_getglobal'@, but prevents
+-- unrecoverable program crashes by calling that function through
+-- @'Foreign.Lua.lua_pcall'@. Takes an additional status code pointer
+-- that is set to the status returned by @lua_pcall@.
 foreign import ccall safe "hslua.h hslua_getglobal"
-  hslua_getglobal :: Lua.State -> CString -> CSize -> Ptr StatusCode -> IO ()
+  hslua_getglobal :: Lua.State
+                  -> CString
+                  -> CSize
+                  -> Ptr StatusCode
+                  -> IO TypeCode
 
 --
 -- Set functions (stack -> Lua)
 --
 
--- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_settable \
--- @lua_settable@> which catches any Lua errors.
+-- | Behaves like @'Foreign.Lua.Functions.lua_settable'@, but prevents
+-- unrecoverable program crashes by calling that function through
+-- @'Foreign.Lua.lua_pcall'@. Takes an additional status code pointer
+-- that is set to the status returned by @lua_pcall@.
 foreign import ccall safe "hslua.h hslua_settable"
   hslua_settable :: Lua.State -> StackIndex -> Ptr StatusCode -> IO ()
 
--- | Wrapper around <https://lua.org/manual/5.3/manual.html#lua_setglobal \
--- @lua_setglobal@> which catches any Lua errors.
+-- | Behaves like @'Foreign.Lua.Functions.lua_setglobal'@, but prevents
+-- unrecoverable program crashes by calling that function through
+-- @'Foreign.Lua.lua_pcall'@. Takes an additional status code pointer
+-- that is set to the status returned by @lua_pcall@.
 foreign import ccall safe "hslua.h hslua_setglobal"
   hslua_setglobal :: Lua.State -> CString -> CSize -> Ptr StatusCode -> IO ()
 

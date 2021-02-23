@@ -112,7 +112,7 @@ splitdot = filter (/= ".") . groupBy (\a b -> a /= '.' && b /= '.')
 getnested :: [String] -> Lua ()
 getnested [] = return ()
 getnested (x:xs) = do
-  Lua.getglobal x
+  _ <- Lua.getglobal x
   mapM_ (\a -> Lua.getfield top a *> Lua.remove (nth 2)) xs
 
 -- | Raise a Lua error, using the given value as the error object.

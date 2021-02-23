@@ -18,13 +18,14 @@ import Data.IORef (newIORef, readIORef, writeIORef)
 #endif
 
 import Foreign.C.String (peekCString, withCStringLen)
+import Foreign.Ptr (Ptr)
 import Foreign.Marshal (alloca)
 import Foreign.Ptr (nullPtr)
 import Foreign.Storable as Storable
 import Foreign.Lua
 import Foreign.Lua.Call
 import Test.Tasty (TestTree, defaultMain, testGroup)
-import Test.Tasty.HUnit (Assertion, assertBool, testCase, (@=?))
+import Test.Tasty.HUnit (Assertion, HasCallStack, assertBool, testCase, (@=?))
 import qualified Foreign.Lua.UnsafeTests
 
 -- | Runs tests.
@@ -264,6 +265,81 @@ tests = testGroup "lua"
                    (count > 0 && count < 10)
     ]
 
+  , testGroup "ersatz functions"
+    [ testGroup "globals"
+      [ "get global from base library" =:
+        LUA_TFUNCTION `shouldBeResultOf` \l -> do
+          luaL_openlibs l
+          withCStringLen "print" $ \(cstr, len) ->
+            withAssertOK $ hslua_getglobal l cstr (fromIntegral len)
+
+      , "set global" =:
+        13.37 `shouldBeResultOf` \l -> do
+          lua_pushnumber l 13.37
+          withCStringLen "foo" $ \(cstr, len) ->
+            withAssertOK $ hslua_setglobal l cstr (fromIntegral len)
+          lua_pushglobaltable l
+          withCStringLen "foo" $ \(ptr, len) ->
+            lua_pushlstring l ptr (fromIntegral len)
+          lua_rawget l (nth 2)
+          lua_tonumberx l top nullPtr
+      ]
+
+    , testGroup "table"
+      [ "get metamethod field via ersatz function" =:
+        (TRUE, LUA_TBOOLEAN) `shouldBeResultOf` \l -> do
+          -- create table
+          lua_createtable l 0 0
+          -- create metatable
+          lua_createtable l 0 0
+          withCStringLen "__index" $ \(ptr, len) ->
+            lua_pushlstring l ptr (fromIntegral len)
+          -- create index table
+          lua_createtable l 0 0
+          lua_pushinteger l 5
+          lua_pushboolean l TRUE
+          lua_rawset l (nth 3)
+          -- set index table to "__index" in metatable
+          lua_rawset l (nth 3)
+          -- set metatable
+          lua_setmetatable l (nth 2)
+          -- access field in metatable
+          lua_pushinteger l 5
+          tp <- alloca $ \status ->
+            hslua_gettable l (nth 2) status <*
+            (peek status >>= assertBool "gettable status" . (== LUA_OK))
+          b  <- lua_toboolean l top
+          return (b, tp)
+
+      , "set metamethod field" =:
+        1337 `shouldBeResultOf` \l -> do
+          lua_createtable l 0 0     -- index table
+          -- create table t
+          lua_createtable l 0 0
+          -- create metatable
+          lua_createtable l 0 0
+          withCStringLen "__newindex" $ \(ptr, len) ->
+            lua_pushlstring l ptr (fromIntegral len)
+          lua_pushvalue l (nth 4)   -- index table
+          -- set index table to "__newindex" in metatable
+          lua_rawset l (nth 3)
+          -- set metatable
+          lua_setmetatable l (nth 2)
+
+          -- set field n index table via __newindex on t
+          lua_pushinteger l 1
+          lua_pushinteger l 1337
+          alloca $ \status ->
+            hslua_settable l (nth 3) status <*
+            (peek status >>= assertBool "settable status" . (== LUA_OK))
+
+          lua_pop l 1               -- drop table t
+          lua_pushinteger l 1
+          lua_rawget l (nth 2)
+          lua_tointegerx l top nullPtr
+      ]
+    ]
+
   , testGroup "Haskell functions"
     [ let add5 l = do
             n <- lua_tointegerx l top nullPtr
@@ -322,12 +398,21 @@ infix  3 =:
 (=:) :: String -> Assertion -> TestTree
 (=:) = testCase
 
-shouldBeResultOf :: (Eq a, Show a) => a -> (State -> IO a) -> Assertion
+shouldBeResultOf :: (HasCallStack, Eq a, Show a)
+                 => a -> (State -> IO a) -> Assertion
 shouldBeResultOf expected luaOp = do
   result <- withNewState luaOp
   expected @=? result
 
-shouldHoldForResultOf :: (a -> Bool) -> (State -> IO a) -> Assertion
+shouldHoldForResultOf :: HasCallStack
+                      => (a -> Bool) -> (State -> IO a) -> Assertion
 shouldHoldForResultOf predicate luaOp = do
   result <- withNewState luaOp
   assertBool "predicate does not hold" (predicate result)
+
+withAssertOK :: HasCallStack => (Ptr StatusCode -> IO a) -> IO a
+withAssertOK f =
+  alloca $ \status -> do
+    result <- f status
+    peek status >>= assertBool "status not OK" . (== LUA_OK)
+    return result

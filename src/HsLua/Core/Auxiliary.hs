@@ -102,11 +102,9 @@ getsubtable idx fname = do
   -- This is a reimplementation of luaL_getsubtable from lauxlib.c.
   idx' <- Lua.absindex idx
   Lua.pushstring (Utf8.fromString fname)
-  Lua.gettable idx'
-  isTbl <- Lua.istable top
-  if isTbl
-    then return True
-    else do
+  Lua.gettable idx' >>= \case
+    Lua.TypeTable -> return True
+    _ -> do
       Lua.pop 1
       Lua.newtable
       Lua.pushvalue top -- copy to be left at top

@@ -29,6 +29,7 @@ module HsLuaTests (tests) where
 import Prelude hiding (concat)
 
 import Control.Applicative (Alternative (..))
+import Control.Monad (void)
 import Data.ByteString (ByteString)
 import Data.Data (Typeable)
 import Data.Either (isLeft)
@@ -51,9 +52,9 @@ tests = testGroup "lua integration tests"
   [ testCase "print version" .
     run $ do
       openlibs
-      getglobal "assert"
+      void $ getglobal "assert"
       push ("Hello from " :: ByteString)
-      getglobal "_VERSION"
+      void $ getglobal "_VERSION"
       concat 2
       call 1 0
 
@@ -80,7 +81,7 @@ tests = testGroup "lua integration tests"
       openbase
       let tableStr = "{firstname = 'Jane', surname = 'Doe'}"
       pushLuaExpr $ "setmetatable(" <> tableStr <> ", {'yup'})"
-      getfield (-1) "firstname"
+      void $ getfield (-1) "firstname"
       firstname <- peek (-1) <* pop 1 :: Lua ByteString
       liftIO (assertEqual "Wrong value for firstname" "Jane" firstname)
 
@@ -172,7 +173,7 @@ tests = testGroup "lua integration tests"
       isLeft `shouldHoldForResultOf`
       let comp = do
             pushLuaExpr "setmetatable({}, {__index = error})"
-            getfield (-1) "foo" :: Lua ()
+            void $ getfield (-1) "foo"
       in try comp
 
     , "calling a function that errors throws exception" =:
@@ -188,7 +189,7 @@ tests = testGroup "lua integration tests"
                 openlibs
                 pushLuaExpr errTbl
                 pushnumber 23
-                gettable (Lua.nth 2) :: Lua ()
+                void $ gettable (Lua.nth 2)
           result <- tryCustom comp
           result @?= Left (ExceptionWithNumber 23)
 
@@ -196,7 +197,7 @@ tests = testGroup "lua integration tests"
           let frob n = do
                 pushLuaExpr errTbl
                 pushnumber n
-                gettable (Lua.nth 2) :: Lua ()
+                void $ gettable (Lua.nth 2)
           result <- tryCustom $ do
             openlibs
             registerHaskellFunction "frob" frob

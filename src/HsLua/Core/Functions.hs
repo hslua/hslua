@@ -242,7 +242,7 @@ gc what data' = liftLua $ \l ->
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getfield lua_getfield>.
-getfield :: StackIndex -> String -> Lua ()
+getfield :: StackIndex -> String -> Lua Type
 getfield i s = do
   absidx <- absindex i
   pushstring (Utf8.fromString s)
@@ -254,10 +254,10 @@ getfield i s = do
 --
 -- Wrapper of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getglobal lua_getglobal>.
-getglobal :: String -> Lua ()
+getglobal :: String -> Lua Type
 getglobal name = liftLuaThrow $ \l status' ->
   C.withCStringLen name $ \(namePtr, len) ->
-  hslua_getglobal l namePtr (fromIntegral len) status'
+  toType <$> hslua_getglobal l namePtr (fromIntegral len) status'
 
 -- | If the value at the given index has a metatable, the function pushes that
 -- metatable onto the stack and returns @True@. Otherwise, the function returns
@@ -281,8 +281,8 @@ getmetatable n = liftLua $ \l ->
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_gettable lua_gettable>.
-gettable :: StackIndex -> Lua ()
-gettable n = liftLuaThrow (\l -> hslua_gettable l n)
+gettable :: StackIndex -> Lua Type
+gettable n = liftLuaThrow (\l -> fmap toType . hslua_gettable l n)
 
 -- | Returns the index of the top element in the stack. Because indices start at
 -- 1, this result is equal to the number of elements in the stack (and so 0

@@ -94,7 +94,7 @@ test-suite test-hslua
   type:                exitcode-stdio-1.0
   main-is:             test-hslua.hs
   hs-source-dirs:      test
-  ghc-options:         -threaded
+  ghc-options:         -threaded -Wno-unused-do-bind
   other-modules:       HsLuaTests
                      , HsLua.CallTests
                      , HsLua.CoreTests

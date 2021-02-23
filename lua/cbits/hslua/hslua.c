@@ -71,12 +71,13 @@ int hslua__getglobal(lua_State *L)
   return 1;
 }
 
-void hslua_getglobal(lua_State *L, const char *name, size_t len, int *status)
+int hslua_getglobal(lua_State *L, const char *name, size_t len, int *status)
 {
   lua_pushcfunction(L, hslua__getglobal);
   lua_pushglobaltable(L);
   lua_pushlstring(L, name, len);
   *status = lua_pcall(L, 2, 1, 0);
+  return lua_type(L, -1);
 }
 
 
@@ -90,12 +91,13 @@ int hslua__gettable(lua_State *L)
   return 1;
 }
 
-void hslua_gettable(lua_State *L, int index, int *status)
+int hslua_gettable(lua_State *L, int index, int *status)
 {
   lua_pushvalue(L, index);
   lua_pushcfunction(L, hslua__gettable);
   lua_insert(L, -3);
   *status = lua_pcall(L, 2, 1, 0);
+  return lua_type(L, -1);
 }
 
 

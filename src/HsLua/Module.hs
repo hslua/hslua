@@ -26,7 +26,7 @@ module HsLua.Module
   )
 where
 
-import Control.Monad (unless, forM_)
+import Control.Monad (forM_, void)
 import Data.Text (Text)
 import HsLua.Call (HaskellFunction)
 import HsLua.Core
@@ -55,18 +55,17 @@ import qualified HsLua.Call as Call
 requirehs :: String -> Lua () -> Lua ()
 requirehs modname pushMod = do
   -- get table of loaded modules
-  getfield registryindex loadedTableRegistryField
+  void $ getfield registryindex loadedTableRegistryField
 
   -- Check whether module has already been loaded.
-  getfield top modname  -- LOADED[modname]
-  alreadyLoaded <- toboolean top
-
-  unless alreadyLoaded $ do
-    pop 1  -- remove field
-    pushMod  -- push module
-    pushvalue top  -- make copy of module
-    -- add module under the given name (LOADED[modname] = module)
-    setfield (nth 3) modname
+  getfield top modname >>= \case -- LOADED[modname]
+    TypeNil -> do   -- not loaded yet, load now
+      pop 1  -- remove field
+      pushMod  -- push module
+      pushvalue top  -- make copy of module
+      -- add module under the given name (LOADED[modname] = module)
+      setfield (nth 3) modname
+    _ -> return ()
 
   remove (nth 2)  -- remove table of loaded modules
 
@@ -74,7 +73,7 @@ requirehs modname pushMod = do
 -- Lua operation which produces the package.
 preloadhs :: String -> Lua NumResults -> Lua ()
 preloadhs name pushMod = do
-  getfield registryindex preloadTableRegistryField
+  void $ getfield registryindex preloadTableRegistryField
   pushHaskellFunction pushMod
   setfield (nth 2) name
   pop 1
