@@ -33,6 +33,7 @@ module Foreign.Lua.Functions
   , lua_createtable
   , lua_gc
   , lua_getmetatable
+  , lua_gettable
   , lua_gettop
   , lua_insert
   , lua_isboolean
@@ -72,6 +73,7 @@ module Foreign.Lua.Functions
   , lua_remove
   , lua_replace
   , lua_setmetatable
+  , lua_settable
   , lua_settop
   , lua_status
   , lua_toboolean
@@ -174,6 +176,32 @@ foreign import ccall safe "lua.h lua_gc"
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getmetatable>.
 foreign import ccall unsafe "lua.h lua_getmetatable"
   lua_getmetatable :: Lua.State -> StackIndex -> IO LuaBool
+
+-- | Pushes onto the stack the value @t[k]@, where @t@ is the value at
+-- the given index and @k@ is the value at the top of the stack.
+--
+-- This function pops the key from the stack, pushing the resulting
+-- value in its place. As in Lua, this function may trigger a metamethod
+-- for the \"index\" event (see
+-- <https://www.lua.org/manual/5.3/manual.html#2.4 §2.4>).
+--
+-- Returns the type of the pushed value.
+--
+-- __WARNING__: @lua_gettable@ is unsafe in Haskell: if the call to a
+-- metamethod triggers an error, then that error cannot be handled and
+-- will lead to an unrecoverable program crash. Consider using the
+-- @'Foreign.Lua.hslua_settable'@ ersatz function instead. Likewise, the
+-- metamethod may not call a Haskell function unless the library was
+-- compiled without @allow-unsafe-gc@.
+--
+-- <https://www.lua.org/manual/5.3/manual.html#lua_gettable>.
+foreign import ccall SAFTY "lua.h lua_gettable"
+  lua_gettable :: Lua.State -> StackIndex {- ^ index -} -> IO TypeCode
+{-# WARNING lua_gettable
+      [ "This is an unsafe function, errors will lead to a program crash;"
+      , "consider using hslua_gettable instead."
+      ]
+#-}
 
 -- | Returns the index of the top element in the stack. Because indices
 -- start at 1, this result is equal to the number of elements in the
@@ -567,6 +595,30 @@ foreign import capi unsafe "lua.h lua_replace"
 -- <https://www.lua.org/manual/5.3/manual.html#lua_setmetatable>.
 foreign import ccall unsafe "lua.h lua_setmetatable"
   lua_setmetatable :: Lua.State -> StackIndex -> IO ()
+
+-- | Does the equivalent to @t[k] = v@, where @t@ is the value at the
+-- given index, @v@ is the value at the top of the stack, and @k@ is the
+-- value just below the top.
+--
+-- This function pops both the key and the value from the stack. As in
+-- Lua, this function may trigger a metamethod for the \"newindex\"
+-- event (see <https://www.lua.org/manual/5.3/manual.html#2.4 §2.4>).
+--
+-- __WARNING__: @lua_settable@ is unsafe in Haskell: if the call to a
+-- metamethod triggers an error, then that error cannot be handled and
+-- will lead to an unrecoverable program crash. Consider using the
+-- @'Foreign.Lua.hslua_settable'@ ersatz function instead. Likewise, the
+-- metamethod may not call a Haskell function unless the library was
+-- compiled without @allow-unsafe-gc@.
+--
+-- <https://www.lua.org/manual/5.3/manual.html#lua_settable>
+foreign import ccall SAFTY "lua.h lua_settable"
+  lua_settable :: Lua.State -> StackIndex {- ^ index -} -> IO ()
+{-# WARNING lua_settable
+      [ "This is an unsafe function, errors will lead to a program crash;"
+      , "consider using hslua_settable instead."
+      ]
+#-}
 
 -- | Accepts any index, or 0, and sets the stack top to this index. If
 -- the new top is larger than the old one, then the new elements are

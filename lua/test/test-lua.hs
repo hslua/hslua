@@ -24,8 +24,8 @@ import Foreign.Storable as Storable
 import Foreign.Lua
 import Foreign.Lua.Call
 import Test.Tasty (TestTree, defaultMain, testGroup)
-import Test.Tasty.HUnit
-  ( Assertion, assertBool, testCase, (@=?) )
+import Test.Tasty.HUnit (Assertion, assertBool, testCase, (@=?))
+import qualified Foreign.Lua.UnsafeTests
 
 -- | Runs tests.
 main :: IO ()
@@ -314,6 +314,8 @@ tests = testGroup "lua"
           readIORef msg
 #endif
     ]
+
+  , Foreign.Lua.UnsafeTests.tests
   ]
 
 infix  3 =:

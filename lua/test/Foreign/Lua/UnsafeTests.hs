@@ -1,0 +1,94 @@
+{-# OPTIONS_GHC -Wno-warnings-deprecations #-}
+{-# LANGUAGE CPP #-}
+{-|
+Module      : Main
+Copyright   : © 2021 Albert Krewinkel
+License     : MIT
+Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
+Stability   : beta
+
+Tests for bindings to unsafe functions.
+-}
+module Foreign.Lua.UnsafeTests (tests) where
+
+import Foreign.C.String (withCStringLen)
+import Foreign.Ptr (nullPtr)
+import Foreign.Lua
+import Foreign.Lua.Functions (lua_gettable, lua_settable)
+import Test.Tasty (TestTree, testGroup)
+import Test.Tasty.HUnit (Assertion, HasCallStack, testCase, (@=?) )
+
+-- | Tests for unsafe methods.
+tests :: TestTree
+tests = testGroup "Unsafe"
+  [ testGroup "tables"
+    [ "set and get integer field" =: do
+        (-23, LUA_TNUMBER) `shouldBeResultOf` \l -> do
+          lua_createtable l 0 0
+          lua_pushinteger l 5
+          lua_pushinteger l (-23)
+          lua_settable l (nth 3)
+          lua_pushinteger l 5
+          tp <- lua_gettable l (nth 2)
+          i  <- lua_tointegerx l top nullPtr
+          return (i, tp)
+
+    , "get metamethod field" =: do
+        (TRUE, LUA_TBOOLEAN) `shouldBeResultOf` \l -> do
+          -- create table
+          lua_createtable l 0 0
+          -- create metatable
+          lua_createtable l 0 0
+          withCStringLen "__index" $ \(ptr, len) ->
+            lua_pushlstring l ptr (fromIntegral len)
+          -- create index table
+          lua_createtable l 0 0
+          lua_pushinteger l 5
+          lua_pushboolean l TRUE
+          lua_rawset l (nth 3)
+          -- set index table to "__index" in metatable
+          lua_rawset l (nth 3)
+          -- set metatable
+          lua_setmetatable l (nth 2)
+          -- access field in metatable
+          lua_pushinteger l 5
+          tp <- lua_gettable l (nth 2)
+          b  <- lua_toboolean l top
+          return (b, tp)
+
+    , "set metamethod field" =: do
+        1337 `shouldBeResultOf` \l -> do
+          lua_createtable l 0 0     -- index table
+          -- create table t
+          lua_createtable l 0 0
+          -- create metatable
+          lua_createtable l 0 0
+          withCStringLen "__newindex" $ \(ptr, len) ->
+            lua_pushlstring l ptr (fromIntegral len)
+          lua_pushvalue l (nth 4)   -- index table
+          -- set index table to "__newindex" in metatable
+          lua_rawset l (nth 3)
+          -- set metatable
+          lua_setmetatable l (nth 2)
+
+          -- set field n index table via __newindex on t
+          lua_pushinteger l 1
+          lua_pushinteger l 1337
+          lua_settable l (nth 3)
+
+          lua_pop l 1               -- drop table t
+          lua_pushinteger l 1
+          lua_rawget l (nth 2)
+          lua_tointegerx l top nullPtr
+    ]
+  ]
+
+infix  3 =:
+(=:) :: String -> Assertion -> TestTree
+(=:) = testCase
+
+shouldBeResultOf :: (HasCallStack, Eq a, Show a)
+                 => a -> (State -> IO a) -> Assertion
+shouldBeResultOf expected luaOp = do
+  result <- withNewState luaOp
+  expected @=? result
