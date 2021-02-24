@@ -2,9 +2,45 @@
 
 `lua` uses [PVP Versioning][1].
 
-## lua 1.0
+## lua 2.0.0
 
-Release pending
+Release pending.
+
+- Module hierarchy moved from `Foreign.Lua.Raw` to `Foreign.Lua`.
+
+- Documentation has been improved.
+
+- Added new function `withNewState` to run Lua operations.
+
+- New modules `Foreign.Lua.Ersatz` containing all bindings to safe
+  ersatz functions.
+
+- Higher level and enum types have been removed, only the
+  low-level "code" types are kept in this package.
+
+- Constants are now represented as pattern synonyms like `LUA_OK`.
+
+- Provide bindings to the `lua_is...` type-checking functions.
+
+- Provide binding to unsafe functions:
+    + `lua_gettable`,
+    + `lua_settable`,
+    + `lua_getglobal`, and
+    + `lua_setglobal`
+
+- The function `lua_pop` now expects a `CInt` instead of a
+  `StackIndex`.
+
+- New StackIndex constructor functions `nthTop`, `nthBottom`,
+  `nth`, and `top`.
+
+- Avoid unnecessary modification of HSFUN metatable.
+
+- Various cleanups and test improvements.
+
+## lua 1.0.0
+
+Released 2021-02-18.
 
 - Initially created. Contains all modules in the `Foreign.Lua.Raw`
   hierarchy from `hslua-1.3`. Documentation has been improved.
