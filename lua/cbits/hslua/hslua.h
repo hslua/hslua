@@ -1,4 +1,4 @@
-#include "lua.h"
+#include <lua.h>
 
 int hslua_error(lua_State *L);
 

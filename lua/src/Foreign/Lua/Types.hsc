@@ -31,7 +31,7 @@ module Foreign.Lua.Types
   )
 where
 
-#include "lua.h"
+#include <lua.h>
 
 import Prelude hiding (Integer)
 

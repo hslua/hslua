@@ -1,8 +1,9 @@
 #ifndef hslauxlib_h
 #define hslauxlib_h
 
-#include "lua.h"
-#include "lauxlib.h"
+#include <HsFFI.h>
+#include <lua.h>
+#include <lauxlib.h>
 
 /* Auxiliary Library */
 

@@ -61,8 +61,8 @@ module Foreign.Lua.Constants
 import Foreign.C (CInt (..))
 import Foreign.Lua.Types
 
-#include "lua.h"
-#include "lauxlib.h"
+#include <lua.h>
+#include <lauxlib.h>
 
 --
 -- Special values
