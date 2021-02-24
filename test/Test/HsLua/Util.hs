@@ -1,26 +1,12 @@
-{-
-Copyright © 2017-2021 Albert Krewinkel
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
--}
 {-# LANGUAGE OverloadedStrings #-}
-{-| Utilities for testing hslua -}
+{-|
+Module      : Test.HsLua.Util
+Copyright   : © 2017-2021 Albert Krewinkel
+License     : MIT
+Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
+
+Utilities for testing of HsLua operations.
+-}
 module Test.HsLua.Util
   ( assertLuaBool
   , pushLuaExpr
@@ -34,14 +20,24 @@ module Test.HsLua.Util
 import Data.ByteString (ByteString)
 import HsLua (Lua, run, runEither, loadstring, call, multret)
 import Test.Tasty (TestTree)
-import Test.Tasty.HUnit (Assertion, assertBool, assertFailure, testCase, (@?=))
+import Test.Tasty.HUnit
+  (Assertion, HasCallStack, assertBool, assertFailure, testCase, (@?=))
 
 import qualified HsLua as Lua
 
+-- | Takes a Lua expression as a 'ByteString', evaluates it and pushes
+-- the result to the stack.
+--
+-- > -- will return "12"
+-- > run $ do
+-- >   pushLuaExpr "7 + 5"
+-- >   tointeger top
 pushLuaExpr :: ByteString -> Lua ()
 pushLuaExpr expr = loadstring ("return " <> expr) *> call 0 multret
 
-shouldBeResultOf :: (Eq a, Show a) => a -> Lua a -> Assertion
+-- | Takes a value and a 'Lua' operation and turns them into an
+-- 'Assertion' which checks that the operation produces the given value.
+shouldBeResultOf :: (HasCallStack, Eq a, Show a) => a -> Lua a -> Assertion
 shouldBeResultOf expected luaOp = do
   errOrRes <- runEither luaOp
   case errOrRes of
@@ -49,7 +45,10 @@ shouldBeResultOf expected luaOp = do
                                 ++ "message: '" ++ msg ++ "'"
     Right res -> res @?= expected
 
-shouldBeErrorMessageOf :: Show a => String -> Lua a -> Assertion
+-- | Checks whether a 'Lua' operation fails with the given string as
+-- error message.
+shouldBeErrorMessageOf :: (HasCallStack, Show a)
+                       => String -> Lua a -> Assertion
 shouldBeErrorMessageOf expectedErrMsg luaOp = do
   errOrRes <- runEither luaOp
   case errOrRes of
@@ -58,7 +57,10 @@ shouldBeErrorMessageOf expectedErrMsg luaOp = do
       assertFailure ("Lua operation succeeded unexpectedly and returned "
                      ++ show res)
 
-shouldHoldForResultOf :: Show a => (a -> Bool) -> Lua a -> Assertion
+-- | Checks whether the return value of an operation holds for the given
+-- predicate.
+shouldHoldForResultOf :: (HasCallStack, Show a)
+                      => (a -> Bool) -> Lua a -> Assertion
 shouldHoldForResultOf predicate luaOp = do
   errOrRes <- runEither luaOp
   case errOrRes of
@@ -67,17 +69,22 @@ shouldHoldForResultOf predicate luaOp = do
     Right res -> assertBool ("predicate doesn't hold for " ++ show res)
                             (predicate res)
 
-assertLuaBool :: Lua Bool -> Assertion
+-- | Checks whether the operation returns 'True'.
+assertLuaBool :: HasCallStack => Lua Bool -> Assertion
 assertLuaBool luaOp = assertBool "" =<< run luaOp
 
-infix  3 =:
-(=:) :: String -> Assertion -> TestTree
-(=:) = testCase
-
-infixr 3 ?:
-(?:) :: String -> Lua Bool -> TestTree
-(?:) = luaTestBool
-
-luaTestBool :: String -> Lua Bool -> TestTree
+-- | Creates a new test case with the given name, checking whether the
+-- operation returns 'True'.
+luaTestBool :: HasCallStack => String -> Lua Bool -> TestTree
 luaTestBool msg luaOp = testCase msg $
   assertBool "Lua operation returned false" =<< run luaOp
+
+-- | Infix alias for 'testCase'.
+(=:) :: String -> Assertion -> TestTree
+(=:) = testCase
+infix  3 =:
+
+-- | Infix alias for 'luaTestBool'.
+(?:) :: HasCallStack => String -> Lua Bool -> TestTree
+(?:) = luaTestBool
+infixr 3 ?:
