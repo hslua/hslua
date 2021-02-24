@@ -121,6 +121,7 @@ library
                      , Foreign.Lua.Auxiliary
                      , Foreign.Lua.Call
                      , Foreign.Lua.Constants
+                     , Foreign.Lua.Ersatz
                      , Foreign.Lua.Ersatz.Auxiliary
                      , Foreign.Lua.Ersatz.Functions
                      , Foreign.Lua.Functions

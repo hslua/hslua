@@ -189,7 +189,6 @@ module Foreign.Lua
     -- * Ersatz functions
   , hsluaL_newstate
   , hsluaL_tolstring
-  , hslua_compare
     -- ** Get functions (Lua → stack)
   , hslua_gettable
   , hslua_getglobal
@@ -200,6 +199,7 @@ module Foreign.Lua
   , hslua_error
   , hslua_next
   , hslua_concat
+  , hslua_compare
 
     -- * Standard Lua libraries
   , luaopen_base
