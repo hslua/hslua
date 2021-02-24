@@ -35,7 +35,7 @@ import Data.Data (Typeable)
 import Data.Either (isLeft)
 import HsLua as Lua
 import System.Mem (performMajorGC)
-import Test.HsLua.Util ( (=:), (?:), pushLuaExpr, shouldBeErrorMessageOf
+import Test.Tasty.HsLua ( (=:), (?:), pushLuaExpr, shouldBeErrorMessageOf
                        , shouldHoldForResultOf)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit ((@?=), assertBool, assertEqual, testCase)

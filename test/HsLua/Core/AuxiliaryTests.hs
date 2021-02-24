@@ -3,7 +3,7 @@
 -}
 module HsLua.Core.AuxiliaryTests (tests) where
 
-import Test.HsLua.Util ((?:), (=:), pushLuaExpr, shouldBeResultOf)
+import Test.Tasty.HsLua ((?:), (=:), pushLuaExpr, shouldBeResultOf)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit ((@=?))
 

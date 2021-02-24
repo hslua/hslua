@@ -110,7 +110,7 @@ test-suite test-hslua
                      , HsLua.UserdataTests
                      , HsLua.UtilTests
                      , Test.HsLua.Arbitrary
-                     , Test.HsLua.Util
+                     , Test.Tasty.HsLua
   build-depends:       hslua
                      , QuickCheck           >= 2.7
                      , quickcheck-instances >= 0.3

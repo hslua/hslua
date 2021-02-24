@@ -28,7 +28,7 @@ import Data.Data (Data)
 import Data.Word (Word64)
 import Data.Typeable (Typeable)
 import HsLua.Userdata (metatableName, pushAny, peekAny, toAny)
-import Test.HsLua.Util ( (=:), shouldBeResultOf, shouldHoldForResultOf )
+import Test.Tasty.HsLua ( (=:), shouldBeResultOf, shouldHoldForResultOf )
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual)
 

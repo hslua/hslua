@@ -26,7 +26,7 @@ module HsLua.UtilTests (tests) where
 
 import Data.Either (isLeft, isRight)
 import HsLua as Lua
-import Test.HsLua.Util ( (?:), (=:), pushLuaExpr, shouldBeResultOf
+import Test.Tasty.HsLua ( (?:), (=:), pushLuaExpr, shouldBeResultOf
                        , shouldBeErrorMessageOf, shouldHoldForResultOf)
 import Test.Tasty (TestTree, testGroup)
 

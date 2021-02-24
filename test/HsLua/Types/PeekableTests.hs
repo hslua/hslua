@@ -15,7 +15,7 @@ module HsLua.Types.PeekableTests (tests) where
 
 import Data.ByteString (ByteString)
 import HsLua as Lua
-import Test.HsLua.Util ( (=:), (?:), pushLuaExpr, shouldBeResultOf
+import Test.Tasty.HsLua ( (=:), (?:), pushLuaExpr, shouldBeResultOf
                        , shouldBeErrorMessageOf )
 import Test.Tasty (TestTree, testGroup)
 

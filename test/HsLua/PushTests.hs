@@ -20,7 +20,7 @@ import HsLua.Core (Lua, Number)
 import HsLua.Push
 
 import Test.HsLua.Arbitrary ()
-import Test.HsLua.Util ((=:), pushLuaExpr)
+import Test.Tasty.HsLua ((=:), pushLuaExpr)
 import Test.QuickCheck.Instances ()
 import Test.QuickCheck.Monadic (monadicIO, run, assert)
 import Test.Tasty (TestTree, testGroup)

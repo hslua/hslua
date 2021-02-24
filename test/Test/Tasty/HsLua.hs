@@ -4,6 +4,8 @@ Module      : Test.Tasty.HsLua
 Copyright   : © 2017-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
+Stability   : beta
+Portability : non-portable (depends on GHC)
 
 Utilities for testing of HsLua operations.
 -}
@@ -17,7 +19,7 @@ module Test.Tasty.HsLua
   , (?:)
   ) where
 
-import Data.ByteString (ByteString)
+import Data.ByteString (ByteString, append)
 import HsLua (Lua, run, runEither, loadstring, call, multret)
 import Test.Tasty (TestTree)
 import Test.Tasty.HUnit
@@ -33,7 +35,7 @@ import qualified HsLua as Lua
 -- >   pushLuaExpr "7 + 5"
 -- >   tointeger top
 pushLuaExpr :: ByteString -> Lua ()
-pushLuaExpr expr = loadstring ("return " <> expr) *> call 0 multret
+pushLuaExpr expr = loadstring ("return " `append` expr) *> call 0 multret
 
 -- | Takes a value and a 'Lua' operation and turns them into an
 -- 'Assertion' which checks that the operation produces the given value.

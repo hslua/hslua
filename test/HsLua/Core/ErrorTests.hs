@@ -6,7 +6,7 @@ module HsLua.Core.ErrorTests (tests) where
 import Control.Applicative ((<|>), empty)
 import Data.Either (isLeft)
 import HsLua (Lua)
-import Test.HsLua.Util ( (=:), shouldBeResultOf, shouldHoldForResultOf)
+import Test.Tasty.HsLua ( (=:), shouldBeResultOf, shouldHoldForResultOf)
 import Test.Tasty (TestTree, testGroup)
 
 import qualified HsLua as Lua

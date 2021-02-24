@@ -18,7 +18,7 @@ import HsLua.Core (StackIndex)
 import HsLua.Call
 import HsLua.Peek (peekIntegral, peekRealFloat, peekText, force)
 import HsLua.Push (pushIntegral, pushRealFloat)
-import Test.HsLua.Util ((=:), shouldBeResultOf)
+import Test.Tasty.HsLua ((=:), shouldBeResultOf)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit ((@=?))
 

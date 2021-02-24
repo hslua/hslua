@@ -17,7 +17,7 @@ import Data.Either (isLeft)
 import HsLua.Peek
 
 import Test.HsLua.Arbitrary ()
-import Test.HsLua.Util ( (=:), pushLuaExpr, shouldBeResultOf
+import Test.Tasty.HsLua ( (=:), pushLuaExpr, shouldBeResultOf
                        , shouldHoldForResultOf)
 import Test.QuickCheck.Instances ()
 import Test.QuickCheck.Monadic (monadicIO, run, assert)

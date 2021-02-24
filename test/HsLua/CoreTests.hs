@@ -20,7 +20,7 @@ import Data.Maybe (fromMaybe)
 import Lua.Lib (luaopen_debug)
 import HsLua as Lua
 import Test.HsLua.Arbitrary ()
-import Test.HsLua.Util ( (?:), (=:), shouldBeErrorMessageOf, shouldBeResultOf
+import Test.Tasty.HsLua ( (?:), (=:), shouldBeErrorMessageOf, shouldBeResultOf
                        , shouldHoldForResultOf, pushLuaExpr )
 import Test.QuickCheck (Property, (.&&.))
 import Test.QuickCheck.Monadic (assert, monadicIO)

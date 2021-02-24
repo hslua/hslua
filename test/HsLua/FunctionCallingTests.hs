@@ -26,7 +26,7 @@ module HsLua.FunctionCallingTests (tests) where
 import Control.Monad (forM_)
 import Data.ByteString.Char8 as Char8
 import HsLua (Lua)
-import Test.HsLua.Util ( (=:), pushLuaExpr, shouldBeErrorMessageOf
+import Test.Tasty.HsLua ( (=:), pushLuaExpr, shouldBeErrorMessageOf
                        , shouldBeResultOf )
 import Test.Tasty (TestTree, testGroup)
 

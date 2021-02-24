@@ -1,1 +1,1 @@
-packages: lua/lua.cabal hslua.cabal
+packages: lua/lua.cabal hslua.cabal tasty/tasty-hslua.cabal
