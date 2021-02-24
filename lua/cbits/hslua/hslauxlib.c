@@ -1,3 +1,4 @@
+#include <HsFFI.h>
 #include <lua.h>
 #include <lauxlib.h>
 #include "hslauxlib.h"

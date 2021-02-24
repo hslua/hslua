@@ -2,6 +2,7 @@
  * Functions exported from Haskell
  * ***************************************************************/
 
+#include <HsFFI.h>
 #include <lua.h>
 
 /*  exported from Foreign.Lua.Raw.Call */
