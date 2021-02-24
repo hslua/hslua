@@ -71,7 +71,7 @@ int hslua_call_hs(lua_State *L)
 ** function-wrapping userdata when it's been called and removes
 ** the userdata from the stack.
 */
-void *hslua_hs_fun_ptr(lua_State *L)
+void *hslua_extracthsfun(lua_State *L)
 {
   void *fn = luaL_testudata(L, 1, HSLUA_HSFUN_NAME);
   lua_remove(L, 1);
@@ -85,7 +85,7 @@ void *hslua_hs_fun_ptr(lua_State *L)
 void hslua_registerhsfunmetatable(lua_State *L)
 {
   if (hslua_newudmetatable(L, HSLUA_HSFUN_NAME)) {
-    lua_pushcfunction(L, &hslua_call_wrapped_hs_fun);
+    lua_pushcfunction(L, &hslua_callhsfun);
     lua_setfield(L, -2, "__call");
     lua_pop(L, 1);
   }

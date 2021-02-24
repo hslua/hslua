@@ -38,11 +38,11 @@ type HsFunction = State -> IO NumResults
 
 -- | Retrieve the pointer to a Haskell function from the wrapping
 -- userdata object.
-foreign import ccall SAFTY "hslua.h hslua_hs_fun_ptr"
-  hslua_hs_fun_ptr :: State -> IO (Ptr ())
+foreign import ccall SAFTY "hslcall.c hslua_extracthsfun"
+  hslua_extracthsfun :: State -> IO (Ptr ())
 
 -- | Pushes a new C function created from an 'HsFunction'.
-foreign import ccall SAFTY "hslua.h hslua_newhsfunction"
+foreign import ccall SAFTY "hslcall.c hslua_newhsfunction"
   hslua_newhsfunction :: State -> StablePtr a -> IO ()
 
 -- | Pushes a Haskell operation as a Lua function. The Haskell operation
@@ -56,13 +56,13 @@ hslua_pushhsfunction l preCFn =
 -- | Call the Haskell function stored in the userdata. This
 -- function is exported as a C function, as the C code uses it as
 -- the @__call@ value of the wrapping userdata metatable.
-hslua_call_wrapped_hs_fun :: HsFunction
-hslua_call_wrapped_hs_fun l = do
-  udPtr <- hslua_hs_fun_ptr l
+hslua_callhsfun :: HsFunction
+hslua_callhsfun l = do
+  udPtr <- hslua_extracthsfun l
   if udPtr == nullPtr
     then error "Cannot call function; corrupted Lua object!"
     else do
       fn <- peek (castPtr udPtr) >>= deRefStablePtr
       fn l
 
-foreign export ccall hslua_call_wrapped_hs_fun :: HsFunction
+foreign export ccall hslua_callhsfun :: HsFunction

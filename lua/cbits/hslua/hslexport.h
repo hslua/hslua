@@ -5,4 +5,4 @@
 #include <lua.h>
 
 /*  exported from Foreign.Lua.Raw.Call */
-int hslua_call_wrapped_hs_fun(lua_State *L);
+int hslua_callhsfun(lua_State *L);
