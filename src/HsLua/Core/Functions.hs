@@ -563,8 +563,8 @@ pcall nargs nresults msgh = liftLua $ \l ->
 -- | Pops @n@ elements from the stack.
 --
 -- See also: <https://www.lua.org/manual/5.3/manual.html#lua_pop lua_pop>.
-pop :: StackIndex -> Lua ()
-pop n = liftLua $ \l -> lua_pop l n
+pop :: Int -> Lua ()
+pop n = liftLua $ \l -> lua_pop l (fromIntegral n)
 
 -- | Pushes a boolean value with the given value onto the stack.
 --

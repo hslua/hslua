@@ -443,7 +443,7 @@ foreign import capi safe "lua.h lua_pcall"
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_pop>
 foreign import capi unsafe "lua.h lua_pop"
-  lua_pop :: Lua.State -> StackIndex {- ^ n -} -> IO ()
+  lua_pop :: Lua.State -> CInt {- ^ n -} -> IO ()
 
 -- | Pushes a boolean value with the given value onto the stack.
 --
