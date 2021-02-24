@@ -13,11 +13,6 @@ import qualified HsLua.CallTests
 import qualified HsLua.ModuleTests
 import qualified HsLua.PeekTests
 import qualified HsLua.PushTests
-import qualified HsLua.TypesTests
-import qualified HsLua.Types.ExposableTests
-import qualified HsLua.Types.InvokableTests
-import qualified HsLua.Types.PeekableTests
-import qualified HsLua.Types.PushableTests
 import qualified HsLua.UserdataTests
 import qualified HsLua.UtilTests
 
@@ -28,17 +23,10 @@ main = defaultMain $ testGroup "hslua" tests
 tests :: [TestTree]
 tests =
   [ HsLua.PushTests.tests
-  , HsLua.UtilTests.tests
-  , testGroup "Typeclasses"
-    [ HsLua.TypesTests.tests
-    , HsLua.Types.ExposableTests.tests
-    , HsLua.Types.InvokableTests.tests
-    , HsLua.Types.PeekableTests.tests
-    , HsLua.Types.PushableTests.tests
-    ]
   , HsLua.UserdataTests.tests
   , HsLua.ModuleTests.tests
   , HsLua.CallTests.tests
-  , HsLuaTests.tests
   , HsLua.PeekTests.tests
+  , HsLua.UtilTests.tests
+  , HsLuaTests.tests
   ]

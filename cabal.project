@@ -2,4 +2,5 @@ packages: lua/lua.cabal
           lua-arbitrary/lua-arbitrary.cabal
           hslua/hslua.cabal
           hslua-core/hslua-core.cabal
+          hslua-classes/hslua-classes.cabal
           tasty-hslua/tasty-hslua.cabal

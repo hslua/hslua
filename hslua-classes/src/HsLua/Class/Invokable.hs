@@ -1,5 +1,5 @@
 {-|
-Module      : HsLua.Types.Invokable
+Module      : HsLua.Class.Invokable
 Copyright   : © 2007–2012 Gracjan Polak,
                 2012–2016 Ömer Sinan Ağacan,
                 2017-2021 Albert Krewinkel
@@ -10,15 +10,16 @@ Portability : FlexibleInstances, ForeignFunctionInterface, ScopedTypeVariables
 
 Call Lua functions from Haskell.
 -}
-module HsLua.Types.Invokable
+module HsLua.Class.Invokable
   ( Invokable (..)
   , invoke
   ) where
 
 import HsLua.Core as Lua
-import HsLua.Types.Peekable
-import HsLua.Types.Pushable
-import HsLua.Util (getglobal', popValue)
+import HsLua.Class.Peekable
+import HsLua.Class.Pushable
+import HsLua.Class.Util (popValue)
+import HsLua.Util (getglobal')
 
 -- | Helper class used to make Lua functions useable from Haskell.
 class Invokable a where

@@ -1,5 +1,5 @@
 {-|
-Module      : HsLua.Types
+Module      : HsLua.Class
 Copyright   : © 2017-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
@@ -8,14 +8,14 @@ Portability : non-portable (depends on GHC)
 
 Types for working with Lua.
 -}
-module HsLua.Types
-  ( module HsLua.Types.Exposable
-  , module HsLua.Types.Invokable
-  , module HsLua.Types.Peekable
-  , module HsLua.Types.Pushable
+module HsLua.Class
+  ( module HsLua.Class.Exposable
+  , module HsLua.Class.Invokable
+  , module HsLua.Class.Peekable
+  , module HsLua.Class.Pushable
   ) where
 
-import HsLua.Types.Exposable
-import HsLua.Types.Invokable
-import HsLua.Types.Peekable
-import HsLua.Types.Pushable
+import HsLua.Class.Exposable
+import HsLua.Class.Invokable
+import HsLua.Class.Peekable
+import HsLua.Class.Pushable

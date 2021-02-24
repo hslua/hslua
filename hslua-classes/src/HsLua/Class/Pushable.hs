@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
-Module      : HsLua.Types.Pushable
+Module      : HsLua.Class.Pushable
 Copyright   : © 2007–2012 Gracjan Polak;
               © 2012–2016 Ömer Sinan Ağacan;
               © 2017-2021 Albert Krewinkel
@@ -12,7 +12,7 @@ Portability : FlexibleInstances, ScopedTypeVariables
 
 Sending haskell objects to the lua stack.
 -}
-module HsLua.Types.Pushable
+module HsLua.Class.Pushable
   ( Pushable (..)
   , pushList
   ) where

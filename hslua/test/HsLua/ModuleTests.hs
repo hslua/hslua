@@ -36,12 +36,12 @@ tests = testGroup "Module"
         return (new - old)
 
     , "module can be loaded with `require`" =:
-      let testModule = "string as a module" :: String
-      in testModule `shouldBeResultOf` do
+      let testModule = "string as a module"
+      in Just testModule `shouldBeResultOf` do
         Lua.openlibs
-        requirehs "test.module" (Lua.push testModule)
+        requirehs "test.module" (Lua.pushstring testModule)
         pushLuaExpr "require 'test.module'"
-        Lua.peek Lua.top
+        Lua.tostring Lua.top
     ]
 
   , testGroup "preloadhs"
@@ -54,12 +54,12 @@ tests = testGroup "Module"
         return (new - old)
 
     , "module can be loaded with `require`" =:
-      let testModule = "string as a module" :: String
-      in testModule `shouldBeResultOf` do
+      let testModule = "string as a module"
+      in Just testModule `shouldBeResultOf` do
         Lua.openlibs
-        preloadhs "test.module" (1 <$ Lua.push testModule)
+        preloadhs "test.module" (1 <$ Lua.pushstring testModule)
         pushLuaExpr "require 'test.module'"
-        Lua.peek Lua.top
+        Lua.tostring Lua.top
     ]
 
   , testGroup "creation helpers"

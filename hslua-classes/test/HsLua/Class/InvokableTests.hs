@@ -1,17 +1,17 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-|
-Module      : HsLua.Types.InvokableTests
+Module      : HsLua.Class.InvokableTests
 Copyright   : © 2017-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 
 Tests that Lua functions can be called from Haskell.
 -}
-module HsLua.Types.InvokableTests (tests) where
+module HsLua.Class.InvokableTests (tests) where
 
 import Data.ByteString.Char8 as Char8
 import HsLua (Lua, openlibs)
-import HsLua.Types.Invokable (invoke)
+import HsLua.Class.Invokable (invoke)
 import Test.Tasty.HsLua ((=:), shouldBeErrorMessageOf, shouldBeResultOf)
 import Test.Tasty (TestTree, testGroup)
 

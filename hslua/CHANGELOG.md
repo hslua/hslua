@@ -27,6 +27,9 @@ Release pending.
     + *hslua-core*: the package contains all modules from the
       *Core* sub-hierarchy.
 
+    * *hslua-classes*: typclasses *Peekable* and *Pushable* for
+      pushing and pulling, as well as function calling.
+
     + *tasty-hslua*: makes testing helpers available for reuse.
 
 - Moved *run* functions from Util to Core.Run.

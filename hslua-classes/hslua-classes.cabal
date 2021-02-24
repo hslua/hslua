@@ -1,15 +1,8 @@
 cabal-version:       2.2
-name:                hslua
+name:                hslua-classes
 version:             2.0.0
-synopsis:            Bindings to Lua, an embeddable scripting language
-description:         HsLua provides wrappers and helpers
-                     to bridge Haskell and <https://www.lua.org/ Lua>.
-                     .
-                     It builds upon the /lua/ package, which allows to bundle
-                     a Lua interpreter with a Haskell program.
-                     .
-                     <https://github.com/hslua/hslua-examples Example programs>
-                     are available in a separate repository.
+synopsis:            Marshaling classes for HsLua
+description:         FIXME!
 homepage:            https://hslua.github.io/
 bug-reports:         https://github.com/hslua/hslua/issues
 license:             MIT
@@ -41,8 +34,7 @@ common common-options
                      , bytestring    >= 0.10.2 && < 0.11
                      , containers    >= 0.5.9  && < 0.7
                      , exceptions    >= 0.8    && < 0.11
-                     , hslua-core    >= 1.0    && < 1.1
-                     , lua           >= 2.0    && < 2.1
+                     , hslua         >= 2.0    && < 2.1
                      , mtl           >= 2.2    && < 2.3
                      , text          >= 1.0    && < 1.3
   ghc-options:         -Wall
@@ -57,24 +49,15 @@ common common-options
                          -Wincomplete-uni-patterns
                          -Wpartial-fields
                          -fhide-source-paths
-  if impl(ghc < 8.8)
-    build-depends:       base-compat          >= 0.10
-    hs-source-dirs:      prelude
-    other-modules:       Prelude
 
 library
   import:              common-options
-  exposed-modules:     HsLua
-                     , HsLua.Call
-                     , HsLua.Module
-                     , HsLua.Peek
-                     , HsLua.Push
-                     , HsLua.Userdata
-                     , HsLua.Util
-  reexported-modules:  HsLua.Core
-                     , HsLua.Core.Error
-                     , HsLua.Core.Types
-                     , HsLua.Core.Utf8
+  exposed-modules:     HsLua.Classes
+                     , HsLua.Class.Exposable
+                     , HsLua.Class.Invokable
+                     , HsLua.Class.Peekable
+                     , HsLua.Class.Pushable
+                     , HsLua.Class.Util
   hs-source-dirs:      src
   default-extensions:  LambdaCase
   other-extensions:    DeriveDataTypeable
@@ -83,24 +66,24 @@ library
                      , FlexibleInstances
                      , ScopedTypeVariables
 
-test-suite test-hslua
+test-suite test-hslua-classes
   import:              common-options
   type:                exitcode-stdio-1.0
-  main-is:             test-hslua.hs
+  main-is:             test-hslua-classes.hs
   hs-source-dirs:      test
   ghc-options:         -threaded -Wno-unused-do-bind
-  other-modules:       HsLuaTests
-                     , HsLua.CallTests
-                     , HsLua.ModuleTests
-                     , HsLua.PeekTests
-                     , HsLua.PushTests
-                     , HsLua.UserdataTests
-                     , HsLua.UtilTests
-  build-depends:       hslua
+  other-modules:       HsLua.ClassesTests
+                     , HsLua.Class.ExposableTests
+                     , HsLua.Class.InvokableTests
+                     , HsLua.Class.PeekableTests
+                     , HsLua.Class.PushableTests
+                     , HsLua.Class.UtilTests
+  build-depends:       hslua-classes
+                     , hslua
                      , lua-arbitrary        >= 1.0
                      , QuickCheck           >= 2.7
                      , quickcheck-instances >= 0.3
-                     , tasty-hslua
                      , tasty                >= 0.11
+                     , tasty-hslua          >= 1.0
                      , tasty-hunit          >= 0.9
                      , tasty-quickcheck     >= 0.8

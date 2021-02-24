@@ -8,7 +8,7 @@
 
 - ignore:
     name: "Reduce duplication"
-    within: "HsLua.Types.Pushable"
+    within: "HsLua.Class.Pushable"
 
 - ignore:
     name: "Use camelCase"

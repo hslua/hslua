@@ -15,32 +15,16 @@ Basic access to the Lua API is provided by @'Lua.Core'@ from
 Hackage package /lua/.
 -}
 module HsLua (
-  -- * Core
+    -- * Core functionality
     module HsLua.Core
-  -- * Receiving values from Lua stack (Lua → Haskell)
-  , Peekable (..)
-  , peekEither
-  , peekList
-  , peekKeyValuePairs
-  , peekRead
+    -- * Receiving values from Lua stack (Lua → Haskell)
   , peekAny
-  -- * Pushing values to Lua stack (Haskell → Lua)
-  , Pushable (..)
-  , pushList
+    -- * Pushing values to Lua stack (Haskell → Lua)
   , pushAny
-  -- * Calling Functions
-  , Exposable (..)
-  , toHaskellFunction
-  , invoke
-  , registerHaskellFunction
-  -- * Utility functions and types
+    -- * Utility functions
   , getglobal'
   , setglobal'
-  , raiseError
-  , Optional (Optional, fromOptional)
-  -- ** Retrieving values
-  , popValue
-  -- ** Modules
+    -- ** Modules
   , requirehs
   , preloadhs
   , create
@@ -50,6 +34,5 @@ import Prelude hiding (compare, concat)
 
 import HsLua.Core
 import HsLua.Module
-import HsLua.Types
 import HsLua.Userdata ( pushAny, peekAny )
 import HsLua.Util

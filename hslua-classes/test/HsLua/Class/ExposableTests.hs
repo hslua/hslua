@@ -1,16 +1,17 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-|
-Module      : HsLua.Types.ExposableTests
+Module      : HsLua.Class.ExposableTests
 Copyright   : © 2017-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 
 Tests that Haskell functions can be exposed to and called from Lua.
 -}
-module HsLua.Types.ExposableTests (tests) where
+module HsLua.Class.ExposableTests (tests) where
 
 import HsLua (Lua)
-import HsLua.Types.Exposable
+import HsLua.Class.Exposable as Lua
+import HsLua.Class.Peekable as Lua
 import Test.Tasty.HsLua ( (=:), pushLuaExpr, shouldBeErrorMessageOf
                        , shouldBeResultOf )
 import Test.Tasty (TestTree, testGroup)
@@ -44,7 +45,7 @@ tests =
 
   , "argument type errors are propagated" =:
      ("Error during function call: could not read argument 2: "
-      <> "expected integer, got 'true' (boolean)") `shouldBeErrorMessageOf` do
+      ++ "expected integer, got 'true' (boolean)") `shouldBeErrorMessageOf` do
           Lua.registerHaskellFunction "integerOp" integerOperation
           pushLuaExpr "integerOp(23, true)"
 

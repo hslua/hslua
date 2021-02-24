@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-|
-Module      :  HsLua.Types.PushableTests
+Module      :  HsLua.Class.PushableTests
 Copyright   :  © 2017-2021 Albert Krewinkel
 License     :  MIT
 
@@ -10,10 +10,11 @@ Portability :  portable
 
 Test for the interoperability between haskell and lua.
 -}
-module HsLua.Types.PushableTests (tests) where
+module HsLua.Class.PushableTests (tests) where
 
 import Data.ByteString (ByteString)
-import HsLua (Pushable (push), gettop, equal, nth)
+import HsLua (gettop, equal, nth)
+import HsLua.Class.Pushable (Pushable (push))
 import Foreign.StablePtr (castStablePtrToPtr, freeStablePtr, newStablePtr)
 
 import Lua.Arbitrary ()

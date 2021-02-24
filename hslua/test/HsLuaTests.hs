@@ -28,9 +28,7 @@ module HsLuaTests (tests) where
 
 import Prelude hiding (concat)
 
-import Control.Applicative (Alternative (..))
 import Control.Monad (void)
-import Data.ByteString (ByteString)
 import Data.Data (Typeable)
 import Data.Either (isLeft)
 import HsLua as Lua
@@ -48,12 +46,12 @@ import qualified HsLua.Core.Utf8 as Utf8
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
-tests = testGroup "lua integration tests"
+tests = testGroup "Lua integration tests"
   [ testCase "print version" .
     run $ do
       openlibs
       void $ getglobal "assert"
-      push ("Hello from " :: ByteString)
+      pushstring "Hello from "
       void $ getglobal "_VERSION"
       concat 2
       call 1 0
@@ -81,20 +79,20 @@ tests = testGroup "lua integration tests"
       openbase
       let tableStr = "{firstname = 'Jane', surname = 'Doe'}"
       pushLuaExpr $ "setmetatable(" <> tableStr <> ", {'yup'})"
-      void $ getfield (-1) "firstname"
-      firstname <- peek (-1) <* pop 1 :: Lua ByteString
-      liftIO (assertEqual "Wrong value for firstname" "Jane" firstname)
+      void $ getfield top "firstname"
+      firstname <- tostring top <* pop 1
+      liftIO (assertEqual "Wrong value for firstname" (Just "Jane") firstname)
 
-      push ("surname" :: ByteString)
+      pushstring "surname"
       rawget (-2)
-      surname <- peek (-1) <* pop 1 :: Lua ByteString
-      liftIO (assertEqual "Wrong value for surname" surname "Doe")
+      surname <- tostring top <* pop 1
+      liftIO (assertEqual "Wrong value for surname" surname (Just "Doe"))
 
       hasMetaTable <- getmetatable (-1)
       liftIO (assertBool "getmetatable returned wrong result" hasMetaTable)
       rawgeti (-1) 1
-      mt1 <- peek (-1) <* pop 1 :: Lua ByteString
-      liftIO (assertEqual "Metatable content not as expected " mt1 "yup")
+      mt1 <- tostring top <* pop 1
+      liftIO (assertEqual "Metatable content not as expected " mt1 (Just "yup"))
 
   , testGroup "Getting strings to and from the stack"
     [ testCase "unicode ByteString" $ do
@@ -157,37 +155,24 @@ tests = testGroup "lua integration tests"
           result @?= Left (ExceptionWithNumber 23)
 
       , "catch custom exception in exposed function" =: do
-          let frob n = toHaskellFunction $ do
+          let frob = do
+                openlibs
                 pushLuaExpr errTbl
-                pushnumber n
-                void $ gettable (Lua.nth 2)
+                pushnumber 42
+                _ <- gettable (Lua.nth 2)
+                return (NumResults 1)
           result <- tryCustom $ do
             openlibs
-            registerHaskellFunction "frob" frob
-            invoke "frob" (Lua.Number 42) :: Lua ()
+            pushHaskellFunction frob
+            call (NumArgs 0) (NumResults 1)
           result @?= Left (ExceptionWithNumber 42)
 
       , "pass exception through Lua" =: do
-          let frob = Catch.throwM (ExceptionWithMessage "borked") :: Lua ()
+          let frob = Catch.throwM (ExceptionWithMessage "borked") :: Lua NumResults
           result <- tryCustom $ do
-            pushHaskellFunction $ toHaskellFunction frob
-            call 0 1
+            pushHaskellFunction frob
+            call (NumArgs 0) (NumResults 0)
           result @?= Left (ExceptionWithMessage "borked")
-
-      , "failing peek" =: do
-          let msg = "expected integer, got '1.1' (number)"
-          result <- tryCustom $ do
-            pushnumber 1.1
-            peek top :: Lua Lua.Integer
-          result @?= Left (ExceptionWithMessage msg)
-
-      , "alternative" =: do
-          result <- tryCustom $ do
-            pushstring "NaN"
-            pushnumber 13.37
-            (<|>) (peek (nth 2) :: Lua Number)
-                  (peek top :: Lua Number)
-          result @?= Right 13.37
       ]
     ]
   ]
@@ -217,8 +202,12 @@ customErrorConversion = Lua.ErrorConversion
   , addContextToException = const id
   , alternative = customAlternative
   , exceptionToError = flip Catch.catch $ \case
-      ExceptionWithMessage m -> raiseError (Utf8.fromString m)
-      ExceptionWithNumber n  -> raiseError n
+      ExceptionWithMessage m -> do
+        pushstring (Utf8.fromString m)
+        Lua.error
+      ExceptionWithNumber n  -> do
+        pushnumber n
+        Lua.error
   }
 
 errorToCustomException :: Lua.State -> IO a

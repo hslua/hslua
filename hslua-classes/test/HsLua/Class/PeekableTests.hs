@@ -1,7 +1,7 @@
 
 {-# LANGUAGE OverloadedStrings #-}
 {-|
-Module      :  HsLua.Types.PeekableTests
+Module      :  HsLua.Class.PeekableTests
 Copyright   :  © 2017-2021 Albert Krewinkel
 License     :  MIT
 
@@ -11,10 +11,11 @@ Portability :  portable
 
 Test for the conversion of lua values to haskell values.
 -}
-module HsLua.Types.PeekableTests (tests) where
+module HsLua.Class.PeekableTests (tests) where
 
 import Data.ByteString (ByteString)
 import HsLua as Lua
+import HsLua.Class.Peekable
 import Test.Tasty.HsLua ( (=:), (?:), pushLuaExpr, shouldBeResultOf
                        , shouldBeErrorMessageOf )
 import Test.Tasty (TestTree, testGroup)

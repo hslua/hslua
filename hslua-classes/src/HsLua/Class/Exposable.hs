@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
-Module      : HsLua.Types.Exposable
+Module      : HsLua.Class.Exposable
 Copyright   : © 2007–2012 Gracjan Polak,
                 2012–2016 Ömer Sinan Ağacan,
                 2017-2021 Albert Krewinkel
@@ -14,16 +14,15 @@ Portability : FlexibleInstances, ForeignFunctionInterface, ScopedTypeVariables
 
 Call haskell functions from Lua, and vice versa.
 -}
-module HsLua.Types.Exposable
+module HsLua.Class.Exposable
   ( Exposable (..)
   , toHaskellFunction
   , registerHaskellFunction
   ) where
 
-import HsLua.Core
-import HsLua.Types.Peekable (Peekable (peek))
-import HsLua.Types.Pushable (Pushable (push))
-import qualified HsLua.Core as Lua
+import HsLua.Core as Lua
+import HsLua.Class.Peekable (Peekable (peek))
+import HsLua.Class.Pushable (Pushable (push))
 
 -- | Operations and functions that can be pushed to the Lua stack. This
 -- is a helper function not intended to be used directly. Use the
@@ -44,9 +43,9 @@ instance Pushable a => Exposable (Lua a) where
 instance (Peekable a, Exposable b) => Exposable (a -> b) where
   partialApply narg f = getArg >>= partialApply (narg + 1) . f
     where
-      getArg = Lua.withExceptionMessage (errorPrefix <>) (peek narg)
-      errorPrefix = "could not read argument " <>
-                    show (fromStackIndex narg) <> ": "
+      getArg = Lua.withExceptionMessage (errorPrefix ++) (peek narg)
+      errorPrefix = "could not read argument " ++
+                    show (fromStackIndex narg) ++ ": "
 
 -- | Convert a Haskell function to a function type directly exposable to
 -- Lua. Any Haskell function can be converted provided that:

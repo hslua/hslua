@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
-Module      : HsLua.Types.Peekable
+Module      : HsLua.Class.Peekable
 Copyright   : © 2007–2012 Gracjan Polak;
               © 2012–2016 Ömer Sinan Ağacan;
               © 2017-2021 Albert Krewinkel
@@ -14,7 +14,7 @@ Portability : non-portable (depends on GHC)
 
 Sending haskell objects to the lua stack.
 -}
-module HsLua.Types.Peekable
+module HsLua.Class.Peekable
   ( Peekable (..)
   , peekKeyValuePairs
   , peekList

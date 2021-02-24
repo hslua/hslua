@@ -16,7 +16,7 @@ module HsLua.Core.Closures
   ) where
 
 import HsLua.Core.Types
-  ( Lua, PreCFunction, HaskellFunction
+  ( Lua, PreCFunction, HaskellFunction, ErrorConversion (exceptionToError)
   , errorConversion, liftLua, runWithConverter )
 import Lua.Call (hslua_pushhsfunction)
 
@@ -50,5 +50,5 @@ pushPreCFunction preCFn = liftLua $ \l ->
 pushHaskellFunction :: HaskellFunction -> Lua ()
 pushHaskellFunction fn = do
   errConv <- errorConversion
-  let preCFn l = runWithConverter errConv l fn
+  let preCFn l = runWithConverter errConv l (exceptionToError errConv fn)
   pushPreCFunction preCFn

@@ -1,33 +1,20 @@
-{-
-Copyright © 2018-2021 Albert Krewinkel
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
--}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE OverloadedStrings #-}
--- | Tests that any data type can be pushed to Lua.
+{-|
+Module      : HsLua.UserdataTests
+Copyright   : © 2018-2021 Albert Krewinkel
+License     : MIT
+Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
+
+Tests that any data type can be pushed to Lua as userdata.
+-}
 module HsLua.UserdataTests (tests) where
 
 import Data.Data (Data)
 import Data.Word (Word64)
 import Data.Typeable (Typeable)
-import HsLua.Userdata (metatableName, pushAny, peekAny, toAny)
+import HsLua.Userdata (metatableName, pushAny, toAny)
 import Test.Tasty.HsLua ( (=:), shouldBeResultOf, shouldHoldForResultOf )
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual)
@@ -77,13 +64,6 @@ tests = testGroup "Userdata"
         toAny Lua.top
     ]
 
-  , testGroup "Peekable & Pushable"
-    [ "push and peek" =:
-      Dummy 5 "sum of digits" `shouldBeResultOf` do
-        Lua.push (Dummy 5 "sum of digits")
-        Lua.peek Lua.top
-    ]
-
   , testGroup "roundtrip"
     [ "roundtrip dummy" =:
       Just (Dummy 42 "answer") `shouldBeResultOf` do
@@ -95,9 +75,3 @@ tests = testGroup "Userdata"
 -- | Dummy data
 data Dummy = Dummy Int String
   deriving (Data, Eq, Show, Typeable)
-
-instance Lua.Peekable Dummy where
-  peek = peekAny
-
-instance Lua.Pushable Dummy where
-  push = pushAny
