@@ -39,10 +39,6 @@ module HsLua (
   , pushHaskellFunction
   , registerHaskellFunction
   -- * Utility functions and types
-  , run
-  , run'
-  , runEither
-  , runWith
   , getglobal'
   , setglobal'
   , raiseError

@@ -16,13 +16,15 @@ Release pending.
   present in hslua-1.3.0. See that package's changelog for
   info on the additional modifications since then.
 
-- The module `Foreign.Lua.Raw.Error` was merged into the
-  `.Core.Error` module.
+- The module Foreign.Lua.Raw.Error was merged into the
+  HsLua.Core.Error module.
 
 - The functions `getglobal` and `gettable` now return the Lua
   `Type` of the pushed value.
 
 - Extracted package *tasty-hslua* with testing helper functions.
+
+- Moved *run* functions from Util to Core.Run.
 
 - Moved module Utf8 from the base level into Core.
 

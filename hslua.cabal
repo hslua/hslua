@@ -67,6 +67,7 @@ library
                      , HsLua.Call
                      , HsLua.Core
                      , HsLua.Core.Error
+                     , HsLua.Core.Run
                      , HsLua.Core.Types
                      , HsLua.Core.Utf8
                      , HsLua.FunctionCalling
@@ -100,6 +101,7 @@ test-suite test-hslua
                      , HsLua.CoreTests
                      , HsLua.Core.AuxiliaryTests
                      , HsLua.Core.ErrorTests
+                     , HsLua.Core.RunTests
                      , HsLua.FunctionCallingTests
                      , HsLua.ModuleTests
                      , HsLua.PeekTests

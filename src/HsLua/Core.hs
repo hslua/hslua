@@ -8,14 +8,20 @@ Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta
 Portability : non-portable (depends on GHC)
 
-Core Lua API. This module provides thin wrappers around the respective functions
-of the Lua C API. C function which can throw an error are wrapped such that the
-error is converted into an @'Exception'@. However, memory allocation errors are
-not caught and will cause the host program to terminate.
+Core Lua API. This module provides thin wrappers around the respective
+functions of the Lua C API. C function which can throw an error are
+wrapped such that the error is converted into an @'Exception'@. However,
+memory allocation errors are not caught and will cause the host program
+to terminate.
 -}
-module HsLua.Core (
+module HsLua.Core
+  ( -- * Run Lua computations
+    run
+  , run'
+  , runWith
+  , runEither
   -- * Lua Computations
-    Lua (..)
+  , Lua (..)
   , runWithConverter
   , unsafeRunWith
   , liftIO
@@ -190,4 +196,5 @@ import Prelude hiding (EQ, LT, compare, concat, error)
 import HsLua.Core.Auxiliary
 import HsLua.Core.Error
 import HsLua.Core.Functions
+import HsLua.Core.Run
 import HsLua.Core.Types as Lua
