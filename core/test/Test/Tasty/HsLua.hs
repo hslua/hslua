@@ -20,12 +20,12 @@ module Test.Tasty.HsLua
   ) where
 
 import Data.ByteString (ByteString, append)
-import HsLua (Lua, run, runEither, loadstring, call, multret)
+import HsLua.Core (Lua, run, runEither, loadstring, call, multret)
 import Test.Tasty (TestTree)
 import Test.Tasty.HUnit
   (Assertion, HasCallStack, assertBool, assertFailure, testCase, (@?=))
 
-import qualified HsLua as Lua
+import qualified HsLua.Core as Lua
 
 -- | Takes a Lua expression as a 'ByteString', evaluates it and pushes
 -- the result to the stack.

@@ -145,7 +145,7 @@ loadbuffer bs name = liftLua $ \l ->
 loadfile :: FilePath -- ^ filename
          -> Lua Status
 loadfile fp = Lua.liftIO contentOrError >>= \case
-  Right script -> loadbuffer script ("@" <> fp)
+  Right script -> loadbuffer script ("@" ++ fp)
   Left e -> do
     Lua.pushstring (Utf8.fromString (show e))
     return Lua.ErrFile

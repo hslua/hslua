@@ -9,7 +9,7 @@ Stability   : beta
 Portability : non-portable (depends on GHC)
 
 Core Lua API. This module provides thin wrappers around the respective
-functions of the Lua C API. C function which can throw an error are
+functions of the Lua C API. C functions which can throw an error are
 wrapped such that the error is converted into an @'Exception'@. However,
 memory allocation errors are not caught and will cause the host program
 to terminate.

@@ -35,16 +35,15 @@ import Lua (lua_pop, lua_pushlstring, hsluaL_tolstring)
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 
-import qualified Data.ByteString as B
-import qualified Data.ByteString.Char8 as Char8
-import qualified Foreign.Storable as Storable
-import qualified Lua.Types as Lua
-import qualified Data.ByteString.Unsafe as B
 import qualified Control.Exception as E
 import qualified Control.Monad.Catch as Catch
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as Char8
+import qualified Data.ByteString.Unsafe as B
+import qualified Foreign.Storable as Storable
+import qualified Lua.Types as Lua
 import qualified HsLua.Core.Types as Lua
 import qualified HsLua.Core.Utf8 as Utf8
-import qualified Foreign.Storable as F
 
 -- | Exceptions raised by Lua-related operations.
 newtype Exception = Exception { exceptionMessage :: String}
@@ -123,7 +122,7 @@ liftLuaThrow :: (Lua.State -> Ptr Lua.StatusCode -> IO a) -> Lua a
 liftLuaThrow f = do
   (result, status) <- Lua.liftLua $ \l -> alloca $ \statusPtr -> do
     result <- f l statusPtr
-    status <- Lua.toStatus <$> F.peek statusPtr
+    status <- Lua.toStatus <$> Storable.peek statusPtr
     return (result, status)
   if status == Lua.OK
     then return result

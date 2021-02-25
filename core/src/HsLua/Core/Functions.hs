@@ -47,7 +47,7 @@ ensureTable idx ioOp = do
     then liftLua ioOp
     else do
       tyName <- ltype idx >>= typename
-      throwMessage ("table expected, got " <> tyName)
+      throwMessage ("table expected, got " ++ tyName)
 
 --
 -- API functions

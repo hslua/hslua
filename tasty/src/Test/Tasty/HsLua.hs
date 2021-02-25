@@ -1,1 +1,1 @@
-../../../../test/Test/Tasty/HsLua.hs
+../../../../core/test/Test/Tasty/HsLua.hs

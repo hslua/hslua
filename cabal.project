@@ -1,4 +1,5 @@
 packages: lua/lua.cabal
           lua-arbitrary/lua-arbitrary.cabal
           hslua.cabal
+          core/hslua-core.cabal
           tasty/tasty-hslua.cabal

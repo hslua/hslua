@@ -22,7 +22,12 @@ Release pending.
 - The functions `getglobal` and `gettable` now return the Lua
   `Type` of the pushed value.
 
-- Extracted package *tasty-hslua* with testing helper functions.
+- Extracted new packages:
+
+    + *hslua-core*: the package contains all modules from the
+      *Core* sub-hierarchy.
+
+    + *tasty-hslua*: makes testing helpers available for reuse.
 
 - Moved *run* functions from Util to Core.Run.
 

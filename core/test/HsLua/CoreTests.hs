@@ -16,6 +16,7 @@ module HsLua.CoreTests (tests) where
 import Prelude hiding (compare)
 
 import Control.Monad (forM_)
+import Data.ByteString (append)
 import Data.Maybe (fromMaybe)
 import Lua.Lib (luaopen_debug)
 import HsLua.Core as Lua
@@ -260,7 +261,7 @@ tests = testGroup "Core module"
         "'__tostring' must return a string" `shouldBeErrorMessageOf` do
           -- create a table with a faulty `__tostring` metamethod
           let mt = "{__tostring = function() return nil end }"
-          let tbl = "return setmetatable({}, " <> mt <> ")"
+          let tbl = "return setmetatable({}, " `append` mt `append` ")"
           openlibs <* dostring tbl
           tostring' top
       ]
@@ -411,13 +412,13 @@ tests = testGroup "Core module"
 
   , testCase "functions can throw a table as error message" $ do
       let mt = "{__tostring = function (e) return e.error_code end}"
-      let err = "error(setmetatable({error_code = 23}," <> mt <> "))"
+      let err = "error(setmetatable({error_code = 23}," `append` mt `append` "))"
       res <- run . try $ openbase *> loadstring err *> call 0 0
       assertEqual "wrong error message" (Left (Lua.Exception "23")) res
 
   , testCase "handling table errors won't leak" $ do
       let mt = "{__tostring = function (e) return e.code end}"
-      let err = "error(setmetatable({code = 5}," <> mt <> "))"
+      let err = "error(setmetatable({code = 5}," `append` mt `append` "))"
       let luaOp = do
             openbase
             oldtop <- gettop
