@@ -1,5 +1,31 @@
 ## Changelog
 
+### 2.0.0
+
+Release pending.
+
+- Move module hierarchy from Foreign.Lua to HsLua.
+
+- Renamed stack index helpers to `nth`, `nthTop`, `nthBottom`,
+  `top`. The following have been *removed*: `stackTop`,
+  `nthFromTop`, `nthFromBottom`.
+
+- Extracted raw Lua bindings into new package *lua*. This means
+  that all cabal flags have been moved to package *lua* as well.
+  Version lua-1.0.0 contained the `Foreign.Lua.Raw` hierarchy as
+  present in hslua-1.3.0. See that package's changelog for
+  info on the additional modifications since then.
+
+- The module `Foreign.Lua.Raw.Error` was merged into the
+  `.Core.Error` module.
+
+- The functions `getglobal` and `gettable` now return the Lua
+  `Type` of the pushed value.
+
+- Extracted package *tasty-hslua* with testing helper functions.
+
+- Moved module Utf8 from the base level into Core.
+
 ### 1.3.0.1
 
 Released 2021-02-06.
