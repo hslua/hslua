@@ -34,7 +34,7 @@ import Numeric (showGFloat)
 
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as BL
-import qualified HsLua.Utf8 as Utf8
+import qualified HsLua.Core.Utf8 as Utf8
 
 -- | Function to push a value to Lua's stack.
 type Pusher a = a -> Lua ()

@@ -31,7 +31,7 @@ import qualified Data.Map as Map
 import qualified Data.Set as Set
 import qualified Data.Text as T
 import qualified HsLua as Lua
-import qualified HsLua.Utf8 as Utf8
+import qualified HsLua.Core.Utf8 as Utf8
 
 -- | Calling Haskell functions from Lua.
 tests :: TestTree

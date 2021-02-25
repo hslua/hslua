@@ -44,7 +44,7 @@ import qualified Control.Monad.Catch as Catch
 import qualified Data.ByteString.Char8 as Char8
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
-import qualified HsLua.Utf8 as Utf8
+import qualified HsLua.Core.Utf8 as Utf8
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree

@@ -53,7 +53,7 @@ import qualified Data.List.NonEmpty as NonEmpty
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import qualified Data.Text as T
-import qualified HsLua.Utf8 as Utf8
+import qualified HsLua.Core.Utf8 as Utf8
 
 -- | List of errors which occurred while retrieving a value from
 -- the stack.

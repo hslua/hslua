@@ -68,6 +68,7 @@ library
                      , HsLua.Core
                      , HsLua.Core.Error
                      , HsLua.Core.Types
+                     , HsLua.Core.Utf8
                      , HsLua.FunctionCalling
                      , HsLua.Module
                      , HsLua.Peek
@@ -76,7 +77,6 @@ library
                      , HsLua.Types.Peekable
                      , HsLua.Types.Pushable
                      , HsLua.Userdata
-                     , HsLua.Utf8
                      , HsLua.Util
   other-modules:       HsLua.Core.Auxiliary
                      , HsLua.Core.Functions

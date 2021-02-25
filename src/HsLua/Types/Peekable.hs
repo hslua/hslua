@@ -33,7 +33,7 @@ import qualified Data.Set as Set
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as BL
 import qualified HsLua.Peek as Peek
-import qualified HsLua.Utf8 as Utf8
+import qualified HsLua.Core.Utf8 as Utf8
 
 -- | Use @test@ to check whether the value at stack index @n@ has the correct
 -- type and use @peekfn@ to convert it to a haskell value if possible. Throws

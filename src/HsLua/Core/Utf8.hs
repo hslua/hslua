@@ -1,5 +1,5 @@
 {-|
-Module      : HsLua.Utf8
+Module      : HsLua.Core.Utf8
 Copyright   : © 2018-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
@@ -8,7 +8,7 @@ Portability : portable
 
 Encoding and decoding of String to and from UTF8.
 -}
-module HsLua.Utf8
+module HsLua.Core.Utf8
   ( toString
   , toText
   , fromString

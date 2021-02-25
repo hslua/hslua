@@ -31,7 +31,7 @@ import Foreign.Ptr
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Unsafe as B
 import qualified Foreign.C as C
-import qualified HsLua.Utf8 as Utf8
+import qualified HsLua.Core.Utf8 as Utf8
 import qualified Foreign.Storable as F
 
 --

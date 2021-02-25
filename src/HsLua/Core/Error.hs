@@ -43,7 +43,7 @@ import qualified Data.ByteString.Unsafe as B
 import qualified Control.Exception as E
 import qualified Control.Monad.Catch as Catch
 import qualified HsLua.Core.Types as Lua
-import qualified HsLua.Utf8 as Utf8
+import qualified HsLua.Core.Utf8 as Utf8
 import qualified Foreign.Storable as F
 
 -- | Exceptions raised by Lua-related operations.
