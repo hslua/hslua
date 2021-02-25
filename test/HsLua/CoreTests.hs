@@ -18,7 +18,7 @@ import Prelude hiding (compare)
 import Control.Monad (forM_)
 import Data.Maybe (fromMaybe)
 import Lua.Lib (luaopen_debug)
-import HsLua as Lua
+import HsLua.Core as Lua
 import Test.HsLua.Arbitrary ()
 import Test.Tasty.HsLua ( (?:), (=:), shouldBeErrorMessageOf, shouldBeResultOf
                        , shouldHoldForResultOf, pushLuaExpr )
@@ -57,17 +57,17 @@ tests = testGroup "Core module"
   , testGroup "insert"
     [ "inserts stack elements using positive indices" ?: do
         pushLuaExpr "1, 2, 3, 4, 5, 6, 7, 8, 9"
-        insert (-6)
-        movedEl <- peek (-6) :: Lua Lua.Integer
-        newTop <- peek (-1) :: Lua Lua.Integer
-        return (movedEl == 9 && newTop == 8)
+        insert 4
+        movedEl <- tointeger (nthBottom 4)
+        newTop <- tointeger (nth 1)
+        return (movedEl == Just 9 && newTop == Just 8)
 
     , "inserts stack elements using negative indices" ?: do
         pushLuaExpr "1, 2, 3, 4, 5, 6, 7, 8, 9"
-        insert 4
-        movedEl <- peek 4 :: Lua Lua.Integer
-        newTop <- peek (-1) :: Lua Lua.Integer
-        return (movedEl == 9 && newTop == 8)
+        insert (-6)
+        movedEl <- tointeger (nth 6)
+        newTop <- tointeger (nth 1)
+        return (movedEl == Just 9 && newTop == Just 8)
     ]
 
   , testCase "absindex" . run $ do
@@ -186,8 +186,8 @@ tests = testGroup "Core module"
       luaSt <- state
       isMain <- pushthread
       liftIO (assertBool "pushing the main thread should return True" isMain)
-      luaSt' <- peek top
-      return (luaSt == luaSt')
+      luaSt' <- tothread top
+      return (Just luaSt == luaSt')
 
   , "different threads are not equal in Haskell" ?:
     liftIO
@@ -309,8 +309,8 @@ tests = testGroup "Core module"
         OK `shouldBeResultOf` dostring "return 1"
 
       , "top of the stack should be result of last computation" =:
-        (5 :: Lua.Integer) `shouldBeResultOf`
-          (dostring "return (2+3)" *> peek (-1))
+        Just 5 `shouldBeResultOf`
+          (dostring "return (2+3)" *> tointeger top)
       ]
 
     , testGroup "loadbuffer"
@@ -335,12 +335,12 @@ tests = testGroup "Core module"
         OK `shouldBeResultOf` loadfile "./test/lua/example.lua"
 
       , "example fib program should be loaded correctly" =:
-        (8 :: Lua.Integer) `shouldBeResultOf` do
+        Just 8 `shouldBeResultOf` do
           loadfile "./test/lua/example.lua" *> call 0 0
           getglobal "fib"
           pushinteger 6
           call 1 1
-          peek top
+          tointeger top
       ]
 
     , testGroup "dofile"
@@ -357,12 +357,12 @@ tests = testGroup "Core module"
         OK `shouldBeResultOf` dofile "./test/lua/example.lua"
 
       , "example fib program should be loaded correctly" =:
-        (21 :: Lua.Integer) `shouldBeResultOf` do
+        Just 21 `shouldBeResultOf` do
           _ <- dofile "./test/lua/example.lua"
           getglobal "fib"
           pushinteger 8
           call 1 1
-          peek top
+          tointeger top
       ]
     ]
 
@@ -391,8 +391,8 @@ tests = testGroup "Core module"
 
   , testProperty "lessthan works" $ \n1 n2 -> monadicIO $ do
       luaCmp <- QCMonadic.run . run $ do
-        push (n2 :: Lua.Number)
-        push (n1 :: Lua.Number)
+        pushnumber n2
+        pushnumber n1
         lessthan (-1) (-2) <* pop 2
       assert $ luaCmp == (n1 < n2)
 
@@ -435,23 +435,23 @@ compareWith op luaOp n = compareLT .&&. compareEQ .&&. compareGT
   compareLT :: Property
   compareLT = monadicIO  $ do
     luaCmp <- QCMonadic.run . run $ do
-      push $ n - 1
-      push n
+      pushinteger $ n - 1
+      pushinteger n
       compare (-2) (-1) luaOp
     assert $ luaCmp == op (n - 1) n
 
   compareEQ :: Property
   compareEQ = monadicIO  $ do
     luaCmp <- QCMonadic.run . run $ do
-      push n
-      push n
+      pushinteger n
+      pushinteger n
       compare (-2) (-1) luaOp
     assert $ luaCmp == op n n
 
   compareGT :: Property
   compareGT = monadicIO $ do
     luaRes <- QCMonadic.run . run $ do
-      push $ n + 1
-      push n
+      pushinteger $ n + 1
+      pushinteger n
       compare (-2) (-1) luaOp
     assert $ luaRes == op (n + 1) n

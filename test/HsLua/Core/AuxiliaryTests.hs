@@ -3,21 +3,28 @@
 -}
 module HsLua.Core.AuxiliaryTests (tests) where
 
+import Data.ByteString (ByteString)
+import Data.Maybe (fromMaybe)
+import HsLua.Core (nth)
 import Test.Tasty.HsLua ((?:), (=:), pushLuaExpr, shouldBeResultOf)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit ((@=?))
 
-import qualified HsLua as Lua
+import qualified HsLua.Core as Lua
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
 tests = testGroup "Auxiliary"
   [ testGroup "getsubtable"
     [ "gets a subtable from field" =:
-      [1, 2, 3, 5, 8] `shouldBeResultOf` do
-        pushLuaExpr "{foo = {1, 2, 3, 5, 8}}"
+      [5, 8] `shouldBeResultOf` do
+        pushLuaExpr "{foo = {5, 8}}"
         _ <- Lua.getsubtable Lua.top "foo"
-        Lua.peek Lua.top :: Lua.Lua [Int]
+        Lua.rawgeti (nth 1) 1
+        Lua.rawgeti (nth 2) 2
+        i1 <- fromMaybe 0 <$> Lua.tointeger (nth 2)
+        i2 <- fromMaybe 0 <$> Lua.tointeger (nth 1)
+        return [i1, i2]
 
     , "creates new table at field if necessary" =:
       Lua.TypeTable `shouldBeResultOf` do
@@ -38,12 +45,12 @@ tests = testGroup "Auxiliary"
 
   , testGroup "getmetafield'"
     [ "gets field from the object's metatable" =:
-      ("testing" :: String) `shouldBeResultOf` do
+      ("testing" :: ByteString) `shouldBeResultOf` do
         Lua.newtable
         pushLuaExpr "{foo = 'testing'}"
         Lua.setmetatable (Lua.nth 2)
         _ <- Lua.getmetafield Lua.top "foo"
-        Lua.peek Lua.top
+        Lua.tostring' Lua.top
 
     , "returns TypeNil if the object doesn't have a metatable" =:
       Lua.TypeNil `shouldBeResultOf` do
@@ -53,10 +60,14 @@ tests = testGroup "Auxiliary"
 
   , testGroup "getmetatable'"
     [ "gets table created with newmetatable" =:
-      [("__name" :: String, "testing" :: String)] `shouldBeResultOf` do
+      ("__name" :: ByteString, "testing" :: ByteString) `shouldBeResultOf` do
         Lua.newmetatable "testing" *> Lua.pop 1
         _ <- Lua.getmetatable' "testing"
-        Lua.peekKeyValuePairs Lua.top
+        Lua.pushnil
+        Lua.next (nth 2)
+        key <- Lua.tostring' (nth 2) <* Lua.pop 1
+        value <- Lua.tostring' (nth 1) <* Lua.pop 1
+        return (key, value)
 
     , "returns nil if there is no such metatable" =:
       Lua.TypeNil `shouldBeResultOf` do
