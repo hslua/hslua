@@ -1,6 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-|
-Module      : Foreign.Lua.Userdata
+Module      : Lua.Userdata
 Copyright   : © 2017-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
@@ -10,16 +10,16 @@ Portability : ForeignFunctionInterface
 Bindings to HsLua-specific functions used to push Haskell values
 as userdata.
 -}
-module Foreign.Lua.Userdata
+module Lua.Userdata
   ( hslua_fromuserdata
   , hslua_newhsuserdata
   , hslua_newudmetatable
   ) where
 
 import Foreign.C (CInt (CInt), CString)
-import Foreign.Lua.Auxiliary (luaL_testudata)
-import Foreign.Lua.Functions (lua_newuserdata)
-import Foreign.Lua.Types
+import Lua.Auxiliary (luaL_testudata)
+import Lua.Functions (lua_newuserdata)
+import Lua.Types
   ( LuaBool (..)
   , StackIndex (..)
   , State (..)

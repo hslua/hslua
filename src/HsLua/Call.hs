@@ -43,7 +43,7 @@ import HsLua.Core as Lua
 import HsLua.Core.Types (liftLua)
 import HsLua.Peek
 import HsLua.Push
-import Foreign.Lua.Call (hslua_pushhsfunction)
+import Lua.Call (hslua_pushhsfunction)
 import qualified Data.Text as T
 
 -- | Lua operation with an explicit error type and state (i.e.,

@@ -31,14 +31,14 @@ import Control.Applicative (Alternative (..))
 import Data.ByteString (ByteString)
 import Data.Typeable (Typeable)
 import HsLua.Core.Types (Lua)
-import Foreign.Lua (lua_pop, lua_pushlstring, hsluaL_tolstring)
+import Lua (lua_pop, lua_pushlstring, hsluaL_tolstring)
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as Char8
 import qualified Foreign.Storable as Storable
-import qualified Foreign.Lua.Types as Lua
+import qualified Lua.Types as Lua
 import qualified Data.ByteString.Unsafe as B
 import qualified Control.Exception as E
 import qualified Control.Monad.Catch as Catch

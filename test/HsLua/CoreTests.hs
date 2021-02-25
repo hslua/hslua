@@ -17,7 +17,7 @@ import Prelude hiding (compare)
 
 import Control.Monad (forM_)
 import Data.Maybe (fromMaybe)
-import Foreign.Lua.Lib (luaopen_debug)
+import Lua.Lib (luaopen_debug)
 import HsLua as Lua
 import Test.HsLua.Arbitrary ()
 import Test.HsLua.Util ( (?:), (=:), shouldBeErrorMessageOf, shouldBeResultOf

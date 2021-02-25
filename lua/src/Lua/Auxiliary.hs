@@ -1,6 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-|
-Module      : Foreign.Lua.Auxiliary
+Module      : Lua.Auxiliary
 Copyright   : © 2007–2012 Gracjan Polak;
               © 2012–2016 Ömer Sinan Ağacan;
               © 2017-2021 Albert Krewinkel
@@ -11,7 +11,7 @@ Portability : non-portable (depends on GHC)
 
 Raw bindings to functions and constants of the auxiliary library.
 -}
-module Foreign.Lua.Auxiliary
+module Lua.Auxiliary
   ( -- * The Auxiliary Library
     luaL_getmetafield
   , luaL_getmetatable
@@ -32,7 +32,7 @@ module Foreign.Lua.Auxiliary
   ) where
 
 import Foreign.C (CChar, CInt (CInt), CSize (CSize), CString)
-import Foreign.Lua.Types as Lua
+import Lua.Types as Lua
 import Foreign.Ptr
 
 #ifndef HARDCODE_REG_KEYS
@@ -76,7 +76,7 @@ foreign import capi unsafe "lauxlib.h value LUA_PRELOAD_TABLE"
 -- object at index @obj@ and returns the type of the pushed value. If
 -- the object does not have a metatable, or if the metatable does not
 -- have this field, pushes nothing and returns
--- @'Foreign.Lua.Constants.LUA_TNIL'@.
+-- @'Lua.Constants.LUA_TNIL'@.
 foreign import capi SAFTY "lauxlib.h luaL_getmetafield"
   luaL_getmetafield :: Lua.State
                     -> StackIndex      -- ^ obj
@@ -129,8 +129,8 @@ foreign import ccall unsafe "lualib.h luaL_openlibs"
 -- reference and its associated object.
 --
 -- If the object at the top of the stack is nil, @luaL_ref@ returns the
--- constant @'Foreign.Lua.Constants.LUA_REFNIL'@. The constant
--- @'Foreign.Lua.Constants.LUA_NOREF'@ is guaranteed to be different
+-- constant @'Lua.Constants.LUA_REFNIL'@. The constant
+-- @'Lua.Constants.LUA_NOREF'@ is guaranteed to be different
 -- from any reference returned by @luaL_ref@.
 foreign import ccall SAFTY "lauxlib.h luaL_ref"
   luaL_ref :: Lua.State -> StackIndex {- ^ t -} -> IO CInt
@@ -154,7 +154,7 @@ foreign import ccall SAFTY "lauxlib.h luaL_unref"
 
 -- | Checks whether the function argument @arg@ is a userdata of the
 -- type @tname@ (see @'luaL_newmetatable'@) and returns the userdata
--- address (see @'Foreign.Lua.lua_touserdata'@). Returns @NULL@ if the
+-- address (see @'Lua.lua_touserdata'@). Returns @NULL@ if the
 -- test fails.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#luaL_testudata>

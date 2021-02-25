@@ -1,6 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-|
-Module      : Foreign.Lua.Call
+Module      : Lua.Call
 Copyright   : © 2007–2012 Gracjan Polak;
               © 2012–2016 Ömer Sinan Ağacan;
               © 2017-2021 Albert Krewinkel
@@ -11,7 +11,7 @@ Portability : non-portable (depends on GHC)
 
 Raw bindings to function call helpers.
 -}
-module Foreign.Lua.Call
+module Lua.Call
   ( HsFunction
   , hslua_newhsfunction
   , hslua_pushhsfunction
@@ -21,7 +21,7 @@ import Foreign.C (CInt (CInt))
 import Foreign.Ptr (Ptr, castPtr, nullPtr)
 import Foreign.StablePtr (StablePtr, deRefStablePtr, newStablePtr)
 import Foreign.Storable (peek)
-import Foreign.Lua.Types
+import Lua.Types
   ( NumResults (NumResults)
   , State (State)
   )
@@ -33,7 +33,7 @@ import Foreign.Lua.Types
 #endif
 
 -- | Type of raw Haskell functions that can be made into
--- 'Foreign.Lua.CFunction's.
+-- 'Lua.CFunction's.
 type HsFunction = State -> IO NumResults
 
 -- | Retrieve the pointer to a Haskell function from the wrapping
@@ -47,7 +47,7 @@ foreign import ccall SAFTY "hslcall.c hslua_newhsfunction"
 
 -- | Pushes a Haskell operation as a Lua function. The Haskell operation
 -- is expected to follow the custom error protocol, i.e., it must signal
--- errors with @'Foreign.Lua.hslua_error'@.
+-- errors with @'Lua.hslua_error'@.
 hslua_pushhsfunction :: State -> HsFunction -> IO ()
 hslua_pushhsfunction l preCFn =
   newStablePtr preCFn >>= hslua_newhsfunction l

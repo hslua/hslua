@@ -1,6 +1,6 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-|
-Module      : Foreign.Lua.Constants
+Module      : Lua.Constants
 Copyright   : © 2007–2012 Gracjan Polak;
               © 2012–2016 Ömer Sinan Ağacan;
               © 2017-2021 Albert Krewinkel
@@ -11,7 +11,7 @@ Portability : ForeignFunctionInterface
 
 Lua constants
 -}
-module Foreign.Lua.Constants
+module Lua.Constants
   ( -- * Special values
     pattern LUA_MULTRET
     -- * Pseudo-indices
@@ -59,7 +59,7 @@ module Foreign.Lua.Constants
   ) where
 
 import Foreign.C (CInt (..))
-import Foreign.Lua.Types
+import Lua.Types
 
 #include <lua.h>
 #include <lauxlib.h>
@@ -68,7 +68,7 @@ import Foreign.Lua.Types
 -- Special values
 --
 
--- | Option for multiple returns in @'Foreign.Lua.lua_pcall'@.
+-- | Option for multiple returns in @'Lua.lua_pcall'@.
 pattern LUA_MULTRET :: NumResults
 pattern LUA_MULTRET = NumResults (#{const LUA_MULTRET})
 

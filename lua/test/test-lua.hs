@@ -21,11 +21,11 @@ import Foreign.C.String (peekCString, withCStringLen)
 import Foreign.Marshal (alloca)
 import Foreign.Ptr (Ptr, nullPtr)
 import Foreign.Storable as Storable
-import Foreign.Lua
-import Foreign.Lua.Call
+import Lua
+import Lua.Call
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit (Assertion, HasCallStack, assertBool, testCase, (@=?))
-import qualified Foreign.Lua.UnsafeTests
+import qualified Lua.UnsafeTests
 
 -- | Runs tests.
 main :: IO ()
@@ -390,7 +390,7 @@ tests = testGroup "lua"
 #endif
     ]
 
-  , Foreign.Lua.UnsafeTests.tests
+  , Lua.UnsafeTests.tests
   ]
 
 infix  3 =:

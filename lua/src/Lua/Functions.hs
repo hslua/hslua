@@ -1,6 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-|
-Module      : Foreign.Lua.Functions
+Module      : Lua.Functions
 Copyright   : © 2007–2012 Gracjan Polak;
               © 2012–2016 Ömer Sinan Ağacan;
               © 2017-2021 Albert Krewinkel
@@ -25,7 +25,7 @@ However, all function can trigger garbage collection. If that can lead
 to problems, then the package should be configured without flag
 @allow-unsafe-gc@.
 -}
-module Foreign.Lua.Functions
+module Lua.Functions
   ( lua_absindex
   , lua_checkstack
   , lua_close
@@ -88,15 +88,15 @@ module Foreign.Lua.Functions
   , lua_touserdata
   , lua_type
   , lua_typename
-  , module Foreign.Lua.Ersatz.Functions
-  , module Foreign.Lua.Ersatz.Auxiliary
+  , module Lua.Ersatz.Functions
+  , module Lua.Ersatz.Auxiliary
   )
 where
 
 import Foreign.C
-import Foreign.Lua.Ersatz.Auxiliary
-import Foreign.Lua.Ersatz.Functions
-import Foreign.Lua.Types as Lua
+import Lua.Ersatz.Auxiliary
+import Lua.Ersatz.Functions
+import Lua.Types as Lua
 import Foreign.Ptr
 
 #ifdef ALLOW_UNSAFE_GC
@@ -177,7 +177,7 @@ foreign import ccall safe "lua.h lua_gc"
 -- __WARNING__: @lua_getglobal@ is unsafe in Haskell: if the call to a
 -- metamethod triggers an error, then that error cannot be handled and
 -- will lead to an unrecoverable program crash. Consider using the
--- @'Foreign.Lua.hslua_getglobal'@ ersatz function instead. Likewise, the
+-- @'Lua.hslua_getglobal'@ ersatz function instead. Likewise, the
 -- metamethod may not call a Haskell function unless the library was
 -- compiled without @allow-unsafe-gc@.
 --
@@ -210,7 +210,7 @@ foreign import ccall unsafe "lua.h lua_getmetatable"
 -- __WARNING__: @lua_gettable@ is unsafe in Haskell: if the call to a
 -- metamethod triggers an error, then that error cannot be handled and
 -- will lead to an unrecoverable program crash. Consider using the
--- @'Foreign.Lua.hslua_gettable'@ ersatz function instead. Likewise, the
+-- @'Lua.hslua_gettable'@ ersatz function instead. Likewise, the
 -- metamethod may not call a Haskell function unless the library was
 -- compiled without @allow-unsafe-gc@.
 --
@@ -239,96 +239,96 @@ foreign import ccall unsafe "lua.h lua_gettop"
 foreign import capi unsafe "lua.h lua_insert"
   lua_insert :: Lua.State -> StackIndex -> IO ()
 
--- | Returns @'Foreign.Lua.TRUE'@ if the value at the given index is a
--- boolean, and @'Foreign.Lua.FALSE'@ otherwise.
+-- | Returns @'Lua.TRUE'@ if the value at the given index is a
+-- boolean, and @'Lua.FALSE'@ otherwise.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isboolean>
 foreign import capi unsafe "lua.h lua_isboolean"
   lua_isboolean :: Lua.State -> StackIndex -> IO LuaBool
 
--- | Returns @'Foreign.Lua.TRUE'@ if the value at the given index is a C
--- function, and @'Foreign.Lua.FALSE'@ otherwise.
+-- | Returns @'Lua.TRUE'@ if the value at the given index is a C
+-- function, and @'Lua.FALSE'@ otherwise.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_iscfunction>
 foreign import ccall unsafe "lua.h lua_iscfunction"
   lua_iscfunction :: Lua.State -> StackIndex -> IO LuaBool
 
--- | Returns @'Foreign.Lua.TRUE'@ if the value at the given index is a
--- function (either C or Lua), and @'Foreign.Lua.FALSE'@ otherwise.
+-- | Returns @'Lua.TRUE'@ if the value at the given index is a
+-- function (either C or Lua), and @'Lua.FALSE'@ otherwise.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isfunction>
 foreign import capi unsafe "lua.h lua_isfunction"
   lua_isfunction :: Lua.State -> StackIndex -> IO LuaBool
 
--- | Returns @'Foreign.Lua.TRUE'@ if the value at the given index is an
+-- | Returns @'Lua.TRUE'@ if the value at the given index is an
 -- integer (that is, the value is a number and is represented as an
--- integer), and @'Foreign.Lua.FALSE'@ otherwise.
+-- integer), and @'Lua.FALSE'@ otherwise.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isinteger>
 foreign import ccall unsafe "lua.h lua_isinteger"
   lua_isinteger :: Lua.State -> StackIndex -> IO LuaBool
 
--- | Returns @'Foreign.Lua.TRUE'@ if the value at the given index is a
--- light userdata, and @'Foreign.Lua.FALSE'@ otherwise.
+-- | Returns @'Lua.TRUE'@ if the value at the given index is a
+-- light userdata, and @'Lua.FALSE'@ otherwise.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_islightuserdata>
 foreign import capi unsafe "lua.h lua_islightuserdata"
   lua_islightuserdata :: Lua.State -> StackIndex -> IO LuaBool
 
--- | Returns @'Foreign.Lua.TRUE'@ if the value at the given index is
--- __nil__, and @'Foreign.Lua.FALSE'@ otherwise.
+-- | Returns @'Lua.TRUE'@ if the value at the given index is
+-- __nil__, and @'Lua.FALSE'@ otherwise.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isnil>
 foreign import capi unsafe "lua.h lua_isnil"
   lua_isnil :: Lua.State -> StackIndex -> IO LuaBool
 
--- | Returns @'Foreign.Lua.TRUE'@ if the given index is not valid, and
--- @'Foreign.Lua.FALSE'@ otherwise.
+-- | Returns @'Lua.TRUE'@ if the given index is not valid, and
+-- @'Lua.FALSE'@ otherwise.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isnone>
 foreign import capi unsafe "lua.h lua_isnone"
   lua_isnone :: Lua.State -> StackIndex -> IO LuaBool
 
--- | Returns @'Foreign.Lua.TRUE'@ if the given index is not valid or if
--- the value at the given index is __nil__, and @'Foreign.Lua.FALSE'@
+-- | Returns @'Lua.TRUE'@ if the given index is not valid or if
+-- the value at the given index is __nil__, and @'Lua.FALSE'@
 -- otherwise.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isnoneornil>
 foreign import capi unsafe "lua.h lua_isnoneornil"
   lua_isnoneornil :: Lua.State -> StackIndex -> IO LuaBool
 
--- | Returns @'Foreign.Lua.TRUE'@ if the value at the given index is a
--- number or a string convertible to a number, and @'Foreign.Lua.FALSE'@
+-- | Returns @'Lua.TRUE'@ if the value at the given index is a
+-- number or a string convertible to a number, and @'Lua.FALSE'@
 -- otherwise.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isnumber>
 foreign import ccall unsafe "lua.h lua_isnumber"
   lua_isnumber :: Lua.State -> StackIndex -> IO LuaBool
 
--- | Returns @'Foreign.Lua.TRUE'@ if the value at the given index is a
+-- | Returns @'Lua.TRUE'@ if the value at the given index is a
 -- string or a number (which is always convertible to a string), and
--- @'Foreign.Lua.FALSE'@ otherwise.
+-- @'Lua.FALSE'@ otherwise.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isstring>
 foreign import ccall unsafe "lua.h lua_isstring"
   lua_isstring :: Lua.State -> StackIndex -> IO LuaBool
 
--- | Returns @'Foreign.Lua.TRUE'@ if the value at the given index is a
--- table, and @'Foreign.Lua.FALSE'@ otherwise.
+-- | Returns @'Lua.TRUE'@ if the value at the given index is a
+-- table, and @'Lua.FALSE'@ otherwise.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_istable>
 foreign import capi unsafe "lua.h lua_istable"
   lua_istable :: Lua.State -> StackIndex -> IO LuaBool
 
--- | Returns @'Foreign.Lua.TRUE'@ if the value at the given index is a
--- thread, and @'Foreign.Lua.FALSE'@ otherwise.
+-- | Returns @'Lua.TRUE'@ if the value at the given index is a
+-- thread, and @'Lua.FALSE'@ otherwise.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isthread>
 foreign import capi unsafe "lua.h lua_isthread"
   lua_isthread :: Lua.State -> StackIndex -> IO LuaBool
 
--- | Returns @'Foreign.Lua.TRUE'@ if the value at the given index is a
--- userdata (either full or light), and @'Foreign.Lua.FALSE'@ otherwise.
+-- | Returns @'Lua.TRUE'@ if the value at the given index is a
+-- userdata (either full or light), and @'Lua.FALSE'@ otherwise.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isuserdata>
 foreign import ccall unsafe "lua.h lua_isuserdata"
@@ -340,10 +340,10 @@ foreign import ccall unsafe "lua.h lua_isuserdata"
 --
 -- The return values of @lua_load@ are:
 --
--- - @'Foreign.Lua.LUA_OK'@: no errors;
--- - @'Foreign.Lua.LUA_ERRSYNTAX'@: syntax error during pre-compilation;
--- - @'Foreign.Lua.LUA_ERRMEM'@: memory allocation error;
--- - @'Foreign.Lua.LUA_ERRGCMM'@: error while running a @__gc@
+-- - @'Lua.LUA_OK'@: no errors;
+-- - @'Lua.LUA_ERRSYNTAX'@: syntax error during pre-compilation;
+-- - @'Lua.LUA_ERRMEM'@: memory allocation error;
+-- - @'Lua.LUA_ERRGCMM'@: error while running a @__gc@
 --   metamethod. (This error has no relation with the chunk being
 --   loaded. It is generated by the garbage collector.)
 --
@@ -407,7 +407,7 @@ foreign import ccall SAFTY "lua.h lua_newuserdata"
 -- and the function value are popped from the stack when the function is
 -- called. The function results are pushed onto the stack when the
 -- function returns. The number of results is adjusted to @nresults@,
--- unless @nresults@ is @'Foreign.Lua.LUA_MULTRET'@. In this case, all
+-- unless @nresults@ is @'Lua.LUA_MULTRET'@. In this case, all
 -- results from the function are pushed. Lua takes care that the
 -- returned values fit into the stack space. The function results are
 -- pushed onto the stack in direct order (the first result is pushed
@@ -614,7 +614,7 @@ foreign import capi unsafe "lua.h lua_replace"
 -- __WARNING__: @lua_setglobal@ is unsafe in Haskell: if the call to a
 -- metamethod triggers an error, then that error cannot be handled and
 -- will lead to an unrecoverable program crash. Consider using the
--- @'Foreign.Lua.hslua_setglobal'@ ersatz function instead. Likewise,
+-- @'Lua.hslua_setglobal'@ ersatz function instead. Likewise,
 -- the global metamethod may not call a Haskell function unless the
 -- library was compiled without @allow-unsafe-gc@.
 --
@@ -644,7 +644,7 @@ foreign import ccall unsafe "lua.h lua_setmetatable"
 -- __WARNING__: @lua_settable@ is unsafe in Haskell: if the call to a
 -- metamethod triggers an error, then that error cannot be handled and
 -- will lead to an unrecoverable program crash. Consider using the
--- @'Foreign.Lua.hslua_settable'@ ersatz function instead. Likewise, the
+-- @'Lua.hslua_settable'@ ersatz function instead. Likewise, the
 -- metamethod may not call a Haskell function unless the library was
 -- compiled without @allow-unsafe-gc@.
 --
@@ -667,15 +667,15 @@ foreign import ccall unsafe "lua.h lua_settop"
 
 -- |  Returns the status of this Lua thread.
 --
--- The status can be @'Foreign.Lua.LUA_OK'@ for a normal thread, an
+-- The status can be @'Lua.LUA_OK'@ for a normal thread, an
 -- error value if the thread finished the execution of a @lua_resume@
--- with an error, or @'Foreign.Lua.LUA_YIELD'@ if the thread is
+-- with an error, or @'Lua.LUA_YIELD'@ if the thread is
 -- suspended.
 --
 -- You can only call functions in threads with status
--- @'Foreign.Lua.LUA_OK'@. You can resume threads with status
--- @'Foreign.Lua.LUA_OK'@ (to start a new coroutine) or
--- @'Foreign.Lua.LUA_YIELD'@ (to resume a coroutine).
+-- @'Lua.LUA_OK'@. You can resume threads with status
+-- @'Lua.LUA_OK'@ (to start a new coroutine) or
+-- @'Lua.LUA_YIELD'@ (to resume a coroutine).
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_status>.
 foreign import ccall unsafe "lua.h lua_status"
@@ -785,7 +785,7 @@ foreign import ccall unsafe "lua.h lua_touserdata"
   lua_touserdata :: Lua.State -> StackIndex -> IO (Ptr a)
 
 -- | Returns the type of the value in the given valid index, or
--- @'Foreign.Lua.LUA_TNONE'@ for a non-valid (but acceptable) index.
+-- @'Lua.LUA_TNONE'@ for a non-valid (but acceptable) index.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_type>
 foreign import ccall unsafe "lua.h lua_type"

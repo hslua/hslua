@@ -11,7 +11,7 @@ Portability : non-portable (depends on GHC)
 Functions and utilities enabling the seamless integration of a Lua
 interpreter into a Haskell project.
 
-Basic access to the Lua API is provided by @'Foreign.Lua.Core'@ from
+Basic access to the Lua API is provided by @'Lua.Core'@ from
 Hackage package /lua/.
 -}
 module HsLua (

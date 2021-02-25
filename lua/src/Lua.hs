@@ -1,6 +1,6 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-|
-Module      : Foreign.Lua
+Module      : Lua
 Copyright   : © 2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
@@ -32,7 +32,7 @@ problems if Haskell functions are used as part of finalizers (i.e.,
 @__gc@ metamethods). Haskell in finalizers is not supported by default,
 but can be enabled by unsetting the @allow-unsafe-gc@ flag.
 -}
-module Foreign.Lua
+module Lua
   ( -- * Run Lua operations
     withNewState
     -- * Types
@@ -213,13 +213,13 @@ module Foreign.Lua
   ) where
 
 import Foreign.C (CInt)
-import Foreign.Lua.Auxiliary
-import Foreign.Lua.Constants
-import Foreign.Lua.Ersatz.Functions
-import Foreign.Lua.Ersatz.Auxiliary
-import Foreign.Lua.Functions
-import Foreign.Lua.Lib
-import Foreign.Lua.Types as Lua
+import Lua.Auxiliary
+import Lua.Constants
+import Lua.Ersatz.Functions
+import Lua.Ersatz.Auxiliary
+import Lua.Functions
+import Lua.Lib
+import Lua.Types as Lua
 
 -- | Runs operations on a new Lua @'Lua.State'@. The state is created
 -- when the function is called and closed on return. The state, and all

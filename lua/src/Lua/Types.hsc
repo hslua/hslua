@@ -2,7 +2,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE PatternSynonyms            #-}
 {-|
-Module      : Foreign.Lua.Types
+Module      : Lua.Types
 Copyright   : © 2007–2012 Gracjan Polak;
               © 2012–2016 Ömer Sinan Ağacan;
               © 2017-2021 Albert Krewinkel
@@ -13,7 +13,7 @@ Portability : non-portable (depends on GHC)
 
 The core Lua types, including mappings of Lua types to Haskell.
 -}
-module Foreign.Lua.Types
+module Lua.Types
   ( State (..)
   , Reader
   , TypeCode (..)
@@ -56,10 +56,10 @@ newtype State = State (Ptr ()) deriving (Eq, Generic)
 -- following protocol, which defines the way parameters and results are
 -- passed: a C function receives its arguments from Lua in its stack in
 -- direct order (the first argument is pushed first). So, when the
--- function starts, @'Foreign.Lua.Core.Functions.gettop'@ returns the
+-- function starts, @'Lua.Core.Functions.gettop'@ returns the
 -- number of arguments received by the function. The first argument (if
 -- any) is at index 1 and its last argument is at index
--- @'Foreign.Lua.Core.Functions.gettop'@. To return values to Lua, a C
+-- @'Lua.Core.Functions.gettop'@. To return values to Lua, a C
 -- function just pushes them onto the stack, in direct order (the first
 -- result is pushed first), and returns the number of results. Any other
 -- value in the stack below the results will be properly discarded by
@@ -70,7 +70,7 @@ newtype State = State (Ptr ()) deriving (Eq, Generic)
 -- <https://www.lua.org/manual/5.3/manual.html#lua_CFunction lua_CFunction>.
 type CFunction = FunPtr (State -> IO NumResults)
 
--- | The reader function used by @'Foreign.Lua.load'@.
+-- | The reader function used by @'Lua.load'@.
 -- Every time it needs another piece of the chunk, lua_load calls the
 -- reader, passing along its data parameter. The reader must return a
 -- pointer to a block of memory with a new piece of the chunk and set

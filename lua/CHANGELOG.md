@@ -6,13 +6,13 @@
 
 Release pending.
 
-- Module hierarchy moved from `Foreign.Lua.Raw` to `Foreign.Lua`.
+- Module hierarchy moved from `Foreign.Lua.Raw` to `Lua`.
 
 - Documentation has been improved.
 
 - Added new function `withNewState` to run Lua operations.
 
-- New modules `Foreign.Lua.Ersatz` containing all bindings to safe
+- New modules `Lua.Ersatz` containing all bindings to safe
   ersatz functions.
 
 - Higher level and enum types have been removed, only the

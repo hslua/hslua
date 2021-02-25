@@ -5,5 +5,5 @@
 #include <HsFFI.h>
 #include <lua.h>
 
-/*  exported from Foreign.Lua.Raw.Call */
+/*  exported from Lua.Call */
 int hslua_callhsfun(lua_State *L);

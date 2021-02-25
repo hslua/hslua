@@ -1,5 +1,5 @@
 {-|
-Module      : Foreign.Lua.Lib
+Module      : Lua.Lib
 Copyright   : © 2007–2012 Gracjan Polak;
               © 2012–2016 Ömer Sinan Ağacan;
               © 2017-2021 Albert Krewinkel
@@ -10,7 +10,7 @@ Portability : ForeignFunctionInterface, CPP
 
 Lua standard libraries.
 -}
-module Foreign.Lua.Lib
+module Lua.Lib
   ( luaopen_base
   , luaopen_table
   , luaopen_io
@@ -22,7 +22,7 @@ module Foreign.Lua.Lib
   )
 where
 
-import Foreign.Lua.Types (CFunction)
+import Lua.Types (CFunction)
 
 -- * Lua Libraries
 

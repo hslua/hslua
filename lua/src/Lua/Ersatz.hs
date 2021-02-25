@@ -1,5 +1,5 @@
 {-|
-Module      : Foreign.Lua.Ersatz
+Module      : Lua.Ersatz
 Copyright   : © 2007–2012 Gracjan Polak;
               © 2012–2016 Ömer Sinan Ağacan;
               © 2017-2021 Albert Krewinkel
@@ -10,7 +10,7 @@ Stability   : beta
 Ersatz functions for Lua API items which may, directly or indirectly,
 throw a Lua error.
 -}
-module Foreign.Lua.Ersatz
+module Lua.Ersatz
   ( -- * Get functions (Lua -> stack)
     hslua_gettable
   , hslua_getglobal
@@ -27,5 +27,5 @@ module Foreign.Lua.Ersatz
   , hsluaL_tolstring
   )where
 
-import Foreign.Lua.Ersatz.Functions
-import Foreign.Lua.Ersatz.Auxiliary (hsluaL_newstate, hsluaL_tolstring)
+import Lua.Ersatz.Functions
+import Lua.Ersatz.Auxiliary (hsluaL_newstate, hsluaL_tolstring)

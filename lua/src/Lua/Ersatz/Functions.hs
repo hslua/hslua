@@ -1,6 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-|
-Module      : Foreign.Lua.Ersatz.Functions
+Module      : Lua.Ersatz.Functions
 Copyright   : © 2007–2012 Gracjan Polak;
               © 2012–2016 Ömer Sinan Ağacan;
               © 2017-2021 Albert Krewinkel
@@ -12,7 +12,7 @@ Portability : ForeignFunctionInterface, CPP
 Ersatz functions for Lua API items which may, directly or indirectly,
 throw a Lua error.
 -}
-module Foreign.Lua.Ersatz.Functions
+module Lua.Ersatz.Functions
   ( hslua_compare
     -- * Get functions (Lua -> stack)
   , hslua_gettable
@@ -27,7 +27,7 @@ module Foreign.Lua.Ersatz.Functions
   )where
 
 import Foreign.C
-import Foreign.Lua.Types as Lua
+import Lua.Types as Lua
 import Foreign.Ptr
 
 #ifdef ALLOW_UNSAFE_GC
@@ -44,9 +44,9 @@ import Foreign.Ptr
 --
 -- The value of op must be one of the following constants:
 --
---  - 'Foreign.Lua.Constants.LUA_OPEQ': compares for equality (==)
---  - 'Foreign.Lua.Constants.LUA_OPLT': compares for less than (<)
---  - 'Foreign.Lua.Constants.LUA_OPLE': compares for less or equal (<=)
+--  - 'Lua.Constants.LUA_OPEQ': compares for equality (==)
+--  - 'Lua.Constants.LUA_OPLT': compares for less than (<)
+--  - 'Lua.Constants.LUA_OPLE': compares for less or equal (<=)
 --
 -- This function wraps @lua_compare@ and takes an additional parameter
 -- @status@; if it is not @NULL@, then the return value is set to the
@@ -63,16 +63,16 @@ foreign import capi safe "hslua.h hslua_compare"
 -- Get functions (Lua -> stack)
 --
 
--- | Behaves like @'Foreign.Lua.Functions.lua_gettable'@, but prevents
+-- | Behaves like @'Lua.Functions.lua_gettable'@, but prevents
 -- unrecoverable program crashes by calling that function through
--- @'Foreign.Lua.lua_pcall'@. Takes an additional status code pointer
+-- @'Lua.lua_pcall'@. Takes an additional status code pointer
 -- that is set to the status returned by @lua_pcall@.
 foreign import ccall safe "hslua.h hslua_gettable"
   hslua_gettable :: Lua.State -> StackIndex -> Ptr StatusCode -> IO TypeCode
 
--- | Behaves like @'Foreign.Lua.Functions.lua_getglobal'@, but prevents
+-- | Behaves like @'Lua.Functions.lua_getglobal'@, but prevents
 -- unrecoverable program crashes by calling that function through
--- @'Foreign.Lua.lua_pcall'@. Takes an additional status code pointer
+-- @'Lua.lua_pcall'@. Takes an additional status code pointer
 -- that is set to the status returned by @lua_pcall@.
 foreign import ccall safe "hslua.h hslua_getglobal"
   hslua_getglobal :: Lua.State
@@ -85,16 +85,16 @@ foreign import ccall safe "hslua.h hslua_getglobal"
 -- Set functions (stack -> Lua)
 --
 
--- | Behaves like @'Foreign.Lua.Functions.lua_settable'@, but prevents
+-- | Behaves like @'Lua.Functions.lua_settable'@, but prevents
 -- unrecoverable program crashes by calling that function through
--- @'Foreign.Lua.lua_pcall'@. Takes an additional status code pointer
+-- @'Lua.lua_pcall'@. Takes an additional status code pointer
 -- that is set to the status returned by @lua_pcall@.
 foreign import ccall safe "hslua.h hslua_settable"
   hslua_settable :: Lua.State -> StackIndex -> Ptr StatusCode -> IO ()
 
--- | Behaves like @'Foreign.Lua.Functions.lua_setglobal'@, but prevents
+-- | Behaves like @'Lua.Functions.lua_setglobal'@, but prevents
 -- unrecoverable program crashes by calling that function through
--- @'Foreign.Lua.lua_pcall'@. Takes an additional status code pointer
+-- @'Lua.lua_pcall'@. Takes an additional status code pointer
 -- that is set to the status returned by @lua_pcall@.
 foreign import ccall safe "hslua.h hslua_setglobal"
   hslua_setglobal :: Lua.State -> CString -> CSize -> Ptr StatusCode -> IO ()

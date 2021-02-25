@@ -13,8 +13,8 @@
 - ignore:
     name: "Use camelCase"
     within:
-      - "Foreign.Lua.Call"
-      - "Foreign.Lua.Userdata"
+      - "Lua.Call"
+      - "Lua.Userdata"
 
 
 - modules:

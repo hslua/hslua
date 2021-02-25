@@ -9,12 +9,12 @@ Stability   : beta
 
 Tests for bindings to unsafe functions.
 -}
-module Foreign.Lua.UnsafeTests (tests) where
+module Lua.UnsafeTests (tests) where
 
 import Foreign.C.String (withCString, withCStringLen)
 import Foreign.Ptr (nullPtr)
-import Foreign.Lua
-import Foreign.Lua.Functions
+import Lua
+import Lua.Functions
   ( lua_getglobal, lua_gettable, lua_setglobal, lua_settable )
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (Assertion, HasCallStack, testCase, (@=?) )

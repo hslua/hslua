@@ -44,7 +44,7 @@ import Data.Data (Data, dataTypeName, dataTypeOf)
 import Foreign.C (withCString)
 import HsLua.Core (Lua, nth)
 import HsLua.Core.Types (liftLua, fromLuaBool)
-import Foreign.Lua.Userdata
+import Lua.Userdata
   ( hslua_fromuserdata
   , hslua_newhsuserdata
   , hslua_newudmetatable
