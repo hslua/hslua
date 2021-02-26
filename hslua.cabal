@@ -111,9 +111,9 @@ test-suite test-hslua
                      , HsLua.Types.PushableTests
                      , HsLua.UserdataTests
                      , HsLua.UtilTests
-                     , Test.HsLua.Arbitrary
                      , Test.Tasty.HsLua
   build-depends:       hslua
+                     , lua-arbitrary        >= 1.0
                      , QuickCheck           >= 2.7
                      , quickcheck-instances >= 0.3
                      , tasty                >= 0.11

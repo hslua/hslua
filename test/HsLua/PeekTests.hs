@@ -16,7 +16,7 @@ import Control.Monad (forM_, zipWithM_)
 import Data.Either (isLeft)
 import HsLua.Peek
 
-import Test.HsLua.Arbitrary ()
+import Lua.Arbitrary ()
 import Test.Tasty.HsLua ( (=:), pushLuaExpr, shouldBeResultOf
                        , shouldHoldForResultOf)
 import Test.QuickCheck.Instances ()

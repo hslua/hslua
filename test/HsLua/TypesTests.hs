@@ -28,7 +28,7 @@ import Data.ByteString (ByteString)
 import Data.Map (Map)
 import Data.Set (Set)
 import HsLua as Lua
-import Test.HsLua.Arbitrary ()
+import Lua.Arbitrary ()
 import Test.QuickCheck
 import Test.QuickCheck.Instances ()
 import Test.QuickCheck.Monadic as QCMonadic

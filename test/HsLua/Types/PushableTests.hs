@@ -16,7 +16,7 @@ import Data.ByteString (ByteString)
 import HsLua (Pushable (push), gettop, equal, nth)
 import Foreign.StablePtr (castStablePtrToPtr, freeStablePtr, newStablePtr)
 
-import Test.HsLua.Arbitrary ()
+import Lua.Arbitrary ()
 import Test.Tasty.HsLua (pushLuaExpr)
 import Test.QuickCheck (Property)
 import Test.QuickCheck.Instances ()

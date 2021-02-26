@@ -19,7 +19,7 @@ import Data.Maybe (fromMaybe)
 import HsLua.Core (Lua, Number)
 import HsLua.Push
 
-import Test.HsLua.Arbitrary ()
+import Lua.Arbitrary ()
 import Test.Tasty.HsLua ((=:), pushLuaExpr)
 import Test.QuickCheck.Instances ()
 import Test.QuickCheck.Monadic (monadicIO, run, assert)

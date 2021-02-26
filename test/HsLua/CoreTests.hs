@@ -19,7 +19,7 @@ import Control.Monad (forM_)
 import Data.Maybe (fromMaybe)
 import Lua.Lib (luaopen_debug)
 import HsLua.Core as Lua
-import Test.HsLua.Arbitrary ()
+import Lua.Arbitrary ()
 import Test.Tasty.HsLua ( (?:), (=:), shouldBeErrorMessageOf, shouldBeResultOf
                        , shouldHoldForResultOf, pushLuaExpr )
 import Test.QuickCheck (Property, (.&&.))
@@ -397,8 +397,8 @@ tests = testGroup "Core module"
       assert $ luaCmp == (n1 < n2)
 
   , testProperty "order of Lua types is consistent" $ \ lt1 lt2 ->
-      let n1 = fromType lt1
-          n2 = fromType lt2
+      let n1 = toType lt1
+          n2 = toType lt2
       in Prelude.compare n1 n2 == Prelude.compare lt1 lt2
 
   , testCase "boolean values are correct" $ do
