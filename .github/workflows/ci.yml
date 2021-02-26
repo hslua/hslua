@@ -116,7 +116,7 @@ jobs:
 
 
     - name: Build HsLua.Core
-      working-directory: core
+      working-directory: hslua-core
       run: |
         cabal v2-configure \
           --flags "${{ matrix.versions.flags }}" \
@@ -127,10 +127,20 @@ jobs:
         cabal v2-build
 
     - name: Test HsLua.Core
-      working-directory: core
+      working-directory: hslua-core
       run: |
         cabal v2-test --enable-tests
 
+
+    - name: Build tasty-hslua
+      working-directory: tasty-hslua
+      run: |
+        cabal v2-configure \
+          --flags "${{ matrix.versions.flags }}" \
+          --disable-optimization \
+          --extra-include-dirs=${HOME}/usr/include \
+          --extra-lib-dirs=${HOME}/usr/lib
+        cabal v2-build
 
     - name: Build HsLua
       run: |
@@ -145,13 +155,3 @@ jobs:
     - name: Test HsLua
       run: |
         cabal v2-test --enable-tests
-
-    - name: Build tasty-hslua
-      working-directory: tasty
-      run: |
-        cabal v2-configure \
-          --flags "${{ matrix.versions.flags }}" \
-          --disable-optimization \
-          --extra-include-dirs=${HOME}/usr/include \
-          --extra-lib-dirs=${HOME}/usr/lib
-        cabal v2-build

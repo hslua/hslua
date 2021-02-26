@@ -1,0 +1,1 @@
+../../../../hslua-core/test/Test/Tasty/HsLua.hs
