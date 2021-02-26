@@ -87,8 +87,7 @@ jobs:
         make install INSTALL_TOP=${HOME}/usr
         cd ..
 
-    - name: Build Lua
-      working-directory: lua
+    - name: Configure
       run: |
         cabal v2-configure \
           --flags "${{ matrix.versions.flags }}" \
@@ -96,62 +95,9 @@ jobs:
           --disable-optimization \
           --extra-include-dirs=${HOME}/usr/include \
           --extra-lib-dirs=${HOME}/usr/lib
-        cabal v2-build
 
-    - name: Test Lua
-      working-directory: lua
-      run: |
-        cabal v2-test --enable-tests
+    - name: Build all
+      run: cabal v2-build all
 
-    - name: Build lua-arbitrary
-      working-directory: lua-arbitrary
-      run: |
-        cabal v2-configure \
-          --flags "${{ matrix.versions.flags }}" \
-          --enable-tests \
-          --disable-optimization \
-          --extra-include-dirs=${HOME}/usr/include \
-          --extra-lib-dirs=${HOME}/usr/lib
-        cabal v2-build
-
-
-    - name: Build HsLua.Core
-      working-directory: hslua-core
-      run: |
-        cabal v2-configure \
-          --flags "${{ matrix.versions.flags }}" \
-          --enable-tests \
-          --disable-optimization \
-          --extra-include-dirs=${HOME}/usr/include \
-          --extra-lib-dirs=${HOME}/usr/lib
-        cabal v2-build
-
-    - name: Test HsLua.Core
-      working-directory: hslua-core
-      run: |
-        cabal v2-test --enable-tests
-
-
-    - name: Build tasty-hslua
-      working-directory: tasty-hslua
-      run: |
-        cabal v2-configure \
-          --flags "${{ matrix.versions.flags }}" \
-          --disable-optimization \
-          --extra-include-dirs=${HOME}/usr/include \
-          --extra-lib-dirs=${HOME}/usr/lib
-        cabal v2-build
-
-    - name: Build HsLua
-      run: |
-        cabal v2-configure \
-          --flags "${{ matrix.versions.flags }}" \
-          --enable-tests \
-          --disable-optimization \
-          --extra-include-dirs=${HOME}/usr/include \
-          --extra-lib-dirs=${HOME}/usr/lib
-        cabal v2-build
-
-    - name: Test HsLua
-      run: |
-        cabal v2-test --enable-tests
+    - name: Test all
+      run: cabal v2-test all

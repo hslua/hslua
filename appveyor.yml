@@ -24,6 +24,8 @@ before_test:
 
   - curl -sS -ostack.zip -L --insecure https://get.haskellstack.org/stable/windows-x86_64.zip
   - 7z x stack.zip stack.exe
+  # Copy file, symlinking is broken on Windows
+  - 'copy /Y hslua-core\test\Test\Tasty\HsLua.hs tasty-hslua\src\Test\Tasty\HsLua.hs'
 
 test_script:
   # The ugly echo "" hack is to avoid complaints about 0 being an invalid file

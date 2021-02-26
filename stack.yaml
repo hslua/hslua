@@ -1,5 +1,8 @@
 flags: {}
 packages:
-- '.'
+- 'hslua'
+- 'hslua-core'
 - 'lua'
+- 'lua-arbitrary'
+- 'tasty-hslua'
 resolver: 'lts-17.4'
