@@ -131,43 +131,6 @@ tests = testGroup "lua integration tests"
     , ("table", opentable)
     ]
 
-  , testGroup "C functions"
-    [ testCase "Registering a C function and calling it from Lua" $
-      let comp :: Lua [String]
-          comp = do
-            fn <- newCFunction (return . words :: String -> Lua [String])
-            register "words" fn
-            res <- dostring "return words('Caffeine induced nonsense')"
-            freeCFunction fn
-            if res == OK
-              then peek (-1)
-              else throwException "Error in words function."
-      in assertEqual "greeting function failed"
-          (Right ["Caffeine", "induced", "nonsense"])
-          =<< (runEither comp :: IO (Either Lua.Exception [String]))
-
-    , testCase "pushing a C closure to and calling it from Lua" $
-      -- Closures would usually be defined on the Haskell side, unless the
-      -- upvalues cannot be read from the stack (e.g., a lua function).
-      let greeter :: String -> HaskellFunction
-          greeter greetee = do
-            greeting <- peek (upvalueindex 1)
-            push (greeting ++ (", " :: String) ++ greetee ++ ("!" :: String))
-            return 1
-
-          comp :: Lua String
-          comp = do
-            fn <- newCFunction (greeter "World")
-            push ("Hello" :: String)
-            pushcclosure fn 1
-            call 0 multret
-            freeCFunction fn
-            peek (-1)
-
-      in assertEqual "greeting function failed" (Right "Hello, World!") =<<
-         (runEither comp :: IO (Either Lua.Exception String))
-    ]
-
   , testGroup "error handling"
     [ "catching error of a failing meta method" =:
       isLeft `shouldHoldForResultOf`
