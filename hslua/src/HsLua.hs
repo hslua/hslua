@@ -34,8 +34,6 @@ module HsLua (
   , ToHaskellFunction (..)
   , toHaskellFunction
   , callFunc
-  , newCFunction
-  , freeCFunction
   , pushHaskellFunction
   , registerHaskellFunction
   -- * Utility functions and types

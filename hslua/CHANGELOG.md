@@ -33,6 +33,11 @@ Release pending.
 
 - Moved module Utf8 from the base level into Core.
 
+- Removed functions `newCFunction`, `freeCFunction`. Use
+  `pushHaskellFunction` instead, it takes care of garbage
+  collection.
+
+
 ### 1.3.0.1
 
 Released 2021-02-06.

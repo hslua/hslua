@@ -6,7 +6,7 @@
 Module      : HsLua.FunctionCalling
 Copyright   : © 2007–2012 Gracjan Polak,
                 2012–2016 Ömer Sinan Ağacan,
-                2017-2020 Albert Krewinkel
+                2017-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta
@@ -23,20 +23,16 @@ module HsLua.FunctionCalling
   , PreCFunction
   , toHaskellFunction
   , callFunc
-  , freeCFunction
-  , newCFunction
   , pushHaskellFunction
   , pushPreCFunction
   , registerHaskellFunction
   ) where
 
-import Foreign.C (CInt (..))
 import HsLua.Core as Lua
 import HsLua.Core.Types (liftLua)
 import Lua.Call (hslua_pushhsfunction)
 import HsLua.Types
 import HsLua.Util (getglobal', popValue)
-import Foreign.Ptr (freeHaskellFunPtr)
 
 -- | Type of raw Haskell functions that can be made into
 -- 'CFunction's.
@@ -92,21 +88,6 @@ toHaskellFunction a = do
   let ctx = "Error during function call: "
   Lua.exceptionToError errConv . Lua.addContextToException errConv ctx $
     toHsFun 1 a
-
--- | Create new foreign Lua function. Function created can be called by
--- the Lua engine. Remeber to free the pointer with @freecfunction@.
-newCFunction :: ToHaskellFunction a => a -> Lua CFunction
-newCFunction f = do
-  e2e <- Lua.errorConversion
-  liftIO . mkWrapper . flip (Lua.runWithConverter e2e) . toHaskellFunction $ f
-
--- | Turn a @'PreCFunction'@ into an actual @'CFunction'@.
-foreign import ccall unsafe "wrapper"
-  mkWrapper :: PreCFunction -> IO CFunction
-
--- | Free function pointer created with @newcfunction@.
-freeCFunction :: CFunction -> Lua ()
-freeCFunction = liftIO . freeHaskellFunPtr
 
 -- | Helper class used to make lua functions useable from haskell
 class LuaCallFunc a where
