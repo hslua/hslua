@@ -10,6 +10,7 @@ on:
       - 'appveyor.yml'
       - 'stack.yaml'
       - '**/CHANGELOG.md'
+      - '**/FUNDING.md'
       - '**/LICENSE'
       - '**/README.md'
   push:
@@ -19,6 +20,7 @@ on:
       - 'appveyor.yml'
       - 'stack.yaml'
       - '**/CHANGELOG.md'
+      - '**/FUNDING.md'
       - '**/LICENSE'
       - '**/README.md'
 
