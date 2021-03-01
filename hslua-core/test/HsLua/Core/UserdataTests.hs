@@ -33,7 +33,7 @@ tests = testGroup "Userdata"
       newhsuserdata (Sample 0 "zero")
       newudmetatable "Sample"
       setmetatable (nth 2)
-      fromuserdata (top) "Sample"
+      fromuserdata top "Sample"
 
   , "fail on boolean" =:
     (Nothing :: Maybe Sample) `shouldBeResultOf` do
