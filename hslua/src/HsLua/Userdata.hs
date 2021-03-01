@@ -41,17 +41,11 @@ module HsLua.Userdata
 
 import Control.Monad (when)
 import Data.Data (Data, dataTypeName, dataTypeOf)
-import Foreign.C (withCString)
-import HsLua.Core (Lua, nth)
-import HsLua.Core.Types (liftLua, fromLuaBool)
-import Lua.Userdata
-  ( hslua_fromuserdata
-  , hslua_newhsuserdata
-  , hslua_newudmetatable
-  )
+import HsLua.Core (Lua, fromuserdata, newhsuserdata, newudmetatable, nth)
 import HsLua.Types.Peekable (reportValueOnFailure)
 
 import qualified HsLua.Core as Lua
+import qualified HsLua.Core.Utf8 as Utf8
 
 -- | Push data by wrapping it into a userdata object.
 pushAny :: Data a
@@ -68,7 +62,7 @@ pushAnyWithMetatable :: Lua ()       -- ^ operation to push the metatable
                      -> a            -- ^ object to push to Lua.
                      -> Lua ()
 pushAnyWithMetatable mtOp x = do
-  liftLua $ \l -> hslua_newhsuserdata l x
+  newhsuserdata x
   mtOp
   Lua.setmetatable (nth 2)
   return ()
@@ -83,8 +77,7 @@ ensureUserdataMetatable :: String     -- ^ name of the registered
                                       -- the stack.
                         -> Lua ()
 ensureUserdataMetatable name modMt = do
-  mtCreated <- liftLua $ \l ->
-    fromLuaBool <$> withCString name (hslua_newudmetatable l)
+  mtCreated <- newudmetatable (Utf8.fromString name)
   -- Execute additional modifications on metatable
   when mtCreated modMt
 
@@ -100,8 +93,7 @@ toAny idx = toAny' undefined
 toAnyWithName :: Lua.StackIndex
               -> String         -- ^ expected metatable name
               -> Lua (Maybe a)
-toAnyWithName idx name = liftLua $ \l ->
-  withCString name (hslua_fromuserdata l idx)
+toAnyWithName idx name = fromuserdata idx (Utf8.fromString name)
 
 -- | Retrieve Haskell data which was pushed to Lua as userdata.
 peekAny :: Data a => Lua.StackIndex -> Lua a

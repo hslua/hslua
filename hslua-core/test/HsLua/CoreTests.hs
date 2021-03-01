@@ -33,6 +33,8 @@ import qualified Prelude
 import qualified Data.ByteString as B
 import qualified HsLua.Core.AuxiliaryTests
 import qualified HsLua.Core.ErrorTests
+import qualified HsLua.Core.RunTests
+import qualified HsLua.Core.UserdataTests
 import qualified Foreign.Marshal as Foreign
 import qualified Foreign.Ptr as Foreign
 import qualified Test.QuickCheck.Monadic as QCMonadic
@@ -427,6 +429,9 @@ tests = testGroup "Core module"
             return (newtop - oldtop)
       res <- run luaOp
       assertEqual "error handling leaks values to the stack" 0 res
+
+  , HsLua.Core.RunTests.tests
+  , HsLua.Core.UserdataTests.tests
   ]
 
 compareWith :: (Lua.Integer -> Lua.Integer -> Bool)

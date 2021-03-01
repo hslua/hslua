@@ -178,6 +178,12 @@ module HsLua.Core
   -- ** Registry fields
   , loadedTableRegistryField
   , preloadTableRegistryField
+  -- * Haskell userdata values
+  --
+  -- | Push arbitrary Haskell values to the Lua stack.
+  , newhsuserdata
+  , newudmetatable
+  , fromuserdata
   -- * Error handling
   , Exception (..)
   , throwException
@@ -198,3 +204,4 @@ import HsLua.Core.Error
 import HsLua.Core.Functions
 import HsLua.Core.Run
 import HsLua.Core.Types as Lua
+import HsLua.Core.Userdata
