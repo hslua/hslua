@@ -31,9 +31,9 @@ import Data.Text (Text)
 import HsLua.Call (HaskellFunction)
 import HsLua.Core
 import HsLua.Push (pushText)
-import HsLua.Types (Pushable, push)
-import HsLua.FunctionCalling
-  ( ToHaskellFunction
+import HsLua.Types.Pushable (Pushable, push)
+import HsLua.Types.Exposable
+  ( Exposable
   , pushHaskellFunction
   )
 import qualified Data.Text as T
@@ -88,7 +88,7 @@ addfield name value = do
 
 -- | Attach a function to the table at the top of the stack, using
 -- the given name.
-addfunction :: ToHaskellFunction a => String -> a -> Lua ()
+addfunction :: Exposable a => String -> a -> Lua ()
 addfunction name fn = do
   push name
   pushHaskellFunction fn

@@ -66,11 +66,12 @@ library
   import:              common-options
   exposed-modules:     HsLua
                      , HsLua.Call
-                     , HsLua.FunctionCalling
                      , HsLua.Module
                      , HsLua.Peek
                      , HsLua.Push
                      , HsLua.Types
+                     , HsLua.Types.Exposable
+                     , HsLua.Types.Invokable
                      , HsLua.Types.Peekable
                      , HsLua.Types.Pushable
                      , HsLua.Userdata
@@ -95,11 +96,12 @@ test-suite test-hslua
   ghc-options:         -threaded -Wno-unused-do-bind
   other-modules:       HsLuaTests
                      , HsLua.CallTests
-                     , HsLua.FunctionCallingTests
                      , HsLua.ModuleTests
                      , HsLua.PeekTests
                      , HsLua.PushTests
                      , HsLua.TypesTests
+                     , HsLua.Types.ExposableTests
+                     , HsLua.Types.InvokableTests
                      , HsLua.Types.PeekableTests
                      , HsLua.Types.PushableTests
                      , HsLua.UserdataTests

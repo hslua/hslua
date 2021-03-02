@@ -1,0 +1,47 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-|
+Module      : HsLua.Types.InvokableTests
+Copyright   : © 2017-2021 Albert Krewinkel
+License     : MIT
+Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
+
+Tests that Lua functions can be called from Haskell.
+-}
+module HsLua.Types.InvokableTests (tests) where
+
+import Data.ByteString.Char8 as Char8
+import HsLua (Lua, openlibs)
+import HsLua.Types.Invokable (invoke)
+import Test.Tasty.HsLua ((=:), shouldBeErrorMessageOf, shouldBeResultOf)
+import Test.Tasty (TestTree, testGroup)
+
+import qualified HsLua as Lua
+
+-- | Specifications for Attributes parsing functions.
+tests :: TestTree
+tests = testGroup "Invokable"
+  [ "test equality within lua" =:
+    True `shouldBeResultOf` do
+      openlibs
+      invoke "rawequal" (5 :: Lua.Integer) (5.0 :: Lua.Number)
+
+  , "failing lua function call" =:
+    "foo" `shouldBeErrorMessageOf` do
+      openlibs
+      invoke "assert" False (Char8.pack "foo") :: Lua Bool
+
+  , "pack table via lua procedure" =:
+    (True, 23 :: Lua.Integer, "moin" :: ByteString) `shouldBeResultOf` do
+      openlibs
+      invoke "table.pack" True (23 :: Lua.Integer) (Char8.pack "moin")
+
+  , "failing lua procedure call" =:
+    "foo" `shouldBeErrorMessageOf` do
+      openlibs
+      invoke "error" (Char8.pack "foo") :: Lua ()
+
+  , "Error when Lua-to-Haskell result conversion fails" =:
+    "expected string, got 'false' (boolean)" `shouldBeErrorMessageOf` do
+      openlibs
+      invoke "rawequal" (Char8.pack "a") () :: Lua String
+  ]

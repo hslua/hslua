@@ -164,7 +164,7 @@ tests = testGroup "lua integration tests"
           result <- tryCustom $ do
             openlibs
             registerHaskellFunction "frob" frob
-            callFunc "frob" (Lua.Number 42) :: Lua ()
+            invoke "frob" (Lua.Number 42) :: Lua ()
           result @?= Left (ExceptionWithNumber 42)
 
       , "pass exception through Lua" =: do

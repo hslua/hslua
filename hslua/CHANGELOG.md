@@ -37,6 +37,9 @@ Release pending.
   `pushHaskellFunction` instead, it takes care of garbage
   collection.
 
+- Renamed typeclass `ToHaskellFunction` to `Exposable`, function
+  `callFunc` to `invoke`.
+
 
 ### 1.3.0.1
 

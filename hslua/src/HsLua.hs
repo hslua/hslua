@@ -31,9 +31,9 @@ module HsLua (
   -- * Calling Functions
   , PreCFunction
   , HaskellFunction
-  , ToHaskellFunction (..)
+  , Exposable (..)
   , toHaskellFunction
-  , callFunc
+  , invoke
   , pushHaskellFunction
   , registerHaskellFunction
   -- * Utility functions and types
@@ -54,7 +54,6 @@ module HsLua (
 import Prelude hiding (compare, concat)
 
 import HsLua.Core
-import HsLua.FunctionCalling
 import HsLua.Module
 import HsLua.Types
 import HsLua.Userdata ( pushAny, peekAny )

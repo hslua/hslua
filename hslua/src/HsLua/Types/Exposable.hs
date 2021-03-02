@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
-Module      : HsLua.FunctionCalling
+Module      : HsLua.Types.Exposable
 Copyright   : © 2007–2012 Gracjan Polak,
                 2012–2016 Ömer Sinan Ağacan,
                 2017-2021 Albert Krewinkel
@@ -14,15 +14,12 @@ Portability : FlexibleInstances, ForeignFunctionInterface, ScopedTypeVariables
 
 Call haskell functions from Lua, and vice versa.
 -}
-module HsLua.FunctionCalling
-  ( Peekable (..)
-  , LuaCallFunc (..)
-  , ToHaskellFunction (..)
+module HsLua.Types.Exposable
+  ( Exposable (..)
   , HaskellFunction
   , Pushable (..)
   , PreCFunction
   , toHaskellFunction
-  , callFunc
   , pushHaskellFunction
   , pushPreCFunction
   , registerHaskellFunction
@@ -31,8 +28,8 @@ module HsLua.FunctionCalling
 import HsLua.Core as Lua
 import HsLua.Core.Types (liftLua)
 import Lua.Call (hslua_pushhsfunction)
-import HsLua.Types
-import HsLua.Util (getglobal', popValue)
+import HsLua.Types.Peekable (Peekable (peek))
+import HsLua.Types.Pushable (Pushable (push))
 
 -- | Type of raw Haskell functions that can be made into
 -- 'CFunction's.
@@ -41,29 +38,31 @@ type PreCFunction = State -> IO NumResults
 -- | Haskell function that can be called from Lua.
 type HaskellFunction = Lua NumResults
 
--- | Operations and functions that can be pushed to the Lua stack. This is a
--- helper function not intended to be used directly. Use the
+-- | Operations and functions that can be pushed to the Lua stack. This
+-- is a helper function not intended to be used directly. Use the
 -- @'toHaskellFunction'@ wrapper instead.
-class ToHaskellFunction a where
-  -- | Helper function, called by @'toHaskellFunction'@
-  toHsFun :: StackIndex -> a -> Lua NumResults
+class Exposable a where
+  -- | Helper function, called by @'toHaskellFunction'@. Should do a
+  -- partial application of the argument at the given index to the
+  -- underlying function. Recurses if necessary, causing further partial
+  -- applications until the operation is a easily exposable to Lua.
+  partialApply :: StackIndex -> a -> Lua NumResults
 
-instance {-# OVERLAPPING #-} ToHaskellFunction HaskellFunction where
-  toHsFun _ = id
+instance {-# OVERLAPPING #-} Exposable HaskellFunction where
+  partialApply _ = id
 
-instance Pushable a => ToHaskellFunction (Lua a) where
-  toHsFun _narg x = 1 <$ (x >>= push)
+instance Pushable a => Exposable (Lua a) where
+  partialApply _narg x = 1 <$ (x >>= push)
 
-instance (Peekable a, ToHaskellFunction b) =>
-         ToHaskellFunction (a -> b) where
-  toHsFun narg f = getArg >>= toHsFun (narg + 1) . f
-     where
+instance (Peekable a, Exposable b) => Exposable (a -> b) where
+  partialApply narg f = getArg >>= partialApply (narg + 1) . f
+    where
       getArg = Lua.withExceptionMessage (errorPrefix <>) (peek narg)
       errorPrefix = "could not read argument " <>
                     show (fromStackIndex narg) <> ": "
 
--- | Convert a Haskell function to Lua function. Any Haskell function
--- can be converted provided that:
+-- | Convert a Haskell function to a function type directly exposable to
+-- Lua. Any Haskell function can be converted provided that:
 --
 --   * all arguments are instances of @'Peekable'@
 --   * return type is @Lua a@, where @a@ is an instance of
@@ -82,36 +81,15 @@ instance (Peekable a, ToHaskellFunction b) =>
 --
 -- > toHaskellFunction (myFun `catchM` (\e -> raiseError (e :: FooException)))
 --
-toHaskellFunction :: ToHaskellFunction a => a -> HaskellFunction
+toHaskellFunction :: Exposable a => a -> HaskellFunction
 toHaskellFunction a = do
   errConv <- Lua.errorConversion
   let ctx = "Error during function call: "
   Lua.exceptionToError errConv . Lua.addContextToException errConv ctx $
-    toHsFun 1 a
-
--- | Helper class used to make lua functions useable from haskell
-class LuaCallFunc a where
-  callFunc' :: String -> Lua () -> NumArgs -> a
-
-instance Peekable a => LuaCallFunc (Lua a) where
-  callFunc' fnName pushArgs nargs = do
-    getglobal' fnName
-    pushArgs
-    call nargs 1
-    popValue
-
-instance (Pushable a, LuaCallFunc b) => LuaCallFunc (a -> b) where
-  callFunc' fnName pushArgs nargs x =
-    callFunc' fnName (pushArgs *> push x) (nargs + 1)
-
--- | Call a Lua function. Use as:
---
--- > v <- callfunc "proc" "abc" (1::Int) (5.0::Double)
-callFunc :: (LuaCallFunc a) => String -> a
-callFunc f = callFunc' f (return ()) 0
+    partialApply 1 a
 
 -- | Imports a Haskell function and registers it at global name.
-registerHaskellFunction :: ToHaskellFunction a => String -> a -> Lua ()
+registerHaskellFunction :: Exposable a => String -> a -> Lua ()
 registerHaskellFunction n f = do
   pushHaskellFunction f
   setglobal n
@@ -124,7 +102,7 @@ registerHaskellFunction n f = do
 --
 -- Error conditions should be indicated by raising a Lua @'Lua.Exception'@
 -- or by returning the result of @'Lua.error'@.
-pushHaskellFunction :: ToHaskellFunction a => a -> Lua ()
+pushHaskellFunction :: Exposable a => a -> Lua ()
 pushHaskellFunction hsFn = do
   errConv <- Lua.errorConversion
   preCFn <- return . flip (runWithConverter errConv) $ toHaskellFunction hsFn

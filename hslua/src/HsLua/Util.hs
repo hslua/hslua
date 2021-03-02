@@ -23,12 +23,12 @@ module HsLua.Util
 
 import Data.List (groupBy)
 import HsLua.Core (Lua, NumResults, StackIndex, nth, top)
-import HsLua.Types (Peekable, Pushable)
+import HsLua.Types.Peekable (Peekable (peek))
+import HsLua.Types.Pushable (Pushable (push))
 import Text.Read (readMaybe)
 
 import qualified Control.Monad.Catch as Catch
 import qualified HsLua.Core as Lua
-import qualified HsLua.Types as Lua
 
 -- | Like @getglobal@, but knows about packages and nested tables. E.g.
 --
@@ -73,7 +73,7 @@ getnested (x:xs) = do
 -- | Raise a Lua error, using the given value as the error object.
 raiseError :: Pushable a => a -> Lua NumResults
 raiseError e = do
-  Lua.push e
+  push e
   Lua.error
 {-# INLINABLE raiseError #-}
 
@@ -88,11 +88,11 @@ instance Peekable a => Peekable (Optional a) where
     noValue <- Lua.isnoneornil idx
     if noValue
       then return $ Optional Nothing
-      else Optional . Just <$> Lua.peek idx
+      else Optional . Just <$> peek idx
 
 instance Pushable a => Pushable (Optional a) where
   push (Optional Nothing)  = Lua.pushnil
-  push (Optional (Just x)) = Lua.push x
+  push (Optional (Just x)) = push x
 
 
 --
@@ -103,7 +103,7 @@ instance Pushable a => Pushable (Optional a) where
 -- convert the String into a Haskell value.
 peekRead :: Read a => StackIndex -> Lua a
 peekRead idx = do
-  s <- Lua.peek idx
+  s <- peek idx
   case readMaybe s of
     Just x -> return x
     Nothing -> Lua.throwException ("Could not read: " ++ s)
@@ -114,10 +114,10 @@ peekRead idx = do
 -- WARNING: this is not save to use with custom error handling!
 peekEither :: Peekable a => StackIndex -> Lua (Either String a)
 peekEither idx = either (Left . Lua.exceptionMessage) Right <$>
-                 Lua.try (Lua.peek idx)
+                 Lua.try (peek idx)
 
 -- | Get, then pop the value at the top of the stack. The pop operation is
 -- executed even if the retrieval operation failed.
 popValue :: Peekable a => Lua a
-popValue = Lua.peek top `Catch.finally` Lua.pop 1
+popValue = peek top `Catch.finally` Lua.pop 1
 {-# INLINABLE popValue #-}

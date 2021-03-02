@@ -10,11 +10,12 @@ import Test.Tasty (TestTree, defaultMain, testGroup)
 
 import qualified HsLuaTests
 import qualified HsLua.CallTests
-import qualified HsLua.FunctionCallingTests
 import qualified HsLua.ModuleTests
 import qualified HsLua.PeekTests
 import qualified HsLua.PushTests
 import qualified HsLua.TypesTests
+import qualified HsLua.Types.ExposableTests
+import qualified HsLua.Types.InvokableTests
 import qualified HsLua.Types.PeekableTests
 import qualified HsLua.Types.PushableTests
 import qualified HsLua.UserdataTests
@@ -27,10 +28,11 @@ main = defaultMain $ testGroup "hslua" tests
 tests :: [TestTree]
 tests =
   [ HsLua.PushTests.tests
-  , HsLua.FunctionCallingTests.tests
   , HsLua.UtilTests.tests
-  , testGroup "Sending and receiving values from the stack"
+  , testGroup "Typeclasses"
     [ HsLua.TypesTests.tests
+    , HsLua.Types.ExposableTests.tests
+    , HsLua.Types.InvokableTests.tests
     , HsLua.Types.PeekableTests.tests
     , HsLua.Types.PushableTests.tests
     ]
