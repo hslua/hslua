@@ -20,13 +20,14 @@ Release pending.
 
 - Constants are now represented as pattern synonyms like `LUA_OK`.
 
-- Provide bindings to the `lua_is...` type-checking functions.
-
-- Provide binding to unsafe functions:
-    + `lua_gettable`,
-    + `lua_settable`,
-    + `lua_getglobal`, and
-    + `lua_setglobal`
+- Provide bindings to more functions:
+    + `lua_is...` type-checking functions;
+    + `lua_pushstring` to push plain CStrings;
+    + unsafe functions
+        * `lua_gettable`,
+        * `lua_settable`,
+        * `lua_getglobal`, and
+        * `lua_setglobal`.
 
 - The function `lua_pop` now expects a `CInt` instead of a
   `StackIndex`.

@@ -63,6 +63,7 @@ module Lua.Functions
   , lua_pushlstring
   , lua_pushnil
   , lua_pushnumber
+  , lua_pushstring
   , lua_pushthread
   , lua_pushvalue
   , lua_rawequal
@@ -523,6 +524,19 @@ foreign import ccall unsafe "lua.h lua_pushnil"
 -- <https://www.lua.org/manual/5.3/manual.html#lua_pushnumber>.
 foreign import ccall unsafe "lua.h lua_pushnumber"
   lua_pushnumber :: Lua.State -> Lua.Number -> IO ()
+
+
+-- | Pushes the zero-terminated string pointed to by @s@ onto the stack.
+-- Lua makes (or reuses) an internal copy of the given string, so the
+-- memory at @s@ can be freed or reused immediately after the function
+-- returns.
+--
+-- Returns a pointer to the internal copy of the string.
+--
+-- If s is NULL, pushes nil and returns NULL.
+foreign import ccall unsafe "lua.h lua_pushstring"
+  lua_pushstring :: Lua.State -> CString {- ^ s -} -> IO CString
+
 
 -- | Pushes the current thread onto the stack. Returns @1@ iff this
 -- thread is the main thread of its state.

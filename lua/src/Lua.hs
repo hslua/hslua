@@ -132,6 +132,7 @@ module Lua
   , lua_pushnumber
   , lua_pushinteger
   , lua_pushlstring
+  , lua_pushstring
   , lua_pushcclosure
   , lua_pushboolean
   , lua_pushlightuserdata
