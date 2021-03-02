@@ -195,6 +195,7 @@ module HsLua.Core
   , throwErrorAsException
   , throwTopMessage
   , throwTopMessageWithState
+  , throwTypeMismatchError
   ) where
 
 import Prelude hiding (EQ, LT, compare, concat, error)

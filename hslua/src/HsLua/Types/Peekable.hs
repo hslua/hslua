@@ -35,20 +35,22 @@ import qualified Data.ByteString.Lazy as BL
 import qualified HsLua.Peek as Peek
 import qualified HsLua.Core.Utf8 as Utf8
 
--- | Use @test@ to check whether the value at stack index @n@ has the correct
--- type and use @peekfn@ to convert it to a haskell value if possible. Throws
--- and exception if the test failes with the expected type name as part of the
--- message.
+-- | Use @test@ to check whether the value at stack index @n@ has the
+-- correct type and use @peekfn@ to convert it to a haskell value if
+-- possible. Throws and exception if the test failes with the expected
+-- type name as part of the message.
 typeChecked :: String                   -- ^ expected type
             -> (StackIndex -> Lua Bool) -- ^ pre-condition Checker
             -> (StackIndex -> Lua a)    -- ^ retrieval function
             -> StackIndex -> Lua a
 typeChecked expectedType test peekfn idx = do
   v <- test idx
-  if v then peekfn idx else mismatchError expectedType idx
+  if v
+    then peekfn idx
+    else throwTypeMismatchError (Utf8.fromString expectedType) idx
 
--- | Report the expected and actual type of the value under the given index if
--- conversion failed.
+-- | Report the expected and actual type of the value under the given
+-- index if conversion failed.
 reportValueOnFailure :: String
                      -> (StackIndex -> Lua (Maybe a))
                      -> StackIndex -> Lua a
@@ -56,16 +58,7 @@ reportValueOnFailure expected peekMb idx = do
   res <- peekMb idx
   case res of
     (Just x) -> return x
-    Nothing -> mismatchError expected idx
-
--- | Return a Result error containing a message about the assertion failure.
-mismatchError :: String -> StackIndex -> Lua a
-mismatchError expected idx = do
-  actualType <- ltype idx >>= typename
-  actualValue <- Utf8.toString <$> tostring' idx <* pop 1
-  let msg = "expected " <> expected <> ", got '" <>
-            actualValue <> "' (" <> actualType <> ")"
-  Lua.throwMessage msg
+    Nothing -> throwTypeMismatchError (Utf8.fromString expected) idx
 
 -- | A value that can be read from the Lua stack.
 class Peekable a where

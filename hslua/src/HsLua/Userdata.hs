@@ -41,8 +41,9 @@ module HsLua.Userdata
 
 import Control.Monad (when)
 import Data.Data (Data, dataTypeName, dataTypeOf)
-import HsLua.Core (Lua, fromuserdata, newhsuserdata, newudmetatable, nth)
-import HsLua.Types.Peekable (reportValueOnFailure)
+import HsLua.Core
+  ( Lua, fromuserdata, newhsuserdata, newudmetatable, nth
+  , throwTypeMismatchError )
 
 import qualified HsLua.Core as Lua
 import qualified HsLua.Core.Utf8 as Utf8
@@ -100,7 +101,11 @@ peekAny :: Data a => Lua.StackIndex -> Lua a
 peekAny idx = peek' undefined
  where
   peek' :: Data a => a -> Lua a
-  peek' x = reportValueOnFailure (dataTypeName (dataTypeOf x)) toAny idx
+  peek' x = toAny idx >>= \case
+    Just x' -> return x'
+    Nothing -> do
+      let expected = Utf8.fromString (dataTypeName (dataTypeOf x))
+      throwTypeMismatchError expected idx
 
 -- | Return the default name for userdata to be used when wrapping an object as
 -- the given type as userdata.  The argument is never evaluated.

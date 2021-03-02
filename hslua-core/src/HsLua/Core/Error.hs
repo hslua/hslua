@@ -20,6 +20,7 @@ module HsLua.Core.Error
   , throwErrorAsException
   , throwTopMessage
   , throwTopMessageWithState
+  , throwTypeMismatchError
   , errorMessage
   , try
     -- * Helpers for hslua C wrapper functions.
@@ -28,10 +29,10 @@ module HsLua.Core.Error
   ) where
 
 import Control.Applicative (Alternative (..))
-import Data.ByteString (ByteString)
+import Data.ByteString (ByteString, append)
 import Data.Typeable (Typeable)
-import HsLua.Core.Types (Lua)
-import Lua (lua_pop, lua_pushlstring, hsluaL_tolstring)
+import HsLua.Core.Types (Lua, StackIndex)
+import Lua
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 
@@ -41,7 +42,6 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as Char8
 import qualified Data.ByteString.Unsafe as B
 import qualified Foreign.Storable as Storable
-import qualified Lua.Types as Lua
 import qualified HsLua.Core.Types as Lua
 import qualified HsLua.Core.Utf8 as Utf8
 
@@ -142,3 +142,22 @@ errorMessage l = alloca $ \lenPtr -> do
       msg <- B.packCStringLen (cstr, fromIntegral cstrLen)
       lua_pop l 2
       return msg
+
+-- | Raises an exception that's appropriate when the type of a Lua
+-- object at the given index did not match the expected type. The name
+-- or description of the expected type is taken as an argument.
+throwTypeMismatchError :: ByteString  -- ^ name or description of expected type
+                       -> StackIndex  -- ^ stack index of mismatching object
+                       -> Lua a
+throwTypeMismatchError expected idx = do
+  Lua.liftLua $ \l -> do
+    idx' <- lua_absindex l idx
+    let pushstring str = B.unsafeUseAsCStringLen str $ \(cstr, cstrLen) ->
+          lua_pushlstring l cstr (fromIntegral cstrLen)
+    pushstring $ "expected " `append` expected `append` ", got '"
+    _ <- hsluaL_tolstring l idx' nullPtr
+    pushstring "' ("
+    _ <- lua_type l idx' >>= lua_typename l >>= lua_pushstring l
+    pushstring  ")"
+    alloca $ hslua_concat l 5
+  throwTopMessage
