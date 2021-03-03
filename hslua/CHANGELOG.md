@@ -33,12 +33,20 @@ Release pending.
 
 - Moved module Utf8 from the base level into Core.
 
-- Removed functions `newCFunction`, `freeCFunction`. Use
-  `pushHaskellFunction` instead, it takes care of garbage
-  collection.
+- Refactored code to expose Haskell functions to Lua:
 
-- Renamed typeclass `ToHaskellFunction` to `Exposable`, function
-  `callFunc` to `invoke`.
+    + Removed functions `newCFunction`, `freeCFunction`. Use
+      `pushHaskellFunction` instead, it takes care of garbage
+      collection.
+
+    + Renamed typeclass `ToHaskellFunction` to `Exposable`, function
+      `callFunc` to `invoke`.
+
+    + The type PreCFunction is now defined in package lua;
+      HaskellFunction is defined in hslua-core.
+
+    + Changed `pushHaskellFunction` to only accept HaskellFunction
+      arguments, move it to hslua-core.
 
 
 ### 1.3.0.1

@@ -157,7 +157,7 @@ tests = testGroup "lua integration tests"
           result @?= Left (ExceptionWithNumber 23)
 
       , "catch custom exception in exposed function" =: do
-          let frob n = do
+          let frob n = toHaskellFunction $ do
                 pushLuaExpr errTbl
                 pushnumber n
                 void $ gettable (Lua.nth 2)
@@ -170,7 +170,7 @@ tests = testGroup "lua integration tests"
       , "pass exception through Lua" =: do
           let frob = Catch.throwM (ExceptionWithMessage "borked") :: Lua ()
           result <- tryCustom $ do
-            pushHaskellFunction frob
+            pushHaskellFunction $ toHaskellFunction frob
             call 0 1
           result @?= Left (ExceptionWithMessage "borked")
 

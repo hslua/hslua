@@ -12,6 +12,9 @@ Release pending.
   around the functions available for creating
   Haskell-value-wrapping userdata objects.
 
+- Added new module HsLua.Core.Closures, containing functions to
+  expose Haskell functions to Lua.
+
 ## hslua-core 1.0.0
 
 Released 2021-02-27.

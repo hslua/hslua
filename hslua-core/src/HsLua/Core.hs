@@ -32,6 +32,7 @@ module HsLua.Core
   , unsafeErrorConversion
   -- * Lua API types
   , CFunction
+  , PreCFunction
   , Lua.Integer (..)
   , Lua.Number (..)
   -- ** Stack index
@@ -184,6 +185,10 @@ module HsLua.Core
   , newhsuserdata
   , newudmetatable
   , fromuserdata
+  -- ** Haskell functions and closures
+  , HaskellFunction
+  , pushHaskellFunction
+  , pushPreCFunction
   -- * Error handling
   , Exception (..)
   , throwException
@@ -201,6 +206,7 @@ module HsLua.Core
 import Prelude hiding (EQ, LT, compare, concat, error)
 
 import HsLua.Core.Auxiliary
+import HsLua.Core.Closures
 import HsLua.Core.Error
 import HsLua.Core.Functions
 import HsLua.Core.Run

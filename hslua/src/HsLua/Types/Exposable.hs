@@ -16,23 +16,14 @@ Call haskell functions from Lua, and vice versa.
 -}
 module HsLua.Types.Exposable
   ( Exposable (..)
-  , HaskellFunction
-  , Pushable (..)
-  , PreCFunction
   , toHaskellFunction
-  , pushHaskellFunction
-  , pushPreCFunction
   , registerHaskellFunction
   ) where
 
-import HsLua.Core as Lua
-import HsLua.Core.Types (liftLua, PreCFunction)
-import Lua.Call (hslua_pushhsfunction)
+import HsLua.Core
 import HsLua.Types.Peekable (Peekable (peek))
 import HsLua.Types.Pushable (Pushable (push))
-
--- | Haskell function that can be called from Lua.
-type HaskellFunction = Lua NumResults
+import qualified HsLua.Core as Lua
 
 -- | Operations and functions that can be pushed to the Lua stack. This
 -- is a helper function not intended to be used directly. Use the
@@ -87,27 +78,5 @@ toHaskellFunction a = do
 -- | Imports a Haskell function and registers it at global name.
 registerHaskellFunction :: Exposable a => String -> a -> Lua ()
 registerHaskellFunction n f = do
-  pushHaskellFunction f
+  pushHaskellFunction $ toHaskellFunction f
   setglobal n
-
--- | Pushes Haskell function as a callable userdata.
--- All values created will be garbage collected. Use as:
---
--- > pushHaskellFunction myfun
--- > setglobal "myfun"
---
--- Error conditions should be indicated by raising a Lua @'Lua.Exception'@
--- or by returning the result of @'Lua.error'@.
-pushHaskellFunction :: Exposable a => a -> Lua ()
-pushHaskellFunction hsFn = do
-  errConv <- Lua.errorConversion
-  preCFn <- return . flip (runWithConverter errConv) $ toHaskellFunction hsFn
-  pushPreCFunction preCFn
-
--- | Converts a pre C function to a Lua function and pushes it to the stack.
---
--- Pre C functions collect parameters from the stack and return
--- a `CInt` that represents number of return values left on the stack.
-pushPreCFunction :: PreCFunction -> Lua ()
-pushPreCFunction preCFn = liftLua $ \l ->
-  hslua_pushhsfunction l preCFn

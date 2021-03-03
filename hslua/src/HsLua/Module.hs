@@ -34,7 +34,7 @@ import HsLua.Push (pushText)
 import HsLua.Types.Pushable (Pushable, push)
 import HsLua.Types.Exposable
   ( Exposable
-  , pushHaskellFunction
+  , toHaskellFunction
   )
 import qualified Data.Text as T
 import qualified HsLua.Call as Call
@@ -74,7 +74,7 @@ requirehs modname pushMod = do
 preloadhs :: String -> Lua NumResults -> Lua ()
 preloadhs name pushMod = do
   void $ getfield registryindex preloadTableRegistryField
-  pushHaskellFunction pushMod
+  pushHaskellFunction $ toHaskellFunction pushMod
   setfield (nth 2) name
   pop 1
 
@@ -91,7 +91,7 @@ addfield name value = do
 addfunction :: Exposable a => String -> a -> Lua ()
 addfunction name fn = do
   push name
-  pushHaskellFunction fn
+  pushHaskellFunction $ toHaskellFunction fn
   rawset (nth 3)
 
 -- | Create a new module (i.e., a Lua table).

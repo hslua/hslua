@@ -39,12 +39,11 @@ module HsLua.Call
 
 import Control.Monad.Except
 import Data.Text (Text)
-import HsLua.Core as Lua
-import HsLua.Core.Types (liftLua)
+import HsLua.Core hiding (HaskellFunction, pushHaskellFunction)
 import HsLua.Peek
 import HsLua.Push
-import Lua.Call (hslua_pushhsfunction)
 import qualified Data.Text as T
+import qualified HsLua.Core as Lua
 
 -- | Lua operation with an explicit error type and state (i.e.,
 -- without exceptions).
@@ -246,10 +245,7 @@ renderResultDoc rd = mconcat
 --
 
 pushDocumentedFunction :: DocumentedFunction -> Lua ()
-pushDocumentedFunction fn = do
-  errConv <- Lua.errorConversion
-  let hsFn = flip (runWithConverter errConv) $ callFunction fn
-  liftLua $ \l -> hslua_pushhsfunction l hsFn
+pushDocumentedFunction = Lua.pushHaskellFunction . callFunction
 
 --
 -- Convenience functions

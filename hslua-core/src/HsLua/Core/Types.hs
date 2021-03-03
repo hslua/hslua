@@ -39,6 +39,7 @@ module HsLua.Core.Types
   , liftIO
   , CFunction
   , PreCFunction
+  , HaskellFunction
   , LuaBool (..)
   , fromLuaBool
   , toLuaBool
@@ -152,6 +153,9 @@ unsafeErrorConversion = ErrorConversion
   , exceptionToError = id
   }
 
+-- | Haskell function that can be called from Lua.
+-- The HsLua equivallent of a 'PreCFunction'.
+type HaskellFunction = Lua NumResults
 
 --
 -- Type of Lua values

@@ -9,8 +9,8 @@ Tests that Haskell functions can be exposed to and called from Lua.
 -}
 module HsLua.Types.ExposableTests (tests) where
 
-import Control.Monad (forM_)
 import HsLua (Lua)
+import HsLua.Types.Exposable
 import Test.Tasty.HsLua ( (=:), pushLuaExpr, shouldBeErrorMessageOf
                        , shouldBeResultOf )
 import Test.Tasty (TestTree, testGroup)
@@ -25,18 +25,18 @@ tests =
         let (j1, j2) = (fromIntegral i1, fromIntegral i2)
         in return $ fromIntegral (product [1..j1] `mod` j2 :: Prelude.Integer)
   in testGroup "Exposable"
-  [ "push haskell function to lua" =:
+  [ "push Haskell function to Lua" =:
     (28 :: Lua.Integer) `shouldBeResultOf` do
       let add :: Lua Lua.Integer
           add = do
             i1 <- Lua.peek (-1)
             i2 <- Lua.peek (-2)
             return (i1 + i2)
-      Lua.registerHaskellFunction "add" add
+      Lua.registerHaskellFunction "add" $ toHaskellFunction add
       Lua.loadstring "return add(23, 5)" *> Lua.call 0 1
       Lua.peek Lua.top <* Lua.pop 1
 
-  , "push multi-argument haskell function to lua" =:
+  , "push multi-argument Haskell function to Lua" =:
     (0 :: Lua.Integer) `shouldBeResultOf` do
       Lua.registerHaskellFunction "integerOp" integerOperation
       Lua.loadstring "return integerOp(23, 42)" *> Lua.call 0 1
@@ -48,31 +48,12 @@ tests =
           Lua.registerHaskellFunction "integerOp" integerOperation
           pushLuaExpr "integerOp(23, true)"
 
-  , "Haskell functions are converted to C functions" =:
-    (100 :: Lua.Integer) `shouldBeResultOf` do
-      Lua.pushHaskellFunction integerOperation
-      Lua.pushinteger 71
-      Lua.pushinteger 107
-      Lua.call 2 1
-      Lua.peek Lua.top <* Lua.pop 1
-
   , "Error in Haskell function is converted into Lua error" =:
     (False, "Error during function call: foo" :: String) `shouldBeResultOf` do
       Lua.openlibs
-      Lua.pushHaskellFunction (Lua.throwException "foo" :: Lua ())
+      Lua.pushHaskellFunction $
+        toHaskellFunction (Lua.throwException "foo" :: Lua ())
       Lua.setglobal "throw_foo"
       Lua.loadstring "return pcall(throw_foo)" *> Lua.call 0 2
       (,) <$> Lua.peek (Lua.nth 2) <*> Lua.peek (Lua.nth 1)
-
-  -- The following test case will hang if there's a problem with garbage
-  -- collection.
-  , "function garbage collection" =:
-    () `shouldBeResultOf` do
-      let pushAndPopAdder n = do
-            let fn :: Lua.Integer -> Lua Lua.Integer
-                fn x = return (x + n)
-            Lua.pushHaskellFunction fn
-            Lua.pop 1
-      forM_ [1..5000::Lua.Integer] pushAndPopAdder
-      () <$ Lua.gc Lua.GCCOLLECT 0
   ]
