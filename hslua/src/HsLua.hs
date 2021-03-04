@@ -29,12 +29,9 @@ module HsLua (
   , pushList
   , pushAny
   -- * Calling Functions
-  , PreCFunction
-  , HaskellFunction
   , Exposable (..)
   , toHaskellFunction
   , invoke
-  , pushHaskellFunction
   , registerHaskellFunction
   -- * Utility functions and types
   , getglobal'
@@ -47,8 +44,6 @@ module HsLua (
   , requirehs
   , preloadhs
   , create
-  , addfield
-  , addfunction
   ) where
 
 import Prelude hiding (compare, concat)

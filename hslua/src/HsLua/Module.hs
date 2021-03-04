@@ -12,8 +12,6 @@ Utility functions for HsLua modules.
 module HsLua.Module
   ( requirehs
   , preloadhs
-  , addfield
-  , addfunction
   , create
     -- * Module
   , Module (..)
@@ -31,11 +29,6 @@ import Data.Text (Text)
 import HsLua.Call (DocumentedFunction)
 import HsLua.Core
 import HsLua.Push (pushText)
-import HsLua.Types.Pushable (Pushable, push)
-import HsLua.Types.Exposable
-  ( Exposable
-  , toHaskellFunction
-  )
 import qualified Data.Text as T
 import qualified HsLua.Call as Call
 
@@ -74,25 +67,9 @@ requirehs modname pushMod = do
 preloadhs :: String -> Lua NumResults -> Lua ()
 preloadhs name pushMod = do
   void $ getfield registryindex preloadTableRegistryField
-  pushHaskellFunction $ toHaskellFunction pushMod
+  pushHaskellFunction pushMod
   setfield (nth 2) name
   pop 1
-
--- | Add a string-indexed field to the table at the top of the
--- stack.
-addfield :: Pushable a => String -> a -> Lua ()
-addfield name value = do
-  push name
-  push value
-  rawset (nth 3)
-
--- | Attach a function to the table at the top of the stack, using
--- the given name.
-addfunction :: Exposable a => String -> a -> Lua ()
-addfunction name fn = do
-  push name
-  pushHaskellFunction $ toHaskellFunction fn
-  rawset (nth 3)
 
 -- | Create a new module (i.e., a Lua table).
 create :: Lua ()

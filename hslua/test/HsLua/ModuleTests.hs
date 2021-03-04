@@ -12,7 +12,6 @@ Tests creating and loading of modules with Haskell.
 -}
 module HsLua.ModuleTests (tests) where
 
-import HsLua (Lua)
 import HsLua.Call hiding (render)
 import HsLua.Module
 import HsLua.Peek (peekIntegral)
@@ -68,22 +67,6 @@ tests = testGroup "Module"
       Lua.TypeTable `shouldBeResultOf` do
         create
         Lua.ltype Lua.top
-
-    , "addfield modifies table" =:
-      Lua.Integer 23 `shouldBeResultOf` do
-        create
-        addfield "field_name" (23 :: Int)
-        Lua.getfield Lua.top "field_name"
-        Lua.peek Lua.top
-
-    , "addfunction modifies table" =:
-      Lua.Integer 5 `shouldBeResultOf` do
-        create
-        addfunction "minus18" (return . subtract 18 :: Int -> Lua Int)
-        Lua.getfield Lua.top "minus18"
-        Lua.pushinteger 23
-        Lua.call 1 1
-        Lua.peek Lua.top
     ]
   , testGroup "module type"
     [ "register module" =:

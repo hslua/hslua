@@ -48,6 +48,9 @@ Release pending.
     + Changed `pushHaskellFunction` to only accept HaskellFunction
       arguments, move it to hslua-core.
 
+    + Removed helper functions `addfunction` and `addfield` from
+      *Module*. Use documented functions and fields instead.
+
 
 ### 1.3.0.1
 
