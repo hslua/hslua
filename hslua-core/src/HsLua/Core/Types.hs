@@ -38,6 +38,7 @@ module HsLua.Core.Types
   , toType
   , liftIO
   , CFunction
+  , PreCFunction
   , LuaBool (..)
   , fromLuaBool
   , toLuaBool

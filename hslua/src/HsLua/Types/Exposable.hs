@@ -26,14 +26,10 @@ module HsLua.Types.Exposable
   ) where
 
 import HsLua.Core as Lua
-import HsLua.Core.Types (liftLua)
+import HsLua.Core.Types (liftLua, PreCFunction)
 import Lua.Call (hslua_pushhsfunction)
 import HsLua.Types.Peekable (Peekable (peek))
 import HsLua.Types.Pushable (Pushable (push))
-
--- | Type of raw Haskell functions that can be made into
--- 'CFunction's.
-type PreCFunction = State -> IO NumResults
 
 -- | Haskell function that can be called from Lua.
 type HaskellFunction = Lua NumResults

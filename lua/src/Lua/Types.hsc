@@ -18,6 +18,7 @@ module Lua.Types
   , Reader
   , TypeCode (..)
   , CFunction
+  , PreCFunction
   , LuaBool (..)
   , Integer (..)
   , Number (..)
@@ -56,10 +57,10 @@ newtype State = State (Ptr ()) deriving (Eq, Generic)
 -- following protocol, which defines the way parameters and results are
 -- passed: a C function receives its arguments from Lua in its stack in
 -- direct order (the first argument is pushed first). So, when the
--- function starts, @'Lua.Core.Functions.gettop'@ returns the
+-- function starts, @'Lua.Functions.lua_gettop'@ returns the
 -- number of arguments received by the function. The first argument (if
 -- any) is at index 1 and its last argument is at index
--- @'Lua.Core.Functions.gettop'@. To return values to Lua, a C
+-- @'Lua.Functions.lua_gettop'@. To return values to Lua, a C
 -- function just pushes them onto the stack, in direct order (the first
 -- result is pushed first), and returns the number of results. Any other
 -- value in the stack below the results will be properly discarded by
@@ -68,7 +69,12 @@ newtype State = State (Ptr ()) deriving (Eq, Generic)
 --
 -- See
 -- <https://www.lua.org/manual/5.3/manual.html#lua_CFunction lua_CFunction>.
-type CFunction = FunPtr (State -> IO NumResults)
+type CFunction = FunPtr PreCFunction
+
+-- | Type of Haskell functions that can be turned into C functions.
+--
+-- This is the same as a dereferenced 'CFunction'.
+type PreCFunction = State -> IO NumResults
 
 -- | The reader function used by @'Lua.load'@.
 -- Every time it needs another piece of the chunk, lua_load calls the
