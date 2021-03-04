@@ -28,7 +28,7 @@ where
 
 import Control.Monad (forM_, void)
 import Data.Text (Text)
-import HsLua.Call (HaskellFunction)
+import HsLua.Call (DocumentedFunction)
 import HsLua.Core
 import HsLua.Push (pushText)
 import HsLua.Types.Pushable (Pushable, push)
@@ -103,7 +103,7 @@ data Module = Module
   { moduleName :: Text
   , moduleDescription :: Text
   , moduleFields :: [Field]
-  , moduleFunctions :: [(Text, HaskellFunction)]
+  , moduleFunctions :: [(Text, DocumentedFunction)]
   }
 
 -- | Self-documenting module field
@@ -132,7 +132,7 @@ pushModule mdl = do
   create
   forM_ (moduleFunctions mdl) $ \(name, fn) -> do
     pushText name
-    Call.pushHaskellFunction fn
+    Call.pushDocumentedFunction fn
     rawset (nth 3)
 
 -- | Renders module documentation as Markdown.
@@ -151,9 +151,9 @@ render mdl =
         (map (uncurry renderFunctionDoc) (moduleFunctions mdl))
 
 -- | Renders documentation of a function.
-renderFunctionDoc :: Text             -- ^ name
-                  -> HaskellFunction  -- ^ function
-                  -> Text             -- ^ function docs
+renderFunctionDoc :: Text                -- ^ name
+                  -> DocumentedFunction  -- ^ function
+                  -> Text                -- ^ function docs
 renderFunctionDoc name fn =
   case Call.functionDoc fn of
     Nothing -> ""

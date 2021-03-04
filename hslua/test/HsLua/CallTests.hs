@@ -29,7 +29,7 @@ import qualified HsLua as Lua
 tests :: TestTree
 tests = testGroup "Call"
   [ testGroup "push Haskell function"
-    [ "HaskellFunction building" =:
+    [ "DocumentedFunction building" =:
       720
       `shouldBeResultOf` do
         factLua <- factLuaAtIndex <$> Lua.gettop
@@ -50,19 +50,19 @@ tests = testGroup "Call"
     [ "push factorial" =:
       Lua.TypeFunction
       `shouldBeResultOf` do
-        pushHaskellFunction $ factLuaAtIndex 0
+        pushDocumentedFunction $ factLuaAtIndex 0
         Lua.ltype Lua.top
     , "call factorial" =:
       120
       `shouldBeResultOf` do
-        pushHaskellFunction $ factLuaAtIndex 0
+        pushDocumentedFunction $ factLuaAtIndex 0
         Lua.pushinteger 5
         Lua.call 1 1
         peekIntegral @Integer Lua.top >>= force
     , "use from Lua" =:
       24
       `shouldBeResultOf` do
-        pushHaskellFunction $ factLuaAtIndex 0
+        pushDocumentedFunction $ factLuaAtIndex 0
         Lua.setglobal "factorial"
         Lua.loadstring "return factorial(4)" *> Lua.call 0 1
         peekIntegral @Integer Lua.top >>= force
@@ -70,14 +70,14 @@ tests = testGroup "Call"
     , "with setting an optional param" =:
       8
       `shouldBeResultOf` do
-        pushHaskellFunction nroot
+        pushDocumentedFunction nroot
         Lua.setglobal "nroot"
         Lua.loadstring "return nroot(64)" *> Lua.call 0 1
         peekRealFloat @Double Lua.top >>= force
     , "with setting an optional param" =:
       2
       `shouldBeResultOf` do
-        pushHaskellFunction nroot
+        pushDocumentedFunction nroot
         Lua.setglobal "nroot"
         Lua.loadstring "return nroot(64, 6)" *> Lua.call 0 1
         peekRealFloat @Double Lua.top >>= force
@@ -131,7 +131,7 @@ tests = testGroup "Call"
     ]
   ]
 
-factLuaAtIndex :: StackIndex -> HaskellFunction
+factLuaAtIndex :: StackIndex -> DocumentedFunction
 factLuaAtIndex idx =
   toHsFnPrecursorWithStartIndex idx factorial
   <#> factorialParam
@@ -158,7 +158,7 @@ factorialResult = (:[]) $ FunctionResult
   (FunctionResultDoc "integer" "factorial")
 
 -- | Calculate the nth root of a number. Defaults to square root.
-nroot :: HaskellFunction
+nroot :: DocumentedFunction
 nroot = toHsFnPrecursor nroot'
   <#> parameter (peekRealFloat @Double) "number" "x" ""
   <#> optionalParameter (peekIntegral @Int) "integer" "n" ""

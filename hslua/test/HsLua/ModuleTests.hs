@@ -136,7 +136,7 @@ mymath = Module
   , moduleFunctions = [ ("factorial", factorial)]
   }
 
-factorial :: HaskellFunction
+factorial :: DocumentedFunction
 factorial = toHsFnPrecursor (\n -> product [1..n])
   <#> factorialParam
   =#> factorialResult

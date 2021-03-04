@@ -12,7 +12,7 @@ Portability : Portable
 Marshaling and documenting Haskell functions.
 -}
 module HsLua.Call
-  ( HaskellFunction (..)
+  ( DocumentedFunction (..)
   , toHsFnPrecursor
   , toHsFnPrecursorWithStartIndex
   , applyParameter
@@ -30,7 +30,7 @@ module HsLua.Call
   , FunctionResultDoc (..)
   , render
     -- * Pushing to Lua
-  , pushHaskellFunction
+  , pushDocumentedFunction
     -- * Convenience functions
   , parameter
   , optionalParameter
