@@ -74,7 +74,7 @@ data Parameter a = Parameter
 
 -- | Haskell equivallent to CFunction, i.e., function callable
 -- from Lua.
-data HaskellFunction = HaskellFunction
+data DocumentedFunction = DocumentedFunction
   { callFunction :: Lua NumResults
   , functionDoc :: Maybe FunctionDoc
   }
@@ -154,8 +154,8 @@ applyParameter bldr param = do
 -- the result to Lua.
 returnResults :: HsFnPrecursor a
               -> FunctionResults a
-              -> HaskellFunction
-returnResults bldr fnResults = HaskellFunction
+              -> DocumentedFunction
+returnResults bldr fnResults = DocumentedFunction
   { callFunction = do
       hsResult <- runExceptT $ hsFnPrecursorAction bldr
       case hsResult of
@@ -176,12 +176,12 @@ returnResults bldr fnResults = HaskellFunction
 -- | Like @'returnResult'@, but returns only a single result.
 returnResult :: HsFnPrecursor a
              -> FunctionResult a
-             -> HaskellFunction
+             -> DocumentedFunction
 returnResult bldr = returnResults bldr . (:[])
 
 -- | Updates the description of a Haskell function. Leaves the function
 -- unchanged if it has no documentation.
-updateFunctionDescription :: HaskellFunction -> Text -> HaskellFunction
+updateFunctionDescription :: DocumentedFunction -> Text -> DocumentedFunction
 updateFunctionDescription fn desc =
   case functionDoc fn of
     Nothing -> fn
@@ -203,11 +203,11 @@ infixl 8 <#>, =#>, #?
 -- | Inline version of @'returnResult'@.
 (=#>) :: HsFnPrecursor a
       -> FunctionResults a
-      -> HaskellFunction
+      -> DocumentedFunction
 (=#>) = returnResults
 
 -- | Inline version of @'updateFunctionDescription'@.
-(#?) :: HaskellFunction -> Text -> HaskellFunction
+(#?) :: DocumentedFunction -> Text -> DocumentedFunction
 (#?) = updateFunctionDescription
 
 --
@@ -245,8 +245,8 @@ renderResultDoc rd = mconcat
 -- Push to Lua
 --
 
-pushHaskellFunction :: HaskellFunction -> Lua ()
-pushHaskellFunction fn = do
+pushDocumentedFunction :: DocumentedFunction -> Lua ()
+pushDocumentedFunction fn = do
   errConv <- Lua.errorConversion
   let hsFn = flip (runWithConverter errConv) $ callFunction fn
   liftLua $ \l -> hslua_pushhsfunction l hsFn
