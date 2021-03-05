@@ -301,261 +301,250 @@ gettop = liftLua lua_gettop
 insert :: StackIndex -> Lua ()
 insert index = liftLua $ \l -> lua_insert l index
 
--- | Returns @True@ if the value at the given index is a boolean, and @False@
--- otherwise.
+-- | Returns 'True' if the value at the given index is a boolean, and
+-- 'False' otherwise.
 --
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#lua_isboolean lua_isboolean>.
+-- This wraps 'lua_isboolean'.
 isboolean :: StackIndex -> Lua Bool
 isboolean n = liftLua $ \l -> fromLuaBool <$> lua_isboolean l n
 
--- | Returns @True@ if the value at the given index is a C function, and @False@
--- otherwise.
+-- | Returns 'True' if the value at the given index is a C function, and
+-- 'False' otherwise.
 --
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#lua_iscfunction lua_iscfunction>.
+-- This wraps 'lua_iscfunction'.
 iscfunction :: StackIndex -> Lua Bool
 iscfunction n = liftLua $ \l -> fromLuaBool <$> lua_iscfunction l n
 
--- | Returns @True@ if the value at the given index is a function (either C or
--- Lua), and @False@ otherwise.
+-- | Returns 'True' if the value at the given index is a function
+-- (either C or Lua), and 'False' otherwise.
 --
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#lua_isfunction lua_isfunction>.
+-- This wraps 'lua_isfunction'.
 isfunction :: StackIndex -> Lua Bool
-isfunction n = (== TypeFunction) <$> ltype n
+isfunction n = liftLua $ \l -> fromLuaBool <$> lua_isfunction l n
 
--- | Returns @True@ if the value at the given index is an integer (that is, the
--- value is a number and is represented as an integer), and @False@ otherwise.
+-- | Returns @True@ if the value at the given index is an integer (that
+-- is, the value is a number and is represented as an integer), and
+-- 'False' otherwise.
+--
+-- This wraps 'lua_isinteger'.
 isinteger :: StackIndex -> Lua Bool
 isinteger n = liftLua $ \l -> fromLuaBool <$> lua_isinteger l n
 
--- | Returns @True@ if the value at the given index is a light userdata, and
--- @False@ otherwise.
+-- | Returns @True@ if the value at the given index is a light userdata,
+-- and @False@ otherwise.
 --
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#lua_islightuserdata \
--- lua_islightuserdata>.
+-- This wraps 'lua_islightuserdata'.
 islightuserdata :: StackIndex -> Lua Bool
-islightuserdata n = (== TypeLightUserdata) <$> ltype n
+islightuserdata n = liftLua $ \l -> fromLuaBool <$> lua_islightuserdata l n
 
--- | Returns @True@ if the value at the given index is @nil@, and @False@
+-- | Returns 'True' if the value at the given index is *nil*, and 'False'
 -- otherwise.
 --
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#lua_isnil lua_isnil>.
+-- This wraps 'lua_isnil'.
 isnil :: StackIndex -> Lua Bool
-isnil n = (== TypeNil) <$> ltype n
+isnil n = liftLua $ \l -> fromLuaBool <$> lua_isnil l n
 
--- | Returns @True@ if the given index is not valid, and @False@ otherwise.
+-- | Returns 'True' if the given index is not valid, and 'False'
+-- otherwise.
 --
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#lua_isnone lua_isnone>.
+-- This wraps 'lua_isnone'.
 isnone :: StackIndex -> Lua Bool
-isnone n = (== TypeNone) <$> ltype n
+isnone n = liftLua $ \l -> fromLuaBool <$> lua_isnone l n
 
--- | Returns @True@ if the given index is not valid or if the value at the given
--- index is @nil@, and @False@ otherwise.
+-- | Returns 'True' if the given index is not valid or if the value at
+-- the given index is *nil*, and 'False' otherwise.
 --
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#lua_isnoneornil lua_isnoneornil>.
+-- This wraps 'lua_isnoneornil'.
 isnoneornil :: StackIndex -> Lua Bool
-isnoneornil idx = (<= TypeNil) <$> ltype idx
+isnoneornil n = liftLua $ \l -> fromLuaBool <$> lua_isnoneornil l n
 
--- | Returns @True@ if the value at the given index is a number or a string
--- convertible to a number, and @False@ otherwise.
+-- | Returns 'True' if the value at the given index is a number or a
+-- string convertible to a number, and 'False' otherwise.
 --
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#lua_isnumber lua_isnumber>.
+-- This wraps 'lua_isnumber'.
 isnumber :: StackIndex -> Lua Bool
 isnumber n = liftLua $ \l -> fromLuaBool <$> lua_isnumber l n
 
--- | Returns @True@ if the value at the given index is a string or a number
--- (which is always convertible to a string), and @False@ otherwise.
+-- | Returns 'True' if the value at the given index is a string or a
+-- number (which is always convertible to a string), and 'False'
+-- otherwise.
 --
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#lua_isstring lua_isstring>.
+-- This wraps 'lua_isstring'.
 isstring :: StackIndex -> Lua Bool
 isstring n = liftLua $ \l -> fromLuaBool <$> lua_isstring l n
 
--- | Returns @True@ if the value at the given index is a table, and @False@
--- otherwise.
+-- | Returns 'True' if the value at the given index is a table, and
+-- 'False' otherwise.
 --
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#lua_istable lua_istable>.
+-- This wraps 'lua_istable'.
 istable :: StackIndex -> Lua Bool
-istable n = (== TypeTable) <$> ltype n
+istable n = liftLua $ \l -> fromLuaBool <$> lua_istable l n
 
--- | Returns @True@ if the value at the given index is a thread, and @False@
--- otherwise.
+-- | Returns 'True' if the value at the given index is a thread, and
+-- 'False' otherwise.
 --
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#lua_isthread lua_isthread>.
+-- This wraps 'lua_isthread'.
 isthread :: StackIndex -> Lua Bool
-isthread n = (== TypeThread) <$> ltype n
+isthread n = liftLua $ \l -> fromLuaBool <$> lua_isthread l n
 
--- | Returns @True@ if the value at the given index is a userdata (either full
--- or light), and @False@ otherwise.
+-- | Returns 'True' if the value at the given index is a userdata
+-- (either full or light), and 'False' otherwise.
 --
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#lua_isuserdata lua_isuserdata>.
+-- This wraps 'lua_isuserdata'.
 isuserdata :: StackIndex -> Lua Bool
 isuserdata n = liftLua $ \l -> fromLuaBool <$> lua_isuserdata l n
 
--- | Tests whether the object under the first index is smaller than that under
--- the second. Uses @'compare'@ internally.
+-- | Tests whether the object under the first index is smaller than that
+-- under the second. Uses @'compare'@ internally.
 lessthan :: StackIndex -> StackIndex -> Lua Bool
 lessthan index1 index2 = compare index1 index2 LT
 
--- | Loads a Lua chunk (without running it). If there are no errors, @'load'@
--- pushes the compiled chunk as a Lua function on top of the stack. Otherwise,
--- it pushes an error message.
+-- | Loads a Lua chunk (without running it). If there are no errors,
+-- @'load'@ pushes the compiled chunk as a Lua function on top of the
+-- stack. Otherwise, it pushes an error message.
 --
 -- The return values of @'load'@ are:
 --
 -- - @'OK'@: no errors;
 -- - @'ErrSyntax'@: syntax error during pre-compilation;
 -- - @'ErrMem'@: memory allocation error;
--- - @'ErrGcmm'@: error while running a @__gc@ metamethod. (This error has no
---   relation with the chunk being loaded. It is generated by the garbage
---   collector.)
+-- - @'ErrGcmm'@: error while running a @__gc@ metamethod. (This error
+--   has no relation with the chunk being loaded. It is generated by the
+--   garbage collector.)
 --
 -- This function only loads a chunk; it does not run it.
 --
--- @load@ automatically detects whether the chunk is text or binary, and loads
--- it accordingly (see program luac).
+-- @load@ automatically detects whether the chunk is text or binary, and
+-- loads it accordingly (see program luac).
 --
--- The @'load'@ function uses a user-supplied reader function to read the chunk
--- (see @'Lua.Reader'@). The data argument is an opaque value passed to the
--- reader function.
+-- The @'load'@ function uses a user-supplied reader function to read
+-- the chunk (see @'Lua.Reader'@). The data argument is an opaque value
+-- passed to the reader function.
 --
--- The @chunkname@ argument gives a name to the chunk, which is used for error
--- messages and in debug information (see
+-- The @chunkname@ argument gives a name to the chunk, which is used for
+-- error messages and in debug information (see
 -- <https://www.lua.org/manual/5.3/manual.html#4.9 §4.9>). Note that the
 -- @chunkname@ is used as a C string, so it may not contain null-bytes.
+--
+-- This is a wrapper of 'lua_load'.
 load :: Lua.Reader -> Ptr () -> ByteString -> Lua Status
 load reader data' chunkname = liftLua $ \l ->
   B.useAsCString chunkname $ \namePtr ->
   toStatus <$> lua_load l reader data' namePtr nullPtr
 
--- | Returns the type of the value in the given valid index, or @'TypeNone'@ for
--- a non-valid (but acceptable) index.
+-- | Returns the type of the value in the given valid index, or
+-- @'TypeNone'@ for a non-valid (but acceptable) index.
 --
--- See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>.
+-- This function wraps 'lua_type'.
 ltype :: StackIndex -> Lua Type
 ltype idx = toType <$> liftLua (`lua_type` idx)
 
--- | Creates a new empty table and pushes it onto the stack. It is equivalent to
--- @createtable 0 0@.
+-- | Creates a new empty table and pushes it onto the stack. It is
+-- equivalent to @createtable 0 0@.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_newtable lua_newtable>.
 newtable :: Lua ()
 newtable = createtable 0 0
 
--- | This function allocates a new block of memory with the given size, pushes
--- onto the stack a new full userdata with the block address, and returns this
--- address. The host program can freely use this memory.
+-- | This function allocates a new block of memory with the given size,
+-- pushes onto the stack a new full userdata with the block address, and
+-- returns this address. The host program can freely use this memory.
 --
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#lua_newuserdata lua_newuserdata>.
+-- This function wraps 'lua_newuserdata'.
 newuserdata :: Int -> Lua (Ptr ())
 newuserdata = liftLua1 lua_newuserdata . fromIntegral
 
--- | Pops a key from the stack, and pushes a key–value pair from the table at
--- the given index (the "next" pair after the given key). If there are no more
--- elements in the table, then @next@ returns @False@ (and pushes nothing).
+-- | Pops a key from the stack, and pushes a key–value pair from the
+-- table at the given index (the "next" pair after the given key). If
+-- there are no more elements in the table, then @next@ returns @False@
+-- (and pushes nothing).
 --
 -- Errors on the Lua side are caught and rethrown as a @'Exception'@.
 --
+-- This function wraps 'hslua_next'.
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_next lua_next>.
 next :: StackIndex -> Lua Bool
 next idx = fromLuaBool <$> liftLuaThrow (\l -> hslua_next l idx)
 
--- | Opens all standard Lua libraries into the current state and sets each
--- library name as a global value.
+-- | Opens all standard Lua libraries into the current state and sets
+-- each library name as a global value.
 --
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#luaL_openlibs luaL_openlibs>.
+-- This function wraps 'luaL_openlibs'.
 openlibs :: Lua ()
 openlibs = liftLua luaL_openlibs
 
 -- | Pushes Lua's /base/ library onto the stack.
 --
--- See <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_base luaopen_base>.
+-- This function pushes and and calls 'luaopen_base'.
 openbase :: Lua ()
 openbase = pushcfunction luaopen_base *> call 0 multret
 
 -- | Pushes Lua's /debug/ library onto the stack.
 --
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_debug luaopen_debug>.
+-- This function pushes and and calls 'luaopen_io'.
 opendebug :: Lua ()
 opendebug = pushcfunction luaopen_debug *> call 0 multret
 
 -- | Pushes Lua's /io/ library onto the stack.
 --
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_io luaopen_io>.
+-- This function pushes and and calls 'luaopen_io'.
 openio :: Lua ()
 openio = pushcfunction luaopen_io *> call 0 multret
 
 -- | Pushes Lua's /math/ library onto the stack.
 --
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_math luaopen_math>.
+-- This function pushes and and calls 'luaopen_math'.
 openmath :: Lua ()
 openmath = pushcfunction luaopen_math *> call 0 multret
 
 -- | Pushes Lua's /os/ library onto the stack.
 --
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_os luaopen_os>.
+-- This function pushes and and calls 'luaopen_os'.
 openos :: Lua ()
 openos = pushcfunction luaopen_os *> call 0 multret
 
 -- | Pushes Lua's /package/ library onto the stack.
 --
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_package luaopen_package>.
+-- This function pushes and and calls 'luaopen_package'.
 openpackage :: Lua ()
 openpackage = pushcfunction luaopen_package *> call 0 multret
 
 -- | Pushes Lua's /string/ library onto the stack.
 --
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_string luaopen_string>.
+-- This function pushes and and calls 'luaopen_string'.
 openstring :: Lua ()
 openstring = pushcfunction luaopen_string *> call 0 multret
 
 -- | Pushes Lua's /table/ library onto the stack.
 --
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#pdf-luaopen_table luaopen_table>.
+-- This function pushes and and calls 'luaopen_table'.
 opentable :: Lua ()
 opentable = pushcfunction luaopen_table *> call 0 multret
 
 -- | Calls a function in protected mode.
 --
--- Both @nargs@ and @nresults@ have the same meaning as in @'call'@. If there
--- are no errors during the call, @pcall@ behaves exactly like @'call'@.
--- However, if there is any error, @pcall@ catches it, pushes a single value on
--- the stack (the error message), and returns the error code. Like @'call'@,
--- @pcall@ always removes the function and its arguments from the stack.
+-- Both @nargs@ and @nresults@ have the same meaning as in @'call'@. If
+-- there are no errors during the call, @pcall@ behaves exactly like
+-- @'call'@. However, if there is any error, @pcall@ catches it, pushes
+-- a single value on the stack (the error message), and returns the
+-- error code. Like @'call'@, @pcall@ always removes the function and
+-- its arguments from the stack.
 --
--- If @msgh@ is @Nothing@, then the error object returned on the stack is
--- exactly the original error object. Otherwise, when @msgh@ is @Just idx@, the
--- stack index @idx@ is the location of a message handler. (This index cannot be
--- a pseudo-index.) In case of runtime errors, this function will be called with
--- the error object and its return value will be the object returned on the
--- stack by @'pcall'@.
+-- If @msgh@ is @Nothing@, then the error object returned on the stack
+-- is exactly the original error object. Otherwise, when @msgh@ is @Just
+-- idx@, the stack index @idx@ is the location of a message handler.
+-- (This index cannot be a pseudo-index.) In case of runtime errors,
+-- this function will be called with the error object and its return
+-- value will be the object returned on the stack by @'pcall'@.
 --
--- Typically, the message handler is used to add more debug information to the
--- error object, such as a stack traceback. Such information cannot be gathered
--- after the return of @'pcall'@, since by then the stack has unwound.
+-- Typically, the message handler is used to add more debug information
+-- to the error object, such as a stack traceback. Such information
+-- cannot be gathered after the return of @'pcall'@, since by then the
+-- stack has unwound.
 --
--- See <https://www.lua.org/manual/5.3/manual.html#lua_pcall lua_pcall>.
+-- This function wraps 'lua_pcall'.
 pcall :: NumArgs -> NumResults -> Maybe StackIndex -> Lua Status
 pcall nargs nresults msgh = liftLua $ \l ->
   toStatus <$> lua_pcall l nargs nresults (fromMaybe 0 msgh)
@@ -568,36 +557,36 @@ pop n = liftLua $ \l -> lua_pop l (fromIntegral n)
 
 -- | Pushes a boolean value with the given value onto the stack.
 --
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#lua_pushboolean lua_pushboolean>.
+-- This functions wraps 'lua_pushboolean'.
 pushboolean :: Bool -> Lua ()
 pushboolean b = liftLua $ \l -> lua_pushboolean l (toLuaBool b)
 
 -- | Pushes a new C closure onto the stack.
 --
--- When a C function is created, it is possible to associate some values with
--- it, thus creating a C closure (see
--- <https://www.lua.org/manual/5.1/manual.html#3.4 §3.4>); these values are then
--- accessible to the function whenever it is called. To associate values with a
--- C function, first these values should be pushed onto the stack (when there
--- are multiple values, the first value is pushed first). Then lua_pushcclosure
--- is called to create and push the C function onto the stack, with the argument
--- @n@ telling how many values should be associated with the function.
--- lua_pushcclosure also pops these values from the stack.
+-- When a C function is created, it is possible to associate some values
+-- with it, thus creating a C closure (see
+-- <https://www.lua.org/manual/5.1/manual.html#3.4 §3.4>); these values
+-- are then accessible to the function whenever it is called. To
+-- associate values with a C function, first these values should be
+-- pushed onto the stack (when there are multiple values, the first
+-- value is pushed first). Then pushcclosure is called to create and
+-- push the C function onto the stack, with the argument @n@ telling how
+-- many values should be associated with the function. pushcclosure also
+-- pops these values from the stack.
 --
 -- The maximum value for @n@ is 255.
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_pushcclosure lua_pushcclosure>.
-pushcclosure :: CFunction -> NumArgs -> Lua ()
+pushcclosure :: CFunction -> NumArgs {- ^ n -} -> Lua ()
 pushcclosure f n = liftLua $ \l -> lua_pushcclosure l f n
 
--- | Pushes a C function onto the stack. This function receives a pointer to a C
--- function and pushes onto the stack a Lua value of type function that, when
--- called, invokes the corresponding C function.
+-- | Pushes a C function onto the stack. This function receives a
+-- pointer to a C function and pushes onto the stack a Lua value of type
+-- function that, when called, invokes the corresponding C function.
 --
--- Any function to be callable by Lua must follow the correct protocol to
--- receive its parameters and return its results (see @'CFunction'@)
+-- Any function to be callable by Lua must follow the correct protocol
+-- to receive its parameters and return its results (see @'CFunction'@)
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_pushcfunction lua_pushcfunction>.
