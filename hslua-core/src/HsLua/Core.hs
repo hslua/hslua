@@ -66,9 +66,6 @@ module HsLua.Core
   , checkstack
   -- ** types and type checks
   , Type (..)
-  , TypeCode (..)
-  , fromType
-  , toType
   , ltype
   , typename
   , isboolean
@@ -96,7 +93,6 @@ module HsLua.Core
   , rawlen
   -- ** Comparison and arithmetic functions
   , RelationalOperator (..)
-  , fromRelationalOperator
   , compare
   , equal
   , lessthan
@@ -137,7 +133,6 @@ module HsLua.Core
   , loadstring
   -- ** Coroutine functions
   , Status (..)
-  , toStatus
   , status
   -- ** garbage-collection function and options
   , GCCONTROL (..)

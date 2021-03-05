@@ -33,7 +33,6 @@ module HsLua.Core.Types
   , GCCONTROL (..)
   , toGCCode
   , Type (..)
-  , TypeCode (..)
   , fromType
   , toType
   , liftIO
@@ -53,7 +52,6 @@ module HsLua.Core.Types
   , RelationalOperator (..)
   , fromRelationalOperator
   , Status (..)
-  , StatusCode (..)
   , toStatus
     -- * References
   , Reference (..)

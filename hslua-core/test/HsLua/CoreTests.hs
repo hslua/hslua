@@ -20,6 +20,7 @@ import Data.ByteString (append)
 import Data.Maybe (fromMaybe)
 import Lua.Lib (luaopen_debug)
 import HsLua.Core as Lua
+import HsLua.Core.Types (toType)
 import Lua.Arbitrary ()
 import Test.Tasty.HsLua ( (?:), (=:), shouldBeErrorMessageOf, shouldBeResultOf
                        , shouldHoldForResultOf, pushLuaExpr )
