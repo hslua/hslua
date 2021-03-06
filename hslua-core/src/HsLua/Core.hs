@@ -183,9 +183,6 @@ module HsLua.Core
   -- * Error handling
   , LuaError (..)
   , Exception (..)
-  , throwException
-  , catchException
-  , withExceptionMessage
   , try
   , throwMessage
   , errorMessage

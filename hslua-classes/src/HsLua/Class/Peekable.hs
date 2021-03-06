@@ -21,6 +21,7 @@ module HsLua.Class.Peekable
   , peekKeyValuePairs
   , peekList
   , reportValueOnFailure
+  , inContext
   ) where
 
 import Control.Monad ((>=>))

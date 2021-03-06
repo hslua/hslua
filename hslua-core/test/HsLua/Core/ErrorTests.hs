@@ -17,10 +17,10 @@ tests :: TestTree
 tests = testGroup "Error"
   [ "try catches errors" =:
     isLeft `shouldHoldForResultOf` Lua.try
-      (Lua.throwException "test" :: Lua ())
+      (Lua.throwMessage "test" :: Lua ())
 
   , "second alternative is used when first fails" ?:
-    (Lua.throwException @Lua.Exception "test" <|> return True)
+    (Lua.throwMessage @Lua.Exception "test" <|> return True)
 
   , "Applicative.empty implementation throws an exception" =:
     isLeft `shouldHoldForResultOf` Lua.try (empty :: Lua ())

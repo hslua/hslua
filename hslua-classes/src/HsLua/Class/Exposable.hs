@@ -22,7 +22,7 @@ module HsLua.Class.Exposable
   ) where
 
 import HsLua.Core as Lua
-import HsLua.Class.Peekable (Peekable (peek), PeekError (..))
+import HsLua.Class.Peekable (Peekable (peek), PeekError (..), inContext)
 import HsLua.Class.Pushable (Pushable (push))
 import qualified Control.Monad.Catch as Catch
 
@@ -50,7 +50,7 @@ instance (PeekError e, Pushable a) => Exposable e (LuaE e a) where
 instance (Peekable a, Exposable e b) => Exposable e (a -> b) where
   partialApply narg f = getArg >>= partialApply (narg + 1) . f
     where
-      getArg = Lua.withExceptionMessage (errorPrefix ++) (peek narg)
+      getArg = inContext errorPrefix (peek narg)
       errorPrefix = "could not read argument " ++
                     show (fromStackIndex narg) ++ ": "
 

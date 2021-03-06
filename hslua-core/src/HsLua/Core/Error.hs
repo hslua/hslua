@@ -17,9 +17,6 @@ module HsLua.Core.Error
   ( Exception (..)
   , LuaError (..)
   , Lua
-  , catchException
-  , throwException
-  , withExceptionMessage
   , throwErrorAsException
   , throwTopMessage
   , throwTopMessageWithState
@@ -90,22 +87,6 @@ instance LuaError Exception where
 
 instance Semigroup Exception where
   Exception a <> Exception b = Exception (a ++ '\n' : b)
-
--- | Raise a Lua @'Exception'@ containing the given error message.
-throwException :: String -> LuaE e a
-throwException = Catch.throwM . Exception
-{-# INLINABLE throwException #-}
-
--- | Catch a Lua @'Exception'@.
-catchException :: LuaE e a -> (Exception -> LuaE e a) -> LuaE e a
-catchException = Catch.catch
-{-# INLINABLE catchException #-}
-
--- | Catch Lua @'Exception'@, alter the message and rethrow.
-withExceptionMessage :: (String -> String) -> LuaE e a -> LuaE e a
-withExceptionMessage modifier luaOp =
-  luaOp `catchException` \(Exception msg) -> throwException (modifier msg)
-{-# INLINABLE withExceptionMessage #-}
 
 -- | Return either the result of a Lua computation or, if an exception was
 -- thrown, the error.

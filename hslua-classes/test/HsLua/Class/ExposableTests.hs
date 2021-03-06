@@ -54,7 +54,7 @@ tests =
     (False, "Error during function call:\nfoo" :: String) `shouldBeResultOf` do
       Lua.openlibs
       Lua.pushHaskellFunction $
-        toHaskellFunction (Lua.throwException "foo" :: Lua ())
+        toHaskellFunction (Lua.throwMessage "foo" :: Lua ())
       Lua.setglobal "throw_foo"
       Lua.loadstring "return pcall(throw_foo)" *> Lua.call 0 2
       (,) <$> Lua.peek (Lua.nth 2) <*> Lua.peek (Lua.nth 1)
