@@ -59,11 +59,13 @@ library
                      , HsLua.Class.Util
   hs-source-dirs:      src
   default-extensions:  LambdaCase
-  other-extensions:    DeriveDataTypeable
-                     , DeriveFunctor
-                     , FlexibleContexts
+  other-extensions:    AllowAmbiguousTypes
+                     , CPP
                      , FlexibleInstances
+                     , MultiParamTypeClasses
+                     , OverloadedStrings
                      , ScopedTypeVariables
+                     , TypeApplications
 
 test-suite test-hslua-classes
   import:              common-options
@@ -86,3 +88,5 @@ test-suite test-hslua-classes
                      , tasty-hslua          >= 1.0
                      , tasty-hunit          >= 0.9
                      , tasty-quickcheck     >= 0.8
+  other-extensions:    OverloadedStrings
+                     , TypeApplications

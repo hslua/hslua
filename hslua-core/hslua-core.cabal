@@ -67,11 +67,12 @@ library
   reexported-modules:  lua:Lua
   hs-source-dirs:      src
   default-extensions:  LambdaCase
-  other-extensions:    DeriveDataTypeable
-                     , DeriveFunctor
-                     , FlexibleContexts
-                     , FlexibleInstances
+  other-extensions:    CPP
+                     , DeriveDataTypeable
+                     , GeneralizedNewtypeDeriving
+                     , OverloadedStrings
                      , ScopedTypeVariables
+                     , TypeApplications
 
 test-suite test-hslua-core
   import:              common-options

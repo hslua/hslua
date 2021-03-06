@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      :  HsLua.Core.UserdataTests
@@ -11,8 +10,6 @@ Tests that any data type can be pushed to Lua.
 -}
 module HsLua.Core.UserdataTests (tests) where
 
-import Data.Data (Data)
-import Data.Typeable (Typeable)
 import HsLua.Core (getfield, pushboolean, setmetatable, tostring)
 import HsLua.Core.Userdata (fromuserdata, newhsuserdata, newudmetatable)
 import HsLua.Core.Types (nth, top)
@@ -50,4 +47,4 @@ tests = testGroup "Userdata"
 
 -- | Sample data type.
 data Sample = Sample Int String
-  deriving (Data, Eq, Show, Typeable)
+  deriving (Eq, Show)

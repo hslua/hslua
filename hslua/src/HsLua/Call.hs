@@ -1,6 +1,5 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RankNTypes #-}
 {-|
 Module      : HsLua.Call
 Copyright   : © 2020-2021 Albert Krewinkel

@@ -1,6 +1,4 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE LambdaCase                 #-}
-{-# LANGUAGE RankNTypes                 #-}
 {-|
 Module      : HsLua.Core.Types
 Copyright   : © 2007–2012 Gracjan Polak;

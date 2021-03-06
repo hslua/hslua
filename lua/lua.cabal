@@ -135,6 +135,7 @@ library
   other-extensions:    CPP
                      , DeriveGeneric
                      , GeneralizedNewtypeDeriving
+                     , PatternSynonyms
   c-sources:           cbits/hslua/hsludata.c
                      , cbits/hslua/hslcall.c
                      , cbits/hslua/hslauxlib.c

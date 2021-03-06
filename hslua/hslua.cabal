@@ -78,9 +78,8 @@ library
   default-extensions:  LambdaCase
   other-extensions:    DeriveDataTypeable
                      , DeriveFunctor
-                     , FlexibleContexts
-                     , FlexibleInstances
-                     , ScopedTypeVariables
+                     , OverloadedStrings
+                     , TypeApplications
 
 test-suite test-hslua
   import:              common-options
@@ -103,3 +102,7 @@ test-suite test-hslua
                      , tasty                >= 0.11
                      , tasty-hunit          >= 0.9
                      , tasty-quickcheck     >= 0.8
+  other-extensions:    DeriveDataTypeable
+                     , LambdaCase
+                     , OverloadedStrings
+                     , TypeApplications
