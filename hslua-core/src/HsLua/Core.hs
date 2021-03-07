@@ -184,12 +184,11 @@ module HsLua.Core
   , LuaError (..)
   , Exception (..)
   , try
-  , throwMessage
-  , errorMessage
-  , throwErrorAsException
-  , throwTopMessage
-  , throwTopMessageWithState
+  , failLua
   , throwTypeMismatchError
+    -- ** Helpers
+  , popErrorMessage
+  , pushTypeMismatchError
   ) where
 
 import Prelude hiding (EQ, LT, compare, concat, error)

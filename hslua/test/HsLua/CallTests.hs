@@ -106,7 +106,8 @@ tests = testGroup "Call"
         , parameterIsOptional = False
         }
         @=?
-        parameterDoc (parameter peekText "string" "test" "test param")
+        parameterDoc
+          (parameter @Lua.Exception peekText "string" "test" "test param")
       )
     , "optionalParameter doc" =:
       ( ParameterDoc
@@ -116,7 +117,8 @@ tests = testGroup "Call"
         , parameterIsOptional = True
         }
         @=?
-        parameterDoc (optionalParameter peekText "string" "test" "test param")
+        parameterDoc
+          (optionalParameter @Lua.Exception peekText "string" "test" "test param")
       )
     , "functionResult doc" =:
       ( FunctionResultDoc

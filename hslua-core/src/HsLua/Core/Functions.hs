@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings   #-}
 {-|
 Module      : HsLua.Core.Functions
 Copyright   : © 2007–2012 Gracjan Polak;
@@ -45,9 +46,7 @@ ensureTable idx ioOp = do
   isTbl <- istable idx
   if isTbl
     then liftLua ioOp
-    else do
-      tyName <- ltype idx >>= typename
-      throwMessage ("table expected, got " ++ tyName)
+    else throwTypeMismatchError "table" idx
 
 --
 -- API functions
@@ -98,7 +97,7 @@ absindex = liftLua1 lua_absindex
 call :: LuaError e => NumArgs -> NumResults -> LuaE e ()
 call nargs nresults = do
   res <- pcall nargs nresults Nothing
-  when (res /= OK) throwTopMessage
+  when (res /= OK) throwErrorAsException
 
 -- | Ensures that the stack has space for at least @n@ extra slots (that is,
 -- that you can safely push up to @n@ values into it). It returns false if it

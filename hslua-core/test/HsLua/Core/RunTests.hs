@@ -25,7 +25,7 @@ tests = testGroup "Run"
   [ testGroup "runEither"
     [ "Lua errors are caught" =:
       isLeft `shouldHoldForResultOf`
-      liftIO (runEither (throwMessage "failing" :: Lua Bool))
+      liftIO (runEither (failLua "failing" :: Lua Bool))
 
     , "error-less code gives 'Right'" =:
       isRight `shouldHoldForResultOf`

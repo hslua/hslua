@@ -116,13 +116,13 @@ tests = testGroup "Peek"
   , testGroup "Strings"
     [ testGroup "peekByteString"
       [ testProperty "retrieve any string" $ \bs -> monadicIO $ do
-          retrieved <- run $ Lua.run $ do
+          retrieved <- run $ Lua.run @Lua.Exception $ do
             Lua.pushstring bs
             peekByteString Lua.top
           assert (retrieved == Right bs)
 
       , testProperty "retrieve integer as string" $ \n -> monadicIO $ do
-          retrieved <- run . Lua.run $ do
+          retrieved <- run . Lua.run @Lua.Exception $ do
             Lua.pushinteger n
             peekByteString Lua.top
           let numberAsByteString = Char8.pack . show @Integer . fromIntegral $ n
@@ -137,19 +137,19 @@ tests = testGroup "Peek"
 
     , testGroup "peekText"
       [ testProperty "retrieve any string" $ \bs -> monadicIO $ do
-          retrieved <- run $ Lua.run $ do
+          retrieved <- run $ Lua.run @Lua.Exception $ do
             Lua.pushstring bs
             peekText Lua.top
           assert (retrieved == Right (Utf8.toText bs))
 
       , testProperty "retrieve UTF-8 encoded Text" $ \txt -> monadicIO $ do
-          retrieved <- run $ Lua.run $ do
+          retrieved <- run $ Lua.run @Lua.Exception $ do
             Lua.pushstring (Utf8.fromText txt)
             peekText Lua.top
           assert (retrieved == Right txt)
 
       , testProperty "retrieve integer as Text" $ \n -> monadicIO $ do
-          retrieved <- run . Lua.run $ do
+          retrieved <- run . Lua.run @Lua.Exception $ do
             Lua.pushinteger n
             peekText Lua.top
           let numberAsByteString = T.pack . show @Integer . fromIntegral $ n
@@ -164,7 +164,7 @@ tests = testGroup "Peek"
 
     , testGroup "peekString"
       [ testProperty "retrieve UTF-8 encoded string" $ \txt -> monadicIO $ do
-          retrieved <- run $ Lua.run $ do
+          retrieved <- run $ Lua.run @Lua.Exception $ do
             Lua.pushstring (Utf8.fromString txt)
             peekString Lua.top
           assert (retrieved == Right txt)
@@ -183,7 +183,7 @@ tests = testGroup "Peek"
     , testGroup "peekStringy"
       [ testProperty "retrieve UTF-8 encoded string as Text" $ \txt ->
           monadicIO $ do
-            retrieved <- run $ Lua.run $ do
+            retrieved <- run $ Lua.run @Lua.Exception $ do
               Lua.pushstring (Utf8.fromText txt)
               peekStringy @T.Text Lua.top
             assert (retrieved == Right txt)
@@ -298,7 +298,7 @@ tests = testGroup "Peek"
         optional peekString Lua.top
     , "optional with number" =:
       Right (Just 23) `shouldBeResultOf` do
-        Lua.pushinteger 23
+        Lua.pushinteger @Lua.Exception 23
         optional (peekIntegral @Int) Lua.top
     ]
   ]

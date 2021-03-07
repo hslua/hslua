@@ -1,12 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
 {-| Tests for error handling.
 -}
 module HsLua.Core.ErrorTests (tests) where
 
 import Control.Applicative ((<|>), empty)
 import Data.Either (isLeft)
-import HsLua.Core (Lua)
+import HsLua.Core (Lua, failLua)
 import Test.Tasty.HsLua ( (=:), (?:), shouldHoldForResultOf)
 import Test.Tasty (TestTree, testGroup)
 
@@ -17,10 +16,10 @@ tests :: TestTree
 tests = testGroup "Error"
   [ "try catches errors" =:
     isLeft `shouldHoldForResultOf` Lua.try
-      (Lua.throwMessage "test" :: Lua ())
+      (failLua "test" :: Lua ())
 
   , "second alternative is used when first fails" ?:
-    (Lua.throwMessage @Lua.Exception "test" <|> return True)
+    ((failLua "test" :: Lua Bool) <|> return True)
 
   , "Applicative.empty implementation throws an exception" =:
     isLeft `shouldHoldForResultOf` Lua.try (empty :: Lua ())

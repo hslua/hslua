@@ -36,7 +36,6 @@ import qualified Data.Set as Set
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as BL
 import qualified HsLua.Peek as Peek
-import qualified HsLua.Core.Utf8 as Utf8
 
 #if !MIN_VERSION_base(4,12,0)
 import Data.Semigroup (Semigroup)
@@ -46,8 +45,8 @@ import Data.Semigroup (Semigroup)
 -- correct type and use @peekfn@ to convert it to a haskell value if
 -- possible. Throws and exception if the test failes with the expected
 -- type name as part of the message.
-typeChecked :: LuaError e
-            => String                      -- ^ expected type
+typeChecked :: forall e a. LuaError e
+            => ByteString                  -- ^ expected type
             -> (StackIndex -> LuaE e Bool) -- ^ pre-condition Checker
             -> (StackIndex -> LuaE e a)    -- ^ retrieval function
             -> StackIndex -> LuaE e a
@@ -55,19 +54,19 @@ typeChecked expectedType test peekfn idx = do
   v <- test idx
   if v
     then peekfn idx
-    else throwTypeMismatchError (Utf8.fromString expectedType) idx
+    else throwTypeMismatchError expectedType idx
 
 -- | Report the expected and actual type of the value under the given
 -- index if conversion failed.
-reportValueOnFailure :: PeekError e
-                     => String
+reportValueOnFailure :: forall e a. PeekError e
+                     => ByteString
                      -> (StackIndex -> LuaE e (Maybe a))
                      -> StackIndex -> LuaE e a
 reportValueOnFailure expected peekMb idx = do
   res <- peekMb idx
   case res of
     (Just x) -> return x
-    Nothing -> throwTypeMismatchError (Utf8.fromString expected) idx
+    Nothing  -> throwTypeMismatchError expected idx
 
 -- | A value that can be read from the Lua stack.
 class Peekable a where

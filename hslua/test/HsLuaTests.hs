@@ -200,15 +200,16 @@ instance LuaError CustomException where
   pushException = \case
     ExceptionWithMessage m -> pushstring (Utf8.fromString m)
     ExceptionWithNumber n  -> pushnumber n
-  peekException = do
+  popException = do
     Lua.tonumber Lua.top >>= \case
       Just num -> do
         Lua.pop 1
         return (ExceptionWithNumber num)
       _        -> do
         l <- Lua.state
-        msg <- Lua.liftIO (Lua.errorMessage l)
+        msg <- Lua.liftIO (Lua.popErrorMessage l)
         return (ExceptionWithMessage (Utf8.toString msg))
+  luaException = ExceptionWithMessage
 
 tryCustom :: LuaE CustomException a -> IO (Either CustomException a)
 tryCustom = Catch.try . Lua.run

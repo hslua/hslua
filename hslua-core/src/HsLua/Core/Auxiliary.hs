@@ -1,4 +1,6 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications    #-}
 {-|
 Module      : HsLua.Core.Auxiliary
 Copyright   : © 2007–2012 Gracjan Polak;
@@ -36,8 +38,8 @@ module HsLua.Core.Auxiliary
 import Control.Exception (IOException, try)
 import Data.ByteString (ByteString)
 import Foreign.C (withCString)
-import HsLua.Core.Error (LuaError, throwTopMessageWithState)
-import HsLua.Core.Types (LuaE, Status, StackIndex, liftLua, multret)
+import HsLua.Core.Error (LuaError, throwErrorAsException)
+import HsLua.Core.Types (LuaE, Status, StackIndex, liftLua, multret, runWith)
 import Lua (top)
 import Lua.Auxiliary
 import Lua.Ersatz.Auxiliary
@@ -216,20 +218,20 @@ newstate = hsluaL_newstate
 ref :: StackIndex -> LuaE e Reference
 ref t = liftLua $ \l -> Lua.toReference <$> luaL_ref l t
 
--- | Converts any Lua value at the given index to a @'ByteString'@ in a
--- reasonable format. The resulting string is pushed onto the stack and also
--- returned by the function.
+-- | Converts any Lua value at the given index to a 'ByteString' in a
+-- reasonable format. The resulting string is pushed onto the stack and
+-- also returned by the function.
 --
--- If the value has a metatable with a @__tostring@ field, then @tolstring'@
--- calls the corresponding metamethod with the value as argument, and uses the
--- result of the call as its result.
-tostring' :: StackIndex -> LuaE e B.ByteString
+-- If the value has a metatable with a @__tostring@ field, then
+-- @tolstring'@ calls the corresponding metamethod with the value as
+-- argument, and uses the result of the call as its result.
+tostring' :: forall e. LuaError e => StackIndex -> LuaE e B.ByteString
 tostring' n = do
   l <- Lua.state
   Lua.liftIO $ alloca $ \lenPtr -> do
     cstr <- hsluaL_tolstring l n lenPtr
     if cstr == nullPtr
-      then throwTopMessageWithState l
+      then runWith @e l throwErrorAsException
       else do
         cstrLen <- Storable.peek lenPtr
         B.packCStringLen (cstr, fromIntegral cstrLen)
