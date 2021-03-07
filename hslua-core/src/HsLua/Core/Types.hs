@@ -59,12 +59,16 @@ module HsLua.Core.Types
   , nthBottom
   , nth
   , top
+    -- * Table field names
+  , Name (..)
   ) where
 
 import Prelude hiding (Integer, EQ, LT)
 
 import Control.Monad.Catch (MonadCatch, MonadMask, MonadThrow)
 import Control.Monad.Reader (ReaderT (..), MonadReader, MonadIO, asks, liftIO)
+import Data.ByteString (ByteString)
+import Data.String (IsString (..))
 import Lua (nth, nthBottom, nthTop, top)
 import Lua.Constants
 import Lua.Types
@@ -73,6 +77,7 @@ import Lua.Auxiliary
   , fromReference
   , toReference
   )
+import qualified HsLua.Core.Utf8 as Utf8
 
 -- | Environment in which Lua computations are evaluated.
 newtype LuaEnvironment = LuaEnvironment
@@ -288,3 +293,19 @@ refnil = fromIntegral LUA_REFNIL
 -- | Value signaling that no reference was found.
 noref :: Int
 noref = fromIntegral LUA_NOREF
+
+--
+-- Field names
+--
+
+-- | Name of a function, table field, or chunk; the name must be valid
+-- UTF-8 and may not contain any nul characters.
+--
+-- Implementation note: this is a @newtype@ instead of a simple @type
+-- Name = ByteString@ alias so we can define a UTF-8 based 'IsString'
+-- instance. Non-ASCII users would have a bad time otherwise.
+newtype Name = Name { fromName :: ByteString }
+  deriving (Eq, Show)
+
+instance IsString Name where
+  fromString = Name . Utf8.fromString

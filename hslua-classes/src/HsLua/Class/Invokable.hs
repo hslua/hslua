@@ -28,7 +28,7 @@ import HsLua.Util (getglobal')
 
 -- | Helper class used to make Lua functions useable from Haskell.
 class PeekError e => Invokable e a where
-  addArg :: String -> LuaE e () -> NumArgs -> a
+  addArg :: Name -> LuaE e () -> NumArgs -> a
 
 instance (PeekError e, Peekable a) => Invokable e (LuaE e a) where
   addArg fnName pushArgs nargs = do
@@ -44,5 +44,5 @@ instance (Pushable a, PeekError e, Invokable e b) => Invokable e (a -> b) where
 -- | Invoke a Lua function. Use as:
 --
 -- > v <- invoke "proc" "abc" (1::Int) (5.0::Double)
-invoke :: forall e a. Invokable e a => String -> a
+invoke :: forall e a. Invokable e a => Name -> a
 invoke fname = addArg @e fname (return ()) 0

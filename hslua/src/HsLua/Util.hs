@@ -16,16 +16,18 @@ module HsLua.Util
   ) where
 
 import Data.List (groupBy)
+import Data.String (IsString (fromString))
 import HsLua.Core
-  ( LuaE, LuaError (..)
-  , getfield, getglobal, nth, pop, pushvalue, remove, setfield, setglobal, top )
+  ( LuaE, LuaError (..), Name (..), getfield, getglobal, nth, pop
+  , pushvalue, remove, setfield, setglobal, top )
+import qualified HsLua.Core.Utf8 as Utf8
 
 -- | Like @getglobal@, but knows about packages and nested tables. E.g.
 --
 -- > getglobal' "math.sin"
 --
 -- will return the function @sin@ in package @math@.
-getglobal' :: LuaError e => String -> LuaE e ()
+getglobal' :: LuaError e => Name -> LuaE e ()
 getglobal' = getnested . splitdot
 
 -- | Like @setglobal@, but knows about packages and nested tables. E.g.
@@ -34,7 +36,7 @@ getglobal' = getnested . splitdot
 -- > setglobal' "mypackage.version"
 --
 -- All tables and fields, except for the last field, must exist.
-setglobal' :: LuaError e => String -> LuaE e ()
+setglobal' :: LuaError e => Name -> LuaE e ()
 setglobal' s =
   case reverse (splitdot s) of
     [] ->
@@ -48,13 +50,17 @@ setglobal' s =
       pop 1
 
 -- | Gives the list of the longest substrings not containing dots.
-splitdot :: String -> [String]
-splitdot = filter (/= ".") . groupBy (\a b -> a /= '.' && b /= '.')
+splitdot :: Name -> [Name]
+splitdot = map fromString
+  . filter (/= ".")
+  . groupBy (\a b -> a /= '.' && b /= '.')
+  . Utf8.toString
+  . fromName
 
 -- | Pushes the value described by the strings to the stack; where the first
 -- value is the name of a global variable and the following strings are the
 -- field values in nested tables.
-getnested :: LuaError e => [String] -> LuaE e ()
+getnested :: LuaError e => [Name] -> LuaE e ()
 getnested [] = return ()
 getnested (x:xs) = do
   _ <- getglobal x

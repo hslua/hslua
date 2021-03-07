@@ -84,7 +84,7 @@ toHaskellFunction a = do
 
 -- | Imports a Haskell function and registers it at global name.
 registerHaskellFunction :: Exposable e a
-                        => String -> a -> LuaE e ()
+                        => Name -> a -> LuaE e ()
 registerHaskellFunction n f = do
   pushHaskellFunction $ toHaskellFunction f
   setglobal n

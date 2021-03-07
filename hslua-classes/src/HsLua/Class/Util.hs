@@ -13,9 +13,7 @@ Portability : non-portable (depends on GHC)
 HsLua utility functions.
 -}
 module HsLua.Class.Util
-  ( getglobal'
-  , setglobal'
-  , raiseError
+  ( raiseError
   , Optional (Optional, fromOptional)
     -- * getting values
   , peekEither
@@ -23,54 +21,13 @@ module HsLua.Class.Util
   , popValue
   ) where
 
-import Data.List (groupBy)
-import HsLua.Core (LuaE, LuaError, NumResults, StackIndex, nth, top)
+import HsLua.Core (LuaE, NumResults, StackIndex, top)
 import HsLua.Class.Peekable (Peekable (peek), PeekError (exceptionFromMessage))
 import HsLua.Class.Pushable (Pushable (push))
 import Text.Read (readMaybe)
 
 import qualified Control.Monad.Catch as Catch
 import qualified HsLua.Core as Lua
-
--- | Like @getglobal@, but knows about packages and nested tables. E.g.
---
--- > getglobal' "math.sin"
---
--- will return the function @sin@ in package @math@.
-getglobal' :: LuaError e => String -> LuaE e ()
-getglobal' = getnested . splitdot
-
--- | Like @setglobal@, but knows about packages and nested tables. E.g.
---
--- > pushstring "0.9.4"
--- > setglobal' "mypackage.version"
---
--- All tables and fields, except for the last field, must exist.
-setglobal' :: LuaError e => String -> LuaE e ()
-setglobal' s =
-  case reverse (splitdot s) of
-    [] ->
-      return ()
-    [_] ->
-      Lua.setglobal s
-    (lastField : xs) -> do
-      getnested (reverse xs)
-      Lua.pushvalue (nth 2)
-      Lua.setfield (nth 2) lastField
-      Lua.pop 1
-
--- | Gives the list of the longest substrings not containing dots.
-splitdot :: String -> [String]
-splitdot = filter (/= ".") . groupBy (\a b -> a /= '.' && b /= '.')
-
--- | Pushes the value described by the strings to the stack; where the first
--- value is the name of a global variable and the following strings are the
--- field values in nested tables.
-getnested :: LuaError e => [String] -> LuaE e ()
-getnested [] = return ()
-getnested (x:xs) = do
-  _ <- Lua.getglobal x
-  mapM_ (\a -> Lua.getfield top a *> Lua.remove (nth 2)) xs
 
 -- | Raise a Lua error, using the given value as the error object.
 raiseError :: (PeekError e, Pushable a) => a -> LuaE e NumResults

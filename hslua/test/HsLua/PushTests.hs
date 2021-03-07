@@ -208,10 +208,9 @@ assertLuaEqual action lit =
             expectedType <- Lua.ltype (Lua.nth 1) >>= Lua.typename
             actualType <- Lua.ltype (Lua.nth 2) >>= Lua.typename
             actual <- Lua.tostring' (Lua.nth 2)
-            return . Just $
-              "Expected '" <> Utf8.toString lit <> "' (" <> expectedType <>
-              ") but got '" <> Utf8.toString actual <> "'" <>
-              " (" <> actualType <> ")"
+            return . Just . Utf8.toString $
+              "Expected '" <> lit <> "' (" <> expectedType <>
+              ") but got '" <> actual <> "'" <> " (" <> actualType <> ")"
   in comparison >>= \case
     Nothing -> return ()
     Just err -> assertFailure err

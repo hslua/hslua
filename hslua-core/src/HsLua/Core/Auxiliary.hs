@@ -37,9 +37,11 @@ module HsLua.Core.Auxiliary
 
 import Control.Exception (IOException, try)
 import Data.ByteString (ByteString)
+import Data.String (IsString (fromString))
 import Foreign.C (withCString)
 import HsLua.Core.Error (LuaError, throwErrorAsException)
-import HsLua.Core.Types (LuaE, Status, StackIndex, liftLua, multret, runWith)
+import HsLua.Core.Types
+  (LuaE, Name (Name), Status, StackIndex, liftLua, multret, runWith)
 import Lua (top)
 import Lua.Auxiliary
 import Lua.Ersatz.Auxiliary
@@ -100,11 +102,14 @@ getref idx ref' = Lua.rawgeti idx (fromIntegral (Lua.fromReference ref'))
 -- | Ensures that the value @t[fname]@, where @t@ is the value at index @idx@,
 -- is a table, and pushes that table onto the stack. Returns True if it finds a
 -- previous table there and False if it creates a new table.
-getsubtable :: LuaError e => StackIndex -> String -> LuaE e Bool
-getsubtable idx fname = do
+getsubtable :: LuaError e
+            => StackIndex   -- ^ idx
+            -> Name         -- ^ fname
+            -> LuaE e Bool
+getsubtable idx fname@(Name namestr) = do
   -- This is a reimplementation of luaL_getsubtable from lauxlib.c.
   idx' <- Lua.absindex idx
-  Lua.pushstring (Utf8.fromString fname)
+  Lua.pushstring namestr
   Lua.gettable idx' >>= \case
     Lua.TypeTable -> return True
     _ -> do
@@ -122,11 +127,11 @@ getsubtable idx fname = do
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadbuffer luaL_loadbuffer>.
 loadbuffer :: ByteString -- ^ Program to load
-           -> String     -- ^ chunk name
+           -> Name       -- ^ chunk name
            -> LuaE e Status
-loadbuffer bs name = liftLua $ \l ->
+loadbuffer bs (Name name) = liftLua $ \l ->
   B.useAsCStringLen bs $ \(str, len) ->
-  withCString name
+  B.useAsCString name
     (fmap Lua.toStatus . luaL_loadbuffer l str (fromIntegral len))
 
 -- | Loads a file as a Lua chunk. This function uses @lua_load@ (see
@@ -148,7 +153,7 @@ loadbuffer bs name = liftLua $ \l ->
 loadfile :: FilePath -- ^ filename
          -> LuaE e Status
 loadfile fp = Lua.liftIO contentOrError >>= \case
-  Right script -> loadbuffer script ("@" ++ fp)
+  Right script -> loadbuffer script (fromString $ '@' : fp)
   Left e -> do
     Lua.pushstring (Utf8.fromString (show e))
     return Lua.ErrFile
@@ -169,7 +174,7 @@ loadfile fp = Lua.liftIO contentOrError >>= \case
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadstring>.
 loadstring :: ByteString -> LuaE e Status
-loadstring s = loadbuffer s (Utf8.toString s)
+loadstring s = loadbuffer s (Name s)
 
 
 -- | If the registry already has the key tname, returns @False@. Otherwise,

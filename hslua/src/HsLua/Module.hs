@@ -25,11 +25,13 @@ module HsLua.Module
 where
 
 import Control.Monad (forM_, void)
+import Data.String (IsString (fromString))
 import Data.Text (Text)
 import HsLua.Call (DocumentedFunction)
 import HsLua.Core
 import HsLua.Push (pushText)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 import qualified HsLua.Call as Call
 
 -- | Load a module, defined by a Haskell action, under the given
@@ -45,10 +47,10 @@ import qualified HsLua.Call as Call
 -- by the time this function is invoked.
 --
 -- Leaves a copy of the module on the stack.
-requirehs :: LuaError e => String -> LuaE e () -> LuaE e ()
+requirehs :: LuaError e => Name -> LuaE e () -> LuaE e ()
 requirehs modname pushMod = do
   -- get table of loaded modules
-  void $ getfield registryindex loadedTableRegistryField
+  void $ getfield registryindex (fromString loadedTableRegistryField)
 
   -- Check whether module has already been loaded.
   getfield top modname >>= \case -- LOADED[modname]
@@ -64,9 +66,9 @@ requirehs modname pushMod = do
 
 -- | Registers a preloading function. Takes an module name and the
 -- Lua operation which produces the package.
-preloadhs :: LuaError e => String -> LuaE e NumResults -> LuaE e ()
+preloadhs :: LuaError e => Name -> LuaE e NumResults -> LuaE e ()
 preloadhs name pushMod = do
-  void $ getfield registryindex preloadTableRegistryField
+  void $ getfield registryindex (fromString preloadTableRegistryField)
   pushHaskellFunction pushMod
   setfield (nth 2) name
   pop 1
@@ -77,7 +79,7 @@ create = newtable
 
 -- | Named and documented Lua module.
 data Module e = Module
-  { moduleName :: Text
+  { moduleName :: Name
   , moduleDescription :: Text
   , moduleFields :: [Field e]
   , moduleFunctions :: [(Text, DocumentedFunction e)]
@@ -95,12 +97,12 @@ data Field e = Field
 -- the stack.
 registerModule :: LuaError e => Module e -> LuaE e ()
 registerModule mdl =
-  requirehs (T.unpack $ moduleName mdl) (pushModule mdl)
+  requirehs (moduleName mdl) (pushModule mdl)
 
 -- | Preload self-documenting module.
 preloadModule :: LuaError e => Module e -> LuaE e ()
 preloadModule mdl =
-  preloadhs (T.unpack $ moduleName mdl) $ do
+  preloadhs (moduleName mdl) $ do
     pushModule mdl
     return (NumResults 1)
 
@@ -117,7 +119,7 @@ render :: Module e -> Text
 render mdl =
   let fields = moduleFields mdl
   in T.unlines
-     [ "# " <> moduleName mdl
+     [ "# " <> T.decodeUtf8 (fromName $ moduleName mdl)
      , ""
      , moduleDescription mdl
      , if null (moduleFields mdl) then "" else renderFields fields

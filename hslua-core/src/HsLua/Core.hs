@@ -40,6 +40,8 @@ module HsLua.Core
   -- ** Number of arguments and return values
   , NumArgs (..)
   , NumResults (..)
+  -- ** Table fields
+  , Name (..)
   -- * Lua API
   -- ** Constants and pseudo-indices
   , multret

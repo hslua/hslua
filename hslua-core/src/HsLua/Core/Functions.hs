@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : HsLua.Core.Functions
 Copyright   : © 2007–2012 Gracjan Polak;
@@ -11,10 +11,9 @@ Portability : non-portable (depends on GHC)
 
 Monadic functions which operate within the Lua type.
 
-The functions in this module are mostly just thin wrappers around the respective
-C functions. However, C function which can throw an error are wrapped such that
-the error is converted into an @'Exception'@. Memory allocation errors,
-however, are not caught and will cause the host program to terminate.
+The functions in this module are mostly just thin wrappers around the
+respective C functions. However, C function which can throw an error are
+wrapped such that the error is converted into an @'Exception'@.
 -}
 module HsLua.Core.Functions where
 
@@ -31,8 +30,6 @@ import Foreign.Ptr
 
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Unsafe as B
-import qualified Foreign.C as C
-import qualified HsLua.Core.Utf8 as Utf8
 import qualified Foreign.Storable as F
 
 --
@@ -246,10 +243,10 @@ gc what data' = liftLua $ \l ->
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getfield lua_getfield>.
-getfield :: LuaError e => StackIndex -> String -> LuaE e Type
-getfield i s = do
+getfield :: LuaError e => StackIndex -> Name -> LuaE e Type
+getfield i (Name s) = do
   absidx <- absindex i
-  pushstring (Utf8.fromString s)
+  pushstring s
   gettable absidx
 
 -- | Pushes onto the stack the value of the global @name@.
@@ -258,9 +255,9 @@ getfield i s = do
 --
 -- Wrapper of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getglobal lua_getglobal>.
-getglobal :: LuaError e => String -> LuaE e Type
-getglobal name = liftLuaThrow $ \l status' ->
-  C.withCStringLen name $ \(namePtr, len) ->
+getglobal :: LuaError e => Name -> LuaE e Type
+getglobal (Name name) = liftLuaThrow $ \l status' ->
+  B.unsafeUseAsCStringLen name $ \(namePtr, len) ->
   toType <$> hslua_getglobal l namePtr (fromIntegral len) status'
 
 -- | If the value at the given index has a metatable, the function pushes that
@@ -431,8 +428,8 @@ lessthan index1 index2 = compare index1 index2 LT
 -- @chunkname@ is used as a C string, so it may not contain null-bytes.
 --
 -- This is a wrapper of 'lua_load'.
-load :: Lua.Reader -> Ptr () -> ByteString -> LuaE e Status
-load reader data' chunkname = liftLua $ \l ->
+load :: Lua.Reader -> Ptr () -> Name -> LuaE e Status
+load reader data' (Name chunkname) = liftLua $ \l ->
   B.useAsCString chunkname $ \namePtr ->
   toStatus <$> lua_load l reader data' namePtr nullPtr
 
@@ -636,12 +633,11 @@ pushnil = liftLua lua_pushnil
 pushnumber :: Lua.Number -> LuaE e ()
 pushnumber = liftLua1 lua_pushnumber
 
--- | Pushes the zero-terminated string pointed to by s onto the stack. Lua makes
--- (or reuses) an internal copy of the given string, so the memory at s can be
--- freed or reused immediately after the function returns.
+-- | Pushes the string pointed to by s onto the stack. Lua makes (or
+-- reuses) an internal copy of the given string, so the memory at s can
+-- be freed or reused immediately after the function returns.
 --
--- See also: <https://www.lua.org/manual/5.3/manual.html#lua_pushstring \
--- lua_pushstring>.
+-- Wraps 'lua_pushlstring'.
 pushstring :: ByteString -> LuaE e ()
 pushstring s = liftLua $ \l ->
   B.unsafeUseAsCStringLen s $ \(sPtr, z) -> lua_pushlstring l sPtr (fromIntegral z)
@@ -717,8 +713,8 @@ rawseti k m = ensureTable k (\l -> lua_rawseti l k m)
 
 -- | Sets the C function @f@ as the new value of global @name@.
 --
--- See <https://www.lua.org/manual/5.3/manual.html#lua_register lua_register>.
-register :: LuaError e => String -> CFunction -> LuaE e ()
+-- Wraps 'lua_register'.
+register :: LuaError e => Name -> CFunction -> LuaE e ()
 register name f = do
   pushcfunction f
   setglobal name
@@ -751,23 +747,24 @@ replace n = liftLua $ \l ->  lua_replace l n
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_setfield lua_setfield>.
-setfield :: LuaError e => StackIndex -> String -> LuaE e ()
-setfield i s = do
+setfield :: LuaError e => StackIndex -> Name -> LuaE e ()
+setfield i (Name s) = do
   absidx <- absindex i
-  pushstring (Utf8.fromString s)
+  pushstring s
   insert (nthTop 2)
   settable absidx
 
--- | Pops a value from the stack and sets it as the new value of global @name@.
+-- | Pops a value from the stack and sets it as the new value of global
+-- @name@.
 --
--- Errors on the Lua side are caught and rethrown as a @'Exception'@.
+-- Errors on the Lua side are caught and rethrown as 'Exception'.
 --
--- See also:
+-- Wraps 'hslua_setglobal'. See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_setglobal lua_setglobal>.
-setglobal :: LuaError e => String -> LuaE e ()
-setglobal name = liftLuaThrow $ \l status' ->
-  C.withCStringLen name $ \(namePtr, nameLen) ->
-  hslua_setglobal l namePtr (fromIntegral nameLen) status'
+setglobal :: LuaError e => Name {- ^ name -} -> LuaE e ()
+setglobal (Name name) = liftLuaThrow $ \l status' ->
+  B.unsafeUseAsCStringLen name $ \(namePtr, nameLen) ->
+    hslua_setglobal l namePtr (fromIntegral nameLen) status'
 
 -- | Pops a table from the stack and sets it as the new metatable for the value
 -- at the given index.
@@ -876,13 +873,14 @@ tonumber n = liftLua $ \l -> alloca $ \bptr -> do
 topointer :: StackIndex -> LuaE e (Ptr ())
 topointer n = liftLua $ \l -> lua_topointer l n
 
--- | Converts the Lua value at the given index to a @'ByteString'@. The Lua
--- value must be a string or a number; otherwise, the function returns
--- @'Nothing'@. If the value is a number, then @'tostring'@ also changes the
--- actual value in the stack to a string. (This change confuses @'next'@ when
--- @'tostring'@ is applied to keys during a table traversal.)
+-- | Converts the Lua value at the given index to a 'ByteString'. The
+-- Lua value must be a string or a number; otherwise, the function
+-- returns 'Nothing'. If the value is a number, then 'tostring' also
+-- changes the actual value in the stack to a string. (This change
+-- confuses 'next' when 'tostring' is applied to keys during a table
+-- traversal.)
 --
--- See <https://www.lua.org/manual/5.3/manual.html#lua_tolstring lua_tolstring>.
+-- Wraps 'lua_tolstring'.
 tostring :: StackIndex -> LuaE e (Maybe ByteString)
 tostring n = liftLua $ \l ->
   alloca $ \lenPtr -> do
@@ -924,9 +922,9 @@ touserdata n = liftLua $ \l -> do
 --
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_typename lua_typename>.
-typename :: Type -> LuaE e String
+typename :: Type -> LuaE e ByteString
 typename tp = liftLua $ \l ->
-  lua_typename l (fromType tp) >>= C.peekCString
+  lua_typename l (fromType tp) >>= B.packCString
 
 -- | Returns the pseudo-index that represents the @i@-th upvalue of the running
 -- function (see <https://www.lua.org/manual/5.3/manual.html#4.4 §4.4> of the
