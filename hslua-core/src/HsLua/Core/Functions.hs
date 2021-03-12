@@ -107,7 +107,8 @@ call nargs nresults = do
 -- This is a wrapper function of
 -- <https://www.lua.org/manual/5.3/manual.html#lua_checkstack lua_checkstack>.
 checkstack :: Int -> LuaE e Bool
-checkstack n = liftLua $ \l -> fromLuaBool <$> lua_checkstack l (fromIntegral n)
+checkstack n = liftLua $ \l ->
+  fromLuaBool <$!> lua_checkstack l (fromIntegral n)
 
 -- | Destroys all objects in the given Lua state (calling the corresponding
 -- garbage-collection metamethods, if any) and frees all dynamic memory used by
@@ -141,8 +142,8 @@ compare :: LuaError e
         -> StackIndex         -- ^ idx2
         -> RelationalOperator
         -> LuaE e Bool
-compare idx1 idx2 relOp = fromLuaBool <$> do
-  liftLuaThrow $ \l -> hslua_compare l idx1 idx2 (fromRelationalOperator relOp)
+compare idx1 idx2 relOp = fromLuaBool <$!> liftLuaThrow
+  (\l -> hslua_compare l idx1 idx2 (fromRelationalOperator relOp))
 
 -- | Concatenates the @n@ values at the top of the stack, pops them, and leaves
 -- the result at the top. If @n@ is 1, the result is the single value on the
@@ -232,7 +233,7 @@ error = liftLua hslua_error
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_gc lua_gc>.
 gc :: GCCONTROL -> Int -> LuaE e Int
 gc what data' = liftLua $ \l ->
-  fromIntegral <$> lua_gc l (toGCCode what) (fromIntegral data')
+  fromIntegral <$!> lua_gc l (toGCCode what) (fromIntegral data')
 
 -- | Pushes onto the stack the value @t[k]@, where @t@ is the value at the given
 -- stack index. As in Lua, this function may trigger a metamethod for the
@@ -258,7 +259,7 @@ getfield i (Name s) = do
 getglobal :: LuaError e => Name -> LuaE e Type
 getglobal (Name name) = liftLuaThrow $ \l status' ->
   B.unsafeUseAsCStringLen name $ \(namePtr, len) ->
-  toType <$> hslua_getglobal l namePtr (fromIntegral len) status'
+  toType <$!> hslua_getglobal l namePtr (fromIntegral len) status'
 
 -- | If the value at the given index has a metatable, the function pushes that
 -- metatable onto the stack and returns @True@. Otherwise, the function returns
@@ -268,7 +269,7 @@ getglobal (Name name) = liftLuaThrow $ \l status' ->
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getmetatable lua_getmetatable>.
 getmetatable :: StackIndex -> LuaE e Bool
 getmetatable n = liftLua $ \l ->
-  fromLuaBool <$> lua_getmetatable l n
+  fromLuaBool <$!> lua_getmetatable l n
 
 -- | Pushes onto the stack the value @t[k]@, where @t@ is the value at the given
 -- index and @k@ is the value at the top of the stack.
@@ -307,21 +308,21 @@ insert index = liftLua $ \l -> lua_insert l index
 --
 -- This wraps 'lua_isboolean'.
 isboolean :: StackIndex -> LuaE e Bool
-isboolean n = liftLua $ \l -> fromLuaBool <$> lua_isboolean l n
+isboolean n = liftLua $ \l -> fromLuaBool <$!> lua_isboolean l n
 
 -- | Returns 'True' if the value at the given index is a C function, and
 -- 'False' otherwise.
 --
 -- This wraps 'lua_iscfunction'.
 iscfunction :: StackIndex -> LuaE e Bool
-iscfunction n = liftLua $ \l -> fromLuaBool <$> lua_iscfunction l n
+iscfunction n = liftLua $ \l -> fromLuaBool <$!> lua_iscfunction l n
 
 -- | Returns 'True' if the value at the given index is a function
 -- (either C or Lua), and 'False' otherwise.
 --
 -- This wraps 'lua_isfunction'.
 isfunction :: StackIndex -> LuaE e Bool
-isfunction n = liftLua $ \l -> fromLuaBool <$> lua_isfunction l n
+isfunction n = liftLua $ \l -> fromLuaBool <$!> lua_isfunction l n
 
 -- | Returns @True@ if the value at the given index is an integer (that
 -- is, the value is a number and is represented as an integer), and
@@ -329,42 +330,42 @@ isfunction n = liftLua $ \l -> fromLuaBool <$> lua_isfunction l n
 --
 -- This wraps 'lua_isinteger'.
 isinteger :: StackIndex -> LuaE e Bool
-isinteger n = liftLua $ \l -> fromLuaBool <$> lua_isinteger l n
+isinteger n = liftLua $ \l -> fromLuaBool <$!> lua_isinteger l n
 
 -- | Returns @True@ if the value at the given index is a light userdata,
 -- and @False@ otherwise.
 --
 -- This wraps 'lua_islightuserdata'.
 islightuserdata :: StackIndex -> LuaE e Bool
-islightuserdata n = liftLua $ \l -> fromLuaBool <$> lua_islightuserdata l n
+islightuserdata n = liftLua $ \l -> fromLuaBool <$!> lua_islightuserdata l n
 
 -- | Returns 'True' if the value at the given index is *nil*, and 'False'
 -- otherwise.
 --
 -- This wraps 'lua_isnil'.
 isnil :: StackIndex -> LuaE e Bool
-isnil n = liftLua $ \l -> fromLuaBool <$> lua_isnil l n
+isnil n = liftLua $ \l -> fromLuaBool <$!> lua_isnil l n
 
 -- | Returns 'True' if the given index is not valid, and 'False'
 -- otherwise.
 --
 -- This wraps 'lua_isnone'.
 isnone :: StackIndex -> LuaE e Bool
-isnone n = liftLua $ \l -> fromLuaBool <$> lua_isnone l n
+isnone n = liftLua $ \l -> fromLuaBool <$!> lua_isnone l n
 
 -- | Returns 'True' if the given index is not valid or if the value at
 -- the given index is *nil*, and 'False' otherwise.
 --
 -- This wraps 'lua_isnoneornil'.
 isnoneornil :: StackIndex -> LuaE e Bool
-isnoneornil n = liftLua $ \l -> fromLuaBool <$> lua_isnoneornil l n
+isnoneornil n = liftLua $ \l -> fromLuaBool <$!> lua_isnoneornil l n
 
 -- | Returns 'True' if the value at the given index is a number or a
 -- string convertible to a number, and 'False' otherwise.
 --
 -- This wraps 'lua_isnumber'.
 isnumber :: StackIndex -> LuaE e Bool
-isnumber n = liftLua $ \l -> fromLuaBool <$> lua_isnumber l n
+isnumber n = liftLua $ \l -> fromLuaBool <$!> lua_isnumber l n
 
 -- | Returns 'True' if the value at the given index is a string or a
 -- number (which is always convertible to a string), and 'False'
@@ -372,28 +373,28 @@ isnumber n = liftLua $ \l -> fromLuaBool <$> lua_isnumber l n
 --
 -- This wraps 'lua_isstring'.
 isstring :: StackIndex -> LuaE e Bool
-isstring n = liftLua $ \l -> fromLuaBool <$> lua_isstring l n
+isstring n = liftLua $ \l -> fromLuaBool <$!> lua_isstring l n
 
 -- | Returns 'True' if the value at the given index is a table, and
 -- 'False' otherwise.
 --
 -- This wraps 'lua_istable'.
 istable :: StackIndex -> LuaE e Bool
-istable n = liftLua $ \l -> fromLuaBool <$> lua_istable l n
+istable n = liftLua $ \l -> fromLuaBool <$!> lua_istable l n
 
 -- | Returns 'True' if the value at the given index is a thread, and
 -- 'False' otherwise.
 --
 -- This wraps 'lua_isthread'.
 isthread :: StackIndex -> LuaE e Bool
-isthread n = liftLua $ \l -> fromLuaBool <$> lua_isthread l n
+isthread n = liftLua $ \l -> fromLuaBool <$!> lua_isthread l n
 
 -- | Returns 'True' if the value at the given index is a userdata
 -- (either full or light), and 'False' otherwise.
 --
 -- This wraps 'lua_isuserdata'.
 isuserdata :: StackIndex -> LuaE e Bool
-isuserdata n = liftLua $ \l -> fromLuaBool <$> lua_isuserdata l n
+isuserdata n = liftLua $ \l -> fromLuaBool <$!> lua_isuserdata l n
 
 -- | Tests whether the object under the first index is smaller than that
 -- under the second. Uses @'compare'@ internally.
@@ -431,14 +432,14 @@ lessthan index1 index2 = compare index1 index2 LT
 load :: Lua.Reader -> Ptr () -> Name -> LuaE e Status
 load reader data' (Name chunkname) = liftLua $ \l ->
   B.useAsCString chunkname $ \namePtr ->
-  toStatus <$> lua_load l reader data' namePtr nullPtr
+  toStatus <$!> lua_load l reader data' namePtr nullPtr
 
 -- | Returns the type of the value in the given valid index, or
 -- @'TypeNone'@ for a non-valid (but acceptable) index.
 --
 -- This function wraps 'lua_type'.
 ltype :: StackIndex -> LuaE e Type
-ltype idx = toType <$> liftLua (`lua_type` idx)
+ltype idx = toType <$!> liftLua (`lua_type` idx)
 
 -- | Creates a new empty table and pushes it onto the stack. It is
 -- equivalent to @createtable 0 0@.
@@ -467,7 +468,7 @@ newuserdata = liftLua1 lua_newuserdata . fromIntegral
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_next lua_next>.
 next :: LuaError e => StackIndex -> LuaE e Bool
-next idx = fromLuaBool <$> liftLuaThrow (\l -> hslua_next l idx)
+next idx = fromLuaBool <$!> liftLuaThrow (\l -> hslua_next l idx)
 
 -- | Opens all standard Lua libraries into the current state and sets
 -- each library name as a global value.
@@ -548,7 +549,7 @@ opentable = pushcfunction luaopen_table *> call 0 multret
 -- This function wraps 'lua_pcall'.
 pcall :: NumArgs -> NumResults -> Maybe StackIndex -> LuaE e Status
 pcall nargs nresults msgh = liftLua $ \l ->
-  toStatus <$> lua_pcall l nargs nresults (fromMaybe 0 msgh)
+  toStatus <$!> lua_pcall l nargs nresults (fromMaybe 0 msgh)
 
 -- | Pops @n@ elements from the stack.
 --
@@ -648,7 +649,7 @@ pushstring s = liftLua $ \l ->
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_pushthread lua_pushthread>.
 pushthread :: LuaE e Bool
-pushthread = (1 ==)  <$> liftLua lua_pushthread
+pushthread = (1 ==)  <$!> liftLua lua_pushthread
 
 -- | Pushes a copy of the element at the given index onto the stack.
 --
@@ -664,7 +665,7 @@ pushvalue n = liftLua $ \l -> lua_pushvalue l n
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawequal lua_rawequal>.
 rawequal :: StackIndex -> StackIndex -> LuaE e Bool
 rawequal idx1 idx2 = liftLua $ \l ->
-  fromLuaBool <$> lua_rawequal l idx1 idx2
+  fromLuaBool <$!> lua_rawequal l idx1 idx2
 
 -- | Similar to @'gettable'@, but does a raw access (i.e., without metamethods).
 --
@@ -690,7 +691,7 @@ rawgeti k n = ensureTable k (\l -> lua_rawgeti l k n)
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawlen lua_rawlen>.
 rawlen :: StackIndex -> LuaE e Int
-rawlen idx = liftLua $ \l -> fromIntegral <$> lua_rawlen l idx
+rawlen idx = liftLua $ \l -> fromIntegral <$!> lua_rawlen l idx
 
 -- | Similar to @'settable'@, but does a raw assignment (i.e., without
 -- metamethods).
@@ -822,7 +823,7 @@ status = liftLua $ fmap toStatus . lua_status
 -- See also:
 -- <https://www.lua.org/manual/5.3/manual.html#lua_toboolean lua_toboolean>.
 toboolean :: StackIndex -> LuaE e Bool
-toboolean n = liftLua $ \l -> fromLuaBool <$> lua_toboolean l n
+toboolean n = liftLua $ \l -> fromLuaBool <$!> lua_toboolean l n
 
 -- | Converts a value at the given index to a C function. That value must be a C
 -- function; otherwise, returns @Nothing@.
@@ -847,7 +848,7 @@ tocfunction n = liftLua $ \l -> do
 tointeger :: StackIndex -> LuaE e (Maybe Lua.Integer)
 tointeger n = liftLua $ \l -> alloca $ \boolPtr -> do
   res <- lua_tointegerx l n boolPtr
-  isNum <- fromLuaBool <$> F.peek boolPtr
+  isNum <- fromLuaBool <$!> F.peek boolPtr
   return (if isNum then Just res else Nothing)
 
 -- | Converts the Lua value at the given index to the C type lua_Number. The Lua
@@ -858,7 +859,7 @@ tointeger n = liftLua $ \l -> alloca $ \boolPtr -> do
 tonumber :: StackIndex -> LuaE e (Maybe Lua.Number)
 tonumber n = liftLua $ \l -> alloca $ \bptr -> do
   res <- lua_tonumberx l n bptr
-  isNum <- fromLuaBool <$> F.peek bptr
+  isNum <- fromLuaBool <$!> F.peek bptr
   return (if isNum then Just res else Nothing)
 
 -- | Converts the value at the given index to a generic C pointer (void*). The
@@ -889,7 +890,7 @@ tostring n = liftLua $ \l ->
       then return Nothing
       else do
       cstrLen <- F.peek lenPtr
-      Just <$> B.packCStringLen (cstr, fromIntegral cstrLen)
+      Just <$!> B.packCStringLen (cstr, fromIntegral cstrLen)
 
 -- | Converts the value at the given index to a Lua thread (represented as
 -- lua_State*). This value must be a thread; otherwise, the function returns

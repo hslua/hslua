@@ -36,6 +36,7 @@ module HsLua.Core.Auxiliary
   ) where
 
 import Control.Exception (IOException, try)
+import Control.Monad ((<$!>))
 import Data.ByteString (ByteString)
 import Data.String (IsString (fromString))
 import Foreign.C (withCString)
@@ -85,7 +86,7 @@ getmetafield :: StackIndex -- ^ obj
              -> String     -- ^ e
              -> LuaE e Lua.Type
 getmetafield obj e = liftLua $ \l ->
-  withCString e $ fmap Lua.toType . luaL_getmetafield l obj
+  withCString e $! fmap Lua.toType . luaL_getmetafield l obj
 
 -- | Pushes onto the stack the metatable associated with name @tname@ in the
 -- registry (see @newmetatable@) (@nil@ if there is no metatable associated
@@ -93,7 +94,7 @@ getmetafield obj e = liftLua $ \l ->
 getmetatable' :: String -- ^ tname
               -> LuaE e Lua.Type
 getmetatable' tname = liftLua $ \l ->
-  withCString tname $ fmap Lua.toType . luaL_getmetatable l
+  withCString tname $! fmap Lua.toType . luaL_getmetatable l
 
 -- | Push referenced value from the table at the given index.
 getref :: LuaError e => StackIndex -> Reference -> LuaE e ()
@@ -131,8 +132,8 @@ loadbuffer :: ByteString -- ^ Program to load
            -> LuaE e Status
 loadbuffer bs (Name name) = liftLua $ \l ->
   B.useAsCStringLen bs $ \(str, len) ->
-  B.useAsCString name
-    (fmap Lua.toStatus . luaL_loadbuffer l str (fromIntegral len))
+  B.useAsCString name $!
+    fmap Lua.toStatus . luaL_loadbuffer l str (fromIntegral len)
 
 -- | Loads a file as a Lua chunk. This function uses @lua_load@ (see
 -- @'Lua.load'@) to load the chunk in the file named filename. The first
@@ -193,7 +194,7 @@ loadstring s = loadbuffer s (Name s)
 -- <https://www.lua.org/manual/5.3/manual.html#luaL_newmetatable luaL_newmetatable>.
 newmetatable :: String -> LuaE e Bool
 newmetatable tname = liftLua $ \l ->
-  Lua.fromLuaBool <$> withCString tname (luaL_newmetatable l)
+  Lua.fromLuaBool <$!> withCString tname (luaL_newmetatable l)
 
 -- | Creates a new Lua state. It calls @lua_newstate@ with an allocator
 -- based on the standard C @realloc@ function and then sets a panic
