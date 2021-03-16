@@ -93,7 +93,7 @@ pushModule' mdl = do
 --
 
 -- | Exported fields.
-fields :: LuaError e => [Field e]
+fields :: [Field e]
 fields =
   [ separator
   , search_path_separator
@@ -325,7 +325,7 @@ treat_strings_as_paths = DocumentedFunction
       mapM_ addField [("__add", add_extension), ("__div", combine)]
       pop 1  -- string metatable
 
-      getglobal "string"
+      _ <- getglobal "string"
       mapM_ addField stringAugmentationFunctions
       pop 1 -- string module
 
