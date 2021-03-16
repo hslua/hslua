@@ -134,7 +134,7 @@ tests = testGroup "Call"
 
 factLuaAtIndex :: StackIndex -> DocumentedFunction Lua.Exception
 factLuaAtIndex idx =
-  toHsFnPrecursorWithStartIndex idx factorial
+  toHsFnPrecursorWithStartIndex idx (return . factorial)
   <#> factorialParam
   =#> factorialResult
 
@@ -165,7 +165,7 @@ nroot = toHsFnPrecursor nroot'
   <#> optionalParameter (peekIntegral @Int) "integer" "n" ""
   =#> functionResult pushRealFloat "number" "nth root"
   where
-    nroot' :: Double -> Maybe Int -> Double
+    nroot' :: Double -> Maybe Int -> Lua.LuaE e Double
     nroot' x nOpt =
       let n = fromMaybe 2 nOpt
-      in x ** (1 / fromIntegral n)
+      in return $ x ** (1 / fromIntegral n)

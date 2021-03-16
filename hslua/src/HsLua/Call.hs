@@ -44,10 +44,9 @@ import HsLua.Push
 import qualified Data.Text as T
 import qualified HsLua.Core as Lua
 
--- | Lua operation with an explicit error type and state (i.e.,
--- without exceptions).
+-- | Lua operation with an additional failure mode that can stack errors
+-- from different contexts; errors are not based on exceptions).
 type LuaExcept e a = ExceptT PeekError (LuaE e) a
-
 
 --
 -- Function components
@@ -150,7 +149,7 @@ applyParameter bldr param = do
 -- | Take a 'HaskellFunction' precursor and convert it into a full
 -- 'HaskellFunction', using the given 'FunctionResult's to return
 -- the result to Lua.
-returnResults :: HsFnPrecursor e a
+returnResults :: HsFnPrecursor e (LuaE e a)
               -> FunctionResults e a
               -> DocumentedFunction e
 returnResults bldr fnResults = DocumentedFunction
@@ -161,7 +160,7 @@ returnResults bldr fnResults = DocumentedFunction
           pushString $ formatPeekError err
           Lua.error
         Right x -> do
-          forM_ fnResults $ \(FunctionResult push _) -> push x
+          forM_ fnResults $ \(FunctionResult push _) -> x >>= push
           return $ NumResults (fromIntegral $ length fnResults)
 
   , functionDoc = Just $ FunctionDoc
@@ -172,7 +171,7 @@ returnResults bldr fnResults = DocumentedFunction
   }
 
 -- | Like @'returnResult'@, but returns only a single result.
-returnResult :: HsFnPrecursor e a
+returnResult :: HsFnPrecursor e (LuaE e a)
              -> FunctionResult e a
              -> DocumentedFunction e
 returnResult bldr = returnResults bldr . (:[])
@@ -201,7 +200,7 @@ infixl 8 <#>, =#>, #?
 (<#>) = applyParameter
 
 -- | Inline version of @'returnResult'@.
-(=#>) :: HsFnPrecursor e a
+(=#>) :: HsFnPrecursor e (LuaE e a)
       -> FunctionResults e a
       -> DocumentedFunction e
 (=#>) = returnResults

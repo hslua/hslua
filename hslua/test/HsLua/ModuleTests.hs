@@ -120,7 +120,7 @@ mymath = Module
   }
 
 factorial :: DocumentedFunction Lua.Exception
-factorial = toHsFnPrecursor (\n -> product [1..n])
+factorial = toHsFnPrecursor (\n -> return $ product [1..n])
   <#> factorialParam
   =#> factorialResult
 
