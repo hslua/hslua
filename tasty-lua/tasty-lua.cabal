@@ -1,0 +1,56 @@
+name:                tasty-lua
+version:             0.2.3.2
+synopsis:            Write tests in Lua, integrate into tasty.
+description:         Allow users to define tasty tests from Lua.
+homepage:            https://github.com/hslua/tasty-lua
+license:             MIT
+license-file:        LICENSE
+author:              Albert Krewinkel
+maintainer:          albert+hslua@zeitkraut.de
+copyright:           © 2019–2020 Albert Krewinkel <albert+hslua@zeitkraut.de>
+category:            Foreign
+build-type:          Simple
+extra-source-files:  CHANGELOG.md
+                   , tasty.lua
+                   , test/test-tasty.lua
+                   , stack.yaml
+cabal-version:       >=1.10
+tested-with:         GHC == 8.0.2
+                   , GHC == 8.2.2
+                   , GHC == 8.4.4
+                   , GHC == 8.6.5
+                   , GHC == 8.8.3
+                   , GHC == 8.10.1
+
+source-repository head
+  type:              git
+  location:          https://github.com/hslua/tasty-lua.git
+
+library
+  build-depends:       base        >= 4.9    && < 5
+                     , bytestring  >= 0.10.2 && < 0.11
+                     , file-embed  >= 0.0    && < 0.1
+                     , hslua       >= 1.0.3  && < 1.4
+                     , tasty       >= 1.2    && < 1.5
+                     , text        >= 1.0    && < 1.3
+  exposed-modules:     Test.Tasty.Lua
+                     , Test.Tasty.Lua.Core
+                     , Test.Tasty.Lua.Module
+                     , Test.Tasty.Lua.Translate
+  hs-source-dirs:      src
+  default-language:    Haskell2010
+  ghc-options:         -Wall
+
+test-suite test-tasty-lua
+  default-language:    Haskell2010
+  type:                exitcode-stdio-1.0
+  main-is:             test-tasty-lua.hs
+  hs-source-dirs:      test
+  ghc-options:         -Wall -threaded
+  build-depends:       base
+                     , directory
+                     , filepath    >= 1.4
+                     , hslua
+                     , tasty
+                     , tasty-lua
+                     , tasty-hunit
