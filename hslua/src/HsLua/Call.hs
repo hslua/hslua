@@ -121,6 +121,9 @@ data HsFnPrecursor e a = HsFnPrecursor
 toHsFnPrecursor :: a -> HsFnPrecursor e a
 toHsFnPrecursor = toHsFnPrecursorWithStartIndex (StackIndex 0)
 
+-- | Create a HaskellFunction precursor from a pure function, selecting
+-- the stack index after which the first function parameter will be
+-- placed.
 toHsFnPrecursorWithStartIndex :: StackIndex -> a -> HsFnPrecursor e a
 toHsFnPrecursorWithStartIndex idx f = HsFnPrecursor
   { hsFnPrecursorAction = return f
@@ -213,6 +216,7 @@ infixl 8 <#>, =#>, #?
 -- Render documentation
 --
 
+-- | Renders the documentation of a function as Markdown.
 render :: FunctionDoc -> Text
 render (FunctionDoc desc paramDocs resultDoc) =
   (if T.null desc then "" else desc <> "\n\n") <>
@@ -221,10 +225,13 @@ render (FunctionDoc desc paramDocs resultDoc) =
     [] -> ""
     rd -> "\nReturns:\n\n" <> T.intercalate "\n" (map renderResultDoc rd)
 
+-- | Renders function parameter documentation as a Markdown blocks.
 renderParamDocs :: [ParameterDoc] -> Text
 renderParamDocs pds = "Parameters:\n\n" <>
   T.intercalate "\n" (map renderParamDoc pds)
 
+-- | Renders the documentation of a function parameter as a Markdown
+-- line.
 renderParamDoc :: ParameterDoc -> Text
 renderParamDoc pd = mconcat
   [ parameterName pd
@@ -233,6 +240,8 @@ renderParamDoc pd = mconcat
   , " (", parameterType pd, ")\n"
   ]
 
+-- | Renders the documentation of a function result as a Markdown list
+-- item.
 renderResultDoc :: FunctionResultDoc -> Text
 renderResultDoc rd = mconcat
   [ " - "
@@ -244,6 +253,8 @@ renderResultDoc rd = mconcat
 -- Push to Lua
 --
 
+-- | Pushes a documented Haskell function to the Lua stack, making it
+-- usable as a normal function in Lua.
 pushDocumentedFunction :: LuaError e
                        => DocumentedFunction e -> LuaE e ()
 pushDocumentedFunction = Lua.pushHaskellFunction . callFunction

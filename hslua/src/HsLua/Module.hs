@@ -106,6 +106,7 @@ preloadModule mdl =
     pushModule mdl
     return (NumResults 1)
 
+-- | Pushes a documented module to the Lua stack.
 pushModule :: LuaError e => Module e -> LuaE e ()
 pushModule mdl = do
   create
@@ -142,6 +143,7 @@ renderFunctionDoc name fn =
       , Call.render fnDoc
       ]
 
+-- | Renders the parameter names of a function, separated by commas.
 renderFunctionParams :: Call.FunctionDoc -> Text
 renderFunctionParams fd =
     T.intercalate ", "
