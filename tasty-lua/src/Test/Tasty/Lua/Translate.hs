@@ -14,7 +14,7 @@ module Test.Tasty.Lua.Translate
   )
 where
 
-import Foreign.Lua (Lua)
+import HsLua (Lua)
 import Test.Tasty.Lua.Core (Outcome (..), ResultTree (..), UnnamedTree (..),
                             runTastyFile)
 import qualified Test.Tasty as Tasty
@@ -53,5 +53,3 @@ instance Tasty.IsTest MockTest where
     Failure msg -> Tasty.testFailed msg
 
   testOptions = return []
-
-

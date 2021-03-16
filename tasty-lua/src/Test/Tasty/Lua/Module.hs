@@ -16,17 +16,18 @@ where
 
 import Data.ByteString (ByteString)
 import Data.FileEmbed
-import Foreign.Lua (Lua, NumResults, Status (OK), dostring, throwTopMessage)
+import HsLua.Core
+  (LuaE, LuaError, NumResults, Status (OK), dostring, throwErrorAsException)
 
 -- | Tasty Lua script
 tastyScript :: ByteString
 tastyScript = $(embedFile "tasty.lua")
 
 -- | Push the Aeson module on the Lua stack.
-pushModule :: Lua NumResults
+pushModule :: LuaError e => LuaE e NumResults
 pushModule = do
   result <- dostring tastyScript
   if result == OK
     then return 1
-    else throwTopMessage
+    else throwErrorAsException
 {-# INLINABLE pushModule #-}

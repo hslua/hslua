@@ -12,14 +12,14 @@ Tests for the @tasty@ Lua module.
 -}
 
 import Control.Monad (void)
-import Foreign.Lua (Lua)
+import HsLua (Lua)
 import System.Directory (withCurrentDirectory)
 import System.FilePath ((</>))
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
 import Test.Tasty.Lua (pushModule, testLuaFile, translateResultsFromFile)
 
-import qualified Foreign.Lua as Lua
+import qualified HsLua as Lua
 
 main :: IO ()
 main = do
@@ -31,7 +31,7 @@ main = do
 tests :: TestTree
 tests = testGroup "HsLua tasty module"
   [ testCase "can be pushed to the stack" $
-      Lua.run (void pushModule)
+      Lua.run (void pushModule :: Lua ())
 
   , testCase "can be added to the preloader" . Lua.run $ do
       Lua.openlibs
