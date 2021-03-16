@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-|
 Module      : Test.Tasty.Lua.Module
-Copyright   : © 2019–2020 Albert Krewinkel
+Copyright   : © 2019–2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
 Stability   : alpha
