@@ -3,5 +3,6 @@ packages: lua/lua.cabal
           hslua/hslua.cabal
           hslua-core/hslua-core.cabal
           hslua-classes/hslua-classes.cabal
+          hslua-module-path/hslua-module-path.cabal
           tasty-lua/tasty-lua.cabal
           tasty-hslua/tasty-hslua.cabal

@@ -10,15 +10,16 @@ Portability : Requires language extensions ForeignFunctionInterface,
 
 Tests for the `path` Lua module.
 -}
+module Main (main) where
 
 import Control.Monad (void)
-import Foreign.Lua (Lua)
-import Foreign.Lua.Module.Path (preloadModule, pushModule)
+import HsLua (Lua)
+import HsLua.Module.Path (preloadModule, pushModule)
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
 import Test.Tasty.Lua (translateResultsFromFile)
 
-import qualified Foreign.Lua as Lua
+import qualified HsLua as Lua
 
 main :: IO ()
 main = do
@@ -32,7 +33,7 @@ main = do
 tests :: TestTree
 tests = testGroup "HsLua path module"
   [ testCase "path module can be pushed to the stack" $
-      Lua.run (void pushModule)
+      Lua.run (void pushModule :: Lua ())
 
   , testCase "path module can be added to the preloader" . Lua.run $ do
       Lua.openlibs

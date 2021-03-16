@@ -2,7 +2,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-|
-Module      : Foreign.Lua.Module.Path
+Module      : HsLua.Module.Path
 Copyright   : © 2020 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
@@ -11,7 +11,7 @@ Portability : Requires GHC 8 or later.
 
 Lua module to work with file paths.
 -}
-module Foreign.Lua.Module.Path (
+module HsLua.Module.Path (
   -- * Module
     pushModule
   , preloadModule
@@ -40,16 +40,16 @@ import Data.Char (toLower)
 import Data.Semigroup (Semigroup(..))  -- includes (<>)
 #endif
 import Data.Text (Text)
-import Foreign.Lua
-  ( Lua, NumResults (..), getglobal, getmetatable, nth, pop, rawset
-  , remove, top )
-import Foreign.Lua.Call
-import Foreign.Lua.Module hiding (preloadModule, pushModule)
-import Foreign.Lua.Peek (Peeker, peekBool, peekList, peekString)
-import Foreign.Lua.Push (pushBool, pushList, pushString, pushText)
+import HsLua
+  ( LuaE, LuaError, Name, NumResults (..)
+  , getglobal, getmetatable, nth, pop, rawset, remove, top )
+import HsLua.Call
+import HsLua.Module hiding (preloadModule, pushModule)
+import HsLua.Peek (Peeker, peekBool, peekList, peekString)
+import HsLua.Push (pushBool, pushList, pushString, pushText)
 
 import qualified Data.Text as T
-import qualified Foreign.Lua.Module as Module
+import qualified HsLua.Module as Module
 import qualified System.FilePath as Path
 
 --
@@ -59,7 +59,7 @@ import qualified System.FilePath as Path
 description :: Text
 description = "Module for file path manipulations."
 
-documentedModule :: Module
+documentedModule :: LuaError e => Module e
 documentedModule = Module
   { moduleName = "path"
   , moduleFields = fields
@@ -68,19 +68,19 @@ documentedModule = Module
   }
 
 -- | Pushes the @path@ module to the Lua stack.
-pushModule :: Lua NumResults
+pushModule :: LuaError e => LuaE e NumResults
 pushModule = 1 <$ pushModule' documentedModule
 
 -- | Add the @path@ module under the given name to the table of
 -- preloaded packages.
-preloadModule :: String -> Lua ()
+preloadModule :: LuaError e => Name -> LuaE e ()
 preloadModule name = Module.preloadModule $
-  documentedModule { moduleName = T.pack name }
+  documentedModule { moduleName = name }
 
 -- | Helper function which pushes the module with its fields. This
 -- function should be removed once the respective hslua bug has been
 -- fixed.
-pushModule' :: Module -> Lua ()
+pushModule' :: LuaError e => Module e -> LuaE e ()
 pushModule' mdl = do
   Module.pushModule mdl
   forM_ (moduleFields mdl) $ \field -> do
@@ -93,14 +93,14 @@ pushModule' mdl = do
 --
 
 -- | Exported fields.
-fields :: [Field]
+fields :: LuaError e => [Field e]
 fields =
   [ separator
   , search_path_separator
   ]
 
 -- | Wrapper for @'Path.pathSeparator'@.
-separator :: Field
+separator :: Field e
 separator = Field
   { fieldName = "separator"
   , fieldDescription = "The character that separates directories."
@@ -108,7 +108,7 @@ separator = Field
   }
 
 -- | Wrapper for @'Path.searchPathSeparator'@.
-search_path_separator :: Field
+search_path_separator :: Field e
 search_path_separator = Field
   { fieldName = "search_path_separator"
   , fieldDescription = "The character that is used to separate the entries in "
@@ -120,7 +120,7 @@ search_path_separator = Field
 -- Functions
 --
 
-functions :: [(Text, HaskellFunction)]
+functions :: LuaError e => [(Text, DocumentedFunction e)]
 functions =
   [ ("directory", directory)
   , ("filename", filename)
@@ -136,39 +136,39 @@ functions =
   ]
 
 -- | See @Path.takeDirectory@
-directory :: HaskellFunction
-directory = toHsFnPrecursor Path.takeDirectory
+directory :: LuaError e => DocumentedFunction e
+directory = toHsFnPrecursor (return . Path.takeDirectory)
   <#> filepathParam
   =#> [filepathResult "The filepath up to the last directory separator."]
   #? ("Gets the directory name, i.e., removes the last directory " <>
       "separator and everything after from the given path.")
 
 -- | See @Path.takeFilename@
-filename :: HaskellFunction
-filename = toHsFnPrecursor Path.takeFileName
+filename :: LuaError e => DocumentedFunction e
+filename = toHsFnPrecursor (return . Path.takeFileName)
   <#> filepathParam
   =#> [filepathResult "File name part of the input path."]
   #? "Get the file name."
 
 -- | See @Path.isAbsolute@
-is_absolute :: HaskellFunction
-is_absolute = toHsFnPrecursor Path.isAbsolute
+is_absolute :: LuaError e => DocumentedFunction e
+is_absolute = toHsFnPrecursor (return . Path.isAbsolute)
   <#> filepathParam
   =#> [booleanResult ("`true` iff `filepath` is an absolute path, " <>
                       "`false` otherwise.")]
   #? "Checks whether a path is absolute, i.e. not fixed to a root."
 
 -- | See @Path.isRelative@
-is_relative :: HaskellFunction
-is_relative = toHsFnPrecursor Path.isRelative
+is_relative :: LuaError e => DocumentedFunction e
+is_relative = toHsFnPrecursor (return . Path.isRelative)
   <#> filepathParam
   =#> [booleanResult ("`true` iff `filepath` is a relative path, " <>
                       "`false` otherwise.")]
   #? "Checks whether a path is relative or fixed to a root."
 
 -- | See @Path.joinPath@
-join :: HaskellFunction
-join = toHsFnPrecursor Path.joinPath
+join :: LuaError e => DocumentedFunction e
+join = toHsFnPrecursor (return . Path.joinPath)
   <#> Parameter
       { parameterPeeker = peekList peekFilePath
       , parameterDoc = ParameterDoc
@@ -181,8 +181,9 @@ join = toHsFnPrecursor Path.joinPath
   =#> [filepathResult "The joined path."]
   #? "Join path elements back together by the directory separator."
 
-make_relative :: HaskellFunction
-make_relative = toHsFnPrecursor makeRelative
+make_relative :: LuaError e => DocumentedFunction e
+make_relative = toHsFnPrecursor
+  (\path root unsafe -> return $ makeRelative path root unsafe)
   <#> parameter
         peekFilePath
         "string"
@@ -209,8 +210,8 @@ make_relative = toHsFnPrecursor makeRelative
      ]
 
 -- | See @Path.normalise@
-normalize :: HaskellFunction
-normalize = toHsFnPrecursor Path.normalise
+normalize :: LuaError e => DocumentedFunction e
+normalize = toHsFnPrecursor (return . Path.normalise)
   <#> filepathParam
   =#> [filepathResult "The normalized path."]
   #? T.unlines
@@ -228,15 +229,15 @@ normalize = toHsFnPrecursor Path.normalise
 --
 -- Note that this does /not/ wrap @'Path.splitPath'@, as that function
 -- adds trailing slashes to each directory, which is often inconvenient.
-split :: HaskellFunction
-split = toHsFnPrecursor Path.splitDirectories
+split :: LuaError e => DocumentedFunction e
+split = toHsFnPrecursor (return . Path.splitDirectories)
   <#> filepathParam
   =#> [filepathListResult "List of all path components."]
   #? "Splits a path by the directory separator."
 
 -- | See @Path.splitExtension@
-split_extension :: HaskellFunction
-split_extension = toHsFnPrecursor Path.splitExtension
+split_extension :: LuaError e => DocumentedFunction e
+split_extension = toHsFnPrecursor (return . Path.splitExtension)
   <#> filepathParam
   =#> [ FunctionResult
         { fnResultPusher = pushString . fst
@@ -259,8 +260,8 @@ split_extension = toHsFnPrecursor Path.splitExtension
       <> "as the extension.")
 
 -- | Wraps function @'Path.splitSearchPath'@.
-split_search_path :: HaskellFunction
-split_search_path = toHsFnPrecursor Path.splitSearchPath
+split_search_path :: LuaError e => DocumentedFunction e
+split_search_path = toHsFnPrecursor (return . Path.splitSearchPath)
   <#> Parameter
       { parameterPeeker = peekString
       , parameterDoc = ParameterDoc
@@ -277,16 +278,16 @@ split_search_path = toHsFnPrecursor Path.splitSearchPath
       <> "On Windows path elements are stripped of quotes.")
 
 -- | Join two paths with a directory separator. Wraps @'Path.combine'@.
-combine :: HaskellFunction
-combine = toHsFnPrecursor Path.combine
+combine :: LuaError e => DocumentedFunction e
+combine = toHsFnPrecursor (\fp1 fp2 -> return $ Path.combine fp1 fp2)
   <#> filepathParam
   <#> filepathParam
   =#> [filepathResult "combined paths"]
   #? "Combine two paths with a path separator."
 
 -- | Adds an extension to a file path. Wraps @'Path.addExtension'@.
-add_extension :: HaskellFunction
-add_extension = toHsFnPrecursor Path.addExtension
+add_extension :: LuaError e => DocumentedFunction e
+add_extension = toHsFnPrecursor (\fp ext -> return $ Path.addExtension fp ext)
   <#> filepathParam
   <#> Parameter
       { parameterPeeker = peekString
@@ -300,7 +301,7 @@ add_extension = toHsFnPrecursor Path.addExtension
   =#> [filepathResult "filepath with extension"]
   #? "Adds an extension, even if there is already one."
 
-stringAugmentationFunctions :: [(String, HaskellFunction)]
+stringAugmentationFunctions :: LuaError e => [(String, DocumentedFunction e)]
 stringAugmentationFunctions =
   [ ("directory", directory)
   , ("filename", filename)
@@ -312,16 +313,16 @@ stringAugmentationFunctions =
   , ("split_search_path", split_search_path)
   ]
 
-treat_strings_as_paths :: HaskellFunction
-treat_strings_as_paths = HaskellFunction
+treat_strings_as_paths :: LuaError e => DocumentedFunction e
+treat_strings_as_paths = DocumentedFunction
   { callFunction = do
       let addField (k, v) =
-            pushString k *> pushHaskellFunction v *> rawset (nth 3)
+            pushString k *> pushDocumentedFunction v *> rawset (nth 3)
       -- for some reason we can't just dump all functions into the
       -- string metatable, but have to use the string module for
       -- non-metamethods.
       pushString "" *> getmetatable top *> remove (nth 2)
-      mapM_ addField $ [("__add", add_extension), ("__div", combine)]
+      mapM_ addField [("__add", add_extension), ("__div", combine)]
       pop 1  -- string metatable
 
       getglobal "string"
@@ -338,11 +339,11 @@ treat_strings_as_paths = HaskellFunction
 --
 
 -- | Retrieves a file path from the stack.
-peekFilePath :: Peeker FilePath
+peekFilePath :: LuaError e => Peeker e FilePath
 peekFilePath = peekString
 
 -- | Filepath function parameter.
-filepathParam :: Parameter FilePath
+filepathParam :: LuaError e => Parameter e FilePath
 filepathParam = Parameter
   { parameterPeeker = peekFilePath
   , parameterDoc = ParameterDoc
@@ -355,9 +356,9 @@ filepathParam = Parameter
 
 -- | Result of a function returning a file path.
 filepathResult :: Text -- ^ Description
-               -> FunctionResult FilePath
+               -> FunctionResult e FilePath
 filepathResult desc = FunctionResult
-  { fnResultPusher = \fp -> pushString fp
+  { fnResultPusher = pushString
   , fnResultDoc = FunctionResultDoc
     { functionResultType = "string"
     , functionResultDescription = desc
@@ -365,10 +366,11 @@ filepathResult desc = FunctionResult
   }
 
 -- | List of filepaths function result.
-filepathListResult :: Text -- ^ Description
-                   -> FunctionResult [FilePath]
+filepathListResult :: LuaError e
+                   => Text -- ^ Description
+                   -> FunctionResult e [FilePath]
 filepathListResult desc = FunctionResult
-  { fnResultPusher = \fp -> pushList pushString fp
+  { fnResultPusher = pushList pushString
   , fnResultDoc = FunctionResultDoc
     { functionResultType = "list of strings"
     , functionResultDescription = desc
@@ -377,9 +379,9 @@ filepathListResult desc = FunctionResult
 
 -- | Boolean function result.
 booleanResult :: Text -- ^ Description
-              -> FunctionResult Bool
+              -> FunctionResult e Bool
 booleanResult desc = FunctionResult
-  { fnResultPusher = \b -> pushBool b
+  { fnResultPusher = pushBool
   , fnResultDoc = FunctionResultDoc
     { functionResultType = "boolean"
     , functionResultDescription = desc
