@@ -207,8 +207,8 @@ peekRealFloat idx =
          reportValueOnFailure "RealFloat" tonumber idx
 
 -- | Reads a numerically indexed table @t@ into a list, where the 'length' of
--- the list is equal to @#t@. The operation will fail if a numerical field @n@
--- with @1 ≤ n < #t@ is missing.
+-- the list is equal to @rawlen(t)@. The operation will fail unless all
+-- numerical fields between @1@ and @rawlen(t)@ can be retrieved.
 peekList :: forall a e. LuaError e => Peeker e a -> Peeker e [a]
 peekList peekElement = typeChecked "table" istable $ \idx -> do
   let elementsAt [] = return (Right [])

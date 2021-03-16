@@ -47,10 +47,10 @@ Below are the packages which make up HsLua:
     less C-like and more idiomatic -- from a Haskell point of
     view.
 
+  - **hslua**: Additional helpers and convenience mechanisms.
+
   - **hslua-classes**: Type classes that can make interfacing with
     Lua more convenient.
-
-  - **hslua**: Additional helpers and convenience mechanisms.
 
   - **tasty-hslua**: Helper functions for writing tasty tests to
     check Lua operations.
