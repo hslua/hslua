@@ -187,6 +187,7 @@ module HsLua.Core
   , Exception (..)
   , try
   , failLua
+  , throwErrorAsException
   , throwTypeMismatchError
     -- ** Helpers
   , popErrorMessage
