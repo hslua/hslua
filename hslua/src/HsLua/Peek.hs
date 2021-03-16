@@ -145,7 +145,7 @@ peekBool = fmap Right . toboolean
 -- Strings
 --
 
--- | Like @'tostring', but ensures that the value at the given index is
+-- | Like 'tostring', but ensures that the value at the given index is
 -- not silently converted to a string, as would happen with numbers.
 toByteString :: StackIndex -> LuaE e (Maybe ByteString)
 toByteString idx = do
