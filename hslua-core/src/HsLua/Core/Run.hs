@@ -21,7 +21,7 @@ import HsLua.Core.Types (LuaE, runWith)
 
 import qualified Control.Monad.Catch as Catch
 import qualified HsLua.Core.Auxiliary as Lua
-import qualified HsLua.Core.Functions as Lua
+import qualified HsLua.Core.Primary as Lua
 
 -- | Run Lua computation using the default HsLua state as starting
 -- point. Exceptions are masked, thus avoiding some issues when using

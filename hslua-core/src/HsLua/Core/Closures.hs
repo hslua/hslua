@@ -17,7 +17,7 @@ module HsLua.Core.Closures
 
 import Prelude hiding (error)
 import HsLua.Core.Error (LuaError (..))
-import HsLua.Core.Functions (error)
+import HsLua.Core.Primary (error)
 import HsLua.Core.Types (LuaE, PreCFunction, HaskellFunction, liftLua, runWith)
 import Lua.Call (hslua_pushhsfunction)
 import qualified Control.Monad.Catch as Catch

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-|
-Module      : HsLua.Core.Functions
+Module      : HsLua.Core.Primary
 Copyright   : © 2007–2012 Gracjan Polak;
               © 2012–2016 Ömer Sinan Ağacan;
               © 2017-2021 Albert Krewinkel
@@ -15,7 +15,7 @@ The functions in this module are mostly just thin wrappers around the
 respective C functions. However, C function which can throw an error are
 wrapped such that the error is converted into an @'Exception'@.
 -}
-module HsLua.Core.Functions where
+module HsLua.Core.Primary where
 
 import Prelude hiding (EQ, LT, compare, concat, error)
 

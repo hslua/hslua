@@ -63,7 +63,7 @@ library
                      , HsLua.Core.Userdata
                      , HsLua.Core.Utf8
   other-modules:       HsLua.Core.Auxiliary
-                     , HsLua.Core.Functions
+                     , HsLua.Core.Primary
   reexported-modules:  lua:Lua
   hs-source-dirs:      src
   default-extensions:  LambdaCase

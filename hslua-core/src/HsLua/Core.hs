@@ -199,7 +199,7 @@ import Prelude hiding (EQ, LT, compare, concat, error)
 import HsLua.Core.Auxiliary
 import HsLua.Core.Closures
 import HsLua.Core.Error
-import HsLua.Core.Functions
+import HsLua.Core.Primary
 import HsLua.Core.Run
 import HsLua.Core.Types as Lua
 import HsLua.Core.Userdata
