@@ -24,7 +24,6 @@ where
 import Control.Exception (SomeException, try)
 import Data.Bifunctor (first)
 import Data.List (intercalate)
-import Data.Semigroup (Semigroup (..))
 import HsLua.Core (Lua)
 import Test.Tasty (TestName, TestTree)
 import Test.Tasty.Providers (IsTest (..), singleTest, testFailed, testPassed)
@@ -32,6 +31,10 @@ import Test.Tasty.Lua.Module (pushModule)
 import Test.Tasty.Lua.Core (Outcome (..), ResultTree (..), UnnamedTree (..),
                             runTastyFile)
 import Test.Tasty.Lua.Translate (pathFailure, translateResultsFromFile)
+
+#if !MIN_VERSION_base(4,12,0)
+import Data.Semigroup (Semigroup ((<>)))
+#endif
 
 -- | Run the given file as a single test. It is possible to use
 -- `tasty.lua` in the script. This test collects and summarizes all
