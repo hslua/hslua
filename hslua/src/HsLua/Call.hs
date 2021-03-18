@@ -202,7 +202,7 @@ infixl 8 <#>, =#>, #?
       -> HsFnPrecursor e b
 (<#>) = applyParameter
 
--- | Inline version of @'returnResult'@.
+-- | Inline version of @'returnResults'@.
 (=#>) :: HsFnPrecursor e (LuaE e a)
       -> FunctionResults e a
       -> DocumentedFunction e
