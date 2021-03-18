@@ -4,7 +4,7 @@
 # Ignore warnings if the code is fine the way it is.
 - ignore:
     name: "Avoid lambda using `infix`"
-    within: "HsLua.Core.Functions"
+    within: "HsLua.Core.Primary"
 
 - ignore:
     name: "Reduce duplication"
