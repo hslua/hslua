@@ -2,7 +2,9 @@ flags: {}
 packages:
 - 'hslua'
 - 'hslua-core'
+- 'hslua-classes'
 - 'lua'
 - 'lua-arbitrary'
+- 'tasty-lua'
 - 'tasty-hslua'
 resolver: 'lts-17.4'
