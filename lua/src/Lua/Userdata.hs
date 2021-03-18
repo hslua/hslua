@@ -18,7 +18,7 @@ module Lua.Userdata
 
 import Foreign.C (CInt (CInt), CString)
 import Lua.Auxiliary (luaL_testudata)
-import Lua.Functions (lua_newuserdata)
+import Lua.Primary (lua_newuserdata)
 import Lua.Types
   ( LuaBool (..)
   , StackIndex (..)

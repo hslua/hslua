@@ -123,8 +123,8 @@ library
                      , Lua.Ersatz
                      , Lua.Ersatz.Auxiliary
                      , Lua.Ersatz.Functions
-                     , Lua.Functions
                      , Lua.Lib
+                     , Lua.Primary
                      , Lua.Types
                      , Lua.Userdata
   hs-source-dirs:      src

@@ -218,8 +218,8 @@ import Lua.Auxiliary
 import Lua.Constants
 import Lua.Ersatz.Functions
 import Lua.Ersatz.Auxiliary
-import Lua.Functions
 import Lua.Lib
+import Lua.Primary
 import Lua.Types as Lua
 
 -- | Runs operations on a new Lua @'Lua.State'@. The state is created

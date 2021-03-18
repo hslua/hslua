@@ -1,6 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-|
-Module      : Lua.Functions
+Module      : Lua.Primary
 Copyright   : © 2007–2012 Gracjan Polak;
               © 2012–2016 Ömer Sinan Ağacan;
               © 2017-2021 Albert Krewinkel
@@ -25,7 +25,7 @@ However, all function can trigger garbage collection. If that can lead
 to problems, then the package should be configured without flag
 @allow-unsafe-gc@.
 -}
-module Lua.Functions
+module Lua.Primary
   ( lua_absindex
   , lua_checkstack
   , lua_close
