@@ -312,8 +312,8 @@ stringAugmentationFunctions =
   ]
 
 treat_strings_as_paths :: LuaError e => DocumentedFunction e
-treat_strings_as_paths = DocumentedFunction
-  { callFunction = do
+treat_strings_as_paths = toHsFnPrecursor
+  ( do
       let addField (k, v) =
             pushString k *> pushDocumentedFunction v *> rawset (nth 3)
       -- for some reason we can't just dump all functions into the
@@ -326,11 +326,10 @@ treat_strings_as_paths = DocumentedFunction
       _ <- getglobal "string"
       mapM_ addField stringAugmentationFunctions
       pop 1 -- string module
-
-      return (0 :: NumResults)
-  , functionDoc = Nothing
-  }
-  #? "Augment the string module such that strings can be used as path objects."
+  )
+  =#> []
+  #? ("Augment the string module such that strings can be used as "
+      <> "path objects.")
 
 --
 -- Parameters
