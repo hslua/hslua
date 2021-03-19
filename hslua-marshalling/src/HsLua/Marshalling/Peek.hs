@@ -1,4 +1,5 @@
 {-# LANGUAGE BangPatterns        #-}
+{-# LANGUAGE CPP                 #-}
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
@@ -49,6 +50,10 @@ import Data.String (IsString (fromString))
 import Data.Text (Text)
 import HsLua.Core as Lua
 import Text.Read (readMaybe)
+
+#if !MIN_VERSION_base(4,12,0)
+import Data.Semigroup (Semigroup ((<>)))
+#endif
 
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.List.NonEmpty as NonEmpty

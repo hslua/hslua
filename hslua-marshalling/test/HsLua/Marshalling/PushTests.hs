@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
@@ -26,6 +27,10 @@ import Test.QuickCheck.Monadic (monadicIO, run, assert)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (Assertion, assertFailure)
 import Test.Tasty.QuickCheck (Arbitrary, testProperty)
+
+#if !MIN_VERSION_base(4,12,0)
+import Data.Semigroup (Semigroup ((<>)))
+#endif
 
 import qualified Data.Map as Map
 import qualified Data.Set as Set
