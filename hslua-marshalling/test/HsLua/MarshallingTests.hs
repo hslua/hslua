@@ -1,6 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
 {-|
 Module      : HsLua.MarshallingTests
 Copyright   : © 2020-2021 Albert Krewinkel
