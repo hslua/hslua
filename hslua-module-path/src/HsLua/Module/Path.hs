@@ -3,11 +3,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : HsLua.Module.Path
-Copyright   : © 2020 Albert Krewinkel
+Copyright   : © 2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
-Stability   : alpha
-Portability : Requires GHC 8 or later.
 
 Lua module to work with file paths.
 -}
