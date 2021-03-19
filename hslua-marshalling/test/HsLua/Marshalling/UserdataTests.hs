@@ -2,25 +2,25 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-|
-Module      : HsLua.UserdataTests
+Module      : HsLua.Marshalling.UserdataTests
 Copyright   : © 2018-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 
 Tests that any data type can be pushed to Lua as userdata.
 -}
-module HsLua.UserdataTests (tests) where
+module HsLua.Marshalling.UserdataTests (tests) where
 
 import Data.Data (Data)
 import Data.Word (Word64)
 import Data.Typeable (Typeable)
-import HsLua.Userdata (metatableName, pushAny, toAny)
+import HsLua.Marshalling.Userdata (metatableName, pushAny, toAny)
 import Test.Tasty.HsLua ( (=:), shouldBeResultOf, shouldHoldForResultOf )
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual)
 
 import qualified Data.ByteString as B
-import qualified HsLua as Lua
+import qualified HsLua.Core as Lua
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree

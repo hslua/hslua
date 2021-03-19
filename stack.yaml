@@ -3,6 +3,8 @@ packages:
 - 'hslua'
 - 'hslua-core'
 - 'hslua-classes'
+- 'hslua-marshalling'
+- 'hslua-module-path'
 - 'lua'
 - 'lua-arbitrary'
 - 'tasty-lua'

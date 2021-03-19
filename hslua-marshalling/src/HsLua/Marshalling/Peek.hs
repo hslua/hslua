@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
-Module      : HsLua.Peek
+Module      : HsLua.Marshalling.Peek
 Copyright   : © 2020-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
@@ -11,7 +11,7 @@ Portability : Portable
 
 Functions which unmarshal and retrieve Haskell values from Lua's stack.
 -}
-module HsLua.Peek
+module HsLua.Marshalling.Peek
   ( Peeker
   , PeekError (..)
   , errorMsg

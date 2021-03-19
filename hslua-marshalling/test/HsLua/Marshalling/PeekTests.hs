@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-|
-Module      : HsLua.PeekTests
+Module      : HsLua.Marshalling.PeekTests
 Copyright   : © 2020-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
@@ -10,11 +10,11 @@ Portability : OverloadedStrings, TypeApplications
 
 Tests for Haskell-value retriever functions.
 -}
-module HsLua.PeekTests (tests) where
+module HsLua.Marshalling.PeekTests (tests) where
 
 import Control.Monad (forM_, zipWithM_)
 import Data.Either (isLeft)
-import HsLua.Peek
+import HsLua.Marshalling.Peek
 
 import Lua.Arbitrary ()
 import Test.Tasty.HsLua ( (=:), pushLuaExpr, shouldBeResultOf
@@ -30,7 +30,7 @@ import qualified Data.List.NonEmpty as NonEmpty
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import qualified Data.Text as T
-import qualified HsLua as Lua
+import qualified HsLua.Core as Lua
 import qualified HsLua.Core.Utf8 as Utf8
 
 -- | Calling Haskell functions from Lua.

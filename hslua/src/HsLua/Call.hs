@@ -41,8 +41,7 @@ import Control.Monad.Except
 import Data.Text (Text)
 import Data.Version (Version, showVersion)
 import HsLua.Core
-import HsLua.Peek
-import HsLua.Push
+import HsLua.Marshalling
 import qualified Data.Text as T
 import qualified HsLua.Core as Lua
 

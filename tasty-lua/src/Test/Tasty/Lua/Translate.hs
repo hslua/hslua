@@ -14,7 +14,7 @@ module Test.Tasty.Lua.Translate
   )
 where
 
-import HsLua (Lua)
+import HsLua.Core (Lua)
 import Test.Tasty.Lua.Core (Outcome (..), ResultTree (..), UnnamedTree (..),
                             runTastyFile)
 import qualified Test.Tasty as Tasty

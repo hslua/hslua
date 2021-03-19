@@ -22,11 +22,11 @@ where
 import Control.Monad (void)
 import Data.ByteString (ByteString)
 import HsLua.Core
-import HsLua.Peek (Peeker, formatPeekError, peekList, peekString)
+import HsLua.Marshalling (Peeker, formatPeekError, peekList, peekString)
 import Test.Tasty.Lua.Module (pushModule)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T.Encoding
-import qualified HsLua as Lua
+import qualified HsLua.Core as Lua
 import qualified Test.Tasty as Tasty
 
 -- | Run a tasty Lua script from a file and return either the resulting

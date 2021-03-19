@@ -32,5 +32,5 @@ import Prelude hiding (compare, concat)
 
 import HsLua.Core
 import HsLua.Module
-import HsLua.Userdata ( pushAny, peekAny )
+import HsLua.Marshalling ( pushAny, peekAny )
 import HsLua.Util

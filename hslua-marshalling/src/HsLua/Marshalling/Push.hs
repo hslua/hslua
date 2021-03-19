@@ -1,5 +1,5 @@
 {-|
-Module      : HsLua.Push
+Module      : HsLua.Marshalling.Push
 Copyright   : © 2020-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
@@ -8,7 +8,7 @@ Portability : Portable
 
 Functions which marshal and push Haskell values onto Lua's stack.
 -}
-module HsLua.Push
+module HsLua.Marshalling.Push
   ( Pusher
   -- * Primitives
   , pushBool

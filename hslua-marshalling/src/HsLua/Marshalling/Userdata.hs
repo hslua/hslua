@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings   #-}
 {-|
-Module      : HsLua.Userdata
+Module      : HsLua.Marshalling.Userdata
 Copyright   : © 2007–2012 Gracjan Polak;
               © 2012–2016 Ömer Sinan Ağacan;
               © 2017-2021 Albert Krewinkel
@@ -29,7 +29,7 @@ we can simply do
 The other functions can be used to exert more control over the userdata wrapping
 and unwrapping process.
 -}
-module HsLua.Userdata
+module HsLua.Marshalling.Userdata
   ( pushAny
   , pushAnyWithMetatable
   , toAny

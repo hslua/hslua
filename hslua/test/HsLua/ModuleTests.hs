@@ -14,9 +14,8 @@ module HsLua.ModuleTests (tests) where
 
 import HsLua.Core (preloadhs, requirehs)
 import HsLua.Call hiding (render)
+import HsLua.Marshalling (peekIntegral, pushIntegral)
 import HsLua.Module
-import HsLua.Peek (peekIntegral)
-import HsLua.Push (pushIntegral)
 import Test.Tasty.HsLua ((=:), pushLuaExpr, shouldBeResultOf)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit ((@=?))

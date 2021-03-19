@@ -22,11 +22,11 @@ import Data.Map (Map)
 import Data.Text (Text)
 import Data.Set (Set)
 import HsLua.Core as Lua
-import HsLua.Push hiding (pushList)
+import HsLua.Marshalling hiding (pushList)
 import Foreign.Ptr (Ptr)
 
 import qualified Data.ByteString.Lazy as BL
-import qualified HsLua.Push as Push
+import qualified HsLua.Marshalling as Push
 
 -- | A value that can be pushed to the Lua stack.
 class Pushable a where

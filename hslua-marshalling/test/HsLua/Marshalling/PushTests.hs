@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-|
-Module      : HsLua.PushTests
+Module      : HsLua.Marshalling.PushTests
 Copyright   : © 2020-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
@@ -11,13 +11,13 @@ Portability : OverloadedStrings, TypeApplications
 
 Test pushing Haskell values to the stack.
 -}
-module HsLua.PushTests (tests) where
+module HsLua.Marshalling.PushTests (tests) where
 
 import Control.Monad (forM)
 import Data.ByteString (ByteString)
 import Data.Maybe (fromMaybe)
 import HsLua.Core (Lua, Number)
-import HsLua.Push
+import HsLua.Marshalling.Push
 
 import Lua.Arbitrary ()
 import Test.Tasty.HsLua ((=:), pushLuaExpr)
@@ -29,7 +29,7 @@ import Test.Tasty.QuickCheck (Arbitrary, testProperty)
 
 import qualified Data.Map as Map
 import qualified Data.Set as Set
-import qualified HsLua as Lua
+import qualified HsLua.Core as Lua
 import qualified HsLua.Core.Utf8 as Utf8
 
 -- | Calling Haskell functions from Lua.

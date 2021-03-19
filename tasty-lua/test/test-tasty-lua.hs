@@ -12,14 +12,14 @@ Tests for the @tasty@ Lua module.
 -}
 
 import Control.Monad (void)
-import HsLua (Lua)
+import HsLua.Core (Lua)
 import System.Directory (withCurrentDirectory)
 import System.FilePath ((</>))
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
 import Test.Tasty.Lua (pushModule, testLuaFile, translateResultsFromFile)
 
-import qualified HsLua as Lua
+import qualified HsLua.Core as Lua
 
 main :: IO ()
 main = do
@@ -37,7 +37,7 @@ tests = testGroup "HsLua tasty module"
       Lua.openlibs
       Lua.preloadhs "tasty" pushModule
       assertEqual' "function not added to preloader" Lua.TypeFunction =<< do
-        Lua.getglobal' "package.preload.tasty"
+        Lua.loadstring "return package.preload.tasty" *> Lua.call 0 1
         Lua.ltype (-1)
 
   , testCase "can be loaded as tasty" . Lua.run $ do

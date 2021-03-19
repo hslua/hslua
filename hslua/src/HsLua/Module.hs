@@ -26,7 +26,7 @@ import Control.Monad (forM_)
 import Data.Text (Text)
 import HsLua.Call (DocumentedFunction)
 import HsLua.Core
-import HsLua.Push (pushText)
+import HsLua.Marshalling (pushText)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified HsLua.Call as Call

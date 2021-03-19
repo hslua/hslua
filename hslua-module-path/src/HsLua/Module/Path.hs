@@ -44,8 +44,8 @@ import HsLua
   ( LuaError, getglobal, getmetatable, nth, pop, rawset, remove, top )
 import HsLua.Call
 import HsLua.Module hiding (preloadModule, pushModule)
-import HsLua.Peek (Peeker, peekBool, peekList, peekString)
-import HsLua.Push (pushBool, pushList, pushString)
+import HsLua.Marshalling
+  (Peeker, peekBool, peekList, peekString, pushBool, pushList, pushString)
 
 import qualified Data.Text as T
 import qualified System.FilePath as Path

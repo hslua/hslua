@@ -35,7 +35,7 @@ import qualified Control.Monad.Catch as Catch
 import qualified Data.Set as Set
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as BL
-import qualified HsLua.Peek as Peek
+import qualified HsLua.Marshalling as Peek
 
 #if !MIN_VERSION_base(4,12,0)
 import Data.Semigroup (Semigroup)
