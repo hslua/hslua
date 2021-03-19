@@ -114,6 +114,10 @@ pushModule mdl = do
     pushText name
     Call.pushDocumentedFunction fn
     rawset (nth 3)
+  forM_ (moduleFields mdl) $ \field -> do
+    pushText (fieldName field)
+    fieldPushValue field
+    rawset (nth 3)
 
 -- | Renders module documentation as Markdown.
 render :: Module e -> Text
