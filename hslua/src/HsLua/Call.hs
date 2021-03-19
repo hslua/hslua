@@ -163,8 +163,9 @@ returnResults bldr fnResults = DocumentedFunction
           pushString $ formatPeekError err
           Lua.error
         Right x -> do
-          forM_ fnResults $ \(FunctionResult push _) -> x >>= push
-          return $ NumResults (fromIntegral $ length fnResults)
+          result <- x
+          forM_ fnResults $ \(FunctionResult push _) -> push result
+          return $! NumResults (fromIntegral $ length fnResults)
 
   , functionDoc = Just $ FunctionDoc
     { functionDescription = ""
