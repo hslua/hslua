@@ -18,6 +18,7 @@ module HsLua.Module
   , Field (..)
   , registerModule
   , preloadModule
+  , preloadModuleWithName
   , pushModule
     -- * Documentation
   , render
@@ -54,9 +55,9 @@ requirehs modname pushMod = do
 
   -- Check whether module has already been loaded.
   getfield top modname >>= \case -- LOADED[modname]
-    TypeNil -> do   -- not loaded yet, load now
-      pop 1  -- remove field
-      pushMod  -- push module
+    TypeNil -> do    -- not loaded yet, load now
+      pop 1          -- remove LOADED[modname], i.e., nil
+      pushMod        -- push module
       pushvalue top  -- make copy of module
       -- add module under the given name (LOADED[modname] = module)
       setfield (nth 3) modname
@@ -99,7 +100,13 @@ registerModule :: LuaError e => Module e -> LuaE e ()
 registerModule mdl =
   requirehs (moduleName mdl) (pushModule mdl)
 
--- | Preload self-documenting module.
+-- | Add the module under a different name to the table of preloaded
+-- packages.
+preloadModuleWithName :: LuaError e => Module e -> Name -> LuaE e ()
+preloadModuleWithName documentedModule name = preloadModule $
+  documentedModule { moduleName = name }
+
+-- | Preload self-documenting module using the module's default name.
 preloadModule :: LuaError e => Module e -> LuaE e ()
 preloadModule mdl =
   preloadhs (moduleName mdl) $ do
