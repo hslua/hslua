@@ -39,6 +39,7 @@ import Data.Char (toLower)
 import Data.Semigroup (Semigroup(..))  -- includes (<>)
 #endif
 import Data.Text (Text)
+import Data.Version (Version, makeVersion)
 import HsLua
   ( LuaError, getglobal, getmetatable, nth, pop, rawset, remove, top )
 import HsLua.Call
@@ -112,6 +113,7 @@ directory = toHsFnPrecursor (return . Path.takeDirectory)
   =#> [filepathResult "The filepath up to the last directory separator."]
   #? ("Gets the directory name, i.e., removes the last directory " <>
       "separator and everything after from the given path.")
+  `since` initialVersion
 
 -- | See @Path.takeFilename@
 filename :: LuaError e => DocumentedFunction e
@@ -119,6 +121,7 @@ filename = toHsFnPrecursor (return . Path.takeFileName)
   <#> filepathParam
   =#> [filepathResult "File name part of the input path."]
   #? "Get the file name."
+  `since` initialVersion
 
 -- | See @Path.isAbsolute@
 is_absolute :: LuaError e => DocumentedFunction e
@@ -127,6 +130,7 @@ is_absolute = toHsFnPrecursor (return . Path.isAbsolute)
   =#> [booleanResult ("`true` iff `filepath` is an absolute path, " <>
                       "`false` otherwise.")]
   #? "Checks whether a path is absolute, i.e. not fixed to a root."
+  `since` initialVersion
 
 -- | See @Path.isRelative@
 is_relative :: LuaError e => DocumentedFunction e
@@ -135,6 +139,7 @@ is_relative = toHsFnPrecursor (return . Path.isRelative)
   =#> [booleanResult ("`true` iff `filepath` is a relative path, " <>
                       "`false` otherwise.")]
   #? "Checks whether a path is relative or fixed to a root."
+  `since` initialVersion
 
 -- | See @Path.joinPath@
 join :: LuaError e => DocumentedFunction e
@@ -150,6 +155,7 @@ join = toHsFnPrecursor (return . Path.joinPath)
       }
   =#> [filepathResult "The joined path."]
   #? "Join path elements back together by the directory separator."
+  `since` initialVersion
 
 make_relative :: LuaError e => DocumentedFunction e
 make_relative = toHsFnPrecursor
@@ -178,6 +184,7 @@ make_relative = toHsFnPrecursor
      , "[this blog post](http://neilmitchell.blogspot.co.uk"
      , "/2015/10/filepaths-are-subtle-symlinks-are-hard.html)."
      ]
+  `since` initialVersion
 
 -- | See @Path.normalise@
 normalize :: LuaError e => DocumentedFunction e
@@ -194,6 +201,7 @@ normalize = toHsFnPrecursor (return . Path.normalise)
      , " - `./` is removed."
      , " - an empty path becomes `.`"
      ]
+  `since` initialVersion
 
 -- | See @Path.splitDirectories@.
 --
@@ -204,6 +212,7 @@ split = toHsFnPrecursor (return . Path.splitDirectories)
   <#> filepathParam
   =#> [filepathListResult "List of all path components."]
   #? "Splits a path by the directory separator."
+  `since` initialVersion
 
 -- | See @Path.splitExtension@
 split_extension :: LuaError e => DocumentedFunction e
@@ -228,6 +237,7 @@ split_extension = toHsFnPrecursor (return . Path.splitExtension)
       <> "The extension, if present, includes the leading separator; "
       <> "if the path has no extension, then the empty string is returned "
       <> "as the extension.")
+  `since` initialVersion
 
 -- | Wraps function @'Path.splitSearchPath'@.
 split_search_path :: LuaError e => DocumentedFunction e
@@ -246,6 +256,7 @@ split_search_path = toHsFnPrecursor (return . Path.splitSearchPath)
       <> "character. Blank items are ignored on Windows, "
       <> "and converted to `.` on Posix. "
       <> "On Windows path elements are stripped of quotes.")
+  `since` initialVersion
 
 -- | Join two paths with a directory separator. Wraps @'Path.combine'@.
 combine :: LuaError e => DocumentedFunction e
@@ -270,6 +281,7 @@ add_extension = toHsFnPrecursor (\fp ext -> return $ Path.addExtension fp ext)
       }
   =#> [filepathResult "filepath with extension"]
   #? "Adds an extension, even if there is already one."
+  `since` initialVersion
 
 stringAugmentationFunctions :: LuaError e => [(String, DocumentedFunction e)]
 stringAugmentationFunctions =
@@ -302,6 +314,7 @@ treat_strings_as_paths = toHsFnPrecursor
   =#> []
   #? ("Augment the string module such that strings can be used as "
       <> "path objects.")
+  `since` initialVersion
 
 --
 -- Parameters
@@ -401,3 +414,7 @@ makeRelative path root unsafe
                             then Path.pathSeparator
                             else toLower y)
                          (Path.takeDrive x)
+
+-- | First published version of this library.
+initialVersion :: Version
+initialVersion = makeVersion [0,1,0]
