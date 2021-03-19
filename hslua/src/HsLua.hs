@@ -25,12 +25,12 @@ module HsLua (
   , getglobal'
   , setglobal'
     -- * Modules
-  , module HsLua.Module
+  , module HsLua.Packaging.Module
   ) where
 
 import Prelude hiding (compare, concat)
 
 import HsLua.Core
-import HsLua.Module
+import HsLua.Packaging.Module
 import HsLua.Marshalling ( pushAny, peekAny )
 import HsLua.Util

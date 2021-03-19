@@ -40,12 +40,12 @@ import Data.Semigroup (Semigroup(..))  -- includes (<>)
 #endif
 import Data.Text (Text)
 import Data.Version (Version, makeVersion)
-import HsLua
+import HsLua.Core
   ( LuaError, getglobal, getmetatable, nth, pop, rawset, remove, top )
-import HsLua.Call
-import HsLua.Module hiding (preloadModule, pushModule)
 import HsLua.Marshalling
   (Peeker, peekBool, peekList, peekString, pushBool, pushList, pushString)
+import HsLua.Packaging.Function
+import HsLua.Packaging.Module hiding (preloadModule, pushModule)
 
 import qualified Data.Text as T
 import qualified System.FilePath as Path

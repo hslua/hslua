@@ -14,7 +14,7 @@ module Main (main) where
 
 import Control.Monad (void)
 import HsLua (Lua)
-import HsLua.Module (preloadModule, preloadModuleWithName, pushModule)
+import HsLua.Packaging.Module (preloadModule, preloadModuleWithName, pushModule)
 import HsLua.Module.Path (documentedModule)
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)

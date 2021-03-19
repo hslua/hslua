@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-|
-Module      : HsLua.ModuleTests
+Module      : HsLua.Packaging.ModuleTests
 Copyright   : © 2019-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
@@ -10,18 +10,17 @@ Portability : Requires GHC 8 or later.
 
 Tests creating and loading of modules with Haskell.
 -}
-module HsLua.ModuleTests (tests) where
+module HsLua.Packaging.ModuleTests (tests) where
 
-import HsLua.Core (preloadhs, requirehs)
-import HsLua.Call hiding (render)
 import HsLua.Marshalling (peekIntegral, pushIntegral)
-import HsLua.Module
+import HsLua.Packaging.Function hiding (render)
+import HsLua.Packaging.Module
 import Test.Tasty.HsLua ((=:), pushLuaExpr, shouldBeResultOf)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit ((@=?))
 
 import qualified Data.Text as T
-import qualified HsLua as Lua
+import qualified HsLua.Core as Lua
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
@@ -31,7 +30,7 @@ tests = testGroup "Module"
       1 `shouldBeResultOf` do
         Lua.openlibs
         old <- Lua.gettop
-        requirehs "foo" (Lua.pushnumber 5.0)
+        Lua.requirehs "foo" (Lua.pushnumber 5.0)
         new <- Lua.gettop
         return (new - old)
 
@@ -39,7 +38,7 @@ tests = testGroup "Module"
       let testModule = "string as a module"
       in Just testModule `shouldBeResultOf` do
         Lua.openlibs
-        requirehs "test.module" (Lua.pushstring testModule)
+        Lua.requirehs "test.module" (Lua.pushstring testModule)
         pushLuaExpr "require 'test.module'"
         Lua.tostring Lua.top
     ]
@@ -49,7 +48,7 @@ tests = testGroup "Module"
       0 `shouldBeResultOf` do
         Lua.openlibs
         old <- Lua.gettop
-        preloadhs "foo" (1 <$ Lua.pushnumber 5.0)
+        Lua.preloadhs "foo" (1 <$ Lua.pushnumber 5.0)
         new <- Lua.gettop
         return (new - old)
 
@@ -57,7 +56,7 @@ tests = testGroup "Module"
       let testModule = "string as a module"
       in Just testModule `shouldBeResultOf` do
         Lua.openlibs
-        preloadhs "test.module" (1 <$ Lua.pushstring testModule)
+        Lua.preloadhs "test.module" (1 <$ Lua.pushstring testModule)
         pushLuaExpr "require 'test.module'"
         Lua.tostring Lua.top
     ]

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-|
-Module      : HsLua.Module
+Module      : HsLua.Packaging.Module
 Copyright   : © 2019-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
@@ -9,7 +9,7 @@ Portability : Requires GHC 8 or later.
 
 Utility functions for HsLua modules.
 -}
-module HsLua.Module
+module HsLua.Packaging.Module
   ( -- * Documented module
     Module (..)
   , Field (..)
@@ -24,12 +24,12 @@ where
 
 import Control.Monad (forM_)
 import Data.Text (Text)
-import HsLua.Call (DocumentedFunction)
+import HsLua.Packaging.Function (DocumentedFunction)
 import HsLua.Core
 import HsLua.Marshalling (pushText)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
-import qualified HsLua.Call as Call
+import qualified HsLua.Packaging.Function as Call
 
 -- | Create a new module (i.e., a Lua table).
 create :: LuaE e ()

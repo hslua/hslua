@@ -1,22 +1,18 @@
 {-|
 Module      : Main
-Copyright   : © 2017-2021 Albert Krewinkel
+Copyright   : © 2020-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 
-Tests for HsLua.
+Tests for hslua-packaging.
 -}
 import Test.Tasty (TestTree, defaultMain, testGroup)
 
-import qualified HsLuaTests
-import qualified HsLua.UtilTests
+import qualified HsLua.PackagingTests
 
 main :: IO ()
 main = defaultMain tests
 
--- | HSpec tests
+-- | Lua module packaging tests.
 tests :: TestTree
-tests = testGroup "hslua"
-  [ HsLua.UtilTests.tests
-  , HsLuaTests.tests
-  ]
+tests = testGroup "Packaging" [HsLua.PackagingTests.tests]

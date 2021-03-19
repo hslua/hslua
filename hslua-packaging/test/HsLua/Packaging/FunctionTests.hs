@@ -1,21 +1,19 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-|
-Module      : HsLua.CallTests
+Module      : HsLua.Packaging.FunctionTests
 Copyright   : © 2020-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
-Stability   : alpha
-Portability : OverloadedStrings, TypeApplications
 
 Tests for calling exposed Haskell functions.
 -}
-module HsLua.CallTests (tests) where
+module HsLua.Packaging.FunctionTests (tests) where
 
 import Data.Maybe (fromMaybe)
 import Data.Version (makeVersion)
 import HsLua.Core (StackIndex)
-import HsLua.Call
+import HsLua.Packaging.Function
 import HsLua.Marshalling
   (force, peekIntegral, peekRealFloat, peekText, pushIntegral, pushRealFloat)
 import Test.Tasty.HsLua ((=:), shouldBeResultOf)
@@ -23,7 +21,7 @@ import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit ((@=?))
 
 import qualified Data.Text as T
-import qualified HsLua as Lua
+import qualified HsLua.Core as Lua
 
 -- | Calling Haskell functions from Lua.
 tests :: TestTree

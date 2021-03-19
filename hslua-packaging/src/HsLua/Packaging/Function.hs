@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-|
-Module      : HsLua.Call
+Module      : HsLua.Packaging.Function
 Copyright   : © 2020-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
@@ -10,7 +10,7 @@ Portability : Portable
 
 Marshaling and documenting Haskell functions.
 -}
-module HsLua.Call
+module HsLua.Packaging.Function
   ( DocumentedFunction (..)
   , toHsFnPrecursor
   , toHsFnPrecursorWithStartIndex
