@@ -11,11 +11,13 @@ Lua module to work with file paths.
 -}
 module HsLua.Module.Path (
   -- * Module
-    pushModule
-  , preloadModule
-  , documentedModule
+    documentedModule
 
-  -- * Path manipulations
+  -- * Fields
+  , separator
+  , search_path_separator
+
+  -- * Path manipulation
   , add_extension
   , combine
   , directory
@@ -32,59 +34,29 @@ module HsLua.Module.Path (
   )
 where
 
-import Control.Monad (forM_)
 import Data.Char (toLower)
 #if !MIN_VERSION_base(4,11,0)
 import Data.Semigroup (Semigroup(..))  -- includes (<>)
 #endif
 import Data.Text (Text)
 import HsLua
-  ( LuaE, LuaError, Name, NumResults (..)
-  , getglobal, getmetatable, nth, pop, rawset, remove, top )
+  ( LuaError, getglobal, getmetatable, nth, pop, rawset, remove, top )
 import HsLua.Call
 import HsLua.Module hiding (preloadModule, pushModule)
 import HsLua.Peek (Peeker, peekBool, peekList, peekString)
-import HsLua.Push (pushBool, pushList, pushString, pushText)
+import HsLua.Push (pushBool, pushList, pushString)
 
 import qualified Data.Text as T
-import qualified HsLua.Module as Module
 import qualified System.FilePath as Path
 
---
--- Module
---
-
-description :: Text
-description = "Module for file path manipulations."
-
+-- | The @path@ module specification.
 documentedModule :: LuaError e => Module e
 documentedModule = Module
   { moduleName = "path"
+  , moduleDescription = "Module for file path manipulations."
   , moduleFields = fields
-  , moduleDescription = description
   , moduleFunctions = functions
   }
-
--- | Pushes the @path@ module to the Lua stack.
-pushModule :: LuaError e => LuaE e NumResults
-pushModule = 1 <$ pushModule' documentedModule
-
--- | Add the @path@ module under the given name to the table of
--- preloaded packages.
-preloadModule :: LuaError e => Name -> LuaE e ()
-preloadModule name = Module.preloadModule $
-  documentedModule { moduleName = name }
-
--- | Helper function which pushes the module with its fields. This
--- function should be removed once the respective hslua bug has been
--- fixed.
-pushModule' :: LuaError e => Module e -> LuaE e ()
-pushModule' mdl = do
-  Module.pushModule mdl
-  forM_ (moduleFields mdl) $ \field -> do
-    pushText (fieldName field)
-    fieldPushValue field
-    rawset (nth 3)
 
 --
 -- Fields

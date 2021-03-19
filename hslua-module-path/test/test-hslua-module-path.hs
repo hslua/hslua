@@ -14,18 +14,21 @@ module Main (main) where
 
 import Control.Monad (void)
 import HsLua (Lua)
-import HsLua.Module.Path (preloadModule, pushModule)
+import HsLua.Module (preloadModule, preloadModuleWithName, pushModule)
+import HsLua.Module.Path (documentedModule)
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
 import Test.Tasty.Lua (translateResultsFromFile)
 
 import qualified HsLua as Lua
+import qualified HsLua.Module as Lua
 
 main :: IO ()
 main = do
   luaTestResults <- Lua.run $ do
     Lua.openlibs
-    Lua.requirehs "path" (void pushModule)
+    Lua.registerModule documentedModule
+    Lua.pop 1
     translateResultsFromFile "test/test-path.lua"
   defaultMain $ testGroup "hslua-module-path" [tests, luaTestResults]
 
@@ -33,18 +36,18 @@ main = do
 tests :: TestTree
 tests = testGroup "HsLua path module"
   [ testCase "path module can be pushed to the stack" $
-      Lua.run (void pushModule :: Lua ())
+      Lua.run (void (pushModule documentedModule) :: Lua ())
 
   , testCase "path module can be added to the preloader" . Lua.run $ do
       Lua.openlibs
-      preloadModule "path"
+      preloadModule documentedModule
       assertEqual' "function not added to preloader" Lua.TypeFunction =<< do
         Lua.getglobal' "package.preload.path"
         Lua.ltype (-1)
 
   , testCase "path module can be loaded as hspath" . Lua.run $ do
       Lua.openlibs
-      preloadModule "hspath"
+      preloadModuleWithName documentedModule "hspath"
       assertEqual' "loading the module fails " Lua.OK =<<
         Lua.dostring "require 'hspath'"
   ]
