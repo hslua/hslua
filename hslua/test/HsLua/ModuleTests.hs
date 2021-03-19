@@ -12,6 +12,7 @@ Tests creating and loading of modules with Haskell.
 -}
 module HsLua.ModuleTests (tests) where
 
+import HsLua.Core (preloadhs, requirehs)
 import HsLua.Call hiding (render)
 import HsLua.Module
 import HsLua.Peek (peekIntegral)
@@ -65,7 +66,7 @@ tests = testGroup "Module"
   , testGroup "creation helpers"
     [ "create produces a table" =:
       Lua.TypeTable `shouldBeResultOf` do
-        create
+        Lua.newtable
         Lua.ltype Lua.top
     ]
   , testGroup "module type"

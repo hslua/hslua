@@ -21,7 +21,6 @@ import Test.Tasty.HUnit (assertEqual, testCase)
 import Test.Tasty.Lua (translateResultsFromFile)
 
 import qualified HsLua as Lua
-import qualified HsLua.Module as Lua
 
 main :: IO ()
 main = do

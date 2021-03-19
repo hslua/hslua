@@ -192,6 +192,9 @@ module HsLua.Core
     -- ** Helpers
   , popErrorMessage
   , pushTypeMismatchError
+    -- * Package
+  , requirehs
+  , preloadhs
   ) where
 
 import Prelude hiding (EQ, LT, compare, concat, error)
@@ -199,6 +202,7 @@ import Prelude hiding (EQ, LT, compare, concat, error)
 import HsLua.Core.Auxiliary
 import HsLua.Core.Closures
 import HsLua.Core.Error
+import HsLua.Core.Package
 import HsLua.Core.Primary
 import HsLua.Core.Run
 import HsLua.Core.Types as Lua

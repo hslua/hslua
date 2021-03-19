@@ -58,6 +58,7 @@ library
   exposed-modules:     HsLua.Core
                      , HsLua.Core.Closures
                      , HsLua.Core.Error
+                     , HsLua.Core.Package
                      , HsLua.Core.Run
                      , HsLua.Core.Types
                      , HsLua.Core.Userdata

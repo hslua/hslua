@@ -24,10 +24,8 @@ module HsLua (
     -- * Utility functions
   , getglobal'
   , setglobal'
-    -- ** Modules
-  , requirehs
-  , preloadhs
-  , create
+    -- * Modules
+  , module HsLua.Module
   ) where
 
 import Prelude hiding (compare, concat)

@@ -10,11 +10,8 @@ Portability : Requires GHC 8 or later.
 Utility functions for HsLua modules.
 -}
 module HsLua.Module
-  ( requirehs
-  , preloadhs
-  , create
-    -- * Module
-  , Module (..)
+  ( -- * Documented module
+    Module (..)
   , Field (..)
   , registerModule
   , preloadModule
@@ -25,8 +22,7 @@ module HsLua.Module
   )
 where
 
-import Control.Monad (forM_, void)
-import Data.String (IsString (fromString))
+import Control.Monad (forM_)
 import Data.Text (Text)
 import HsLua.Call (DocumentedFunction)
 import HsLua.Core
@@ -34,45 +30,6 @@ import HsLua.Push (pushText)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified HsLua.Call as Call
-
--- | Load a module, defined by a Haskell action, under the given
--- name.
---
--- Similar to @luaL_required@: After checking "loaded" table,
--- calls @pushMod@ to push a module to the stack, and registers
--- the result in @package.loaded@ table.
---
--- The @pushMod@ function must push exactly one element to the top
--- of the stack. This is not checked, but failure to do so will
--- lead to problems. Lua's @package@ module must have been loaded
--- by the time this function is invoked.
---
--- Leaves a copy of the module on the stack.
-requirehs :: LuaError e => Name -> LuaE e () -> LuaE e ()
-requirehs modname pushMod = do
-  -- get table of loaded modules
-  void $ getfield registryindex (fromString loadedTableRegistryField)
-
-  -- Check whether module has already been loaded.
-  getfield top modname >>= \case -- LOADED[modname]
-    TypeNil -> do    -- not loaded yet, load now
-      pop 1          -- remove LOADED[modname], i.e., nil
-      pushMod        -- push module
-      pushvalue top  -- make copy of module
-      -- add module under the given name (LOADED[modname] = module)
-      setfield (nth 3) modname
-    _ -> return ()
-
-  remove (nth 2)  -- remove table of loaded modules
-
--- | Registers a preloading function. Takes an module name and the
--- Lua operation which produces the package.
-preloadhs :: LuaError e => Name -> LuaE e NumResults -> LuaE e ()
-preloadhs name pushMod = do
-  void $ getfield registryindex (fromString preloadTableRegistryField)
-  pushHaskellFunction pushMod
-  setfield (nth 2) name
-  pop 1
 
 -- | Create a new module (i.e., a Lua table).
 create :: LuaE e ()
@@ -92,7 +49,6 @@ data Field e = Field
   , fieldDescription :: Text
   , fieldPushValue :: LuaE e ()
   }
-
 
 -- | Registers a 'Module'; leaves a copy of the module table on
 -- the stack.
