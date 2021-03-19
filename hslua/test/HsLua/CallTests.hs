@@ -13,6 +13,7 @@ Tests for calling exposed Haskell functions.
 module HsLua.CallTests (tests) where
 
 import Data.Maybe (fromMaybe)
+import Data.Version (makeVersion)
 import HsLua.Core (StackIndex)
 import HsLua.Call
 import HsLua.Peek (peekIntegral, peekRealFloat, peekText, force)
@@ -84,7 +85,11 @@ tests = testGroup "Call"
   , testGroup "documentation"
     [ "rendered docs" =:
       (T.unlines
-       [ "Parameters:"
+       [ "Calculates the factorial of a positive integer."
+       , ""
+       , "*Since: 1.0.0*"
+       , ""
+       , "Parameters:"
        , ""
        , "n"
        , ":   number for which the factorial is computed (integer)"
@@ -94,7 +99,7 @@ tests = testGroup "Call"
        , " - factorial (integer)"
        ]
        @=?
-       maybe "" render (functionDoc (factLuaAtIndex 0)))
+       render (functionDoc (factLuaAtIndex 0)))
     ]
 
   , testGroup "helpers"
@@ -137,6 +142,8 @@ factLuaAtIndex idx =
   toHsFnPrecursorWithStartIndex idx (return . factorial)
   <#> factorialParam
   =#> factorialResult
+  #? "Calculates the factorial of a positive integer."
+  `since` makeVersion [1,0,0]
 
 -- | Calculate the factorial of a number.
 factorial :: Integer -> Integer

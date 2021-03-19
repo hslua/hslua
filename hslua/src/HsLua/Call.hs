@@ -16,6 +16,7 @@ module HsLua.Call
   , toHsFnPrecursorWithStartIndex
   , applyParameter
   , returnResult
+  , since
   , Parameter (..)
   , FunctionResult (..)
   , FunctionResults
@@ -38,6 +39,7 @@ module HsLua.Call
 
 import Control.Monad.Except
 import Data.Text (Text)
+import Data.Version (Version, showVersion)
 import HsLua.Core
 import HsLua.Peek
 import HsLua.Push
@@ -73,7 +75,7 @@ data Parameter e a = Parameter
 -- from Lua.
 data DocumentedFunction e = DocumentedFunction
   { callFunction :: LuaE e NumResults
-  , functionDoc :: Maybe FunctionDoc
+  , functionDoc :: FunctionDoc
   }
 
 --
@@ -85,6 +87,8 @@ data FunctionDoc = FunctionDoc
   { functionDescription :: Text
   , parameterDocs       :: [ParameterDoc]
   , functionResultDocs  :: [FunctionResultDoc]
+  , functionSince       :: Maybe Version  -- ^ Version in which the function
+                                          -- was introduced.
   }
   deriving (Eq, Ord, Show)
 
@@ -167,10 +171,11 @@ returnResults bldr fnResults = DocumentedFunction
           forM_ fnResults $ \(FunctionResult push _) -> push result
           return $! NumResults (fromIntegral $ length fnResults)
 
-  , functionDoc = Just $ FunctionDoc
+  , functionDoc = FunctionDoc
     { functionDescription = ""
     , parameterDocs = reverse $ hsFnParameterDocs bldr
     , functionResultDocs = map fnResultDoc fnResults
+    , functionSince = Nothing
     }
   }
 
@@ -186,16 +191,21 @@ updateFunctionDescription :: DocumentedFunction e
                           -> Text
                           -> DocumentedFunction e
 updateFunctionDescription fn desc =
-  case functionDoc fn of
-    Nothing -> fn
-    Just fnDoc ->
-      fn { functionDoc = Just $ fnDoc { functionDescription = desc} }
+  let fnDoc = functionDoc fn
+  in fn { functionDoc = fnDoc { functionDescription = desc} }
+
+-- | Sets the library version at which the function was introduced in its
+-- current form.
+since :: DocumentedFunction e -> Version -> DocumentedFunction e
+since fn version =
+  let fnDoc = functionDoc fn
+  in fn { functionDoc = fnDoc { functionSince = Just version  }}
 
 --
 -- Operators
 --
 
-infixl 8 <#>, =#>, #?
+infixl 8 <#>, =#>, #?, `since`
 
 -- | Inline version of @'applyParameter'@.
 (<#>) :: HsFnPrecursor e (a -> b)
@@ -219,12 +229,17 @@ infixl 8 <#>, =#>, #?
 
 -- | Renders the documentation of a function as Markdown.
 render :: FunctionDoc -> Text
-render (FunctionDoc desc paramDocs resultDoc) =
-  (if T.null desc then "" else desc <> "\n\n") <>
-  renderParamDocs paramDocs <>
-  case resultDoc of
-    [] -> ""
-    rd -> "\nReturns:\n\n" <> T.intercalate "\n" (map renderResultDoc rd)
+render (FunctionDoc desc paramDocs resultDoc mVersion) =
+  let sinceTag = case mVersion of
+        Nothing -> mempty
+        Just version -> T.pack $ "\n\n*Since: " <> showVersion version <> "*"
+  in (if T.null desc
+      then ""
+      else desc <> sinceTag <> "\n\n") <>
+     renderParamDocs paramDocs <>
+     case resultDoc of
+       [] -> ""
+       rd -> "\nReturns:\n\n" <> T.intercalate "\n" (map renderResultDoc rd)
 
 -- | Renders function parameter documentation as a Markdown blocks.
 renderParamDocs :: [ParameterDoc] -> Text

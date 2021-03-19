@@ -48,8 +48,9 @@ Release pending.
       `pushHaskellFunction` instead, it takes care of garbage
       collection.
 
-    + Renamed typeclass `ToHaskellFunction` to `Exposable`, function
-      `callFunc` to `invoke`.
+    + Renamed typeclass `ToHaskellFunction` to `Exposable`,
+      function `callFunc` to `invoke`. All these have been moved
+      to *hslua-classes*.
 
     + The type PreCFunction is now defined in package lua;
       HaskellFunction is defined in hslua-core.
@@ -59,6 +60,10 @@ Release pending.
 
     + Removed helper functions `addfunction` and `addfield` from
       *Module*. Use documented functions and fields instead.
+
+- Added support for a "since" tag on documented functions; allows
+  to mark the library version when a function was introduced in
+  its present form.
 
 
 ### 1.3.0.1

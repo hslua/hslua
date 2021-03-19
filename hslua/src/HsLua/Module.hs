@@ -146,13 +146,12 @@ renderFunctionDoc :: Text                  -- ^ name
                   -> DocumentedFunction e  -- ^ function
                   -> Text                  -- ^ function docs
 renderFunctionDoc name fn =
-  case Call.functionDoc fn of
-    Nothing -> ""
-    Just fnDoc -> T.intercalate "\n"
-      [ "### " <> name <> " (" <> renderFunctionParams fnDoc <> ")"
-      , ""
-      , Call.render fnDoc
-      ]
+  let fnDoc = Call.functionDoc fn
+  in T.intercalate "\n"
+     [ "### " <> name <> " (" <> renderFunctionParams fnDoc <> ")"
+     , ""
+     , Call.render fnDoc
+     ]
 
 -- | Renders the parameter names of a function, separated by commas.
 renderFunctionParams :: Call.FunctionDoc -> Text
