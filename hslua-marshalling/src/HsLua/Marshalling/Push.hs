@@ -19,6 +19,7 @@ module HsLua.Marshalling.Push
   , pushLazyByteString
   , pushString
   , pushText
+  , pushName
   -- * Collections
   , pushList
   , pushMap
@@ -43,7 +44,7 @@ type Pusher e a = a -> LuaE e ()
 pushBool :: Pusher e Bool
 pushBool = pushboolean
 
--- | Pushes a 'T.Text' value as an UTF-8 encoded string.
+-- | Pushes a 'T.Text' value as a UTF-8 encoded string.
 pushText :: Pusher e T.Text
 pushText = pushstring . Utf8.fromText
 
@@ -55,9 +56,13 @@ pushByteString = pushstring
 pushLazyByteString :: Pusher e BL.ByteString
 pushLazyByteString = pushstring . BL.toStrict
 
--- | Pushes a 'String' as an UTF-8 encoded Lua string.
+-- | Pushes a 'String' as a UTF-8 encoded Lua string.
 pushString :: String -> LuaE e ()
 pushString = pushstring . Utf8.fromString
+
+-- | Pushes a 'Name' as a UTF-8 encoded Lua string.
+pushName :: Name -> LuaE e ()
+pushName (Name n) = pushByteString n
 
 -- | Pushes an @Integer@ to the Lua stack. Values representable as Lua
 -- integers are pushed as such; bigger integers are represented using

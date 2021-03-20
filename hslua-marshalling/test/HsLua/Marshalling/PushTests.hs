@@ -122,6 +122,14 @@ tests = testGroup "Push"
         assertLuaEqual (pushText "ÄÉÏøûßð") (Utf8.fromString "'ÄÉÏøûßð'")
       , testSingleElementProperty pushText
       ]
+
+    , testGroup "pushName"
+      [ "\"test\"" =:
+        assertLuaEqual (pushName "test") "\"test\""
+      , "unicode" =:
+        assertLuaEqual (pushName "ÄÉÏøûßð") (Utf8.fromString "'ÄÉÏøûßð'")
+      , testSingleElementProperty (pushName . Lua.Name)
+      ]
     ]
 
   , testGroup "Collections"

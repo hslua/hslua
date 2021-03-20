@@ -198,6 +198,20 @@ tests = testGroup "Peek"
           _ <- Lua.pushglobaltable
           peekStringy @B.ByteString Lua.top
       ]
+
+    , testGroup "peekName"
+      [ testProperty "retrieve string as Name" $ \txt ->
+          monadicIO $ do
+            retrieved <- run $ Lua.run @Lua.Exception $ do
+              Lua.pushstring txt
+              peekName Lua.top
+            assert (retrieved == Right (Lua.Name txt))
+
+      , "fails on table" =:
+        isLeft `shouldHoldForResultOf` do
+          _ <- Lua.pushglobaltable
+          peekName Lua.top
+      ]
     ]
 
   , testGroup "Containers"

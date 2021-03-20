@@ -30,6 +30,7 @@ module HsLua.Marshalling.Peek
   , peekString
   , peekText
   , peekStringy
+  , peekName
   -- * Collections
   , peekKeyValuePairs
   , peekList
@@ -181,6 +182,10 @@ peekStringy = fmap (second $ fromString . Utf8.toString) . peekByteString
 -- | Retrieves a 'T.Text' value as an UTF-8 encoded string.
 peekText :: LuaError e => Peeker e T.Text
 peekText = fmap (second Utf8.toText) . peekByteString
+
+-- | Retrieves a Lua string as 'Name'.
+peekName :: LuaError e => Peeker e Name
+peekName = fmap (fmap Name) . peekByteString
 
 --
 -- Numbers
