@@ -26,8 +26,10 @@ import qualified HsLua.Core as Lua
 -- | Calling Haskell functions from Lua.
 tests :: TestTree
 tests = testGroup "Rendering" $
-  let factorialDocs = T.unlines
-        [ "Calculates the factorial of a positive integer."
+  let factorialDocs = T.intercalate "\n"
+        [ "factorial (n)"
+        , ""
+        , "Calculates the factorial of a positive integer."
         , ""
         , "*Since: 1.0.0*"
         , ""
@@ -41,7 +43,7 @@ tests = testGroup "Rendering" $
         , " - factorial (integer)"
         ]
       nrootDocs = T.intercalate "\n"
-        [ "### nroot (x, n)"
+        [ "nroot (x, n)"
         , ""
         , "Parameters:"
         , ""
@@ -55,11 +57,16 @@ tests = testGroup "Rendering" $
         , ""
         , " - nth root (number)"
         ]
+      eulerDocs = T.intercalate "\n"
+        [ "euler_mascheroni"
+        , ""
+        , "Euler-Mascheroni constant"
+        ]
   in
     [ testGroup "Function"
       [ testCase "rendered docs" $
         factorialDocs @=?
-        renderFunctionDoc (functionDoc factorial)
+        renderFunction factorial
       ]
     , testGroup "Module"
       [ testCase "module docs"
@@ -68,12 +75,13 @@ tests = testGroup "Rendering" $
          , ""
          , "A math module."
          , ""
+         , "### " <> eulerDocs
+         , ""
          , "## Functions"
          , ""
-         , "### factorial (n)"
+         , "### " <> factorialDocs
          , ""
-         , factorialDocs
-         , nrootDocs
+         , "### " <> nrootDocs
          ] @=?
          render mymath)
       ]
@@ -95,8 +103,17 @@ mymath :: Module Lua.Exception
 mymath = Module
   { moduleName = "mymath"
   , moduleDescription = "A math module."
-  , moduleFields = []
+  , moduleFields = [euler_mascheroni]
   , moduleFunctions = [ factorial, nroot ]
+  }
+
+-- | Euler-Mascheroni constant
+euler_mascheroni :: Field Lua.Exception
+euler_mascheroni = Field
+  { fieldName = "euler_mascheroni"
+  , fieldDescription = "Euler-Mascheroni constant"
+  , fieldPushValue = pushRealFloat @Double
+                     0.57721566490153286060651209008240243
   }
 
 -- | Calculate the factorial of a number.

@@ -1,4 +1,5 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : HsLua.Packaging.Rendering
@@ -13,8 +14,8 @@ Render function and module documentation.
 module HsLua.Packaging.Rendering
   ( -- * Documentation
     render
-  , renderModuleDoc
-  , renderFunctionDoc
+  , renderModule
+  , renderFunction
   ) where
 
 import Data.Text (Text)
@@ -34,24 +35,28 @@ import Data.Semigroup (Semigroup ((<>)))
 -- Module documentation
 --
 
--- | Alias for 'renderModuleDoc'.
+-- | Alias for 'renderModule'.
 render :: Module e -> Text
-render = renderModuleDoc
+render = renderModule
 
 -- | Renders module documentation as Markdown.
-renderModuleDoc :: Module e -> Text
-renderModuleDoc mdl =
+renderModule :: Module e -> Text
+renderModule mdl =
   let fields = moduleFields mdl
   in T.unlines
      [ "# " <> T.decodeUtf8 (fromName $ moduleName mdl)
      , ""
      , moduleDescription mdl
-     , if null (moduleFields mdl) then "" else renderFields fields
-     , "## Functions"
-     , ""
+     , renderFields fields
+     , renderFunctions (moduleFunctions mdl)
      ]
-     <> T.intercalate "\n"
-        (map (("### " <>) . renderFunction) (moduleFunctions mdl))
+
+-- | Renders the full function documentation section.
+renderFunctions :: [DocumentedFunction e] -> Text
+renderFunctions = \case
+  [] -> mempty
+  fs -> "\n## Functions\n\n"
+        <> T.intercalate "\n\n" (map (("### " <>) . renderFunction) fs)
 
 -- | Renders documentation of a function.
 renderFunction :: DocumentedFunction e  -- ^ function
@@ -80,12 +85,14 @@ renderFields :: [Field e] -> Text
 renderFields fs =
   if null fs
   then mempty
-  else T.unlines $ map renderField fs
+  else mconcat
+       [ "\n"
+       , T.intercalate "\n\n" (map (("### " <>) . renderField) fs)
+       ]
 
 -- | Renders documentation for a single field.
 renderField :: Field e -> Text
-renderField f =
-  "### " <> fieldName f <> "\n\n" <> fieldDescription f <> "\n"
+renderField f = fieldName f <> "\n\n" <> fieldDescription f
 
 --
 -- Function documentation
@@ -126,5 +133,5 @@ renderResultDoc :: FunctionResultDoc -> Text
 renderResultDoc rd = mconcat
   [ " - "
   , functionResultDescription rd
-  , " (", functionResultType rd, ")\n"
+  , " (", functionResultType rd, ")"
   ]

@@ -10,17 +10,14 @@
     name: "Reduce duplication"
     within: "HsLua.Class.Pushable"
 
+# Lua functions use snake_case, not camelCase
 - ignore:
     name: "Use camelCase"
     within:
       - "Lua.Call"
       - "Lua.Userdata"
-
-# Lua functions use snake_case, not camelCase
-- ignore:
-    name: "Use camelCase"
-    within:
       - "HsLua.Module.Path"
+      - "HsLua.Packaging.RenderingTests"
 
 - modules:
   # Ensure names for qualified imports
