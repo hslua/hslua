@@ -70,6 +70,7 @@ test-suite test-hslua-packaging
   other-modules:       HsLua.PackagingTests
                      , HsLua.Packaging.FunctionTests
                      , HsLua.Packaging.ModuleTests
+                     , HsLua.Packaging.RenderingTests
   build-depends:       hslua-packaging
                      , tasty-hslua
                      , tasty                >= 0.11

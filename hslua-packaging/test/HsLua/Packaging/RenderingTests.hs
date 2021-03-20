@@ -12,50 +12,24 @@ module HsLua.Packaging.RenderingTests (tests) where
 
 import Data.Maybe (fromMaybe)
 import Data.Version (makeVersion)
-import HsLua.Core (StackIndex)
 import HsLua.Packaging.Function
+import HsLua.Packaging.Module
 import HsLua.Packaging.Rendering
 import HsLua.Marshalling
-  (force, peekIntegral, peekRealFloat, peekText, pushIntegral, pushRealFloat)
-import Test.Tasty.HsLua ((=:), shouldBeResultOf)
+  (peekIntegral, peekRealFloat, pushIntegral, pushRealFloat)
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit ((@=?))
+import Test.Tasty.HUnit ((@=?), testCase)
 
 import qualified Data.Text as T
 import qualified HsLua.Core as Lua
 
 -- | Calling Haskell functions from Lua.
 tests :: TestTree
-tests = testGroup "Rendering"
-  [ testGroup "Function"
-    [ "rendered docs" =:
-      (T.unlines
-       [ "Calculates the factorial of a positive integer."
-       , ""
-       , "*Since: 1.0.0*"
-       , ""
-       , "Parameters:"
-       , ""
-       , "n"
-       , ":   number for which the factorial is computed (integer)"
-       , ""
-       , "Returns:"
-       , ""
-       , " - factorial (integer)"
-       ]
-       @=?
-       renderFunctionDoc (functionDoc factorial))
-    ]
-  , testGroup "Module"
-    [ "module docs" =:
-      (T.intercalate "\n"
-        [ "# mymath"
+tests = testGroup "Rendering" $
+  let factorialDocs = T.unlines
+        [ "Calculates the factorial of a positive integer."
         , ""
-        , "A math module."
-        , ""
-        , "## Functions"
-        , ""
-        , "### factorial (n)"
+        , "*Since: 1.0.0*"
         , ""
         , "Parameters:"
         , ""
@@ -64,16 +38,46 @@ tests = testGroup "Rendering"
         , ""
         , "Returns:"
         , ""
-        , " - factorial (integer)\n"
-        ] @=?
-        render mymath)
+        , " - factorial (integer)"
+        ]
+      nrootDocs = T.intercalate "\n"
+        [ "### nroot (x, n)"
+        , ""
+        , "Parameters:"
+        , ""
+        , "x"
+        , ":    (number)"
+        , ""
+        , "n"
+        , ":    (integer)"
+        , ""
+        , "Returns:"
+        , ""
+        , " - nth root (number)"
+        ]
+  in
+    [ testGroup "Function"
+      [ testCase "rendered docs" $
+        factorialDocs @=?
+        renderFunctionDoc (functionDoc factorial)
+      ]
+    , testGroup "Module"
+      [ testCase "module docs"
+        (T.unlines
+         [ "# mymath"
+         , ""
+         , "A math module."
+         , ""
+         , "## Functions"
+         , ""
+         , "### factorial (n)"
+         , ""
+         , factorialDocs
+         , nrootDocs
+         ] @=?
+         render mymath)
+      ]
     ]
-  ]
-
-factorialResult :: FunctionResults Lua.Exception Integer
-factorialResult = (:[]) $ FunctionResult
-  (pushIntegral @Integer)
-  (FunctionResultDoc "integer" "factorial")
 
 -- | Calculate the nth root of a number. Defaults to square root.
 nroot :: DocumentedFunction Lua.Exception
@@ -92,7 +96,7 @@ mymath = Module
   { moduleName = "mymath"
   , moduleDescription = "A math module."
   , moduleFields = []
-  , moduleFunctions = [ ("factorial", factorial)]
+  , moduleFunctions = [ ("factorial", factorial), ("nroot", nroot) ]
   }
 
 -- | Calculate the factorial of a number.
@@ -105,10 +109,10 @@ factorial = toHsFnPrecursor (\n -> return $ product [1..n])
 
 factorialParam :: Parameter Lua.Exception Integer
 factorialParam =
-  parameter (peekIntegral @Integer) "integer"
+  parameter peekIntegral "integer"
     "n"
     "number for which the factorial is computed"
 
 factorialResult :: FunctionResults Lua.Exception Integer
 factorialResult =
-  functionResult (pushIntegral @Integer) "integer" "factorial"
+  functionResult pushIntegral "integer" "factorial"

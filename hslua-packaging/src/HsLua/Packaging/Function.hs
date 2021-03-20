@@ -42,7 +42,6 @@ import Data.Text (Text)
 import Data.Version (Version)
 import HsLua.Core
 import HsLua.Marshalling
-import qualified Data.Text as T
 import qualified HsLua.Core as Lua
 
 #if !MIN_VERSION_base(4,12,0)
