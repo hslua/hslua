@@ -1,33 +1,22 @@
-{-
-Copyright © 2017-2021 Albert Krewinkel
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
--}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
-{-| Tests for HsLua -}
+{-|
+Module      : HsLua.Packaging.Module
+Copyright   : © 2019-2021 Albert Krewinkel
+License     : MIT
+Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
+Stability   : alpha
+Portability : Requires GHC 8 or later.
+
+Tests for HsLua.
+-}
 module HsLuaTests (tests) where
 
 import Prelude hiding (concat)
 
 import Control.Monad (void)
+import Data.ByteString (append)
 import Data.Data (Typeable)
 import Data.Either (isLeft)
 import HsLua as Lua
@@ -77,7 +66,7 @@ tests = testGroup "Lua integration tests"
     run @Lua.Exception $ do
       openbase
       let tableStr = "{firstname = 'Jane', surname = 'Doe'}"
-      pushLuaExpr $ "setmetatable(" <> tableStr <> ", {'yup'})"
+      pushLuaExpr $ "setmetatable(" `append` tableStr `append` ", {'yup'})"
       void $ getfield top "firstname"
       firstname <- tostring top <* pop 1
       liftIO (assertEqual "Wrong value for firstname" (Just "Jane") firstname)

@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-|
@@ -44,6 +45,10 @@ import HsLua.Core
 import HsLua.Marshalling
 import qualified Data.Text as T
 import qualified HsLua.Core as Lua
+
+#if !MIN_VERSION_base(4,12,0)
+import Data.Semigroup (Semigroup ((<>)))
+#endif
 
 -- | Lua operation with an additional failure mode that can stack errors
 -- from different contexts; errors are not based on exceptions).
