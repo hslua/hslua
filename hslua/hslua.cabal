@@ -58,10 +58,6 @@ common common-options
                          -Wincomplete-uni-patterns
                          -Wpartial-fields
                          -fhide-source-paths
-  if impl(ghc < 8.8)
-    build-depends:       base-compat          >= 0.10
-    hs-source-dirs:      prelude
-    other-modules:       Prelude
 
 library
   import:              common-options
@@ -72,11 +68,6 @@ library
                      , HsLua.Core.Types
                      , HsLua.Core.Utf8
   hs-source-dirs:      src
-  default-extensions:  LambdaCase
-  other-extensions:    DeriveDataTypeable
-                     , DeriveFunctor
-                     , OverloadedStrings
-                     , TypeApplications
 
 test-suite test-hslua
   import:              common-options
@@ -87,14 +78,9 @@ test-suite test-hslua
   other-modules:       HsLuaTests
                      , HsLua.UtilTests
   build-depends:       hslua
-                     , lua-arbitrary        >= 1.0
-                     , QuickCheck           >= 2.7
-                     , quickcheck-instances >= 0.3
                      , tasty-hslua
                      , tasty                >= 0.11
                      , tasty-hunit          >= 0.9
-                     , tasty-quickcheck     >= 0.8
-  other-extensions:    DeriveDataTypeable
-                     , LambdaCase
+  other-extensions:    LambdaCase
                      , OverloadedStrings
                      , TypeApplications

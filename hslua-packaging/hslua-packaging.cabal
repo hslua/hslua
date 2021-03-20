@@ -70,8 +70,6 @@ test-suite test-hslua-packaging
                      , HsLua.Packaging.FunctionTests
                      , HsLua.Packaging.ModuleTests
   build-depends:       hslua-packaging
-                     , hslua-core
-                     , hslua-marshalling
                      , tasty-hslua
                      , tasty                >= 0.11
                      , tasty-hunit          >= 0.9

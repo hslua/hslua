@@ -77,7 +77,6 @@ test-suite test-hslua
                      , HsLua.Marshalling.PushTests
                      , HsLua.Marshalling.UserdataTests
   build-depends:       hslua-marshalling
-                     , hslua-core
                      , lua-arbitrary        >= 1.0
                      , QuickCheck           >= 2.7
                      , quickcheck-instances >= 0.3
