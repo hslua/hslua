@@ -24,6 +24,7 @@ import HsLua.Packaging.Function
 import HsLua.Packaging.Module
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
+import qualified HsLua.Core.Utf8 as Utf8
 
 #if !MIN_VERSION_base(4,12,0)
 import Data.Semigroup (Semigroup ((<>)))
@@ -50,16 +51,19 @@ renderModuleDoc mdl =
      , ""
      ]
      <> T.intercalate "\n"
-        (map (uncurry renderFunctionDoc') (moduleFunctions mdl))
+        (map (("### " <>) . renderFunction) (moduleFunctions mdl))
 
 -- | Renders documentation of a function.
-renderFunctionDoc' :: Text                  -- ^ name
-                   -> DocumentedFunction e  -- ^ function
-                   -> Text                  -- ^ function docs
-renderFunctionDoc' name fn =
+renderFunction :: DocumentedFunction e  -- ^ function
+               -> Text                  -- ^ function docs
+renderFunction fn =
   let fnDoc = functionDoc fn
+      fnName = Utf8.toText $ fromName (functionName fn)
+      name = if T.null fnName
+             then "<anonymous function>"
+             else fnName
   in T.intercalate "\n"
-     [ "### " <> name <> " (" <> renderFunctionParams fnDoc <> ")"
+     [ name <> " (" <> renderFunctionParams fnDoc <> ")"
      , ""
      , renderFunctionDoc fnDoc
      ]

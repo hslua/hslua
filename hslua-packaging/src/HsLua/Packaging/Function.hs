@@ -15,6 +15,7 @@ module HsLua.Packaging.Function
   ( DocumentedFunction (..)
   , toHsFnPrecursor
   , toHsFnPrecursorWithStartIndex
+  , defun
   , applyParameter
   , returnResult
   , since
@@ -77,7 +78,8 @@ data Parameter e a = Parameter
 -- from Lua.
 data DocumentedFunction e = DocumentedFunction
   { callFunction :: LuaE e NumResults
-  , functionDoc :: FunctionDoc
+  , functionName :: Name
+  , functionDoc  :: FunctionDoc
   }
 
 --
@@ -173,6 +175,7 @@ returnResults bldr fnResults = DocumentedFunction
           forM_ fnResults $ \(FunctionResult push _) -> push result
           return $! NumResults (fromIntegral $ length fnResults)
 
+  , functionName = ""
   , functionDoc = FunctionDoc
     { functionDescription = ""
     , parameterDocs = reverse $ hsFnParameterDocs bldr
@@ -195,6 +198,9 @@ updateFunctionDescription :: DocumentedFunction e
 updateFunctionDescription fn desc =
   let fnDoc = functionDoc fn
   in fn { functionDoc = fnDoc { functionDescription = desc} }
+
+defun :: Name -> DocumentedFunction e -> DocumentedFunction e
+defun name fn = fn { functionName = name }
 
 -- | Sets the library version at which the function was introduced in its
 -- current form.

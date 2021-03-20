@@ -43,7 +43,8 @@ import Data.Version (Version, makeVersion)
 import HsLua.Core
   ( LuaError, getglobal, getmetatable, nth, pop, rawset, remove, top )
 import HsLua.Marshalling
-  (Peeker, peekBool, peekList, peekString, pushBool, pushList, pushString)
+  ( Peeker, peekBool, peekList, peekString
+  , pushBool, pushList, pushName, pushString )
 import HsLua.Packaging.Function
 import HsLua.Packaging.Module hiding (preloadModule, pushModule)
 
@@ -91,24 +92,24 @@ search_path_separator = Field
 -- Functions
 --
 
-functions :: LuaError e => [(Text, DocumentedFunction e)]
+functions :: LuaError e => [DocumentedFunction e]
 functions =
-  [ ("directory", directory)
-  , ("filename", filename)
-  , ("is_absolute", is_absolute)
-  , ("is_relative", is_relative)
-  , ("join", join)
-  , ("make_relative", make_relative)
-  , ("normalize", normalize)
-  , ("split", split)
-  , ("split_extension", split_extension)
-  , ("split_search_path", split_search_path)
-  , ("treat_strings_as_paths", treat_strings_as_paths)
+  [ directory
+  , filename
+  , is_absolute
+  , is_relative
+  , join
+  , make_relative
+  , normalize
+  , split
+  , split_extension
+  , split_search_path
+  , treat_strings_as_paths
   ]
 
 -- | See @Path.takeDirectory@
 directory :: LuaError e => DocumentedFunction e
-directory = toHsFnPrecursor (return . Path.takeDirectory)
+directory = defun "directory" $ toHsFnPrecursor (return . Path.takeDirectory)
   <#> filepathParam
   =#> [filepathResult "The filepath up to the last directory separator."]
   #? ("Gets the directory name, i.e., removes the last directory " <>
@@ -117,7 +118,7 @@ directory = toHsFnPrecursor (return . Path.takeDirectory)
 
 -- | See @Path.takeFilename@
 filename :: LuaError e => DocumentedFunction e
-filename = toHsFnPrecursor (return . Path.takeFileName)
+filename = defun "filename" $ toHsFnPrecursor (return . Path.takeFileName)
   <#> filepathParam
   =#> [filepathResult "File name part of the input path."]
   #? "Get the file name."
@@ -125,7 +126,7 @@ filename = toHsFnPrecursor (return . Path.takeFileName)
 
 -- | See @Path.isAbsolute@
 is_absolute :: LuaError e => DocumentedFunction e
-is_absolute = toHsFnPrecursor (return . Path.isAbsolute)
+is_absolute = defun "is_absolute" $ toHsFnPrecursor (return . Path.isAbsolute)
   <#> filepathParam
   =#> [booleanResult ("`true` iff `filepath` is an absolute path, " <>
                       "`false` otherwise.")]
@@ -134,7 +135,7 @@ is_absolute = toHsFnPrecursor (return . Path.isAbsolute)
 
 -- | See @Path.isRelative@
 is_relative :: LuaError e => DocumentedFunction e
-is_relative = toHsFnPrecursor (return . Path.isRelative)
+is_relative = defun "is_relative" $ toHsFnPrecursor (return . Path.isRelative)
   <#> filepathParam
   =#> [booleanResult ("`true` iff `filepath` is a relative path, " <>
                       "`false` otherwise.")]
@@ -143,7 +144,7 @@ is_relative = toHsFnPrecursor (return . Path.isRelative)
 
 -- | See @Path.joinPath@
 join :: LuaError e => DocumentedFunction e
-join = toHsFnPrecursor (return . Path.joinPath)
+join = defun "join" $ toHsFnPrecursor (return . Path.joinPath)
   <#> Parameter
       { parameterPeeker = peekList peekFilePath
       , parameterDoc = ParameterDoc
@@ -158,7 +159,7 @@ join = toHsFnPrecursor (return . Path.joinPath)
   `since` initialVersion
 
 make_relative :: LuaError e => DocumentedFunction e
-make_relative = toHsFnPrecursor
+make_relative = defun "make_relative" $ toHsFnPrecursor
   (\path root unsafe -> return $ makeRelative path root unsafe)
   <#> parameter
         peekFilePath
@@ -188,7 +189,7 @@ make_relative = toHsFnPrecursor
 
 -- | See @Path.normalise@
 normalize :: LuaError e => DocumentedFunction e
-normalize = toHsFnPrecursor (return . Path.normalise)
+normalize = defun "normalize" $ toHsFnPrecursor (return . Path.normalise)
   <#> filepathParam
   =#> [filepathResult "The normalized path."]
   #? T.unlines
@@ -208,7 +209,7 @@ normalize = toHsFnPrecursor (return . Path.normalise)
 -- Note that this does /not/ wrap @'Path.splitPath'@, as that function
 -- adds trailing slashes to each directory, which is often inconvenient.
 split :: LuaError e => DocumentedFunction e
-split = toHsFnPrecursor (return . Path.splitDirectories)
+split = defun "split" $ toHsFnPrecursor (return . Path.splitDirectories)
   <#> filepathParam
   =#> [filepathListResult "List of all path components."]
   #? "Splits a path by the directory separator."
@@ -216,7 +217,8 @@ split = toHsFnPrecursor (return . Path.splitDirectories)
 
 -- | See @Path.splitExtension@
 split_extension :: LuaError e => DocumentedFunction e
-split_extension = toHsFnPrecursor (return . Path.splitExtension)
+split_extension = defun "split_extension"
+   $  toHsFnPrecursor (return . Path.splitExtension)
   <#> filepathParam
   =#> [ FunctionResult
         { fnResultPusher = pushString . fst
@@ -241,7 +243,8 @@ split_extension = toHsFnPrecursor (return . Path.splitExtension)
 
 -- | Wraps function @'Path.splitSearchPath'@.
 split_search_path :: LuaError e => DocumentedFunction e
-split_search_path = toHsFnPrecursor (return . Path.splitSearchPath)
+split_search_path = defun "split_search_path"
+   $  toHsFnPrecursor (return . Path.splitSearchPath)
   <#> Parameter
       { parameterPeeker = peekString
       , parameterDoc = ParameterDoc
@@ -260,7 +263,8 @@ split_search_path = toHsFnPrecursor (return . Path.splitSearchPath)
 
 -- | Join two paths with a directory separator. Wraps @'Path.combine'@.
 combine :: LuaError e => DocumentedFunction e
-combine = toHsFnPrecursor (\fp1 fp2 -> return $ Path.combine fp1 fp2)
+combine = defun "combine"
+   $  toHsFnPrecursor (\fp1 fp2 -> return $ Path.combine fp1 fp2)
   <#> filepathParam
   <#> filepathParam
   =#> [filepathResult "combined paths"]
@@ -268,7 +272,8 @@ combine = toHsFnPrecursor (\fp1 fp2 -> return $ Path.combine fp1 fp2)
 
 -- | Adds an extension to a file path. Wraps @'Path.addExtension'@.
 add_extension :: LuaError e => DocumentedFunction e
-add_extension = toHsFnPrecursor (\fp ext -> return $ Path.addExtension fp ext)
+add_extension = defun "add_extension"
+   $ toHsFnPrecursor (\fp ext -> return $ Path.addExtension fp ext)
   <#> filepathParam
   <#> Parameter
       { parameterPeeker = peekString
@@ -283,34 +288,37 @@ add_extension = toHsFnPrecursor (\fp ext -> return $ Path.addExtension fp ext)
   #? "Adds an extension, even if there is already one."
   `since` initialVersion
 
-stringAugmentationFunctions :: LuaError e => [(String, DocumentedFunction e)]
+stringAugmentationFunctions :: LuaError e => [DocumentedFunction e]
 stringAugmentationFunctions =
-  [ ("directory", directory)
-  , ("filename", filename)
-  , ("is_absolute", is_absolute)
-  , ("is_relative", is_relative)
-  , ("normalize", normalize)
-  , ("split", split)
-  , ("split_extension", split_extension)
-  , ("split_search_path", split_search_path)
+  [ directory
+  , filename
+  , is_absolute
+  , is_relative
+  , normalize
+  , split
+  , split_extension
+  , split_search_path
   ]
 
 treat_strings_as_paths :: LuaError e => DocumentedFunction e
-treat_strings_as_paths = toHsFnPrecursor
-  ( do
-      let addField (k, v) =
-            pushString k *> pushDocumentedFunction v *> rawset (nth 3)
-      -- for some reason we can't just dump all functions into the
-      -- string metatable, but have to use the string module for
-      -- non-metamethods.
-      pushString "" *> getmetatable top *> remove (nth 2)
-      mapM_ addField [("__add", add_extension), ("__div", combine)]
-      pop 1  -- string metatable
+treat_strings_as_paths = defun "treat_strings_as_paths"
+   $ toHsFnPrecursor
+     ( do let addFunction fn = do
+                pushName (functionName fn)
+                pushDocumentedFunction fn
+                rawset (nth 3)
+          -- for some reason we can't just dump all functions into the
+          -- string metatable, but have to use the string module for
+          -- non-metamethods.
+          pushString "" *> getmetatable top *> remove (nth 2)
+          mapM_ addFunction
+                [defun "__add" add_extension, defun "__div" combine]
+          pop 1  -- string metatable
 
-      _ <- getglobal "string"
-      mapM_ addField stringAugmentationFunctions
-      pop 1 -- string module
-  )
+          _ <- getglobal "string"
+          mapM_ addFunction stringAugmentationFunctions
+          pop 1 -- string module
+     )
   =#> []
   #? ("Augment the string module such that strings can be used as "
       <> "path objects.")

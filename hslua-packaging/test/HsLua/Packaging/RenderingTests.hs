@@ -81,7 +81,7 @@ tests = testGroup "Rendering" $
 
 -- | Calculate the nth root of a number. Defaults to square root.
 nroot :: DocumentedFunction Lua.Exception
-nroot = toHsFnPrecursor nroot'
+nroot = defun "nroot" $ toHsFnPrecursor nroot'
   <#> parameter (peekRealFloat @Double) "number" "x" ""
   <#> optionalParameter (peekIntegral @Int) "integer" "n" ""
   =#> functionResult pushRealFloat "number" "nth root"
@@ -96,12 +96,13 @@ mymath = Module
   { moduleName = "mymath"
   , moduleDescription = "A math module."
   , moduleFields = []
-  , moduleFunctions = [ ("factorial", factorial), ("nroot", nroot) ]
+  , moduleFunctions = [ factorial, nroot ]
   }
 
 -- | Calculate the factorial of a number.
 factorial :: DocumentedFunction Lua.Exception
-factorial = toHsFnPrecursor (\n -> return $ product [1..n])
+factorial = defun "factorial"
+   $  toHsFnPrecursor (\n -> return $ product [1..n])
   <#> factorialParam
   =#> factorialResult
   #? "Calculates the factorial of a positive integer."

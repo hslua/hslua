@@ -145,7 +145,7 @@ factorialResult = (:[]) $ FunctionResult
 
 -- | Calculate the nth root of a number. Defaults to square root.
 nroot :: DocumentedFunction Lua.Exception
-nroot = toHsFnPrecursor nroot'
+nroot = defun "nroot" $ toHsFnPrecursor nroot'
   <#> parameter (peekRealFloat @Double) "number" "x" ""
   <#> optionalParameter (peekIntegral @Int) "integer" "n" ""
   =#> functionResult pushRealFloat "number" "nth root"

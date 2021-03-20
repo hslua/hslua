@@ -23,9 +23,9 @@ where
 
 import Control.Monad (forM_)
 import Data.Text (Text)
-import HsLua.Packaging.Function (DocumentedFunction)
+import HsLua.Packaging.Function (DocumentedFunction (functionName))
 import HsLua.Core
-import HsLua.Marshalling (pushText)
+import HsLua.Marshalling (pushName, pushText)
 import qualified HsLua.Packaging.Function as Call
 
 #if !MIN_VERSION_base(4,12,0)
@@ -41,7 +41,7 @@ data Module e = Module
   { moduleName :: Name
   , moduleDescription :: Text
   , moduleFields :: [Field e]
-  , moduleFunctions :: [(Text, DocumentedFunction e)]
+  , moduleFunctions :: [DocumentedFunction e]
   }
 
 -- | Self-documenting module field
@@ -74,8 +74,8 @@ preloadModule mdl =
 pushModule :: LuaError e => Module e -> LuaE e ()
 pushModule mdl = do
   create
-  forM_ (moduleFunctions mdl) $ \(name, fn) -> do
-    pushText name
+  forM_ (moduleFunctions mdl) $ \fn -> do
+    pushName (functionName fn)
     Call.pushDocumentedFunction fn
     rawset (nth 3)
   forM_ (moduleFields mdl) $ \field -> do

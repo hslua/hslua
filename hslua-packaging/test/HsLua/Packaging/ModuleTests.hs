@@ -91,11 +91,12 @@ mymath = Module
   { moduleName = "mymath"
   , moduleDescription = "A math module."
   , moduleFields = []
-  , moduleFunctions = [ ("factorial", factorial)]
+  , moduleFunctions = [factorial]
   }
 
 factorial :: DocumentedFunction Lua.Exception
-factorial = toHsFnPrecursor (\n -> return $ product [1..n])
+factorial = defun "factorial"
+   $ toHsFnPrecursor (\n -> return $ product [1..n])
   <#> factorialParam
   =#> factorialResult
 
