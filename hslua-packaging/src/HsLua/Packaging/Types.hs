@@ -1,5 +1,3 @@
-{-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : HsLua.Packaging.Types
 Copyright   : © 2020-2021 Albert Krewinkel
@@ -25,12 +23,10 @@ module HsLua.Packaging.Types
   , FunctionResultDoc (..)
   ) where
 
-import Control.Monad.Except
 import Data.Text (Text)
 import Data.Version (Version)
-import HsLua.Core
-import HsLua.Marshalling
-import qualified HsLua.Core as Lua
+import HsLua.Core (LuaE, Name, NumResults)
+import HsLua.Marshalling (Peeker, Pusher)
 
 -- | Named and documented Lua module.
 data Module e = Module

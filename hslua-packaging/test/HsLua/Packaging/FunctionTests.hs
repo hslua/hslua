@@ -135,7 +135,7 @@ tests = testGroup "Call"
 
 factLuaAtIndex :: StackIndex -> DocumentedFunction Lua.Exception
 factLuaAtIndex idx =
-  toHsFnPrecursorWithStartIndex idx (return . factorial)
+  toHsFnPrecursor idx "factorial" (liftPure factorial)
   <#> factorialParam
   =#> factorialResult
   #? "Calculates the factorial of a positive integer."
@@ -163,12 +163,13 @@ factorialResult = (:[]) $ FunctionResult
 
 -- | Calculate the nth root of a number. Defaults to square root.
 nroot :: DocumentedFunction Lua.Exception
-nroot = defun "nroot" $ toHsFnPrecursor nroot'
+nroot = defun "nroot"
+  ### liftPure2 nroot'
   <#> parameter (peekRealFloat @Double) "number" "x" ""
   <#> optionalParameter (peekIntegral @Int) "integer" "n" ""
   =#> functionResult pushRealFloat "number" "nth root"
   where
-    nroot' :: Double -> Maybe Int -> Lua.LuaE e Double
+    nroot' :: Double -> Maybe Int -> Double
     nroot' x nOpt =
       let n = fromMaybe 2 nOpt
-      in return $ x ** (1 / fromIntegral n)
+      in x ** (1 / fromIntegral n)

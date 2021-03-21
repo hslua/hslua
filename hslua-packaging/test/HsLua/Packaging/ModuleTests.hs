@@ -96,8 +96,9 @@ mymath = Module
   }
 
 factorial :: DocumentedFunction Lua.Exception
-factorial = defun "factorial"
-   $ toHsFnPrecursor (\n -> return $ product [1..n])
+factorial =
+  defun "factorial"
+  ### liftPure (\n -> product [1..n])
   <#> factorialParam
   =#> factorialResult
 

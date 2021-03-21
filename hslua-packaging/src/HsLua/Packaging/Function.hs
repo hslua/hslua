@@ -13,16 +13,23 @@ Marshaling and documenting Haskell functions.
 -}
 module HsLua.Packaging.Function
   ( DocumentedFunction (..)
-  , toHsFnPrecursor
-  , toHsFnPrecursorWithStartIndex
+    -- * Creating documented functions
   , defun
   , applyParameter
   , returnResult
-  , since
-    -- * Operators
+  , liftPure
+  , liftPure2
+  , liftPure3
+  , liftPure4
+  , liftPure5
+    -- ** Operators
+  , (###)
   , (<#>)
   , (=#>)
   , (#?)
+    -- * Modifying functions
+  , setName
+  , since
     -- * Pushing to Lua
   , pushDocumentedFunction
     -- * Accessing documentation in Lua
@@ -32,6 +39,8 @@ module HsLua.Packaging.Function
   , parameter
   , optionalParameter
   , functionResult
+    -- * Internal
+  , toHsFnPrecursor
   ) where
 
 import Control.Monad.Except
@@ -60,21 +69,45 @@ data HsFnPrecursor e a = HsFnPrecursor
   { hsFnPrecursorAction :: LuaExcept e a
   , hsFnMaxParameterIdx :: StackIndex
   , hsFnParameterDocs :: [ParameterDoc]
+  , hsFnName :: Name
   }
   deriving (Functor)
 
--- | Create a HaskellFunction precursor from a pure function.
-toHsFnPrecursor :: a -> HsFnPrecursor e a
-toHsFnPrecursor = toHsFnPrecursorWithStartIndex (StackIndex 0)
+-- | Begin wrapping a monadic Lua function such that it can be turned
+-- into a documented function exposable to Lua.
+defun :: Name -> a -> HsFnPrecursor e a
+defun = toHsFnPrecursor (StackIndex 0)
 
--- | Create a HaskellFunction precursor from a pure function, selecting
--- the stack index after which the first function parameter will be
--- placed.
-toHsFnPrecursorWithStartIndex :: StackIndex -> a -> HsFnPrecursor e a
-toHsFnPrecursorWithStartIndex idx f = HsFnPrecursor
+-- | Turns a pure function into a monadic Lua function.
+liftPure :: (a -> b) -> (a -> LuaE e b)
+liftPure f = return . f
+
+-- | Turns a binary function into a Lua function.
+liftPure2 :: (a -> b -> c) -> (a -> b -> LuaE e c)
+liftPure2 f a b = return (f a b)
+
+-- | Turns a ternary function into a Lua function.
+liftPure3 :: (a -> b -> c -> d) -> (a -> b -> c -> LuaE e d)
+liftPure3 f a b c = return (f a b c)
+
+-- | Turns a quarternary function into a Lua function.
+liftPure4 :: (a -> b -> c -> d) -> (a -> b -> c -> LuaE e d)
+liftPure4 f a b c = return (f a b c)
+
+-- | Turns a quinary function into a Lua function.
+liftPure5 :: (a -> b -> c -> d) -> (a -> b -> c -> LuaE e d)
+liftPure5 f a b c = return (f a b c)
+
+
+-- | Create a HaskellFunction precursor from a monadic function,
+-- selecting the stack index after which the first function parameter
+-- will be placed.
+toHsFnPrecursor :: StackIndex -> Name -> a -> HsFnPrecursor e a
+toHsFnPrecursor idx name f = HsFnPrecursor
   { hsFnPrecursorAction = return f
   , hsFnMaxParameterIdx = idx
   , hsFnParameterDocs = mempty
+  , hsFnName = name
   }
 
 -- | Partially apply a parameter.
@@ -89,7 +122,7 @@ applyParameter bldr param = do
   let nextAction f = withExceptT (pushMsg context) $ do
         x <- ExceptT $ parameterPeeker param i
         return $ f x
-  HsFnPrecursor
+  bldr
     { hsFnPrecursorAction = action >>= nextAction
     , hsFnMaxParameterIdx = i
     , hsFnParameterDocs = parameterDoc param : hsFnParameterDocs bldr
@@ -113,7 +146,7 @@ returnResults bldr fnResults = DocumentedFunction
           forM_ fnResults $ \(FunctionResult push _) -> push result
           return $! NumResults (fromIntegral $ length fnResults)
 
-  , functionName = ""
+  , functionName = hsFnName bldr
   , functionDoc = FunctionDoc
     { functionDescription = ""
     , parameterDocs = reverse $ hsFnParameterDocs bldr
@@ -137,8 +170,9 @@ updateFunctionDescription fn desc =
   let fnDoc = functionDoc fn
   in fn { functionDoc = fnDoc { functionDescription = desc} }
 
-defun :: Name -> DocumentedFunction e -> DocumentedFunction e
-defun name fn = fn { functionName = name }
+-- | Renames a documented function.
+setName :: Name -> DocumentedFunction e -> DocumentedFunction e
+setName name fn = fn { functionName = name }
 
 -- | Sets the library version at which the function was introduced in its
 -- current form.
@@ -151,7 +185,11 @@ since fn version =
 -- Operators
 --
 
-infixl 8 <#>, =#>, #?, `since`
+infixl 8 ###, <#>, =#>, #?, `since`
+
+-- | Like '($)', but left associative.
+(###) :: (a -> HsFnPrecursor e a) -> a -> HsFnPrecursor e a
+(###) = ($)
 
 -- | Inline version of @'applyParameter'@.
 (<#>) :: HsFnPrecursor e (a -> b)

@@ -90,15 +90,15 @@ tests = testGroup "Rendering" $
 
 -- | Calculate the nth root of a number. Defaults to square root.
 nroot :: DocumentedFunction Lua.Exception
-nroot = defun "nroot" $ toHsFnPrecursor nroot'
+nroot = defun "nroot" (liftPure2 nroot')
   <#> parameter (peekRealFloat @Double) "number" "x" ""
   <#> optionalParameter (peekIntegral @Int) "integer" "n" ""
   =#> functionResult pushRealFloat "number" "nth root"
   where
-    nroot' :: Double -> Maybe Int -> Lua.LuaE e Double
+    nroot' :: Double -> Maybe Int -> Double
     nroot' x nOpt =
       let n = fromMaybe 2 nOpt
-      in return $ x ** (1 / fromIntegral n)
+      in x ** (1 / fromIntegral n)
 
 mymath :: Module Lua.Exception
 mymath = Module
@@ -120,7 +120,7 @@ euler_mascheroni = Field
 -- | Calculate the factorial of a number.
 factorial :: DocumentedFunction Lua.Exception
 factorial = defun "factorial"
-   $  toHsFnPrecursor (\n -> return $ product [1..n])
+  ### liftPure (\n -> product [1..n])
   <#> factorialParam
   =#> factorialResult
   #? "Calculates the factorial of a positive integer."

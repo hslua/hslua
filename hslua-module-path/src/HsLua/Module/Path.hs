@@ -108,7 +108,8 @@ functions =
 
 -- | See @Path.takeDirectory@
 directory :: LuaError e => DocumentedFunction e
-directory = defun "directory" $ toHsFnPrecursor (return . Path.takeDirectory)
+directory = defun "directory"
+  ### liftPure Path.takeDirectory
   <#> filepathParam
   =#> [filepathResult "The filepath up to the last directory separator."]
   #? ("Gets the directory name, i.e., removes the last directory " <>
@@ -117,7 +118,8 @@ directory = defun "directory" $ toHsFnPrecursor (return . Path.takeDirectory)
 
 -- | See @Path.takeFilename@
 filename :: LuaError e => DocumentedFunction e
-filename = defun "filename" $ toHsFnPrecursor (return . Path.takeFileName)
+filename = defun "filename"
+  ### liftPure Path.takeFileName
   <#> filepathParam
   =#> [filepathResult "File name part of the input path."]
   #? "Get the file name."
@@ -125,7 +127,8 @@ filename = defun "filename" $ toHsFnPrecursor (return . Path.takeFileName)
 
 -- | See @Path.isAbsolute@
 is_absolute :: LuaError e => DocumentedFunction e
-is_absolute = defun "is_absolute" $ toHsFnPrecursor (return . Path.isAbsolute)
+is_absolute = defun "is_absolute"
+  ### liftPure Path.isAbsolute
   <#> filepathParam
   =#> [booleanResult ("`true` iff `filepath` is an absolute path, " <>
                       "`false` otherwise.")]
@@ -134,7 +137,8 @@ is_absolute = defun "is_absolute" $ toHsFnPrecursor (return . Path.isAbsolute)
 
 -- | See @Path.isRelative@
 is_relative :: LuaError e => DocumentedFunction e
-is_relative = defun "is_relative" $ toHsFnPrecursor (return . Path.isRelative)
+is_relative = defun "is_relative"
+  ### liftPure Path.isRelative
   <#> filepathParam
   =#> [booleanResult ("`true` iff `filepath` is a relative path, " <>
                       "`false` otherwise.")]
@@ -143,7 +147,8 @@ is_relative = defun "is_relative" $ toHsFnPrecursor (return . Path.isRelative)
 
 -- | See @Path.joinPath@
 join :: LuaError e => DocumentedFunction e
-join = defun "join" $ toHsFnPrecursor (return . Path.joinPath)
+join = defun "join"
+  ### liftPure Path.joinPath
   <#> Parameter
       { parameterPeeker = peekList peekFilePath
       , parameterDoc = ParameterDoc
@@ -158,8 +163,8 @@ join = defun "join" $ toHsFnPrecursor (return . Path.joinPath)
   `since` initialVersion
 
 make_relative :: LuaError e => DocumentedFunction e
-make_relative = defun "make_relative" $ toHsFnPrecursor
-  (\path root unsafe -> return $ makeRelative path root unsafe)
+make_relative = defun "make_relative"
+  ### liftPure3 makeRelative
   <#> parameter
         peekFilePath
         "string"
@@ -188,7 +193,8 @@ make_relative = defun "make_relative" $ toHsFnPrecursor
 
 -- | See @Path.normalise@
 normalize :: LuaError e => DocumentedFunction e
-normalize = defun "normalize" $ toHsFnPrecursor (return . Path.normalise)
+normalize = defun "normalize"
+  ### liftPure Path.normalise
   <#> filepathParam
   =#> [filepathResult "The normalized path."]
   #? T.unlines
@@ -208,7 +214,8 @@ normalize = defun "normalize" $ toHsFnPrecursor (return . Path.normalise)
 -- Note that this does /not/ wrap @'Path.splitPath'@, as that function
 -- adds trailing slashes to each directory, which is often inconvenient.
 split :: LuaError e => DocumentedFunction e
-split = defun "split" $ toHsFnPrecursor (return . Path.splitDirectories)
+split = defun "split"
+  ### liftPure Path.splitDirectories
   <#> filepathParam
   =#> [filepathListResult "List of all path components."]
   #? "Splits a path by the directory separator."
@@ -217,7 +224,7 @@ split = defun "split" $ toHsFnPrecursor (return . Path.splitDirectories)
 -- | See @Path.splitExtension@
 split_extension :: LuaError e => DocumentedFunction e
 split_extension = defun "split_extension"
-   $  toHsFnPrecursor (return . Path.splitExtension)
+  ### liftPure Path.splitExtension
   <#> filepathParam
   =#> [ FunctionResult
         { fnResultPusher = pushString . fst
@@ -243,7 +250,7 @@ split_extension = defun "split_extension"
 -- | Wraps function @'Path.splitSearchPath'@.
 split_search_path :: LuaError e => DocumentedFunction e
 split_search_path = defun "split_search_path"
-   $  toHsFnPrecursor (return . Path.splitSearchPath)
+  ### liftPure Path.splitSearchPath
   <#> Parameter
       { parameterPeeker = peekString
       , parameterDoc = ParameterDoc
@@ -263,7 +270,7 @@ split_search_path = defun "split_search_path"
 -- | Join two paths with a directory separator. Wraps @'Path.combine'@.
 combine :: LuaError e => DocumentedFunction e
 combine = defun "combine"
-   $  toHsFnPrecursor (\fp1 fp2 -> return $ Path.combine fp1 fp2)
+  ### liftPure2 Path.combine
   <#> filepathParam
   <#> filepathParam
   =#> [filepathResult "combined paths"]
@@ -272,7 +279,7 @@ combine = defun "combine"
 -- | Adds an extension to a file path. Wraps @'Path.addExtension'@.
 add_extension :: LuaError e => DocumentedFunction e
 add_extension = defun "add_extension"
-   $ toHsFnPrecursor (\fp ext -> return $ Path.addExtension fp ext)
+  ### liftPure2 Path.addExtension
   <#> filepathParam
   <#> Parameter
       { parameterPeeker = peekString
@@ -301,23 +308,21 @@ stringAugmentationFunctions =
 
 treat_strings_as_paths :: LuaError e => DocumentedFunction e
 treat_strings_as_paths = defun "treat_strings_as_paths"
-   $ toHsFnPrecursor
-     ( do let addFunction fn = do
-                pushName (functionName fn)
-                pushDocumentedFunction fn
-                rawset (nth 3)
-          -- for some reason we can't just dump all functions into the
-          -- string metatable, but have to use the string module for
-          -- non-metamethods.
-          pushString "" *> getmetatable top *> remove (nth 2)
-          mapM_ addFunction
-                [defun "__add" add_extension, defun "__div" combine]
-          pop 1  -- string metatable
+  ### do let addFunction fn = do
+                 pushName (functionName fn)
+                 pushDocumentedFunction fn
+                 rawset (nth 3)
+         -- for some reason we can't just dump all functions into the
+         -- string metatable, but have to use the string module for
+         -- non-metamethods.
+         pushString "" *> getmetatable top *> remove (nth 2)
+         mapM_ addFunction
+           [setName "__add" add_extension, setName "__div" combine]
+         pop 1  -- string metatable
 
-          _ <- getglobal "string"
-          mapM_ addFunction stringAugmentationFunctions
-          pop 1 -- string module
-     )
+         _ <- getglobal "string"
+         mapM_ addFunction stringAugmentationFunctions
+         pop 1 -- string module
   =#> []
   #? ("Augment the string module such that strings can be used as "
       <> "path objects.")

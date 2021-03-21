@@ -15,3 +15,8 @@ Release pending.
 - Added support for a "since" tag on documented functions; allows
   to mark the library version when a function was introduced in
   its present form.
+
+- Improved syntax for the creation of documented functions.
+
+- Documentation for functions is now stored in Lua; a method to
+  access it is available as a HaskellFunction.
