@@ -45,8 +45,7 @@ import HsLua.Core
 import HsLua.Marshalling
   ( Peeker, peekBool, peekList, peekString
   , pushBool, pushList, pushName, pushString )
-import HsLua.Packaging.Function
-import HsLua.Packaging.Module hiding (preloadModule, pushModule)
+import HsLua.Packaging
 
 import qualified Data.Text as T
 import qualified System.FilePath as Path

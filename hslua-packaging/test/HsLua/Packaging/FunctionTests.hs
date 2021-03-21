@@ -14,6 +14,7 @@ import Data.Maybe (fromMaybe)
 import Data.Version (makeVersion)
 import HsLua.Core (StackIndex)
 import HsLua.Packaging.Function
+import HsLua.Packaging.Types
 import HsLua.Marshalling
   (force, peekIntegral, peekRealFloat, peekText, pushIntegral, pushRealFloat)
 import Test.Tasty.HsLua ((=:), shouldBeResultOf)

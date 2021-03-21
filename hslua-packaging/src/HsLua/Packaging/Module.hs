@@ -22,10 +22,10 @@ module HsLua.Packaging.Module
 where
 
 import Control.Monad (forM_)
-import Data.Text (Text)
 import HsLua.Packaging.Function (DocumentedFunction (functionName))
 import HsLua.Core
 import HsLua.Marshalling (pushName, pushText)
+import HsLua.Packaging.Types
 import qualified HsLua.Packaging.Function as Call
 
 #if !MIN_VERSION_base(4,12,0)
@@ -35,21 +35,6 @@ import Data.Semigroup (Semigroup ((<>)))
 -- | Create a new module (i.e., a Lua table).
 create :: LuaE e ()
 create = newtable
-
--- | Named and documented Lua module.
-data Module e = Module
-  { moduleName :: Name
-  , moduleDescription :: Text
-  , moduleFields :: [Field e]
-  , moduleFunctions :: [DocumentedFunction e]
-  }
-
--- | Self-documenting module field
-data Field e = Field
-  { fieldName :: Text
-  , fieldDescription :: Text
-  , fieldPushValue :: LuaE e ()
-  }
 
 -- | Registers a 'Module'; leaves a copy of the module table on
 -- the stack.

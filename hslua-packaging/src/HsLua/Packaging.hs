@@ -12,8 +12,11 @@ module HsLua.Packaging
   , module HsLua.Packaging.Function
     -- * Create documentation
   , module HsLua.Packaging.Rendering
+    -- * Types
+  , module HsLua.Packaging.Types
   ) where
 
 import HsLua.Packaging.Function
 import HsLua.Packaging.Module
 import HsLua.Packaging.Rendering
+import HsLua.Packaging.Types

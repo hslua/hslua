@@ -19,17 +19,10 @@ module HsLua.Packaging.Function
   , applyParameter
   , returnResult
   , since
-  , Parameter (..)
-  , FunctionResult (..)
-  , FunctionResults
     -- * Operators
   , (<#>)
   , (=#>)
   , (#?)
-    -- * Documentation
-  , FunctionDoc (..)
-  , ParameterDoc (..)
-  , FunctionResultDoc (..)
     -- * Pushing to Lua
   , pushDocumentedFunction
     -- * Convenience functions
@@ -43,79 +36,20 @@ import Data.Text (Text)
 import Data.Version (Version)
 import HsLua.Core
 import HsLua.Marshalling
+import HsLua.Packaging.Types
 import qualified HsLua.Core as Lua
 
 #if !MIN_VERSION_base(4,12,0)
 import Data.Semigroup (Semigroup ((<>)))
 #endif
 
--- | Lua operation with an additional failure mode that can stack errors
--- from different contexts; errors are not based on exceptions).
-type LuaExcept e a = ExceptT PeekError (LuaE e) a
-
---
--- Function components
---
-
--- | Result of a call to a Haskell function.
-data FunctionResult e a
-  = FunctionResult
-  { fnResultPusher :: Pusher e a
-  , fnResultDoc :: FunctionResultDoc
-  }
-
--- | List of function results in the order in which they are
--- returned in Lua.
-type FunctionResults e a = [FunctionResult e a]
-
--- | Function parameter.
-data Parameter e a = Parameter
-  { parameterPeeker :: Peeker e a
-  , parameterDoc    :: ParameterDoc
-  }
-
--- | Haskell equivallent to CFunction, i.e., function callable
--- from Lua.
-data DocumentedFunction e = DocumentedFunction
-  { callFunction :: LuaE e NumResults
-  , functionName :: Name
-  , functionDoc  :: FunctionDoc
-  }
-
---
--- Documentation
---
-
--- | Documentation for a Haskell function
-data FunctionDoc = FunctionDoc
-  { functionDescription :: Text
-  , parameterDocs       :: [ParameterDoc]
-  , functionResultDocs  :: [FunctionResultDoc]
-  , functionSince       :: Maybe Version  -- ^ Version in which the function
-                                          -- was introduced.
-  }
-  deriving (Eq, Ord, Show)
-
--- | Documentation for function parameters.
-data ParameterDoc = ParameterDoc
-  { parameterName :: Text
-  , parameterType :: Text
-  , parameterDescription :: Text
-  , parameterIsOptional :: Bool
-  }
-  deriving (Eq, Ord, Show)
-
--- | Documentation for the result of a function.
-data FunctionResultDoc = FunctionResultDoc
-  { functionResultType :: Text
-  , functionResultDescription :: Text
-  }
-  deriving (Eq, Ord, Show)
-
-
 --
 -- Haskell function building
 --
+
+-- | Lua operation with an additional failure mode that can stack errors
+-- from different contexts; errors are not based on exceptions).
+type LuaExcept e a = ExceptT PeekError (LuaE e) a
 
 -- | Helper type used to create 'HaskellFunction's.
 data HsFnPrecursor e a = HsFnPrecursor

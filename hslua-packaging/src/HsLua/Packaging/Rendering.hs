@@ -21,8 +21,7 @@ module HsLua.Packaging.Rendering
 import Data.Text (Text)
 import Data.Version (showVersion)
 import HsLua.Core
-import HsLua.Packaging.Function
-import HsLua.Packaging.Module
+import HsLua.Packaging.Types
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified HsLua.Core.Utf8 as Utf8

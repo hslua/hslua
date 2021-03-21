@@ -15,6 +15,7 @@ module HsLua.Packaging.ModuleTests (tests) where
 import HsLua.Marshalling (peekIntegral, pushIntegral)
 import HsLua.Packaging.Function
 import HsLua.Packaging.Module
+import HsLua.Packaging.Types
 import Test.Tasty.HsLua ((=:), pushLuaExpr, shouldBeResultOf)
 import Test.Tasty (TestTree, testGroup)
 

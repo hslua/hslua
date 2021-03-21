@@ -15,6 +15,7 @@ import Data.Version (makeVersion)
 import HsLua.Packaging.Function
 import HsLua.Packaging.Module
 import HsLua.Packaging.Rendering
+import HsLua.Packaging.Types
 import HsLua.Marshalling
   (peekIntegral, peekRealFloat, pushIntegral, pushRealFloat)
 import Test.Tasty (TestTree, testGroup)
