@@ -25,6 +25,9 @@ module HsLua.Packaging.Function
   , (#?)
     -- * Pushing to Lua
   , pushDocumentedFunction
+    -- * Accessing documentation in Lua
+  , docsField
+  , pushDocumentation
     -- * Convenience functions
   , parameter
   , optionalParameter
@@ -36,6 +39,7 @@ import Data.Text (Text)
 import Data.Version (Version)
 import HsLua.Core
 import HsLua.Marshalling
+import HsLua.Packaging.Rendering (renderFunction)
 import HsLua.Packaging.Types
 import qualified HsLua.Core as Lua
 
@@ -169,11 +173,52 @@ infixl 8 <#>, =#>, #?, `since`
 -- Push to Lua
 --
 
+-- | Name of the registry field holding the documentation table. The
+-- documentation table is indexed by the documented objects, like module
+-- tables and functions, and contains documentation strings as values.
+--
+-- The table is an ephemeron table, i.e., an entry gets garbage
+-- collected if the key is no longer reachable.
+docsField :: Name
+docsField = "HsLua docs"
+
 -- | Pushes a documented Haskell function to the Lua stack, making it
--- usable as a normal function in Lua.
+-- usable as a normal function in Lua. At the same time, the function
+-- docs are registered in the documentation table.
 pushDocumentedFunction :: LuaError e
                        => DocumentedFunction e -> LuaE e ()
-pushDocumentedFunction = Lua.pushHaskellFunction . callFunction
+pushDocumentedFunction fn = do
+  -- push function
+  Lua.pushHaskellFunction $ callFunction fn
+
+  -- store documentation
+  Lua.getfield registryindex docsField >>= \case
+    TypeTable -> return () -- already have the documentation table
+    _ -> do
+      Lua.pop 1            -- pop non-table value
+      Lua.newtable         -- create documentation table
+      Lua.pushstring "k"   -- Make it an "ephemeron table" and..
+      Lua.setfield (nth 2) "__mode"  -- collect docs if function is GCed
+      Lua.pushvalue top    -- add copy of table to registry
+      Lua.setfield registryindex docsField
+  Lua.pushvalue (nth 2)  -- the function
+  pushText $ renderFunction fn
+  Lua.rawset (nth 3)
+  Lua.pop 1              -- pop doc table, leave function on stack
+
+-- | Pushes the documentation of the object at the given index to the
+-- stack, or just *nil* if no documentation is available.
+pushDocumentation :: LuaError e => StackIndex -> LuaE e NumResults
+pushDocumentation idx = do
+  idx' <- Lua.absindex idx
+  Lua.getfield registryindex docsField >>= \case
+    TypeTable -> do
+      Lua.pushvalue idx'
+      Lua.rawget (nth 2)
+    _ -> do -- no documentation table available
+      Lua.pop 1    -- pop contents of docsField
+      Lua.pushnil
+  return (NumResults 1)
 
 --
 -- Convenience functions

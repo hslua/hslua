@@ -12,15 +12,16 @@ module HsLua.Packaging.FunctionTests (tests) where
 
 import Data.Maybe (fromMaybe)
 import Data.Version (makeVersion)
-import HsLua.Core (StackIndex)
+import HsLua.Core (StackIndex, top)
 import HsLua.Packaging.Function
 import HsLua.Packaging.Types
 import HsLua.Marshalling
   (force, peekIntegral, peekRealFloat, peekText, pushIntegral, pushRealFloat)
-import Test.Tasty.HsLua ((=:), shouldBeResultOf)
+import Test.Tasty.HsLua ((=:), shouldBeResultOf, shouldHoldForResultOf)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit ((@=?))
 
+import qualified Data.Text as T
 import qualified HsLua.Core as Lua
 
 -- | Calling Haskell functions from Lua.
@@ -79,6 +80,22 @@ tests = testGroup "Call"
         Lua.setglobal "nroot"
         Lua.loadstring "return nroot(64, 6)" *> Lua.call 0 1
         peekRealFloat @Double Lua.top >>= force
+    ]
+
+  , testGroup "documentation access"
+    [ "pushDocumentation" =:
+      ("factorial (n)\n" `T.isPrefixOf`) `shouldHoldForResultOf` do
+        pushDocumentedFunction (factLuaAtIndex 0)
+        numres <- pushDocumentation top
+        Lua.liftIO $ numres @=? Lua.NumResults 1
+        peekText top >>= force
+
+    , "undocumented value" =:
+      Lua.TypeNil `shouldBeResultOf` do
+        Lua.pushboolean True
+        numres <- pushDocumentation top
+        Lua.liftIO $ numres @=? Lua.NumResults 1
+        Lua.ltype top
     ]
 
   , testGroup "helpers"
