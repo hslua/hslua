@@ -160,6 +160,18 @@ tests = testGroup "Push"
       , testSingleElementProperty (pushList pushText)
       ]
 
+    , testGroup "pushKeyValuePairs"
+      [ testProperty "creates a table" $ \x -> monadicIO $ do
+          producesTable <- run $ Lua.run @Lua.Exception $ do
+            pushKeyValuePairs pushText (pushIntegral @Int) x
+            listType <- Lua.ltype Lua.top
+            return $ Lua.TypeTable == listType
+          assert producesTable
+
+      , testSingleElementProperty $
+        pushKeyValuePairs (pushIntegral @Int) pushText
+      ]
+
     , testGroup "pushSet"
       [ testProperty "creates a table" $ \x -> monadicIO $ do
           producesTable <- run $ Lua.run @Lua.Exception $ do

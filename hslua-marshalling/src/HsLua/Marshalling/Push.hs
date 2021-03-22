@@ -22,6 +22,7 @@ module HsLua.Marshalling.Push
   , pushName
   -- * Collections
   , pushList
+  , pushKeyValuePairs
   , pushMap
   , pushSet
   ) where
