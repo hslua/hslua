@@ -22,6 +22,10 @@ module HsLua.Packaging.Function
   , liftPure3
   , liftPure4
   , liftPure5
+    -- ** Types
+  , Parameter (..)
+  , FunctionResult (..)
+  , FunctionResults
     -- ** Operators
   , (###)
   , (<#>)
@@ -72,6 +76,24 @@ data HsFnPrecursor e a = HsFnPrecursor
   , hsFnName :: Name
   }
   deriving (Functor)
+
+-- | Result of a call to a Haskell function.
+data FunctionResult e a
+  = FunctionResult
+  { fnResultPusher :: Pusher e a
+  , fnResultDoc :: FunctionResultDoc
+  }
+
+-- | List of function results in the order in which they are
+-- returned in Lua.
+type FunctionResults e a = [FunctionResult e a]
+
+-- | Function parameter.
+data Parameter e a = Parameter
+  { parameterPeeker :: Peeker e a
+  , parameterDoc    :: ParameterDoc
+  }
+
 
 -- | Begin wrapping a monadic Lua function such that it can be turned
 -- into a documented function exposable to Lua.

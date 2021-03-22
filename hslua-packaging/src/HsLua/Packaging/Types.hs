@@ -14,9 +14,6 @@ module HsLua.Packaging.Types
   , Field (..)
     -- * Documented functions
   , DocumentedFunction (..)
-  , Parameter (..)
-  , FunctionResult (..)
-  , FunctionResults
     -- ** Documentation types
   , FunctionDoc (..)
   , ParameterDoc (..)
@@ -26,7 +23,6 @@ module HsLua.Packaging.Types
 import Data.Text (Text)
 import Data.Version (Version)
 import HsLua.Core (LuaE, Name, NumResults)
-import HsLua.Marshalling (Peeker, Pusher)
 
 -- | Named and documented Lua module.
 data Module e = Module
@@ -46,23 +42,6 @@ data Field e = Field
 --
 -- Function components
 --
-
--- | Result of a call to a Haskell function.
-data FunctionResult e a
-  = FunctionResult
-  { fnResultPusher :: Pusher e a
-  , fnResultDoc :: FunctionResultDoc
-  }
-
--- | List of function results in the order in which they are
--- returned in Lua.
-type FunctionResults e a = [FunctionResult e a]
-
--- | Function parameter.
-data Parameter e a = Parameter
-  { parameterPeeker :: Peeker e a
-  , parameterDoc    :: ParameterDoc
-  }
 
 -- | Haskell equivallent to CFunction, i.e., function callable
 -- from Lua.
