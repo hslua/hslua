@@ -14,7 +14,7 @@ license:             MIT
 license-file:        LICENSE
 author:              Albert Krewinkel
 maintainer:          albert+hslua@zeitkraut.de
-copyright:           © 2019-2020 Albert Krewinkel <albert+hslua@zeitkraut.de>
+copyright:           © 2019-2021 Albert Krewinkel <albert+hslua@zeitkraut.de>
 category:            Foreign
 build-type:          Simple
 extra-source-files:  CHANGELOG.md

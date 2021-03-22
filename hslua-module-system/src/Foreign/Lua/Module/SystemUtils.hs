@@ -1,10 +1,8 @@
 {-|
 Module      : Foreign.Lua.Module.SystemUtils
-Copyright   : © 2019-2020 Albert Krewinkel
+Copyright   : © 2019-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
-Stability   : alpha
-Portability : Requires GHC 8 or later.
 
 Utility functions and types for HsLua's system module.
 -}
