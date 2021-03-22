@@ -13,7 +13,6 @@ Provides a Lua module containing a selection of useful Text functions.
 module HsLua.Module.Text
   ( -- * Module
     documentedModule
-
     -- ** Functions
   , len
   , lower
@@ -35,23 +34,20 @@ documentedModule :: LuaError e => Module e
 documentedModule = Module
   { moduleName = "text"
   , moduleFields = []
+  , moduleFunctions =
+    [ len
+    , lower
+    , reverse
+    , sub
+    , upper
+    ]
   , moduleDescription =
       "UTF-8 aware text manipulation functions, implemented in Haskell."
-  , moduleFunctions = functions
   }
 
 --
 -- Functions
 --
-
-functions :: LuaError e => [DocumentedFunction e]
-functions =
-  [ len
-  , lower
-  , reverse
-  , sub
-  , upper
-  ]
 
 -- | Wrapper for @'T.length'@.
 len :: LuaError e => DocumentedFunction e
@@ -67,7 +63,7 @@ lower = defun "lower"
   ### liftPure T.toLower
   <#> textParam "s"
   =#> textResult "Lowercase copy of `s`"
-  #? "Convert a string to lower case"
+  #? "Converts a string to lower case."
 
 -- | Wrapper for @'T.reverse'@.
 reverse :: LuaError e => DocumentedFunction e
@@ -99,8 +95,8 @@ upper :: LuaError e => DocumentedFunction e
 upper = defun "upper"
   ### liftPure T.toUpper
   <#> textParam "s"
-  =#> textResult "Lowercase copy of `s`"
-  #? "Convert a string to lower case"
+  =#> textResult "Uppercase copy of `s`"
+  #? "Converts a string to upper case."
 
 --
 -- Parameters
