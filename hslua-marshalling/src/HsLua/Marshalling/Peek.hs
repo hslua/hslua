@@ -38,6 +38,8 @@ module HsLua.Marshalling.Peek
   , peekSet
   -- * Combinators
   , optional
+  -- * Helpers
+  , reportValueOnFailure
   ) where
 
 import Control.Applicative ((<|>))
@@ -134,7 +136,7 @@ typeMismatchError expected idx = do
 -- | Report the expected and actual type of the value under the given
 -- index if conversion failed.
 reportValueOnFailure :: LuaError e
-                     => Text
+                     => Text   -- ^ expected type
                      -> (StackIndex -> LuaE e (Maybe a))
                      -> Peeker e a
 reportValueOnFailure expected peekMb idx = do

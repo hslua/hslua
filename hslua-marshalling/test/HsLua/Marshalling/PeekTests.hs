@@ -315,4 +315,23 @@ tests = testGroup "Peek"
         Lua.pushinteger @Lua.Exception 23
         optional (peekIntegral @Int) Lua.top
     ]
+
+  , testGroup "helper"
+    [ testGroup "reportValueOnFailure"
+      [ "success" =:
+        Right 23 `shouldBeResultOf` do
+          reportValueOnFailure "foo" (const . return $ Just (23 :: Int))
+            (Lua.nthBottom 1)
+
+      , "failure" =:
+        Left (PeekError $ pure "expected squirrel, got '23' (number)")
+        `shouldBeResultOf` do
+          Lua.pushinteger 23
+          let peekSquirrel :: Peeker Lua.Exception ()
+              peekSquirrel = reportValueOnFailure "squirrel"
+                                                  (const $ return Nothing)
+          peekSquirrel Lua.top
+      ]
+
+    ]
   ]
