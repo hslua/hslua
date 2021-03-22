@@ -2,13 +2,13 @@
 {-# LANGUAGE TypeApplications #-}
 {-|
 Module      : Foreign.Lua.Module.Text
-Copyright   : © 2017–2020 Albert Krewinkel
+Copyright   : © 2017–2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : alpha
 Portability : ForeignFunctionInterface
 
-Provide a lua module containing a selection of useful Text functions.
+Provides a Lua module containing a selection of useful Text functions.
 -}
 module Foreign.Lua.Module.Text
 
