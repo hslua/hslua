@@ -1,5 +1,11 @@
 # Revision history for hslua-module-text
 
+## 1.0.0
+
+Release pending.
+
+- Use hslua 2.0.
+
 ## 0.3.0.1 -- 2020-10-16
 
 - Relaxed upper bound for hslua, allow `hslua-1.3.*`.
