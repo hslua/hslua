@@ -5,6 +5,7 @@ packages:
 - 'hslua-classes'
 - 'hslua-marshalling'
 - 'hslua-module-path'
+- 'hslua-module-text'
 - 'hslua-packaging'
 - 'lua'
 - 'lua-arbitrary'

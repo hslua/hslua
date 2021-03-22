@@ -1,40 +1,31 @@
-{-
-Copyright © 2017–2021 Albert Krewinkel
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
--}
 {-# LANGUAGE OverloadedStrings #-}
+{-|
+Module      : Main
+Copyright   : © 2017-2021 Albert Krewinkel
+License     : MIT
+Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
+Stability   : stable
+Portability : Requires language extensions ForeignFunctionInterface,
+              OverloadedStrings.
+
+Tests for the `text` Lua module.
+-}
+module Main (main) where
 
 import Control.Monad (void)
-import Foreign.Lua (Lua)
-import Foreign.Lua.Module.Text (preloadTextModule, pushModuleText)
+import HsLua.Core
+import HsLua.Packaging
+import HsLua.Module.Text (documentedModule)
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
 import Test.Tasty.Lua (translateResultsFromFile)
 
-import qualified Foreign.Lua as Lua
-
 main :: IO ()
 main = do
-  luaTest <- Lua.run $ do
-    Lua.openlibs
-    Lua.requirehs "text" (void pushModuleText)
+  luaTest <- run $ do
+    openlibs
+    registerModule documentedModule
+    pop 1
     translateResultsFromFile "test/test-text.lua"
   defaultMain $ testGroup "hslua-module-text" [tests, luaTest]
 
@@ -42,21 +33,21 @@ main = do
 tests :: TestTree
 tests = testGroup "FromLuaStack"
   [ testCase "text module can be pushed to the stack" $
-      Lua.run (void pushModuleText)
+      run (void (pushModule documentedModule) :: Lua ())
 
-  , testCase "text module can be added to the preloader" . Lua.run $ do
-      Lua.openlibs
-      preloadTextModule "hstext"
-      assertEqual' "function not added to preloader" Lua.TypeFunction =<< do
-        Lua.getglobal' "package.preload.hstext"
-        Lua.ltype (-1)
+  , testCase "text module can be added to the preloader" . run $ do
+      openlibs
+      preloadModule documentedModule
+      assertEqual' "function not added to preloader" TypeFunction =<< do
+        _ <- dostring "return package.preload.text"
+        ltype top
 
-  , testCase "text module can be loaded as hstext" . Lua.run $ do
-      Lua.openlibs
-      preloadTextModule "hstext"
-      assertEqual' "loading the module fails " Lua.OK =<<
-        Lua.dostring "require 'hstext'"
+  , testCase "text module can be loaded as hstext" . run $ do
+      openlibs
+      preloadModuleWithName documentedModule "hstext"
+      assertEqual' "loading the module fails " OK =<<
+        dostring "require 'hstext'"
   ]
 
 assertEqual' :: (Show a, Eq a) => String -> a -> a -> Lua ()
-assertEqual' msg expected = Lua.liftIO . assertEqual msg expected
+assertEqual' msg expected = liftIO . assertEqual msg expected

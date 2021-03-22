@@ -22,7 +22,6 @@ module HsLua.Packaging.Module
 where
 
 import Control.Monad (forM_)
-import HsLua.Packaging.Function (DocumentedFunction (functionName))
 import HsLua.Core
 import HsLua.Marshalling (pushName, pushText)
 import HsLua.Packaging.Types

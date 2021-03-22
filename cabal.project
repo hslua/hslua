@@ -5,6 +5,7 @@ packages: lua/lua.cabal
           hslua-classes/hslua-classes.cabal
           hslua-marshalling/hslua-marshalling.cabal
           hslua-module-path/hslua-module-path.cabal
+          hslua-module-text/hslua-module-text.cabal
           hslua-packaging/hslua-packaging.cabal
           tasty-lua/tasty-lua.cabal
           tasty-hslua/tasty-hslua.cabal
