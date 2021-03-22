@@ -1,6 +1,0 @@
-/dist
-/.ghc.environment.*
-/.stack-work
-/dist-newstyle
-
-/stack.yaml.lock

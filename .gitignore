@@ -4,4 +4,4 @@
 *.hi
 *.o
 /.ghc.environment.*
-/stack.yaml.lock
+**/stack.yaml.lock

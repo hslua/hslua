@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : Main
-Copyright   : © 2019-2020 Albert Krewinkel
+Copyright   : © 2019-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
 Stability   : alpha
@@ -10,15 +10,16 @@ Portability : Requires language extensions ForeignFunctionInterface,
 
 Tests for the `system` Lua module.
 -}
+module Main (main) where
 
 import Control.Monad (void)
-import Foreign.Lua (Lua)
-import Foreign.Lua.Module.System (preloadModule, pushModule)
+import HsLua.Core
+import HsLua.Module.System (preloadModule, pushModule)
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
 import Test.Tasty.Lua (translateResultsFromFile)
 
-import qualified Foreign.Lua as Lua
+import qualified HsLua.Core as Lua
 
 main :: IO ()
 main = do
@@ -38,8 +39,8 @@ tests = testGroup "HsLua System module"
       Lua.openlibs
       preloadModule "system"
       assertEqual' "function not added to preloader" Lua.TypeFunction =<< do
-        Lua.getglobal' "package.preload.system"
-        Lua.ltype (-1)
+        _ <- Lua.dostring "return package.preload.system"
+        Lua.ltype top
 
   , testCase "system module can be loaded as hssystem" . Lua.run $ do
       Lua.openlibs

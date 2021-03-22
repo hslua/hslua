@@ -1,5 +1,5 @@
 {-|
-Module      : Foreign.Lua.Module.System
+Module      : HsLua.Module.System
 Copyright   : © 2019-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
@@ -8,7 +8,7 @@ Portability : Requires GHC 8 or later.
 
 Provide a Lua module containing a selection of @'System'@ functions.
 -}
-module Foreign.Lua.Module.System (
+module HsLua.Module.System (
 
   -- * Module
     pushModule
@@ -36,16 +36,20 @@ module Foreign.Lua.Module.System (
   )
 where
 
-import Control.Applicative ((<$>))
 import Control.Monad (forM_)
 import Control.Monad.Catch (bracket)
 import Data.Maybe (fromMaybe)
 import Data.Version (versionBranch)
-import Foreign.Lua (Lua, NumResults (..), Optional (..))
-import Foreign.Lua.Module.SystemUtils
+import HsLua.Core
+import HsLua.Class.Exposable as Lua
+import HsLua.Class.Peekable as Lua
+import HsLua.Class.Pushable as Lua
+import HsLua.Class.Util (Optional (..))
+import HsLua.Marshalling (pushName)
+import HsLua.Module.SystemUtils
 
 import qualified Data.Map as Map
-import qualified Foreign.Lua as Lua
+import qualified HsLua.Core as Lua
 import qualified System.Directory as Directory
 import qualified System.Environment as Env
 import qualified System.Info as Info
@@ -58,28 +62,37 @@ import qualified System.IO.Temp as Temp
 -- | Pushes the @system@ module to the Lua stack.
 pushModule :: Lua NumResults
 pushModule = do
-  Lua.newtable
-  Lua.addfield "arch" arch
-  Lua.addfield "compiler_name" compiler_name
-  Lua.addfield "compiler_version" compiler_version
-  Lua.addfield "os" os
-  Lua.addfunction "env" env
-  Lua.addfunction "getenv" getenv
-  Lua.addfunction "getwd" getwd
-  Lua.addfunction "ls" ls
-  Lua.addfunction "mkdir" mkdir
-  Lua.addfunction "rmdir" rmdir
-  Lua.addfunction "setenv" setenv
-  Lua.addfunction "setwd" setwd
-  Lua.addfunction "tmpdirname" tmpdirname
-  Lua.addfunction "with_env" with_env
-  Lua.addfunction "with_tmpdir" with_tmpdir
-  Lua.addfunction "with_wd" with_wd
+  newtable
+  addfield "arch" arch
+  addfield "compiler_name" compiler_name
+  addfield "compiler_version" compiler_version
+  addfield "os" os
+  addfunction "env" env
+  addfunction "getenv" getenv
+  addfunction "getwd" getwd
+  addfunction "ls" ls
+  addfunction "mkdir" mkdir
+  addfunction "rmdir" rmdir
+  addfunction "setenv" setenv
+  addfunction "setwd" setwd
+  addfunction "tmpdirname" tmpdirname
+  addfunction "with_env" with_env
+  addfunction "with_tmpdir" with_tmpdir
+  addfunction "with_wd" with_wd
   return 1
+ where
+  addfield name field = do
+    pushName name
+    push field
+    rawset (nth 3)
+  addfunction name fn = do
+    pushName name
+    pushHaskellFunction $ Lua.toHaskellFunction fn
+    rawset (nth 3)
 
 -- | Add the @system@ module under the given name to the table of
 -- preloaded packages.
-preloadModule :: String -> Lua ()
+preloadModule :: Name -> Lua ()
 preloadModule = flip Lua.preloadhs pushModule
 
 --

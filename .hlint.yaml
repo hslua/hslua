@@ -17,6 +17,7 @@
       - "Lua.Call"
       - "Lua.Userdata"
       - "HsLua.Module.Path"
+      - "HsLua.Module.System"
       - "HsLua.Packaging.RenderingTests"
 
 - modules:
