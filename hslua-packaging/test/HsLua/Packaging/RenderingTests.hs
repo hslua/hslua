@@ -76,13 +76,13 @@ tests = testGroup "Rendering" $
          , ""
          , "A math module."
          , ""
-         , "### " <> eulerDocs
+         , "### " `T.append` eulerDocs
          , ""
          , "## Functions"
          , ""
-         , "### " <> factorialDocs
+         , "### " `T.append` factorialDocs
          , ""
-         , "### " <> nrootDocs
+         , "### " `T.append` nrootDocs
          ] @=?
          render mymath)
       ]

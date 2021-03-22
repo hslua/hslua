@@ -79,25 +79,29 @@ defun :: Name -> a -> HsFnPrecursor e a
 defun = toHsFnPrecursor (StackIndex 0)
 
 -- | Turns a pure function into a monadic Lua function.
-liftPure :: (a -> b) -> (a -> LuaE e b)
+liftPure :: (a -> b)
+         -> (a -> LuaE e b)
 liftPure f = return . f
 
 -- | Turns a binary function into a Lua function.
-liftPure2 :: (a -> b -> c) -> (a -> b -> LuaE e c)
+liftPure2 :: (a -> b -> c)
+          -> (a -> b -> LuaE e c)
 liftPure2 f a b = return (f a b)
 
 -- | Turns a ternary function into a Lua function.
-liftPure3 :: (a -> b -> c -> d) -> (a -> b -> c -> LuaE e d)
+liftPure3 :: (a -> b -> c -> d)
+          -> (a -> b -> c -> LuaE e d)
 liftPure3 f a b c = return (f a b c)
 
 -- | Turns a quarternary function into a Lua function.
-liftPure4 :: (a -> b -> c -> d) -> (a -> b -> c -> LuaE e d)
-liftPure4 f a b c = return (f a b c)
+liftPure4 :: (a -> b -> c -> d -> e)
+          -> (a -> b -> c -> d -> LuaE err e)
+liftPure4 f a b c d = return (f a b c d)
 
 -- | Turns a quinary function into a Lua function.
-liftPure5 :: (a -> b -> c -> d) -> (a -> b -> c -> LuaE e d)
-liftPure5 f a b c = return (f a b c)
-
+liftPure5 :: (a -> b -> c -> d -> e -> f)
+          -> (a -> b -> c -> d -> e -> LuaE err f)
+liftPure5 f a b c d e = return (f a b c d e)
 
 -- | Create a HaskellFunction precursor from a monadic function,
 -- selecting the stack index after which the first function parameter
