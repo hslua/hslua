@@ -1,6 +1,7 @@
 {-# LANGUAGE AllowAmbiguousTypes   #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TypeApplications      #-}
 {-|
@@ -20,11 +21,11 @@ module HsLua.Class.Invokable
   , invoke
   ) where
 
+import Data.ByteString (append)
 import HsLua.Core as Lua
 import HsLua.Class.Peekable
 import HsLua.Class.Pushable
 import HsLua.Class.Util (popValue)
-import HsLua.Util (getglobal')
 
 -- | Helper class used to make Lua functions useable from Haskell.
 class PeekError e => Invokable e a where
@@ -32,7 +33,7 @@ class PeekError e => Invokable e a where
 
 instance (PeekError e, Peekable a) => Invokable e (LuaE e a) where
   addArg fnName pushArgs nargs = do
-    getglobal' fnName
+    _ <- dostring $ "return " `append` Lua.fromName fnName
     pushArgs
     call nargs 1
     popValue

@@ -14,8 +14,8 @@ Test for the conversion of lua values to haskell values.
 module HsLua.Class.PeekableTests (tests) where
 
 import Data.ByteString (ByteString)
-import HsLua as Lua
 import HsLua.Class.Peekable
+import HsLua.Core as Lua
 import Test.Tasty.HsLua ( (=:), (?:), pushLuaExpr, shouldBeResultOf
                        , shouldBeErrorMessageOf )
 import Test.Tasty (TestTree, testGroup)

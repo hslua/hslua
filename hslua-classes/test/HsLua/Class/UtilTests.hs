@@ -13,10 +13,10 @@ Tests for utility types and functions
 module HsLua.Class.UtilTests (tests) where
 
 import Data.Either (isLeft, isRight)
-import HsLua as Lua
 import HsLua.Class.Peekable
 import HsLua.Class.Pushable
 import HsLua.Class.Util
+import HsLua.Core as Lua
 import Test.Tasty.HsLua ( (?:), (=:), pushLuaExpr, shouldBeResultOf
                        , shouldBeErrorMessageOf, shouldHoldForResultOf)
 import Test.Tasty (TestTree, testGroup)

@@ -11,26 +11,37 @@ Portability : non-portable (depends on GHC)
 Functions and utilities enabling the seamless integration of a Lua
 interpreter into a Haskell project.
 
-Basic access to the Lua API is provided by @'Lua.Core'@ from
+This module combines and re-exports the functionality of the HsLua
+framework. Basic access to the Lua API is provided by @'Lua.Core'@ from
 Hackage package /lua/.
 -}
 module HsLua (
     -- * Core functionality
     module HsLua.Core
-    -- * Receiving values from Lua stack (Lua → Haskell)
-  , peekAny
-    -- * Pushing values to Lua stack (Haskell → Lua)
-  , pushAny
+    -- * Marshalling
+  , module HsLua.Marshalling
+    -- * Modules
+  , module HsLua.Packaging
+    -- * Type classes
+  , module HsLua.Class.Exposable
+  , module HsLua.Class.Invokable
+  , module HsLua.Class.Peekable
+  , module HsLua.Class.Pushable
     -- * Utility functions
   , getglobal'
   , setglobal'
-    -- * Modules
-  , module HsLua.Packaging.Module
+  , module HsLua.Class.Util
   ) where
 
 import Prelude hiding (compare, concat)
 
 import HsLua.Core
-import HsLua.Packaging.Module
-import HsLua.Marshalling ( pushAny, peekAny )
+import HsLua.Class.Exposable
+import HsLua.Class.Invokable
+import HsLua.Class.Peekable hiding ( PeekError, reportValueOnFailure
+                                   , peekList, peekKeyValuePairs)
+import HsLua.Class.Pushable hiding (pushList)
+import HsLua.Class.Util
+import HsLua.Packaging
+import HsLua.Marshalling
 import HsLua.Util

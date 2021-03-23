@@ -17,9 +17,9 @@ import Control.Monad (forM, forM_)
 import Data.ByteString (ByteString)
 import Data.Map (Map)
 import Data.Set (Set)
-import HsLua as Lua
 import HsLua.Class.Peekable
 import HsLua.Class.Pushable
+import HsLua.Core as Lua
 import Lua.Arbitrary ()
 import Test.QuickCheck
 import Test.QuickCheck.Instances ()

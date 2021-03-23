@@ -42,6 +42,7 @@ common common-options
                      , containers        >= 0.5.9  && < 0.7
                      , exceptions        >= 0.8    && < 0.11
                      , hslua-core        >= 2.0    && < 2.1
+                     , hslua-classes     >= 2.0    && < 2.1
                      , hslua-marshalling >= 2.0    && < 2.1
                      , hslua-packaging   >= 2.0    && < 2.1
                      , mtl               >= 2.2    && < 2.3
@@ -67,6 +68,16 @@ library
                      , HsLua.Core.Error
                      , HsLua.Core.Types
                      , HsLua.Core.Utf8
+                     , HsLua.Class.Exposable
+                     , HsLua.Class.Invokable
+                     , HsLua.Class.Peekable
+                     , HsLua.Class.Pushable
+                     , HsLua.Class.Util
+                     , HsLua.Marshalling
+                     , HsLua.Packaging
+                     , HsLua.Packaging.Function
+                     , HsLua.Packaging.Module
+                     , HsLua.Packaging.Rendering
   hs-source-dirs:      src
 
 test-suite test-hslua

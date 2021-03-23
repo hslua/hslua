@@ -34,7 +34,7 @@ common common-options
                      , bytestring        >= 0.10.2 && < 0.11
                      , containers        >= 0.5.9  && < 0.7
                      , exceptions        >= 0.8    && < 0.11
-                     , hslua             >= 2.0    && < 2.1
+                     , hslua-core        >= 2.0    && < 2.1
                      , hslua-marshalling >= 2.0    && < 2.1
                      , text              >= 1.0    && < 1.3
   ghc-options:         -Wall
@@ -81,7 +81,6 @@ test-suite test-hslua-classes
                      , HsLua.Class.PushableTests
                      , HsLua.Class.UtilTests
   build-depends:       hslua-classes
-                     , hslua
                      , lua-arbitrary        >= 1.0
                      , QuickCheck           >= 2.7
                      , quickcheck-instances >= 0.3

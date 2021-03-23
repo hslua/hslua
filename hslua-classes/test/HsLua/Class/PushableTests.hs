@@ -14,8 +14,8 @@ Test for the interoperability between haskell and lua.
 module HsLua.Class.PushableTests (tests) where
 
 import Data.ByteString (ByteString)
-import HsLua (gettop, equal, nth)
 import HsLua.Class.Pushable (Pushable (push))
+import HsLua.Core (gettop, equal, nth)
 import Foreign.StablePtr (castStablePtrToPtr, freeStablePtr, newStablePtr)
 
 import Lua.Arbitrary ()
@@ -27,7 +27,7 @@ import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (Assertion, assertBool, testCase)
 import Test.Tasty.QuickCheck (testProperty)
 
-import qualified HsLua as Lua
+import qualified HsLua.Core as Lua
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree

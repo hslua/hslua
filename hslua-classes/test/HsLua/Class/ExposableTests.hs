@@ -10,14 +10,14 @@ Tests that Haskell functions can be exposed to and called from Lua.
 -}
 module HsLua.Class.ExposableTests (tests) where
 
-import HsLua (Lua)
+import HsLua.Core (Lua)
 import HsLua.Class.Exposable as Lua
 import HsLua.Class.Peekable as Lua
 import Test.Tasty.HsLua ( (=:), pushLuaExpr, shouldBeErrorMessageOf
                        , shouldBeResultOf )
 import Test.Tasty (TestTree, testGroup)
 
-import qualified HsLua as Lua
+import qualified HsLua.Core as Lua
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree

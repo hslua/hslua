@@ -11,12 +11,12 @@ Tests that Lua functions can be called from Haskell.
 module HsLua.Class.InvokableTests (tests) where
 
 import Data.ByteString.Char8 as Char8
-import HsLua (Lua, openlibs)
 import HsLua.Class.Invokable (invoke)
+import HsLua.Core (Lua, openlibs)
 import Test.Tasty.HsLua ((=:), shouldBeErrorMessageOf, shouldBeResultOf)
 import Test.Tasty (TestTree, testGroup)
 
-import qualified HsLua as Lua
+import qualified HsLua.Core as Lua
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
