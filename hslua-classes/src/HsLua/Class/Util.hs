@@ -22,7 +22,7 @@ module HsLua.Class.Util
   ) where
 
 import HsLua.Core (LuaE, NumResults, StackIndex, top)
-import HsLua.Class.Peekable (Peekable (peek), PeekError (exceptionFromMessage))
+import HsLua.Class.Peekable (Peekable (peek), PeekError)
 import HsLua.Class.Pushable (Pushable (push))
 import Text.Read (readMaybe)
 
@@ -66,7 +66,7 @@ peekRead idx = do
   s <- peek idx
   case readMaybe s of
     Just x -> return x
-    Nothing -> Catch.throwM $ exceptionFromMessage @e ("Could not read: " ++ s)
+    Nothing -> Lua.failLua ("Could not read: " ++ s)
 
 -- | Try to convert the value at the given stack index to a Haskell value.
 -- Returns 'Left' with the error on failure.

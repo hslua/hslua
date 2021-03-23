@@ -175,18 +175,16 @@ nextPair idx = do
 inContext :: forall e a. PeekError e
           => String -> LuaE e a -> LuaE e a
 inContext ctx op = try op >>= \case
-  Left (err :: e) -> Catch.throwM $ exceptionFromMessage @e (ctx ++ messageFromException err)
+  Left (err :: e) -> Catch.throwM $ luaException @e (ctx ++ messageFromException err)
   Right x  -> return x
 
 -- | Exceptions that are to be used with 'peek' and similar functions
 -- must be instances of this class. It ensures that error can be amended
 -- with the context in which they happened.
 class (LuaError e, Semigroup e) => PeekError e where
-  exceptionFromMessage :: String -> e
   messageFromException :: e -> String
 
 instance PeekError Lua.Exception where
-  exceptionFromMessage = Lua.Exception
   messageFromException = Lua.exceptionMessage
 
 --

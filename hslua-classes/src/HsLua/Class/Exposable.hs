@@ -79,7 +79,7 @@ toHaskellFunction a = do
   let ctx = "Error during function call:"
   -- Lua.exceptionToError errConv . Lua.addContextToException errConv ctx $
   partialApply 1 a `Catch.catch` \(err :: e) ->
-    Catch.throwM (exceptionFromMessage ctx <> err)
+    Catch.throwM (luaException ctx <> err)
 
 
 -- | Imports a Haskell function and registers it at global name.
