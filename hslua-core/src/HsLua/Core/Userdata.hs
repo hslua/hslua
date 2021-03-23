@@ -16,14 +16,12 @@ module HsLua.Core.Userdata
   , fromuserdata
   ) where
 
-import Data.ByteString (ByteString)
-import HsLua.Core.Types (LuaE, StackIndex, liftLua, fromLuaBool)
+import HsLua.Core.Types (LuaE, Name (..), StackIndex, liftLua, fromLuaBool)
 import Lua.Userdata
   ( hslua_fromuserdata
   , hslua_newhsuserdata
   , hslua_newudmetatable
   )
-
 import qualified Data.ByteString as B
 
 -- | Creates a new userdata wrapping the given Haskell object. The
@@ -40,16 +38,14 @@ newhsuserdata = liftLua . flip hslua_newhsuserdata
 -- garbage collected in Lua.
 --
 -- The name may not contain a nul character.
-newudmetatable :: ByteString -> LuaE e Bool
-newudmetatable name = liftLua $ \l ->
+newudmetatable :: Name -> LuaE e Bool
+newudmetatable (Name name) = liftLua $ \l ->
   B.useAsCString name (fmap fromLuaBool . hslua_newudmetatable l)
 
 -- | Retrieves a Haskell object from userdata at the given index. The
 -- userdata /must/ have the given name.
---
--- The name may not contain a nul character.
 fromuserdata :: StackIndex  -- ^ stack index of userdata
-             -> ByteString  -- ^ expected name of userdata object
+             -> Name        -- ^ expected name of userdata object
              -> LuaE e (Maybe a)
-fromuserdata idx name = liftLua $ \l ->
+fromuserdata idx (Name name) = liftLua $ \l ->
   B.useAsCString name (hslua_fromuserdata l idx)

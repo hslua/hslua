@@ -39,7 +39,6 @@ import Control.Exception (IOException, try)
 import Control.Monad ((<$!>))
 import Data.ByteString (ByteString)
 import Data.String (IsString (fromString))
-import Foreign.C (withCString)
 import HsLua.Core.Error (LuaError, throwErrorAsException)
 import HsLua.Core.Types
   (LuaE, Name (Name), Status, StackIndex, liftLua, multret, runWith)
@@ -68,9 +67,9 @@ dostring s = do
     then Lua.pcall 0 multret Nothing
     else return loadRes
 
--- | Loads and runs the given file. Note that the filepath is interpreted by
--- Haskell, not Lua. The resulting chunk is named using the UTF8 encoded
--- filepath.
+-- | Loads and runs the given file. Note that the filepath is
+-- interpreted by Haskell, not Lua. The resulting chunk is named using
+-- the UTF8 encoded filepath.
 dofile :: FilePath -> LuaE e Status
 dofile fp = do
   loadRes <- loadfile fp
@@ -78,31 +77,36 @@ dofile fp = do
     then Lua.pcall 0 multret Nothing
     else return loadRes
 
--- | Pushes onto the stack the field @e@ from the metatable of the object at
--- index @obj@ and returns the type of the pushed value. If the object does not
--- have a metatable, or if the metatable does not have this field, pushes
--- nothing and returns TypeNil.
+-- | Pushes onto the stack the field @e@ from the metatable of the
+-- object at index @obj@ and returns the type of the pushed value. If
+-- the object does not have a metatable, or if the metatable does not
+-- have this field, pushes nothing and returns 'TypeNil'.
+--
+-- Wraps 'luaL_getmetafield'.
 getmetafield :: StackIndex -- ^ obj
-             -> String     -- ^ e
+             -> Name       -- ^ e
              -> LuaE e Lua.Type
-getmetafield obj e = liftLua $ \l ->
-  withCString e $! fmap Lua.toType . luaL_getmetafield l obj
+getmetafield obj (Name name) = liftLua $ \l ->
+  B.useAsCString name $! fmap Lua.toType . luaL_getmetafield l obj
 
--- | Pushes onto the stack the metatable associated with name @tname@ in the
--- registry (see @newmetatable@) (@nil@ if there is no metatable associated
--- with that name). Returns the type of the pushed value.
-getmetatable' :: String -- ^ tname
+-- | Pushes onto the stack the metatable associated with name @tname@ in
+-- the registry (see 'newmetatable') (@nil@ if there is no metatable
+-- associated with that name). Returns the type of the pushed value.
+--
+-- Wraps 'luaL_getmetatable'.
+getmetatable' :: Name      -- ^ tname
               -> LuaE e Lua.Type
-getmetatable' tname = liftLua $ \l ->
-  withCString tname $! fmap Lua.toType . luaL_getmetatable l
+getmetatable' (Name tname) = liftLua $ \l ->
+  B.useAsCString tname $ fmap Lua.toType . luaL_getmetatable l
 
 -- | Push referenced value from the table at the given index.
 getref :: LuaError e => StackIndex -> Reference -> LuaE e ()
 getref idx ref' = Lua.rawgeti idx (fromIntegral (Lua.fromReference ref'))
 
--- | Ensures that the value @t[fname]@, where @t@ is the value at index @idx@,
--- is a table, and pushes that table onto the stack. Returns True if it finds a
--- previous table there and False if it creates a new table.
+-- | Ensures that the value @t[fname]@, where @t@ is the value at index
+-- @idx@, is a table, and pushes that table onto the stack. Returns True
+-- if it finds a previous table there and False if it creates a new
+-- table.
 getsubtable :: LuaError e
             => StackIndex   -- ^ idx
             -> Name         -- ^ fname
@@ -126,7 +130,7 @@ getsubtable idx fname@(Name namestr) = do
 -- chunk name, used for debug information and error messages. Note that
 -- @name@ is used as a C string, so it may not contain null-bytes.
 --
--- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadbuffer luaL_loadbuffer>.
+-- Wraps 'luaL_loadbuffer'.
 loadbuffer :: ByteString -- ^ Program to load
            -> Name       -- ^ chunk name
            -> LuaE e Status
@@ -162,7 +166,6 @@ loadfile fp = Lua.liftIO contentOrError >>= \case
   contentOrError :: IO (Either IOException ByteString)
   contentOrError = try (B.readFile fp)
 
-
 -- | Loads a string as a Lua chunk. This function uses @lua_load@ to
 -- load the chunk in the given ByteString. The given string may not
 -- contain any NUL characters.
@@ -173,28 +176,27 @@ loadfile fp = Lua.liftIO contentOrError >>= \case
 -- Also as @'Lua.load'@, this function only loads the chunk; it does not
 -- run it.
 --
--- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadstring>.
+-- See
+-- <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadstring>.
 loadstring :: ByteString -> LuaE e Status
 loadstring s = loadbuffer s (Name s)
 
-
--- | If the registry already has the key tname, returns @False@. Otherwise,
--- creates a new table to be used as a metatable for userdata, adds to this new
--- table the pair @__name = tname@, adds to the registry the pair @[tname] = new
--- table@, and returns @True@. (The entry @__name@ is used by some
--- error-reporting functions.)
+-- | If the registry already has the key tname, returns @False@.
+-- Otherwise, creates a new table to be used as a metatable for
+-- userdata, adds to this new table the pair @__name = tname@, adds to
+-- the registry the pair @[tname] = new table@, and returns @True@. (The
+-- entry @__name@ is used by some error-reporting functions.)
 --
--- In both cases pushes onto the stack the final value associated with @tname@ in
--- the registry.
+-- In both cases pushes onto the stack the final value associated with
+-- @tname@ in the registry.
 --
--- The value of @tname@ is used as a C string and hence must not contain null
--- bytes.
+-- The value of @tname@ is used as a C string and hence must not contain
+-- null bytes.
 --
--- See also:
--- <https://www.lua.org/manual/5.3/manual.html#luaL_newmetatable luaL_newmetatable>.
-newmetatable :: String -> LuaE e Bool
-newmetatable tname = liftLua $ \l ->
-  Lua.fromLuaBool <$!> withCString tname (luaL_newmetatable l)
+-- Wraps 'luaL_newmetatable'.
+newmetatable :: Name -> LuaE e Bool
+newmetatable (Name tname) = liftLua $ \l ->
+  Lua.fromLuaBool <$!> B.useAsCString tname (luaL_newmetatable l)
 
 -- | Creates a new Lua state. It calls @lua_newstate@ with an allocator
 -- based on the standard C @realloc@ function and then sets a panic
@@ -202,25 +204,25 @@ newmetatable tname = liftLua $ \l ->
 -- of the Lua 5.3 Reference Manual) that prints an error message to the
 -- standard error output in case of fatal errors.
 --
--- See also:
+-- Wraps 'hsluaL_newstate'. See also:
 -- <https://www.lua.org/manual/5.3/manual.html#luaL_newstate luaL_newstate>.
 newstate :: IO Lua.State
 newstate = hsluaL_newstate
 
--- | Creates and returns a reference, in the table at index @t@, for the object
--- at the top of the stack (and pops the object).
+-- | Creates and returns a reference, in the table at index @t@, for the
+-- object at the top of the stack (and pops the object).
 --
--- A reference is a unique integer key. As long as you do not manually add
--- integer keys into table @t@, @ref@ ensures the uniqueness of the key it
--- returns. You can retrieve an object referred by reference @r@ by calling
--- @rawgeti t r@. Function @'unref'@ frees a reference and its associated
--- object.
+-- A reference is a unique integer key. As long as you do not manually
+-- add integer keys into table @t@, @ref@ ensures the uniqueness of the
+-- key it returns. You can retrieve an object referred by reference @r@
+-- by calling @rawgeti t r@. Function @'unref'@ frees a reference and
+-- its associated object.
 --
 -- If the object at the top of the stack is nil, @'ref'@ returns the
 -- constant @'Lua.refnil'@. The constant @'Lua.noref'@ is guaranteed to
 -- be different from any reference returned by @'ref'@.
 --
--- See also: <https://www.lua.org/manual/5.3/manual.html#luaL_ref luaL_ref>.
+-- Wraps 'luaL_ref'.
 ref :: StackIndex -> LuaE e Reference
 ref t = liftLua $ \l -> Lua.toReference <$> luaL_ref l t
 
@@ -231,6 +233,8 @@ ref t = liftLua $ \l -> Lua.toReference <$> luaL_ref l t
 -- If the value has a metatable with a @__tostring@ field, then
 -- @tolstring'@ calls the corresponding metamethod with the value as
 -- argument, and uses the result of the call as its result.
+--
+-- Wraps 'hsluaL_tolstring'.
 tostring' :: forall e. LuaError e => StackIndex -> LuaE e B.ByteString
 tostring' n = do
   l <- Lua.state
@@ -242,21 +246,24 @@ tostring' n = do
         cstrLen <- Storable.peek lenPtr
         B.packCStringLen (cstr, fromIntegral cstrLen)
 
--- | Creates and pushes a traceback of the stack L1. If a message is given it
--- appended at the beginning of the traceback. The level parameter tells at
--- which level to start the traceback.
-traceback :: Lua.State -> Maybe String -> Int -> LuaE e ()
+-- | Creates and pushes a traceback of the stack L1. If a message is
+-- given it appended at the beginning of the traceback. The level
+-- parameter tells at which level to start the traceback.
+--
+-- Wraps 'luaL_traceback'.
+traceback :: Lua.State -> Maybe ByteString -> Int -> LuaE e ()
 traceback l1 msg level = liftLua $ \l ->
   case msg of
     Nothing -> luaL_traceback l l1 nullPtr (fromIntegral level)
-    Just msg' -> withCString msg' $ \cstr ->
+    Just msg' -> B.useAsCString msg' $ \cstr ->
       luaL_traceback l l1 cstr (fromIntegral level)
 
--- | Releases reference @'ref'@ from the table at index @idx@ (see @'ref'@). The
--- entry is removed from the table, so that the referred object can be
--- collected. The reference @'ref'@ is also freed to be used again.
+-- | Releases reference @'ref'@ from the table at index @idx@ (see
+-- @'ref'@). The entry is removed from the table, so that the referred
+-- object can be collected. The reference @'ref'@ is also freed to be
+-- used again.
 --
--- See also:
+-- Wraps 'luaL_unref'. See also:
 -- <https://www.lua.org/manual/5.3/manual.html#luaL_unref luaL_unref>.
 unref :: StackIndex -- ^ idx
       -> Reference  -- ^ ref

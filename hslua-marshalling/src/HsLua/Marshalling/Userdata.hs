@@ -11,6 +11,7 @@ Portability : non-portable (depends on GHC)
 
 Convenience functions to convert Haskell values into Lua userdata.
 
+FIXME
 The main purpose of this module is to allow fast and simple
 creation of instances for @Peekable@ and @Pushable@. E.g., given
 a data type Person
@@ -41,8 +42,9 @@ module HsLua.Marshalling.Userdata
 
 import Control.Monad (when)
 import Data.Data (Data, dataTypeName, dataTypeOf)
+import Data.String (IsString (..))
 import HsLua.Core
-  ( LuaE, LuaError, fromuserdata, newhsuserdata, newudmetatable
+  ( LuaE, LuaError, Name, fromuserdata, newhsuserdata, newudmetatable
   , nth, throwTypeMismatchError )
 
 import qualified HsLua.Core as Lua
@@ -70,7 +72,7 @@ pushAnyWithMetatable mtOp x = do
 
 -- | Push the metatable used to define the behavior of the given value in Lua.
 -- The table will be created if it doesn't exist yet.
-ensureUserdataMetatable :: String     -- ^ name of the registered
+ensureUserdataMetatable :: Name       -- ^ name of the registered
                                       -- metatable which should be used.
                         -> LuaE e ()     -- ^ set additional properties; this
                                       -- operation will be called with the newly
@@ -78,7 +80,7 @@ ensureUserdataMetatable :: String     -- ^ name of the registered
                                       -- the stack.
                         -> LuaE e ()
 ensureUserdataMetatable name modMt = do
-  mtCreated <- newudmetatable (Utf8.fromString name)
+  mtCreated <- newudmetatable name
   -- Execute additional modifications on metatable
   when mtCreated modMt
 
@@ -92,9 +94,9 @@ toAny idx = toAny' undefined
 -- | Retrieve data which has been pushed with @'pushAnyWithMetatable'@, where
 -- *name* must is the value of the @__name@ field of the metatable.
 toAnyWithName :: Lua.StackIndex
-              -> String         -- ^ expected metatable name
+              -> Name             -- ^ expected metatable name
               -> LuaE e (Maybe a)
-toAnyWithName idx name = fromuserdata idx (Utf8.fromString name)
+toAnyWithName idx name = fromuserdata idx name
 
 -- | Retrieve Haskell data which was pushed to Lua as userdata.
 peekAny :: (LuaError e, Data a) => Lua.StackIndex -> LuaE e a
@@ -109,5 +111,5 @@ peekAny idx = peek' undefined
 
 -- | Return the default name for userdata to be used when wrapping an object as
 -- the given type as userdata.  The argument is never evaluated.
-metatableName :: Data a => a -> String
-metatableName x = "HSLUA_" ++ dataTypeName (dataTypeOf x)
+metatableName :: Data a => a -> Name
+metatableName x = fromString $ "HSLUA_" ++ dataTypeName (dataTypeOf x)
