@@ -15,7 +15,6 @@ import Data.Version (makeVersion)
 import HsLua.Packaging.Function
 import HsLua.Packaging.Module
 import HsLua.Packaging.Rendering
-import HsLua.Packaging.Types
 import HsLua.Marshalling
   (peekIntegral, peekRealFloat, pushIntegral, pushRealFloat)
 import Test.Tasty (TestTree, testGroup)
@@ -41,7 +40,7 @@ tests = testGroup "Rendering" $
         , ""
         , "Returns:"
         , ""
-        , " - factorial (integer)"
+        , " -  factorial (integer)"
         ]
       nrootDocs = T.intercalate "\n"
         [ "nroot (x, n)"
@@ -56,7 +55,7 @@ tests = testGroup "Rendering" $
         , ""
         , "Returns:"
         , ""
-        , " - nth root (number)"
+        , " -  nth root (number)"
         ]
       eulerDocs = T.intercalate "\n"
         [ "euler_mascheroni"

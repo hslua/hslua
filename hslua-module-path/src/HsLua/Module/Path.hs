@@ -228,16 +228,16 @@ split_extension = defun "split_extension"
   <#> filepathParam
   =#> [ FunctionResult
         { fnResultPusher = pushString . fst
-        , fnResultDoc = FunctionResultDoc
-          { functionResultType = "string"
-          , functionResultDescription = "filepath without extension"
+        , fnResultDoc = ResultValueDoc
+          { resultValueType = "string"
+          , resultValueDescription = "filepath without extension"
           }
         },
         FunctionResult
         { fnResultPusher = pushString . snd
-        , fnResultDoc = FunctionResultDoc
-          { functionResultType = "string"
-          , functionResultDescription = "extension or empty string"
+        , fnResultDoc = ResultValueDoc
+          { resultValueType = "string"
+          , resultValueDescription = "extension or empty string"
           }
         }
       ]
@@ -353,9 +353,9 @@ filepathResult :: Text -- ^ Description
                -> FunctionResult e FilePath
 filepathResult desc = FunctionResult
   { fnResultPusher = pushString
-  , fnResultDoc = FunctionResultDoc
-    { functionResultType = "string"
-    , functionResultDescription = desc
+  , fnResultDoc = ResultValueDoc
+    { resultValueType = "string"
+    , resultValueDescription = desc
     }
   }
 
@@ -365,9 +365,9 @@ filepathListResult :: LuaError e
                    -> FunctionResult e [FilePath]
 filepathListResult desc = FunctionResult
   { fnResultPusher = pushList pushString
-  , fnResultDoc = FunctionResultDoc
-    { functionResultType = "list of strings"
-    , functionResultDescription = desc
+  , fnResultDoc = ResultValueDoc
+    { resultValueType = "list of strings"
+    , resultValueDescription = desc
     }
   }
 
@@ -376,9 +376,9 @@ booleanResult :: Text -- ^ Description
               -> FunctionResult e Bool
 booleanResult desc = FunctionResult
   { fnResultPusher = pushBool
-  , fnResultDoc = FunctionResultDoc
-    { functionResultType = "boolean"
-    , functionResultDescription = desc
+  , fnResultDoc = ResultValueDoc
+    { resultValueType = "boolean"
+    , resultValueDescription = desc
     }
   }
 

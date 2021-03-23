@@ -17,7 +17,8 @@ module HsLua.Packaging.Types
     -- ** Documentation types
   , FunctionDoc (..)
   , ParameterDoc (..)
-  , FunctionResultDoc (..)
+  , ResultsDoc (..)
+  , ResultValueDoc (..)
   ) where
 
 import Data.Text (Text)
@@ -59,7 +60,7 @@ data DocumentedFunction e = DocumentedFunction
 data FunctionDoc = FunctionDoc
   { functionDescription :: Text
   , parameterDocs       :: [ParameterDoc]
-  , functionResultDocs  :: [FunctionResultDoc]
+  , functionResultsDocs :: ResultsDoc
   , functionSince       :: Maybe Version  -- ^ Version in which the function
                                           -- was introduced.
   }
@@ -74,9 +75,15 @@ data ParameterDoc = ParameterDoc
   }
   deriving (Eq, Ord, Show)
 
--- | Documentation for the result of a function.
-data FunctionResultDoc = FunctionResultDoc
-  { functionResultType :: Text
-  , functionResultDescription :: Text
+-- | Documentation for the return values of a function.
+data ResultsDoc
+  = ResultsDocList [ResultValueDoc]  -- ^ List of individual results
+  | ResultsDocMult Text              -- ^ Flexible results
+  deriving (Eq, Ord, Show)
+
+-- | Documentation for a single return value of a function.
+data ResultValueDoc = ResultValueDoc
+  { resultValueType :: Text
+  , resultValueDescription :: Text
   }
   deriving (Eq, Ord, Show)

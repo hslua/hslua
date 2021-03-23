@@ -107,9 +107,7 @@ renderFunctionDoc (FunctionDoc desc paramDocs resultDoc mVersion) =
       then ""
       else desc <> sinceTag <> "\n\n") <>
      renderParamDocs paramDocs <>
-     case resultDoc of
-       [] -> ""
-       rd -> "\nReturns:\n\n" <> T.intercalate "\n" (map renderResultDoc rd)
+     renderResultsDoc resultDoc
 
 -- | Renders function parameter documentation as a Markdown blocks.
 renderParamDocs :: [ParameterDoc] -> Text
@@ -128,9 +126,21 @@ renderParamDoc pd = mconcat
 
 -- | Renders the documentation of a function result as a Markdown list
 -- item.
-renderResultDoc :: FunctionResultDoc -> Text
-renderResultDoc rd = mconcat
-  [ " - "
-  , functionResultDescription rd
-  , " (", functionResultType rd, ")"
+renderResultsDoc :: ResultsDoc -> Text
+renderResultsDoc = \case
+  ResultsDocList []  -> mempty
+  ResultsDocList rds ->
+    "\nReturns:\n\n" <> T.intercalate "\n" (map renderResultValueDoc rds)
+  ResultsDocMult txt -> " -  " <> indent 4 txt
+
+-- | Renders the documentation of a function result as a Markdown list
+-- item.
+renderResultValueDoc :: ResultValueDoc -> Text
+renderResultValueDoc rd = mconcat
+  [ " -  "
+  , resultValueDescription rd
+  , " (", resultValueType rd, ")"
   ]
+
+indent :: Int -> Text -> Text
+indent n = T.replace "\n" (T.replicate n " ")

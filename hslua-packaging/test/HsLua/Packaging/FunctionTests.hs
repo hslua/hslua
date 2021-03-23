@@ -122,13 +122,14 @@ tests = testGroup "Call"
           (optionalParameter @Lua.Exception peekText "string" "test" "test param")
       )
     , "functionResult doc" =:
-      ( FunctionResultDoc
-        { functionResultDescription = "int result"
-        , functionResultType = "integer"
-        }
+      ( [ ResultValueDoc
+          { resultValueDescription = "int result"
+          , resultValueType = "integer"
+          }
+        ]
         @=?
-        (fnResultDoc . head $
-         functionResult (pushIntegral @Int) "integer" "int result")
+        fnResultDoc <$>
+          functionResult (pushIntegral @Int) "integer" "int result"
       )
     ]
   ]
@@ -159,7 +160,7 @@ factorialParam = Parameter
 factorialResult :: FunctionResults Lua.Exception Integer
 factorialResult = (:[]) $ FunctionResult
   (pushIntegral @Integer)
-  (FunctionResultDoc "integer" "factorial")
+  (ResultValueDoc "integer" "factorial")
 
 -- | Calculate the nth root of a number. Defaults to square root.
 nroot :: DocumentedFunction Lua.Exception

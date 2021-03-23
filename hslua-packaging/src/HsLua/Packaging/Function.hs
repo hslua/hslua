@@ -17,6 +17,7 @@ module HsLua.Packaging.Function
   , defun
   , applyParameter
   , returnResult
+  , returnResultsOnStack
   , liftPure
   , liftPure2
   , liftPure3
@@ -30,6 +31,7 @@ module HsLua.Packaging.Function
   , (###)
   , (<#>)
   , (=#>)
+  , (=?>)
   , (#?)
     -- * Modifying functions
   , setName
@@ -80,8 +82,8 @@ data HsFnPrecursor e a = HsFnPrecursor
 -- | Result of a call to a Haskell function.
 data FunctionResult e a
   = FunctionResult
-  { fnResultPusher :: Pusher e a
-  , fnResultDoc :: FunctionResultDoc
+  { fnResultPusher  :: Pusher e a
+  , fnResultDoc     :: ResultValueDoc
   }
 
 -- | List of function results in the order in which they are
@@ -171,12 +173,34 @@ returnResults bldr fnResults = DocumentedFunction
           result <- x
           forM_ fnResults $ \(FunctionResult push _) -> push result
           return $! NumResults (fromIntegral $ length fnResults)
-
   , functionName = hsFnName bldr
   , functionDoc = FunctionDoc
     { functionDescription = ""
     , parameterDocs = reverse $ hsFnParameterDocs bldr
-    , functionResultDocs = map fnResultDoc fnResults
+    , functionResultsDocs = ResultsDocList $ map fnResultDoc fnResults
+    , functionSince = Nothing
+    }
+  }
+
+-- | Take a 'HaskellFunction' precursor and convert it into a full
+-- 'HaskellFunction', using the given 'FunctionResult's to return
+-- the result to Lua.
+returnResultsOnStack :: HsFnPrecursor e (LuaE e NumResults)
+                     -> Text
+                     -> DocumentedFunction e
+returnResultsOnStack bldr desc = DocumentedFunction
+  { callFunction = do
+      hsResult <- runExceptT $ hsFnPrecursorAction bldr
+      case hsResult of
+        Left err -> do
+          pushString $ formatPeekError err
+          Lua.error
+        Right x -> x
+  , functionName = hsFnName bldr
+  , functionDoc = FunctionDoc
+    { functionDescription = ""
+    , parameterDocs = reverse $ hsFnParameterDocs bldr
+    , functionResultsDocs = ResultsDocMult desc
     , functionSince = Nothing
     }
   }
@@ -211,7 +235,7 @@ since fn version =
 -- Operators
 --
 
-infixl 8 ###, <#>, =#>, #?, `since`
+infixl 8 ###, <#>, =#>, =?>, #?, `since`
 
 -- | Like '($)', but left associative.
 (###) :: (a -> HsFnPrecursor e a) -> a -> HsFnPrecursor e a
@@ -228,6 +252,13 @@ infixl 8 ###, <#>, =#>, #?, `since`
       -> FunctionResults e a
       -> DocumentedFunction e
 (=#>) = returnResults
+
+-- | Return a flexible number of results that have been pushed by the
+-- function action.
+(=?>) :: HsFnPrecursor e (LuaE e NumResults)
+      -> Text
+      -> DocumentedFunction e
+(=?>) = returnResultsOnStack
 
 -- | Inline version of @'updateFunctionDescription'@.
 (#?) :: DocumentedFunction e -> Text -> DocumentedFunction e
@@ -327,8 +358,8 @@ functionResult :: Pusher e a      -- ^ method to push the Haskell result to Lua
                -> FunctionResults e a
 functionResult pusher type_ desc = (:[]) $ FunctionResult
   { fnResultPusher = pusher
-  , fnResultDoc = FunctionResultDoc
-    { functionResultType = type_
-    , functionResultDescription = desc
-    }
+  , fnResultDoc = ResultValueDoc
+                  { resultValueType = type_
+                  , resultValueDescription = desc
+                  }
   }
