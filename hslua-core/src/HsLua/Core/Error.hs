@@ -63,7 +63,8 @@ class E.Exception e => LuaError e where
   -- pops the error off the stack.
   --
   -- This function is expected to produce a valid result for any Lua
-  -- value.
+  -- value; neither a Haskell exception nor a Lua error may result when
+  -- this is called.
   popException :: LuaE e e
   -- | Pushes an exception to the top of the Lua stack. The pushed Lua
   -- object is used as an error object, and it is recommended that

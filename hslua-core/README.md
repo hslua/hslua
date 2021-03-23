@@ -72,4 +72,20 @@ and parameters off the stack, and pushes the results.
 
 This package provides all basic building blocks to interact with
 the Lua stack. If you'd like more comfort, please consider using
-the `hslua` package.
+the `hslua-packaging` and `hslua-classes` packages.
+
+
+Error handling
+--------------
+
+Errors and exceptions must always be caught and converted when
+passing language boundaries. The exception type which can be
+handled is encoded as the type `e` in the monad `LuaE e`. Only
+exceptions of this type may be thrown; throwing different
+exceptions across language boundaries will lead to a program
+crash.
+
+Exceptions must support certain operations as defined by the
+`LuaError` typeclass. The class ensures that errors can be
+converted from and to Lua values, and that a new exception can be
+created from a String message.
