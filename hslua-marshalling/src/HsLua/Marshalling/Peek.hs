@@ -107,7 +107,7 @@ toPeeker op idx =
 -- using the 'Right' constructor, while a type mismatch results
 -- in @Left PeekError@ with the given error message.
 typeChecked :: LuaError e
-            => ByteString                   -- ^ expected type
+            => Name                         -- ^ expected type
             -> (StackIndex -> LuaE e Bool)  -- ^ pre-condition checker
             -> Peeker e a
             -> Peeker e a
@@ -119,10 +119,10 @@ typeChecked expectedType test peekfn idx = do
 
 -- | Generate a type mismatch error.
 typeMismatchError :: LuaError e
-                  => ByteString -- ^ expected type
+                  => Name       -- ^ expected type
                   -> StackIndex -- ^ index of offending value
                   -> LuaE e PeekError
-typeMismatchError expected idx = do
+typeMismatchError (Name expected) idx = do
   pushTypeMismatchError expected idx
   tostring top >>= \case
     Just !msg -> errorMsg msg <$ pop 1
@@ -136,14 +136,14 @@ typeMismatchError expected idx = do
 -- | Report the expected and actual type of the value under the given
 -- index if conversion failed.
 reportValueOnFailure :: LuaError e
-                     => Text   -- ^ expected type
+                     => Name         -- ^ expected type
                      -> (StackIndex -> LuaE e (Maybe a))
                      -> Peeker e a
 reportValueOnFailure expected peekMb idx = do
   res <- peekMb idx
   case res of
     Just x  -> return $ Right x
-    Nothing -> Left <$> typeMismatchError (Utf8.fromText expected) idx
+    Nothing -> Left <$> typeMismatchError expected idx
 
 -- | Retrieves a 'Bool' as a Lua boolean.
 peekBool :: Peeker e Bool
