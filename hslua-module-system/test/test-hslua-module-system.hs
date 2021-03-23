@@ -14,18 +14,19 @@ module Main (main) where
 
 import Control.Monad (void)
 import HsLua.Core
-import HsLua.Module.System (preloadModule, pushModule)
+import HsLua.Module.System (documentedModule)
+import HsLua.Packaging.Module
+  (preloadModule, preloadModuleWithName, pushModule, registerModule)
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
 import Test.Tasty.Lua (translateResultsFromFile)
 
-import qualified HsLua.Core as Lua
-
 main :: IO ()
 main = do
-  luaTestResults <- Lua.run $ do
-    Lua.openlibs
-    Lua.requirehs "system" (void pushModule)
+  luaTestResults <- run $ do
+    openlibs
+    registerModule documentedModule
+    pop 1
     translateResultsFromFile "test/test-system.lua"
   defaultMain $ testGroup "hslua-module-system" [tests, luaTestResults]
 
@@ -33,21 +34,21 @@ main = do
 tests :: TestTree
 tests = testGroup "HsLua System module"
   [ testCase "system module can be pushed to the stack" $
-      Lua.run (void pushModule)
+      run (void (pushModule documentedModule) :: Lua ())
 
-  , testCase "system module can be added to the preloader" . Lua.run $ do
-      Lua.openlibs
-      preloadModule "system"
-      assertEqual' "function not added to preloader" Lua.TypeFunction =<< do
-        _ <- Lua.dostring "return package.preload.system"
-        Lua.ltype top
+  , testCase "system module can be added to the preloader" . run $ do
+      openlibs
+      preloadModule documentedModule
+      assertEqual' "function not added to preloader" TypeFunction =<< do
+        _ <- dostring "return package.preload.system"
+        ltype top
 
-  , testCase "system module can be loaded as hssystem" . Lua.run $ do
-      Lua.openlibs
-      preloadModule "hssystem"
-      assertEqual' "loading the module fails " Lua.OK =<<
-        Lua.dostring "require 'hssystem'"
+  , testCase "system module can be loaded as hssystem" . run $ do
+      openlibs
+      preloadModuleWithName documentedModule "hssystem"
+      assertEqual' "loading the module fails " OK =<<
+        dostring "require 'hssystem'"
   ]
 
 assertEqual' :: (Show a, Eq a) => String -> a -> a -> Lua ()
-assertEqual' msg expected = Lua.liftIO . assertEqual msg expected
+assertEqual' msg expected = liftIO . assertEqual msg expected

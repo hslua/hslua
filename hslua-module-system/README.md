@@ -15,10 +15,10 @@ Example
 loadProg :: Lua Status
 loadProg = do
   openlibs
-  preloadModule "system"
+  preloadModule documentedModule
   -- create a temporary directory, print it's path, then delete it again.
   dostring $ "system = require 'system'\n"
-          ++ "system.with_tmpdir('.', 'foo', print)"
+          <> "system.with_tmpdir('.', 'foo', print)"
 ```
 
 Documentation

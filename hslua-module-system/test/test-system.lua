@@ -195,5 +195,11 @@ return {
         assert.is_truthy(system.getwd():match (path .. '$'))
       end)
     end),
+    test('all callback results are returned', function ()
+      local a, b, c = system.with_wd('test', function (path)
+        return 'a', 'b', 'c'
+      end)
+      assert.are_same({a, b, c}, {'a', 'b', 'c'})
+    end),
   },
 }
