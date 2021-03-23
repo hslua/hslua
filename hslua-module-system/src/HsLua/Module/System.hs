@@ -89,8 +89,8 @@ documentedModule = Module
 arch :: Field e
 arch = Field
   { fieldName = "arch"
-  , fieldDescription = "The machine architecture on which the program "
-                       <> "is running."
+  , fieldDescription =
+      "The machine architecture on which the program is running."
   , fieldPushValue = pushString Info.arch
   }
 
@@ -100,7 +100,7 @@ compiler_name :: Field e
 compiler_name = Field
   { fieldName = "compiler_name"
   , fieldDescription = "The Haskell implementation with which the host "
-                       <> "program was compiled."
+                       `T.append` "program was compiled."
   , fieldPushValue = pushString Info.compilerName
   }
 
@@ -109,8 +109,9 @@ compiler_name = Field
 compiler_version :: LuaError e => Field e
 compiler_version = Field
   { fieldName = "compiler_version"
-  , fieldDescription = "The Haskell implementation with which the host "
-                       <> "program was compiled."
+  , fieldDescription = T.unwords
+      [ "The Haskell implementation with which the host "
+      , "program was compiled." ]
   , fieldPushValue = pushList pushIntegral $
                      versionBranch Info.compilerVersion
   }
@@ -120,8 +121,7 @@ compiler_version = Field
 os :: Field e
 os = Field
   { fieldName = "os"
-  , fieldDescription = "The operating system on which the program is "
-                       <> "running."
+  , fieldDescription = "The operating system on which the program is running."
   , fieldPushValue = pushString Info.os
   }
 
@@ -152,8 +152,9 @@ getenv = defun "getenv"
   <#> parameter peekString "string" "var" "name of the environment"
   =#> functionResult (maybe pushnil pushString) "string or nil"
         "value of the variable, or nil if the variable is not defined."
-  #? ("Return the value of the environment variable `var`, or `nil` "
-      <> "if there is no such value.")
+  #? T.unwords
+    [ "Return the value of the environment variable `var`, or `nil` "
+    , "if there is no such value." ]
 
 -- | List the contents of a directory.
 ls :: LuaError e => DocumentedFunction e
@@ -161,10 +162,10 @@ ls = defun "ls"
   ### ioToLua . Directory.listDirectory . fromMaybe "."
   <#> optionalParameter peekFilePath "string" "directory"
         ("Path of the directory whose contents should be listed. "
-         <> "Defaults to `.`.")
+         `T.append` "Defaults to `.`.")
   =#> functionResult (pushList pushString) "table"
         ("A table of all entries in `directory`, except for the "
-          <> "special entries (`.`  and `..`).")
+          `T.append` "special entries (`.`  and `..`).")
   #? "List the contents of a directory."
 
 
@@ -209,7 +210,7 @@ rmdir = defun "rmdir"
         "delete content recursively"
   =#> []
   #?("Remove an existing, empty directory. If `recursive` is given, "
-     <> "then delete the directory and its contents recursively.")
+     `T.append` "then delete the directory and its contents recursively.")
 
 -- | Set the specified environment variable to a new value.
 setenv :: LuaError e => DocumentedFunction e
@@ -286,7 +287,7 @@ with_env = defun "with_env"
   <#> parameter (peekKeyValuePairs peekString peekString) "table"
         "environment"
         ("Environment variables and their values to be set before "
-         <> "running `callback`")
+         `T.append` "running `callback`")
   <#> parameter peekCallback "function" "callback"
         "Action to execute in the custom environment"
   =?> "The results of the call to `callback`."
@@ -323,10 +324,10 @@ with_tmpdir = defun "with_tmpdir"
   <#> parameter peekString "string" "templ" "Directory name template."
   <#> parameter peekCallback "function" "callback"
         ("Function which takes the name of the temporary directory as "
-         <> "its first argument.")
+         `T.append` "its first argument.")
   =?> "The results of the call to `callback`."
   #? ("Create and use a temporary directory inside the given directory."
-      <> "The directory is deleted after use.")
+      `T.append` "The directory is deleted after use.")
   where
     peekParentDir idx = do
       args <- gettop
