@@ -1,5 +1,4 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications #-}
 {-|
 Module      : HsLua.Class.Util
 Copyright   : © 2007–2012 Gracjan Polak;

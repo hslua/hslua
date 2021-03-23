@@ -91,12 +91,15 @@ toAny idx = toAny' undefined
   toAny' :: Data a => a -> LuaE e (Maybe a)
   toAny' x = toAnyWithName idx (metatableName x)
 
--- | Retrieve data which has been pushed with @'pushAnyWithMetatable'@, where
--- *name* must is the value of the @__name@ field of the metatable.
+-- | Retrieve data which has been pushed with @'pushAnyWithMetatable'@,
+-- where *name* must is the value of the @__name@ field of the
+-- metatable.
+--
+-- Alias for 'fromuserdata'.
 toAnyWithName :: Lua.StackIndex
               -> Name             -- ^ expected metatable name
               -> LuaE e (Maybe a)
-toAnyWithName idx name = fromuserdata idx name
+toAnyWithName = fromuserdata
 
 -- | Retrieve Haskell data which was pushed to Lua as userdata.
 peekAny :: (LuaError e, Data a) => Lua.StackIndex -> LuaE e a
