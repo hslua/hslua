@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-|
 Module      : HsLua.Core.Types
@@ -78,6 +79,9 @@ import Lua.Auxiliary
   , toReference
   )
 import qualified HsLua.Core.Utf8 as Utf8
+#if !MIN_VERSION_base(4,12,0)
+import Data.Semigroup (Semigroup)
+#endif
 
 -- | Environment in which Lua computations are evaluated.
 newtype LuaEnvironment = LuaEnvironment
@@ -305,7 +309,7 @@ noref = fromIntegral LUA_NOREF
 -- Name = ByteString@ alias so we can define a UTF-8 based 'IsString'
 -- instance. Non-ASCII users would have a bad time otherwise.
 newtype Name = Name { fromName :: ByteString }
-  deriving (Eq, Show)
+  deriving (Eq, Ord, Semigroup, Show)
 
 instance IsString Name where
   fromString = Name . Utf8.fromString
