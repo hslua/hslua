@@ -48,6 +48,9 @@ import qualified HsLua.Core.Utf8 as Utf8
 #if !MIN_VERSION_base(4,12,0)
 import Data.Semigroup (Semigroup ((<>)))
 #endif
+#if !MIN_VERSION_base(4,13,0)
+import Control.Monad.Fail (MonadFail (..))
+#endif
 
 -- | A Lua operation.
 --
@@ -122,9 +125,20 @@ throwTypeMismatchError expected idx = do
   pushTypeMismatchError expected idx
   throwErrorAsException
 
+--
+-- Orphan instances
+--
+
 instance LuaError e => Alternative (LuaE e) where
   empty = failLua "empty"
   x <|> y = x `Catch.catch` (\(_ :: e) -> y)
+
+instance LuaError e => MonadFail (LuaE e) where
+  fail = failLua
+
+--
+-- Helpers
+--
 
 -- | Takes a failable HsLua function and transforms it into a
 -- monadic 'Lua' operation. Throws an exception if an error
