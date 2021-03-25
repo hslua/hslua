@@ -18,6 +18,7 @@ import HsLua.Packaging.UDType
 import HsLua.Marshalling
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HsLua ((=:), shouldBeResultOf)
+import qualified Data.ByteString.Char8 as Char8
 
 -- | Calling Haskell functions from Lua.
 tests :: TestTree
@@ -70,6 +71,24 @@ tests = testGroup "UDType"
         OK <- dostring "foo.str = 'c'"
         TypeUserdata <- getglobal "foo"
         peekUD typeFoo top >>= force
+
+    , "pairs iterates over properties" =:
+      ["num", "5", "str", "echo", "show", "function"] `shouldBeResultOf` do
+        openlibs
+        pushUD typeFoo $ Foo 5 "echo"
+        setglobal "echo"
+        OK <- dostring $ Char8.unlines
+          [ "local result = {}"
+          , "for k, v in pairs(echo) do"
+          , "  table.insert(result, k)"
+          , "  table.insert("
+          , "    result,"
+          , "    type(v) == 'function' and 'function' or tostring(v)"
+          , "  )"
+          , "end"
+          , "return result"
+          ]
+        peekList peekText top >>= force
     ]
   ]
 

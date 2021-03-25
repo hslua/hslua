@@ -1,5 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications    #-}
 {-|
 Module      : HsLua.Packaging.UDType
 Copyright   : © 2020-2021 Albert Krewinkel
@@ -125,21 +127,22 @@ pushUDMetatable :: LuaError e => UDType e a -> LuaE e ()
 pushUDMetatable ty = do
   created <- newudmetatable (udName ty)
   when created $ do
-    pushName (metamethodName Index)
-    pushIndexFunction ty
-    rawset (nth 3)
-    pushName (metamethodName Newindex)
-    pushNewindexFunction ty
-    rawset (nth 3)
+    add (metamethodName Index)    $ pushHaskellFunction (indexFunction ty)
+    add (metamethodName Newindex) $ pushHaskellFunction (newindexFunction ty)
+    add (metamethodName Pairs)    $ pushHaskellFunction (pairsFunction ty)
     forM_ (udOperations ty) $ \(op, f) -> do
-      pushName (metamethodName op)
-      pushDocumentedFunction f
+      add (metamethodName op) $ pushDocumentedFunction f
+  where
+    add :: LuaError e => Name -> LuaE e () -> LuaE e ()
+    add name op = do
+      pushName name
+      op
       rawset (nth 3)
 
 -- | Pushes the function used to access object properties and methods.
 -- This is expected to be used with the /Index/ operation.
-pushIndexFunction :: LuaError e => UDType e a -> LuaE e ()
-pushIndexFunction ty = pushHaskellFunction $ do
+indexFunction :: LuaError e => UDType e a -> LuaE e NumResults
+indexFunction ty = do
   x    <- peekUD ty (nthBottom 1) >>= force
   name <- peekName (nthBottom 2) >>= force
   case Map.lookup name (udProperties ty) of
@@ -151,8 +154,8 @@ pushIndexFunction ty = pushHaskellFunction $ do
 
 -- | Pushes the function used to modify object properties.
 -- This is expected to be used with the /Newindex/ operation.
-pushNewindexFunction :: LuaError e => UDType e a -> LuaE e ()
-pushNewindexFunction ty = pushHaskellFunction $ do
+newindexFunction :: LuaError e => UDType e a -> LuaE e NumResults
+newindexFunction ty = do
   x     <- peekUD ty (nthBottom 1) >>= force
   name  <- peekName (nthBottom 2) >>= force
   case Map.lookup name (udProperties ty) of
@@ -163,6 +166,49 @@ pushNewindexFunction ty = pushHaskellFunction $ do
         then return (NumResults 0)
         else failLua "Could not set userdata value."
     Nothing -> failLua $ "no key " ++ Utf8.toString (fromName name)
+
+-- | Pushes the function used to iterate over the object's key-value
+-- pairs in a generic *for* loop.
+pairsFunction :: forall e a. LuaError e => UDType e a -> LuaE e NumResults
+pairsFunction ty = do
+  obj <- peekUD ty (nthBottom 1) >>= force
+
+  -- push initial state
+  pushHaskellFunction (nextMember obj)
+  pushState $
+    map (uncurry MemberProperty) (Map.toAscList (udProperties ty)) ++
+    map (uncurry MemberMethod) (Map.toAscList (udMethods ty))
+  pushnil
+  return (NumResults 3)
+  where
+    nextMember :: a -> LuaE e NumResults
+    nextMember obj = do
+      props <- fromuserdata @[Member e a] (nthBottom 1) statename
+      case props of
+        Nothing -> failLua "Error in __pairs: could not retrieve loop state."
+        Just [] -> 2 <$ (pushnil *> pushnil)  -- end loop
+        Just (member:xs) -> do
+          success <- putuserdata @[Member e a] (nthBottom 1) statename xs
+          if not success
+            then failLua "Error in __pairs: could not update loop state."
+            else case member of
+                   MemberProperty name prop -> do
+                     pushName name
+                     getresults <- propertyGet prop obj
+                     return $ getresults + 1
+                   MemberMethod name f -> do
+                     pushName name
+                     pushDocumentedFunction f
+                     return 2
+
+    statename :: Name
+    statename = "HsLua__pairs_state"
+
+    pushState :: [Member e a] -> LuaE e ()
+    pushState xs = do
+      newhsuserdata xs
+      void (newudmetatable statename)
+      setmetatable (nth 2)
 
 -- | Pushes a userdata value of the given type.
 pushUD :: LuaError e => UDType e a -> a -> LuaE e ()
