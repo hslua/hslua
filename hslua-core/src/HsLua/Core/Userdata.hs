@@ -1,3 +1,4 @@
+{-# LANGUAGE RankNTypes #-}
 {-|
 Module      : HsLua.Core.Userdata
 Copyright   : © 2007–2012 Gracjan Polak;
@@ -28,7 +29,7 @@ import qualified Data.ByteString as B
 
 -- | Creates a new userdata wrapping the given Haskell object. The
 -- userdata is pushed to the top of the stack.
-newhsuserdata :: a -> LuaE e ()
+newhsuserdata :: forall a e. a -> LuaE e ()
 newhsuserdata = liftLua . flip hslua_newhsuserdata
 
 -- | Creates and registers a new metatable for a userdata-wrapped
@@ -46,7 +47,8 @@ newudmetatable (Name name) = liftLua $ \l ->
 
 -- | Retrieves a Haskell object from userdata at the given index. The
 -- userdata /must/ have the given name.
-fromuserdata :: StackIndex  -- ^ stack index of userdata
+fromuserdata :: forall a e.
+                StackIndex  -- ^ stack index of userdata
              -> Name        -- ^ expected name of userdata object
              -> LuaE e (Maybe a)
 fromuserdata idx (Name name) = liftLua $ \l ->
@@ -55,7 +57,8 @@ fromuserdata idx (Name name) = liftLua $ \l ->
 -- | Replaces the Haskell value contained in the userdata value at
 -- @index@. Checks that the userdata is of type @name@ and returns
 -- 'True' on success, or 'False' otherwise.
-putuserdata :: StackIndex   -- ^ index
+putuserdata :: forall a e.
+               StackIndex   -- ^ index
             -> Name         -- ^ name
             -> a            -- ^ new value
             -> LuaE e Bool
