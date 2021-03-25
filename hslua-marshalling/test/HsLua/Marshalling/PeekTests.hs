@@ -17,8 +17,9 @@ import Data.Either (isLeft)
 import HsLua.Marshalling.Peek
 
 import Lua.Arbitrary ()
-import Test.Tasty.HsLua ( (=:), pushLuaExpr, shouldBeResultOf
-                       , shouldHoldForResultOf)
+import Test.Tasty.HsLua
+  ( (=:), pushLuaExpr, shouldBeResultOf, shouldHoldForResultOf
+  , shouldBeErrorMessageOf)
 import Test.QuickCheck.Instances ()
 import Test.QuickCheck.Monadic (monadicIO, run, assert)
 import Test.Tasty (TestTree, testGroup)
@@ -212,6 +213,25 @@ tests = testGroup "Peek"
           _ <- Lua.pushglobaltable
           peekName Lua.top
       ]
+    ]
+
+  , testGroup "peekRead"
+    [ testProperty "retrieve list of orderings" $ \xs ->
+        monadicIO $ do
+          retrieved <- run $ Lua.run @Lua.Exception $ do
+            Lua.pushstring . Utf8.fromString $ show @[Ordering] xs
+            peekRead Lua.top
+          assert (retrieved == Right xs)
+
+    , "fails on unreadable input" =:
+      isLeft `shouldHoldForResultOf` do
+        Lua.pushstring "NaN"
+        peekRead @Int Lua.top
+
+    , "fails on non-string input" =:
+      "expected string, got 'true' (boolean)" `shouldBeErrorMessageOf` do
+        Lua.pushboolean True
+        peekRead @Int Lua.top >>= force
     ]
 
   , testGroup "Containers"

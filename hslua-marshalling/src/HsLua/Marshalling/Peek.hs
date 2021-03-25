@@ -31,6 +31,8 @@ module HsLua.Marshalling.Peek
   , peekText
   , peekStringy
   , peekName
+  -- * Readable types
+  , peekRead
   -- * Collections
   , peekKeyValuePairs
   , peekList
@@ -188,6 +190,19 @@ peekText = fmap (second Utf8.toText) . peekByteString
 -- | Retrieves a Lua string as 'Name'.
 peekName :: LuaError e => Peeker e Name
 peekName = fmap (fmap Name) . peekByteString
+
+--
+-- Arbitrary values
+--
+
+-- | Retrieves a value by getting a String from Lua, then using
+-- 'readMaybe' to convert the String into a Haskell value.
+peekRead :: forall a e. (LuaError e, Read a) => Peeker e a
+peekRead = fmap (>>= readValue) . peekString
+  where
+    readValue s = case readMaybe s of
+      Just x  -> Right x
+      Nothing -> Left $ errorMsg $ "Could not read: " <> Utf8.fromString s
 
 --
 -- Numbers

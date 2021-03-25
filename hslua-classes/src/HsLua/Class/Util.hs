@@ -16,14 +16,12 @@ module HsLua.Class.Util
   , Optional (Optional, fromOptional)
     -- * getting values
   , peekEither
-  , peekRead
   , popValue
   ) where
 
 import HsLua.Core (LuaE, NumResults, StackIndex, top)
 import HsLua.Class.Peekable (Peekable (peek), PeekError)
 import HsLua.Class.Pushable (Pushable (push))
-import Text.Read (readMaybe)
 
 import qualified Control.Monad.Catch as Catch
 import qualified HsLua.Core as Lua
@@ -56,16 +54,6 @@ instance Pushable a => Pushable (Optional a) where
 --
 -- Getting Values
 --
-
--- | Get a value by retrieving a String from Lua, then using @'readMaybe'@ to
--- convert the String into a Haskell value.
-peekRead :: forall e a. (PeekError e, Read a)
-         => StackIndex -> LuaE e a
-peekRead idx = do
-  s <- peek idx
-  case readMaybe s of
-    Just x -> return x
-    Nothing -> Lua.failLua ("Could not read: " ++ s)
 
 -- | Try to convert the value at the given stack index to a Haskell value.
 -- Returns 'Left' with the error on failure.

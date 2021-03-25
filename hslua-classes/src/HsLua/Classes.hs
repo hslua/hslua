@@ -17,7 +17,6 @@ module HsLua.Classes
   , peekEither
   , peekList
   , peekKeyValuePairs
-  , peekRead
     -- * Pushing values to Lua stack (Haskell → Lua)
   , Pushable (..)
   , pushList
