@@ -105,6 +105,11 @@ data Operation
   | Tostring
           -- ^ The operation used to create a string representation of
           -- the object.
+  | Pairs -- ^ the operation of iterating over the object's key-value
+          -- pairs.
+  | CustomOperation Name
+          -- ^ a custom operation, with the metamethod name as
+          -- parameter.
   deriving (Eq, Ord, Show)
 
 -- | Returns the metamethod name used to control this operation.
@@ -133,3 +138,5 @@ metamethodName = \case
   Newindex -> "__newindex"
   Call     -> "__call"
   Tostring -> "__tostring"
+  Pairs    -> "__pairs"
+  CustomOperation x -> x
