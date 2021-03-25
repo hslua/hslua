@@ -47,7 +47,7 @@ tests = testGroup "Userdata"
 
   , "change wrapped value" =:
     Just (Sample 1 "a") `shouldBeResultOf` do
-      newhsuserdata (Sample 0 "zero")
+      newhsuserdata (Sample 5 "five")
       newudmetatable "Sample"
       setmetatable (nth 2)
       True <- putuserdata top "Sample" (Sample 1 "a")
@@ -58,7 +58,7 @@ tests = testGroup "Userdata"
       newhsuserdata (Sample 2 "b")
       newudmetatable "Sample"
       setmetatable (nth 2)
-      False <- putuserdata top "WRONG" (Sample 1 "a")
+      False <- putuserdata top "WRONG" (Sample 3 "c")
       fromuserdata top "Sample"
   ]
 

@@ -55,12 +55,15 @@ library
   exposed-modules:     HsLua.Packaging
                      , HsLua.Packaging.Function
                      , HsLua.Packaging.Module
+                     , HsLua.Packaging.Operation
                      , HsLua.Packaging.Rendering
                      , HsLua.Packaging.Types
+                     , HsLua.Packaging.UDType
   hs-source-dirs:      src
   default-extensions:  LambdaCase
   other-extensions:    DeriveFunctor
                      , OverloadedStrings
+  build-depends:       containers        >= 0.5.9    && < 0.7
 
 test-suite test-hslua-packaging
   import:              common-options
@@ -72,6 +75,7 @@ test-suite test-hslua-packaging
                      , HsLua.Packaging.FunctionTests
                      , HsLua.Packaging.ModuleTests
                      , HsLua.Packaging.RenderingTests
+                     , HsLua.Packaging.UDTypeTests
   build-depends:       hslua-packaging
                      , tasty-hslua
                      , tasty                >= 0.11
