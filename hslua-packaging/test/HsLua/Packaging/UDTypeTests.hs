@@ -89,7 +89,8 @@ show' = defun "show"
 typeFoo :: LuaError e => UDType e Foo
 typeFoo = deftype "Foo"
   [ operation Tostring show'
-  , property "num" "some number"
+  ]
+  [ property "num" "some number"
       (pushIntegral, \(Foo n _) -> n)
       (peekIntegral, \(Foo _ s) n -> Foo n s)
   , property "str" "some string"

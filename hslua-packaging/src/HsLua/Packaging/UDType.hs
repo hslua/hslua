@@ -40,7 +40,7 @@ import HsLua.Core
 import HsLua.Marshalling
 import HsLua.Packaging.Function
 import HsLua.Packaging.Operation
-import qualified Data.Map as Map
+import qualified Data.Map.Strict as Map
 import qualified HsLua.Core.Utf8 as Utf8
 
 #if !MIN_VERSION_base(4,12,0)
@@ -59,19 +59,20 @@ data UDType e a = UDType
   }
 
 -- | Defines a new type, defining the behavior of objects in Lua.
-deftype :: Name -> [Member e a] -> UDType e a
-deftype name members = UDType
+-- Note that the type name must be unique.
+deftype :: Name                                  -- ^ type name
+        -> [(Operation, DocumentedFunction e)]   -- ^ operations
+        -> [Member e a]                          -- ^ methods
+        -> UDType e a
+deftype name ops members = UDType
   { udName          = name
-  , udOperations    = mapMaybe mboperations members
+  , udOperations    = ops
   , udProperties    = Map.fromList $ mapMaybe mbproperties members
   , udMethods       = Map.fromList $ mapMaybe mbmethods members
   }
   where
     mbproperties = \case
       MemberProperty n p -> Just (n, p)
-      _ -> Nothing
-    mboperations = \case
-      MemberOperation o f -> Just (o, f)
       _ -> Nothing
     mbmethods = \case
       MemberMethod n m -> Just (n, m)
@@ -88,7 +89,6 @@ data Property e a = Property
 data Member e a
   = MemberProperty Name (Property e a)
   | MemberMethod Name (DocumentedFunction e)
-  | MemberOperation Operation (DocumentedFunction e)
 
 -- | Use a documented function as an object method.
 method :: DocumentedFunction e -> Member e a
@@ -115,8 +115,8 @@ property name desc (push, get) (peek, set) = MemberProperty name $
 -- | Declares a new object operation from a documented function.
 operation :: Operation             -- ^ the kind of operation
           -> DocumentedFunction e  -- ^ function used to perform the operation
-          -> Member e a
-operation op f = MemberOperation op $ setName (metamethodName op) f
+          -> (Operation, DocumentedFunction e)
+operation op f = (,) op $ setName (metamethodName op) f
 
 -- | Pushes the metatable for the given type to the Lua stack. Creates
 -- the new table afresh on the first time it is needed, and retrieves it
