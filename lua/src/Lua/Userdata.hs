@@ -14,6 +14,7 @@ module Lua.Userdata
   ( hslua_fromuserdata
   , hslua_newhsuserdata
   , hslua_newudmetatable
+  , hslua_putuserdata
   ) where
 
 import Foreign.C (CInt (CInt), CString)
@@ -25,7 +26,7 @@ import Lua.Types
   , State (..)
   )
 import Foreign.Ptr (castPtr, nullPtr)
-import Foreign.StablePtr (newStablePtr, deRefStablePtr)
+import Foreign.StablePtr (newStablePtr, deRefStablePtr, freeStablePtr)
 import Foreign.Storable (peek, poke, sizeOf)
 
 #ifdef ALLOW_UNSAFE_GC
@@ -63,3 +64,22 @@ hslua_fromuserdata l idx name = do
     then return Nothing
     else Just <$> (peek (castPtr udPtr) >>= deRefStablePtr)
 {-# INLINABLE hslua_fromuserdata #-}
+
+-- | Replaces the Haskell value contained in the userdata value at
+-- @index@. Checks that the userdata is of type @name@ and returns
+-- 'True' on success, or 'False' otherwise.
+hslua_putuserdata :: State
+                  -> StackIndex  -- ^ index
+                  -> CString     -- ^ name
+                  -> a           -- ^ new Haskell value
+                  -> IO Bool
+hslua_putuserdata l idx name x = do
+  xPtr <- newStablePtr x
+  udPtr <- luaL_testudata l idx name
+  if udPtr == nullPtr
+    then return False
+    else do
+      peek (castPtr udPtr) >>= freeStablePtr
+      poke (castPtr udPtr) xPtr
+      return True
+{-# INLINABLE hslua_putuserdata #-}

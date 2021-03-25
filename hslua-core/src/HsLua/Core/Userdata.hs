@@ -14,6 +14,7 @@ module HsLua.Core.Userdata
   ( newhsuserdata
   , newudmetatable
   , fromuserdata
+  , putuserdata
   ) where
 
 import HsLua.Core.Types (LuaE, Name (..), StackIndex, liftLua, fromLuaBool)
@@ -21,6 +22,7 @@ import Lua.Userdata
   ( hslua_fromuserdata
   , hslua_newhsuserdata
   , hslua_newudmetatable
+  , hslua_putuserdata
   )
 import qualified Data.ByteString as B
 
@@ -49,3 +51,14 @@ fromuserdata :: StackIndex  -- ^ stack index of userdata
              -> LuaE e (Maybe a)
 fromuserdata idx (Name name) = liftLua $ \l ->
   B.useAsCString name (hslua_fromuserdata l idx)
+
+-- | Replaces the Haskell value contained in the userdata value at
+-- @index@. Checks that the userdata is of type @name@ and returns
+-- 'True' on success, or 'False' otherwise.
+putuserdata :: StackIndex   -- ^ index
+            -> Name         -- ^ name
+            -> a            -- ^ new value
+            -> LuaE e Bool
+putuserdata idx (Name name) x = liftLua $ \l ->
+  B.useAsCString name $ \namePtr ->
+  hslua_putuserdata l idx namePtr x

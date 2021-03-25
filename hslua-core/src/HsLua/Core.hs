@@ -178,6 +178,7 @@ module HsLua.Core
   , newhsuserdata
   , newudmetatable
   , fromuserdata
+  , putuserdata
   -- ** Haskell functions and closures
   , HaskellFunction
   , pushHaskellFunction
