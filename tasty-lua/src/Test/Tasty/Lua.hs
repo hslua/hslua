@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 {-|
 Module      : Test.Tasty.Lua
 Copyright   : © 2019–2021 Albert Krewinkel
@@ -25,7 +26,7 @@ where
 import Control.Exception (SomeException, try)
 import Data.Bifunctor (first)
 import Data.List (intercalate)
-import HsLua.Core (Lua)
+import HsLua.Core (LuaE, LuaError)
 import Test.Tasty (TestName, TestTree)
 import Test.Tasty.Providers (IsTest (..), singleTest, testFailed, testPassed)
 import Test.Tasty.Lua.Module (pushModule)
@@ -40,13 +41,14 @@ import Data.Semigroup (Semigroup ((<>)))
 -- | Run the given file as a single test. It is possible to use
 -- `tasty.lua` in the script. This test collects and summarizes all
 -- errors, but shows generally no information on the successful tests.
-testLuaFile :: (forall a . Lua a -> IO a)
-             -> TestName
-             -> FilePath
-             -> TestTree
+testLuaFile :: forall e. LuaError e
+            => (forall a. LuaE e a -> IO a)
+            -> TestName
+            -> FilePath
+            -> TestTree
 testLuaFile runLua name fp =
   let testAction = TestCase $ do
-        eitherResult <- runLua (runTastyFile fp)
+        eitherResult <- runLua (runTastyFile @e fp)
         return $ case eitherResult of
           Left errMsg  -> FailureSummary [([name], errMsg)]
           Right result -> summarize result

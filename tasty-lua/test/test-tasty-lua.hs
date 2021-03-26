@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 {-|
 Module      : Main
 Copyright   : © 2019-2021 Albert Krewinkel
@@ -47,7 +48,8 @@ tests = testGroup "HsLua tasty module"
         Lua.dostring "require 'tasty'"
 
   , testGroup "testFileWith"
-    [ testLuaFile Lua.run "test-tasty.lua" ("test" </> "test-tasty.lua")
+    [ testLuaFile (Lua.run @Lua.Exception)
+      "test-tasty.lua" ("test" </> "test-tasty.lua")
     ]
   ]
 
