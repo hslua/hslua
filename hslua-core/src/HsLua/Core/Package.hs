@@ -15,7 +15,6 @@ module HsLua.Core.Package
 where
 
 import Control.Monad (void)
-import Data.String (IsString (fromString))
 import HsLua.Core.Auxiliary
 import HsLua.Core.Closures (pushHaskellFunction)
 import HsLua.Core.Error (LuaError)
@@ -39,7 +38,7 @@ import HsLua.Core.Types
 requirehs :: LuaError e => Name -> LuaE e () -> LuaE e ()
 requirehs modname pushMod = do
   -- get table of loaded modules
-  void $ getfield registryindex (fromString loadedTableRegistryField)
+  void $ getfield registryindex loaded
 
   -- Check whether module has already been loaded.
   getfield top modname >>= \case -- LOADED[modname]
@@ -57,7 +56,7 @@ requirehs modname pushMod = do
 -- Lua operation which produces the package.
 preloadhs :: LuaError e => Name -> LuaE e NumResults -> LuaE e ()
 preloadhs name pushMod = do
-  void $ getfield registryindex (fromString preloadTableRegistryField)
+  void $ getfield registryindex preload
   pushHaskellFunction pushMod
   setfield (nth 2) name
   pop 1

@@ -14,7 +14,8 @@ Portability : non-portable (depends on GHC)
 Wrappers for the auxiliary library.
 -}
 module HsLua.Core.Auxiliary
-  ( dostring
+  ( -- * The Auxiliary Library
+    dostring
   , dofile
   , getmetafield
   , getmetatable'
@@ -26,13 +27,13 @@ module HsLua.Core.Auxiliary
   , newstate
   , tostring'
   , traceback
-  -- * References
+    -- ** References
   , getref
   , ref
   , unref
-  -- * Registry fields
-  , loadedTableRegistryField
-  , preloadTableRegistryField
+    -- ** Registry fields
+  , loaded
+  , preload
   ) where
 
 import Control.Exception (IOException, try)
@@ -53,8 +54,6 @@ import qualified HsLua.Core.Primary as Lua
 import qualified HsLua.Core.Types as Lua
 import qualified HsLua.Core.Utf8 as Utf8
 import qualified Foreign.Storable as Storable
-
--- * The Auxiliary Library
 
 -- | Loads and runs the given string.
 --
@@ -270,3 +269,15 @@ unref :: StackIndex -- ^ idx
       -> LuaE e ()
 unref idx r = liftLua $ \l ->
   luaL_unref l idx (Lua.fromReference r)
+
+--
+-- Registry fields
+--
+
+-- | Key to the registry field that holds the table of loaded modules.
+loaded :: Name
+loaded = fromString loadedTableRegistryField
+
+-- | Key to the registry field that holds the table of loader functions.
+preload :: Name
+preload = fromString preloadTableRegistryField

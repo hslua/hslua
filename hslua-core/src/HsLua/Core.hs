@@ -170,8 +170,8 @@ module HsLua.Core
   , noref
   , refnil
   -- ** Registry fields
-  , loadedTableRegistryField
-  , preloadTableRegistryField
+  , loaded
+  , preload
   -- * Haskell userdata values
   --
   -- | Push arbitrary Haskell values to the Lua stack.

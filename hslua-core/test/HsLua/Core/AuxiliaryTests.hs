@@ -81,6 +81,6 @@ tests = testGroup "Auxiliary"
         Lua.getmetatable' "yep"
     ]
 
-  , "loadedTable" =: ("_LOADED" @=? Lua.loadedTableRegistryField)
-  , "preloadTable" =: ("_PRELOAD" @=? Lua.preloadTableRegistryField)
+  , "loaded" =: ("_LOADED" @=? Lua.loaded)
+  , "preload" =: ("_PRELOAD" @=? Lua.preload)
   ]
