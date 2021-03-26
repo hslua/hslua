@@ -24,6 +24,7 @@ module HsLua.Packaging.UDType
   , deftype
   , method
   , property
+  , readonly
   , operation
   , peekUD
   , pushUD
@@ -113,6 +114,18 @@ property name desc (push, get) (peek, set) = MemberProperty name $
       return $ set x value
   , propertyDescription = desc
   }
+
+-- | Creates a read-only object property. Attempts to set the value will
+-- cause an error.
+readonly :: LuaError e
+         => Name                 -- ^ property name
+         -> Text                 -- ^ property description
+         -> (Pusher e b, a -> b) -- ^ how to get the property value
+         -> Member e a
+readonly name desc getter = property name desc getter $
+  let msg = "'" ++ Utf8.toString (fromName name) ++
+            "' is a read-only property."
+  in (const (failLua msg), const)
 
 -- | Declares a new object operation from a documented function.
 operation :: Operation             -- ^ the kind of operation

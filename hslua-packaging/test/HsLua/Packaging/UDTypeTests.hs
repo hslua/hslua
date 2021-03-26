@@ -17,7 +17,7 @@ import HsLua.Packaging.Operation
 import HsLua.Packaging.UDType
 import HsLua.Marshalling
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HsLua ((=:), shouldBeResultOf)
+import Test.Tasty.HsLua ((=:), shouldBeResultOf, shouldBeErrorMessageOf)
 import qualified Data.ByteString.Char8 as Char8
 
 -- | Calling Haskell functions from Lua.
@@ -63,14 +63,22 @@ tests = testGroup "UDType"
         TypeUserdata <- getglobal "foo"
         peekUD typeFoo top >>= force
 
-    , "modify string" =:
-      Foo 2 "c" `shouldBeResultOf` do
+    , "get string" =:
+      "lint" `shouldBeResultOf` do
+        openlibs
+        pushUD typeFoo $ Foo 0 "lint"
+        setglobal "foo"
+        dostring "return foo.str" >>= \case
+          OK -> peekText top >>= force
+          _ -> throwErrorAsException
+
+    , "cannot change readonly string" =:
+      "'str' is a read-only property." `shouldBeErrorMessageOf` do
         openlibs
         pushUD typeFoo $ Foo 2 "b"
         setglobal "foo"
-        OK <- dostring "foo.str = 'c'"
-        TypeUserdata <- getglobal "foo"
-        peekUD typeFoo top >>= force
+        ErrRun <- dostring "foo.str = 'c'"
+        throwErrorAsException :: Lua ()
 
     , "pairs iterates over properties" =:
       ["num", "5", "str", "echo", "show", "function"] `shouldBeResultOf` do
@@ -112,8 +120,6 @@ typeFoo = deftype "Foo"
   [ property "num" "some number"
       (pushIntegral, \(Foo n _) -> n)
       (peekIntegral, \(Foo _ s) n -> Foo n s)
-  , property "str" "some string"
-      (pushString, \(Foo _ s) -> s)
-      (peekString, \(Foo n _) s -> Foo n s)
+  , readonly "str" "some string" (pushString, \(Foo _ s) -> s)
   , method show'
   ]
