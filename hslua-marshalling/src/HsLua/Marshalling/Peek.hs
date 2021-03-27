@@ -237,14 +237,16 @@ peekRealFloat idx =
 -- the list is equal to @rawlen(t)@. The operation will fail unless all
 -- numerical fields between @1@ and @rawlen(t)@ can be retrieved.
 peekList :: forall a e. LuaError e => Peeker e a -> Peeker e [a]
-peekList peekElement = typeChecked "table" istable $ \idx -> do
+peekList peekElement = fmap (fmap (retrieving "list")) .
+  typeChecked "table" istable $ \idx -> do
   let elementsAt [] = return (Right [])
       elementsAt (i : is) = do
         eitherX <- rawgeti idx i *> peekElement top <* pop 1
         case eitherX of
           Right x  -> second (x:) <$> elementsAt is
           Left err -> return . Left $
-                      pushMsg ("in field " <> T.pack (show i)) err
+                      pushMsg ("in field " <> showInt i) err
+      showInt (Lua.Integer x) = T.pack $ show x
   listLength <- fromIntegral <$> rawlen idx
   elementsAt [1..listLength]
 

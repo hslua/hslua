@@ -354,4 +354,25 @@ tests = testGroup "Peek"
       ]
 
     ]
+
+  , testGroup "error messages"
+    [ "value in list" =:
+      mconcat [ "retrieving list\n"
+              , "\tin field 3\n"
+              , "\texpected Integral, got '⚘' (table)"
+              ] `shouldBeErrorMessageOf` do
+        Lua.openlibs
+        Lua.OK <- Lua.dostring $ Utf8.fromString
+          "nope = {__tostring = function () return '⚘' end}"
+        pushLuaExpr "{5, 8, setmetatable({}, nope), 21}"
+        peekList (peekIntegral @Int) Lua.top >>= force
+
+    , "value in key-value pairs" =:
+      mconcat [ "retrieving key-value pair\n"
+              , "\tretrieving value\n"
+              , "\texpected string, got 'true' (boolean)"
+              ] `shouldBeErrorMessageOf` do
+        pushLuaExpr "{ a = true}"
+        peekKeyValuePairs peekText peekText Lua.top >>= force
+    ]
   ]
