@@ -37,8 +37,9 @@ tests = testGroup "Call"
         peekIntegral @Integer Lua.top >>= force
 
     , "error message" =:
-      mconcat [ "retrieving function argument n"
-              , "\n\texpected Integral, got 'true' (boolean)"]
+      mconcat [ "expected Integral, got 'true' (boolean)\n"
+              , "\twhile retrieving function argument n\n"
+              , "\twhile retrieving arguments for function factorial"]
       `shouldBeResultOf` do
         factLua <- factLuaAtIndex <$> Lua.gettop
         Lua.pushboolean True

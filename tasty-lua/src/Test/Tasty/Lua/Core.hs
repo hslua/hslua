@@ -22,7 +22,9 @@ where
 import Control.Monad (void)
 import Data.ByteString (ByteString)
 import HsLua.Core
-import HsLua.Marshalling (Peeker, formatPeekError, peekList, peekString)
+import HsLua.Marshalling
+  ( Peeker, failure, resultToEither, retrieving
+  , peekList, peekString, typeMismatchMessage)
 import Test.Tasty.Lua.Module (pushModule)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T.Encoding
@@ -38,9 +40,7 @@ runTastyFile fp = do
   res <- Lua.dofile fp
   if res /= Lua.OK
     then Left . toString <$> Lua.tostring' top
-    else peekList peekResultTree top >>= \case
-           Left e       -> return (Left (formatPeekError e))
-           Right trees  -> return (Right trees)
+    else resultToEither <$> peekList peekResultTree top
 
 -- | Convert UTF8-encoded @'ByteString'@ to a @'String'@.
 toString :: ByteString -> String
@@ -78,12 +78,10 @@ data Outcome = Success | Failure String
 
 -- | Unmarshal a test outcome
 peekOutcome :: LuaError e => Peeker e Outcome
-peekOutcome idx = do
+peekOutcome idx = retrieving "test result" $ do
   Lua.ltype idx >>= \case
     Lua.TypeString  -> fmap Failure <$> peekString idx
     Lua.TypeBoolean -> do
       b <- toboolean idx
-      return . Right $ if b then Success else Failure "???"
-    _ -> do
-      s <- toString <$> Lua.tostring' idx
-      Lua.failLua ("not a test result: " ++ s)
+      return . pure $ if b then Success else Failure "???"
+    _ -> failure <$> typeMismatchMessage "string or boolean" idx

@@ -13,7 +13,7 @@ Tests for Haskell-value retriever functions.
 module HsLua.Marshalling.PeekTests (tests) where
 
 import Control.Monad (forM_, zipWithM_)
-import Data.Either (isLeft)
+import Data.Maybe (fromMaybe)
 import HsLua.Marshalling.Peek
 
 import Lua.Arbitrary ()
@@ -27,7 +27,6 @@ import Test.Tasty.QuickCheck (testProperty)
 
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as Char8
-import qualified Data.List.NonEmpty as NonEmpty
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import qualified Data.Text as T
@@ -39,22 +38,22 @@ tests :: TestTree
 tests = testGroup "Peek"
   [ testGroup "peekBool"
     [ "True" =:
-      Right True `shouldBeResultOf` do
+      Success True `shouldBeResultOf` do
         Lua.pushboolean True
         peekBool Lua.top
 
     , "False" =:
-      Right False `shouldBeResultOf` do
+      Success False `shouldBeResultOf` do
         Lua.pushboolean False
         peekBool Lua.top
 
     , "Numbers are truthy" =:
-      Right True `shouldBeResultOf` do
+      Success True `shouldBeResultOf` do
         Lua.pushnumber 0
         peekBool Lua.top
 
     , "Nil is falsy" =:
-      Right False `shouldBeResultOf` do
+      Success False `shouldBeResultOf` do
         Lua.pushnil
         peekBool Lua.top
 
@@ -63,53 +62,53 @@ tests = testGroup "Peek"
 
   , testGroup "peekIntegral"
     [ "negative Int" =:
-      Right (-5) `shouldBeResultOf` do
+      Success (-5) `shouldBeResultOf` do
         Lua.pushinteger (-5)
         peekIntegral @Int Lua.top
 
     , "Int as string" =:
-      Right 720 `shouldBeResultOf` do
+      Success 720 `shouldBeResultOf` do
         Lua.pushstring "720"
         peekIntegral @Int Lua.top
 
     , "fail on boolean" =:
       let msg = "expected Integral, got 'true' (boolean)"
-      in Left (errorMsg msg) `shouldBeResultOf` do
+      in failure msg `shouldBeResultOf` do
         Lua.pushboolean True
         peekIntegral @Int Lua.top
 
     , "fail on non-numeric string" =:
       let msg = "expected Integral, got 'not a number' (string)"
-      in Left (errorMsg msg) `shouldBeResultOf` do
+      in failure msg `shouldBeResultOf` do
         Lua.pushstring "not a number"
         peekIntegral @Integer Lua.top
     ]
 
   , testGroup "peekRealFloat"
     [ "negative Float" =:
-      Right (-13.37) `shouldBeResultOf` do
+      Success (-13.37) `shouldBeResultOf` do
         Lua.pushnumber (-13.37)
         peekRealFloat @Float Lua.top
 
     , "number as string" =:
-      Right (-720.0) `shouldBeResultOf` do
+      Success (-720.0) `shouldBeResultOf` do
         Lua.pushstring "-720"
         peekRealFloat @Float Lua.top
 
     , "scientific notation string" =:
-      Right 0.00071 `shouldBeResultOf` do
+      Success 0.00071 `shouldBeResultOf` do
         Lua.pushstring "7.1e-4"
         peekRealFloat @Float Lua.top
 
     , "fail on boolean" =:
       let msg = "expected RealFloat, got 'true' (boolean)"
-      in Left (errorMsg msg) `shouldBeResultOf` do
+      in failure msg `shouldBeResultOf` do
         Lua.pushboolean True
         peekRealFloat @Float Lua.top
 
     , "fail on non-numeric string" =:
       let msg = "expected RealFloat, got 'not a number' (string)"
-      in Left (errorMsg msg) `shouldBeResultOf` do
+      in failure msg `shouldBeResultOf` do
         Lua.pushstring "not a number"
         peekRealFloat @Double Lua.top
     ]
@@ -120,18 +119,18 @@ tests = testGroup "Peek"
           retrieved <- run $ Lua.run @Lua.Exception $ do
             Lua.pushstring bs
             peekByteString Lua.top
-          assert (retrieved == Right bs)
+          assert (retrieved == Success bs)
 
       , testProperty "retrieve integer as string" $ \n -> monadicIO $ do
           retrieved <- run . Lua.run @Lua.Exception $ do
             Lua.pushinteger n
             peekByteString Lua.top
           let numberAsByteString = Char8.pack . show @Integer . fromIntegral $ n
-          assert (retrieved == Right numberAsByteString)
+          assert (retrieved == Success numberAsByteString)
 
       , "fails on boolean" =:
       let msg = "expected string, got 'true' (boolean)"
-      in Left (errorMsg msg) `shouldBeResultOf` do
+      in failure msg `shouldBeResultOf` do
         Lua.pushboolean True
         peekByteString Lua.top
       ]
@@ -141,24 +140,24 @@ tests = testGroup "Peek"
           retrieved <- run $ Lua.run @Lua.Exception $ do
             Lua.pushstring bs
             peekText Lua.top
-          assert (retrieved == Right (Utf8.toText bs))
+          assert (retrieved == Success (Utf8.toText bs))
 
       , testProperty "retrieve UTF-8 encoded Text" $ \txt -> monadicIO $ do
           retrieved <- run $ Lua.run @Lua.Exception $ do
             Lua.pushstring (Utf8.fromText txt)
             peekText Lua.top
-          assert (retrieved == Right txt)
+          assert (retrieved == Success txt)
 
       , testProperty "retrieve integer as Text" $ \n -> monadicIO $ do
           retrieved <- run . Lua.run @Lua.Exception $ do
             Lua.pushinteger n
             peekText Lua.top
           let numberAsByteString = T.pack . show @Integer . fromIntegral $ n
-          assert (retrieved == Right numberAsByteString)
+          assert (retrieved == Success numberAsByteString)
 
       , "fails on nil" =:
         let msg = "expected string, got 'nil' (nil)"
-        in Left (errorMsg msg) `shouldBeResultOf` do
+        in failure msg `shouldBeResultOf` do
           Lua.pushnil
           peekByteString Lua.top
       ]
@@ -168,15 +167,15 @@ tests = testGroup "Peek"
           retrieved <- run $ Lua.run @Lua.Exception $ do
             Lua.pushstring (Utf8.fromString txt)
             peekString Lua.top
-          assert (retrieved == Right txt)
+          assert (retrieved == Success txt)
 
       , "fails on table" =:
-        isLeft `shouldHoldForResultOf` do
+        isFailure `shouldHoldForResultOf` do
           _ <- Lua.pushglobaltable
           peekString Lua.top
 
       , "fails on thread" =:
-        isLeft `shouldHoldForResultOf` do
+        isFailure `shouldHoldForResultOf` do
           _ <- Lua.pushthread
           peekString Lua.top
       ]
@@ -187,15 +186,15 @@ tests = testGroup "Peek"
             retrieved <- run $ Lua.run @Lua.Exception $ do
               Lua.pushstring (Utf8.fromText txt)
               peekStringy @T.Text Lua.top
-            assert (retrieved == Right txt)
+            assert (retrieved == Success txt)
 
       , "retrieve ByteString" =:
-        Right "This is an ASCII string" `shouldBeResultOf` do
+        Success "This is an ASCII string" `shouldBeResultOf` do
           Lua.pushstring "This is an ASCII string"
           peekStringy @B.ByteString Lua.top
 
       , "fails on table" =:
-        isLeft `shouldHoldForResultOf` do
+        isFailure `shouldHoldForResultOf` do
           _ <- Lua.pushglobaltable
           peekStringy @B.ByteString Lua.top
       ]
@@ -206,10 +205,10 @@ tests = testGroup "Peek"
             retrieved <- run $ Lua.run @Lua.Exception $ do
               Lua.pushstring txt
               peekName Lua.top
-            assert (retrieved == Right (Lua.Name txt))
+            assert (retrieved == Success (Lua.Name txt))
 
       , "fails on table" =:
-        isLeft `shouldHoldForResultOf` do
+        isFailure `shouldHoldForResultOf` do
           _ <- Lua.pushglobaltable
           peekName Lua.top
       ]
@@ -221,10 +220,10 @@ tests = testGroup "Peek"
           retrieved <- run $ Lua.run @Lua.Exception $ do
             Lua.pushstring . Utf8.fromString $ show @[Ordering] xs
             peekRead Lua.top
-          assert (retrieved == Right xs)
+          assert (retrieved == Success xs)
 
     , "fails on unreadable input" =:
-      isLeft `shouldHoldForResultOf` do
+      isFailure `shouldHoldForResultOf` do
         Lua.pushstring "NaN"
         peekRead @Int Lua.top
 
@@ -237,7 +236,7 @@ tests = testGroup "Peek"
   , testGroup "Containers"
     [ testGroup "peekList"
       [ "empty list" =:
-        Right [] `shouldBeResultOf` do
+        Success [] `shouldBeResultOf` do
           Lua.newtable
           peekList peekBool Lua.top
 
@@ -250,22 +249,22 @@ tests = testGroup "Peek"
               [1..]
               lst
             peekList peekByteString Lua.top
-          assert (retrieved == Right lst)
+          assert (retrieved == Success lst)
 
       , "string keys are not in list" =:
-        Right [] `shouldBeResultOf` do
+        Success [] `shouldBeResultOf` do
           pushLuaExpr "{['1'] = 'hello', ['2'] = 'world'}"
           peekList peekByteString Lua.top
 
       , "missing pair causes an error" =:
-        isLeft `shouldHoldForResultOf` do
+        isFailure `shouldHoldForResultOf` do
           pushLuaExpr "{[1] = 'hello', [2] = 'world', [4] = 'nope'}"
           peekList peekByteString Lua.top
       ]
 
     , testGroup "peekSet"
       [ "empty set" =:
-        Right Set.empty `shouldBeResultOf` do
+        Success Set.empty `shouldBeResultOf` do
           Lua.newtable
           peekSet peekBool Lua.top
 
@@ -277,49 +276,43 @@ tests = testGroup "Peek"
               Lua.pushboolean True
               Lua.rawset (Lua.nth 3)
             peekSet @Lua.Exception peekByteString Lua.top
-          assert (retrieved == Right set)
+          assert (retrieved == Success set)
 
       , "keys with falsy values are not in set" =:
-        Right (Set.fromList [1,3]) `shouldBeResultOf` do
+        Success (Set.fromList [1,3]) `shouldBeResultOf` do
           pushLuaExpr "{['1'] = 'hello', ['2'] = false, [3] = 5}"
           peekSet (peekIntegral @Int) Lua.top
 
       , "fails if element peeker fails" =:
-        let errorStack = [ "retrieving Set"
-                         , "retrieving key-value pair"
-                         , "retrieving key"
-                         , "expected string, got 'true' (boolean)"]
-        in Left (PeekError $ NonEmpty.fromList errorStack) `shouldBeResultOf` do
+        let errorStack = [ "Set", "key-value pair", "key"]
+            errorMsg = "expected string, got 'true' (boolean)"
+        in Failure errorMsg errorStack `shouldBeResultOf` do
           pushLuaExpr "{ NaN = true, [true] = false }"
           peekSet peekText Lua.top
       ]
 
     , testGroup "peekMap"
       [ "empty map" =:
-        Right Map.empty `shouldBeResultOf` do
+        Success Map.empty `shouldBeResultOf` do
           Lua.newtable
           peekMap peekText peekText Lua.top
 
       , "tables become maps" =:
-        Right (Map.fromList [("one", 1), ("two", 2)]) `shouldBeResultOf` do
+        Success (Map.fromList [("one", 1), ("two", 2)]) `shouldBeResultOf` do
           pushLuaExpr "{ one = 1, two = 2}"
           peekMap peekText (peekIntegral @Int) Lua.top
 
       , "fails if key peeker fails" =:
-        let errorStack = [ "retrieving Map"
-                         , "retrieving key-value pair"
-                         , "retrieving key"
-                         , "expected Integral, got 'NaN' (string)"]
-        in Left (PeekError $ NonEmpty.fromList errorStack) `shouldBeResultOf` do
+        let errorStack = [ "Map", "key-value pair" , "key" ]
+            errorMsg = "expected Integral, got 'NaN' (string)"
+        in Failure errorMsg errorStack `shouldBeResultOf` do
           pushLuaExpr "{ NaN = true }"
           peekMap (peekIntegral @Int) peekBool Lua.top
 
       , "fails if value peeker fails" =:
-        let errorStack = [ "retrieving Map"
-                         , "retrieving key-value pair"
-                         , "retrieving value"
-                         , "expected string, got 'true' (boolean)"]
-        in Left (PeekError $ NonEmpty.fromList errorStack) `shouldBeResultOf` do
+        let errorStack = [ "Map", "key-value pair", "value" ]
+            errorMsg = "expected string, got 'true' (boolean)"
+        in Failure errorMsg errorStack `shouldBeResultOf` do
           pushLuaExpr "{ [42] = true }"
           peekMap (peekIntegral @Int) peekText Lua.top
       ]
@@ -327,11 +320,11 @@ tests = testGroup "Peek"
 
   , testGroup "combinators"
     [ "optional with nil" =:
-      Right Nothing `shouldBeResultOf` do
+      Success Nothing `shouldBeResultOf` do
         Lua.pushnil
         optional peekString Lua.top
     , "optional with number" =:
-      Right (Just 23) `shouldBeResultOf` do
+      Success (Just 23) `shouldBeResultOf` do
         Lua.pushinteger @Lua.Exception 23
         optional (peekIntegral @Int) Lua.top
     ]
@@ -339,12 +332,12 @@ tests = testGroup "Peek"
   , testGroup "helper"
     [ testGroup "reportValueOnFailure"
       [ "success" =:
-        Right 23 `shouldBeResultOf` do
+        Success 23 `shouldBeResultOf` do
           reportValueOnFailure "foo" (const . return $ Just (23 :: Int))
             (Lua.nthBottom 1)
 
       , "failure" =:
-        Left (PeekError $ pure "expected squirrel, got '23' (number)")
+        Failure "expected squirrel, got '23' (number)" []
         `shouldBeResultOf` do
           Lua.pushinteger 23
           let peekSquirrel :: Peeker Lua.Exception ()
@@ -353,13 +346,33 @@ tests = testGroup "Peek"
           peekSquirrel Lua.top
       ]
 
+    , "retrieving" =:
+      Failure "message" ["context"] `shouldBeResultOf` do
+        retrieving "context" . return $ failure @() "message"
+
+    , let firstindex idx = do
+            Lua.rawgeti idx 1
+            fromMaybe 0 <$> Lua.tointeger Lua.top <* Lua.pop 1
+      in testGroup "toPeeker"
+      [ "passes result through" =:
+        Success 1337 `shouldBeResultOf` do
+          pushLuaExpr "{1337}"
+          toPeeker firstindex Lua.top
+
+      , "catches error" =:
+        let msg = "Lua exception: expected table, got '1337' (number)"
+        in
+          Failure msg [] `shouldBeResultOf` do
+          Lua.pushinteger 1337
+          toPeeker firstindex Lua.top
+      ]
     ]
 
   , testGroup "error messages"
     [ "value in list" =:
-      mconcat [ "retrieving list\n"
-              , "\tin field 3\n"
-              , "\texpected Integral, got '⚘' (table)"
+      mconcat ["expected Integral, got '⚘' (table)\n"
+              , "\twhile retrieving index 3\n"
+              , "\twhile retrieving list"
               ] `shouldBeErrorMessageOf` do
         Lua.openlibs
         Lua.OK <- Lua.dostring $ Utf8.fromString
@@ -367,10 +380,17 @@ tests = testGroup "Peek"
         pushLuaExpr "{5, 8, setmetatable({}, nope), 21}"
         peekList (peekIntegral @Int) Lua.top >>= force
 
+    , "nil instead of list" =:
+      mconcat ["expected table, got 'nil' (nil)\n"
+              , "\twhile retrieving list"
+              ] `shouldBeErrorMessageOf` do
+        Lua.pushnil
+        peekList peekString Lua.top >>= force
+
     , "value in key-value pairs" =:
-      mconcat [ "retrieving key-value pair\n"
-              , "\tretrieving value\n"
-              , "\texpected string, got 'true' (boolean)"
+      mconcat [ "expected string, got 'true' (boolean)\n"
+              , "\twhile retrieving value\n"
+              , "\twhile retrieving key-value pair"
               ] `shouldBeErrorMessageOf` do
         pushLuaExpr "{ a = true}"
         peekKeyValuePairs peekText peekText Lua.top >>= force

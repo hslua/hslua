@@ -335,7 +335,7 @@ with_tmpdir = defun "with_tmpdir"
         then do
           pushnil
           insert idx
-          return $ Right Nothing
+          return $ pure Nothing
         else fmap Just <$> peekString idx
 
 

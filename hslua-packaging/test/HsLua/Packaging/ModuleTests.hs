@@ -12,7 +12,7 @@ Tests creating and loading of modules with Haskell.
 -}
 module HsLua.Packaging.ModuleTests (tests) where
 
-import HsLua.Marshalling (peekIntegral, pushIntegral)
+import HsLua.Marshalling (Result (Success), peekIntegral, pushIntegral)
 import HsLua.Packaging.Function
 import HsLua.Packaging.Module
 import Test.Tasty.HsLua ((=:), pushLuaExpr, shouldBeResultOf)
@@ -75,7 +75,7 @@ tests = testGroup "Module"
         return (new - old)
 
     , "call module function" =:
-      Right 24 `shouldBeResultOf` do
+      Success 24 `shouldBeResultOf` do
         Lua.openlibs
         registerModule mymath
         _ <- Lua.dostring $ mconcat

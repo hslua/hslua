@@ -8,10 +8,44 @@ Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 
 Functions to push and retrieve data to and from Lua.
 -}
-module HsLua.Marshalling (
-    -- * Receiving values from Lua stack (Lua → Haskell)
-    module HsLua.Marshalling.Peek
+module HsLua.Marshalling
+  ( -- * Receiving values from Lua stack (Lua → Haskell)
+    Peeker
+  , Result (..)
+  , force
+  , retrieving
+  , failure
+  , resultToEither
+    -- ** Primitive types
+  , peekBool
+  , peekIntegral
+  , peekRealFloat
+    -- ** Strings
+  , peekByteString
+  , peekLazyByteString
+  , peekString
+  , peekText
+  , peekStringy
+  , peekName
+    -- ** Readable types
+  , peekRead
+    -- ** Collections
+  , peekKeyValuePairs
+  , peekList
+  , peekMap
+  , peekSet
+    -- ** Userdata
   , peekAny
+    -- ** Combinators
+  , optional
+    -- ** Lua peek monad
+  , LuaPeek (..)
+  , runLuaPeek
+  , withContext
+    -- ** Helpers
+  , typeMismatchMessage
+  , reportValueOnFailure
+
     -- * Pushing values to Lua stack (Haskell → Lua)
   , module HsLua.Marshalling.Push
   , pushAny

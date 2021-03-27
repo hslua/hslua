@@ -57,6 +57,7 @@ import HsLua.Marshalling
 import HsLua.Packaging.Rendering (renderFunction)
 import HsLua.Packaging.Types
 import qualified HsLua.Core as Lua
+import qualified HsLua.Core.Utf8 as Utf8
 
 #if !MIN_VERSION_base(4,12,0)
 import Data.Semigroup (Semigroup ((<>)))
@@ -68,7 +69,7 @@ import Data.Semigroup (Semigroup ((<>)))
 
 -- | Lua operation with an additional failure mode that can stack errors
 -- from different contexts; errors are not based on exceptions).
-type LuaExcept e a = ExceptT PeekError (LuaE e) a
+type LuaExcept e a = LuaPeek e a
 
 -- | Helper type used to create 'HaskellFunction's.
 data HsFnPrecursor e a = HsFnPrecursor
@@ -145,10 +146,10 @@ applyParameter :: HsFnPrecursor e (a -> b)
 applyParameter bldr param = do
   let action = hsFnPrecursorAction bldr
   let i = hsFnMaxParameterIdx bldr + 1
-  let context = "retrieving function argument " <>
+  let context = Name . Utf8.fromText $ "function argument " <>
         (parameterName . parameterDoc) param
-  let nextAction f = withExceptT (pushMsg context) $ do
-        x <- ExceptT $ parameterPeeker param i
+  let nextAction f = withContext context $ do
+        x <- LuaPeek $ parameterPeeker param i
         return $ f x
   bldr
     { hsFnPrecursorAction = action >>= nextAction
@@ -164,10 +165,11 @@ returnResults :: HsFnPrecursor e (LuaE e a)
               -> DocumentedFunction e
 returnResults bldr fnResults = DocumentedFunction
   { callFunction = do
-      hsResult <- runExceptT $ hsFnPrecursorAction bldr
-      case hsResult of
+      hsResult <- retrieving ("arguments for function " <> hsFnName bldr)
+                . runLuaPeek $ hsFnPrecursorAction bldr
+      case resultToEither hsResult of
         Left err -> do
-          pushString $ formatPeekError err
+          pushString err
           Lua.error
         Right x -> do
           result <- x
@@ -190,10 +192,11 @@ returnResultsOnStack :: HsFnPrecursor e (LuaE e NumResults)
                      -> DocumentedFunction e
 returnResultsOnStack bldr desc = DocumentedFunction
   { callFunction = do
-      hsResult <- runExceptT $ hsFnPrecursorAction bldr
-      case hsResult of
+      hsResult <- retrieving ("arguments for function " <> hsFnName bldr)
+                . runLuaPeek $ hsFnPrecursorAction bldr
+      case resultToEither hsResult of
         Left err -> do
-          pushString $ formatPeekError err
+          pushString err
           Lua.error
         Right x -> x
   , functionName = hsFnName bldr
