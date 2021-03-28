@@ -42,6 +42,7 @@ module HsLua.Marshalling.Peek
   , peekSet
   -- * Combinators
   , optional
+  , peekFieldRaw
   -- * Helpers
   , reportValueOnFailure
   , typeMismatchMessage
@@ -372,3 +373,12 @@ optional peeker idx = do
   if noValue
     then return $ Success Nothing
     else fmap Just <$> peeker idx
+
+-- | Get value at key from a table.
+peekFieldRaw :: LuaError e => Peeker e a -> Name -> Peeker e a
+peekFieldRaw peeker name = typeChecked "table" Lua.istable $ \idx ->
+  retrieving ("raw field '" <> name <> "'") $ do
+    absidx <- Lua.absindex idx
+    pushstring $ fromName name
+    rawget absidx
+    peeker idx <* Lua.pop 1

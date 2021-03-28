@@ -327,6 +327,11 @@ tests = testGroup "Peek"
       Success (Just 23) `shouldBeResultOf` do
         Lua.pushinteger @Lua.Exception 23
         optional (peekIntegral @Int) Lua.top
+
+    , "rawField" =:
+      Success 8 `shouldBeResultOf` do
+        pushLuaExpr "{ num = 8 }"
+        peekFieldRaw (peekIntegral @Int) "num" Lua.top
     ]
 
   , testGroup "helper"
