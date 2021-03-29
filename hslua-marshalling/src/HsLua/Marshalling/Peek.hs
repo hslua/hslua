@@ -381,4 +381,4 @@ peekFieldRaw peeker name = typeChecked "table" Lua.istable $ \idx ->
     absidx <- Lua.absindex idx
     pushstring $ fromName name
     rawget absidx
-    peeker idx <* Lua.pop 1
+    peeker top <* Lua.pop 1

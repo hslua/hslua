@@ -328,10 +328,17 @@ tests = testGroup "Peek"
         Lua.pushinteger @Lua.Exception 23
         optional (peekIntegral @Int) Lua.top
 
-    , "rawField" =:
-      Success 8 `shouldBeResultOf` do
-        pushLuaExpr "{ num = 8 }"
-        peekFieldRaw (peekIntegral @Int) "num" Lua.top
+    , testGroup "peekFieldRaw"
+      [ "access field" =:
+        Success 8 `shouldBeResultOf` do
+          pushLuaExpr "{ num = 8 }"
+          peekFieldRaw (peekIntegral @Int) "num" Lua.top
+      , "object not on top of stack" =:
+        Success 9 `shouldBeResultOf` do
+          pushLuaExpr "{ int = 9 }"
+          Lua.pushnil
+          peekFieldRaw (peekIntegral @Int) "int" (Lua.nth 2)
+      ]
     ]
 
   , testGroup "helper"
