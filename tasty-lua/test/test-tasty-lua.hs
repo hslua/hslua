@@ -24,7 +24,7 @@ import qualified HsLua.Core as Lua
 
 main :: IO ()
 main = do
-  luaTest <- withCurrentDirectory "test" . Lua.run $
+  luaTest <- withCurrentDirectory "test" . Lua.run @Lua.Exception $
     translateResultsFromFile "test-tasty.lua"
   defaultMain $ testGroup "tasty-hslua" [luaTest, tests]
 

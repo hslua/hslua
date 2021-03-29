@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications  #-}
 {-|
 Module      : Main
 Copyright   : © 2021 Albert Krewinkel
@@ -24,7 +25,7 @@ import qualified HsLua as Lua
 
 main :: IO ()
 main = do
-  luaTestResults <- Lua.run $ do
+  luaTestResults <- Lua.run @Lua.Exception $ do
     Lua.openlibs
     Lua.registerModule documentedModule
     Lua.pop 1

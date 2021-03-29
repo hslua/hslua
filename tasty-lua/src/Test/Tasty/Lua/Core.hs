@@ -21,7 +21,7 @@ where
 
 import Control.Monad (void)
 import Data.ByteString (ByteString)
-import HsLua.Core
+import HsLua.Core (LuaE, LuaError, absindex, pop, toboolean, top)
 import HsLua.Marshalling
   ( Peeker, failure, resultToEither, retrieving
   , peekList, peekString, typeMismatchMessage)

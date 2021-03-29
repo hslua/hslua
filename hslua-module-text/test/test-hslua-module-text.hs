@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications  #-}
 {-|
 Module      : Main
 Copyright   : © 2017-2021 Albert Krewinkel
@@ -13,7 +14,7 @@ Tests for the `text` Lua module.
 module Main (main) where
 
 import Control.Monad (void)
-import HsLua.Core
+import HsLua.Core as Lua
 import HsLua.Packaging
 import HsLua.Module.Text (documentedModule)
 import Test.Tasty (TestTree, defaultMain, testGroup)
@@ -22,7 +23,7 @@ import Test.Tasty.Lua (translateResultsFromFile)
 
 main :: IO ()
 main = do
-  luaTest <- run $ do
+  luaTest <- run @Lua.Exception $ do
     openlibs
     registerModule documentedModule
     pop 1
