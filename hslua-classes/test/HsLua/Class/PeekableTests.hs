@@ -96,7 +96,7 @@ tests = testGroup "Peekable"
         peek top :: Lua Lua.Number
 
     , "list cannot be read if a peeking at list element fails" =:
-      "Could not read list: expected number, got 'true' (boolean)"
+      "Could not read list:\n\texpected number, got 'true' (boolean)"
       `shouldBeErrorMessageOf` do
         pushLuaExpr "{1, 5, 23, true, 42}"
         peek top :: Lua [Lua.Number]

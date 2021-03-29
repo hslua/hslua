@@ -45,17 +45,17 @@ tests =
       Lua.peek (-1) <* Lua.pop 1
 
   , "argument type errors are propagated" =:
-     ("Error during function call:\ncould not read argument 2: "
+     ("Error during function call:\n\tcould not read argument 2:\n\t"
       ++ "expected integer, got 'true' (boolean)") `shouldBeErrorMessageOf` do
           Lua.registerHaskellFunction "integerOp" integerOperation
           pushLuaExpr "integerOp(23, true)"
 
   , "Error in Haskell function is converted into Lua error" =:
-    (False, "Error during function call:\nfoo" :: String) `shouldBeResultOf` do
+    (False, "Error during function call:\n\tfoo") `shouldBeResultOf` do
       Lua.openlibs
       Lua.pushHaskellFunction $
         toHaskellFunction (Lua.failLua "foo" :: Lua ())
       Lua.setglobal "throw_foo"
       Lua.loadstring "return pcall(throw_foo)" *> Lua.call 0 2
-      (,) <$> Lua.peek (Lua.nth 2) <*> Lua.peek (Lua.nth 1)
+      (,) <$> Lua.peek (Lua.nth 2) <*> Lua.peek @String (Lua.nth 1)
   ]

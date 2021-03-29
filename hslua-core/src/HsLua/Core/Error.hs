@@ -95,9 +95,6 @@ instance LuaError Exception where
 
   luaException = Exception
 
-instance Semigroup Exception where
-  Exception a <> Exception b = Exception (a ++ '\n' : b)
-
 -- | Return either the result of a Lua computation or, if an exception was
 -- thrown, the error.
 try :: Catch.Exception e => LuaE e a -> LuaE e (Either e a)

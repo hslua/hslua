@@ -24,7 +24,6 @@ module HsLua.Class.Exposable
 import HsLua.Core as Lua
 import HsLua.Class.Peekable (Peekable (peek), PeekError (..), inContext)
 import HsLua.Class.Pushable (Pushable (push))
-import qualified Control.Monad.Catch as Catch
 
 #if !MIN_VERSION_base(4,12,0)
 import Data.Semigroup (Semigroup ((<>)))
@@ -52,7 +51,7 @@ instance (Peekable a, Exposable e b) => Exposable e (a -> b) where
     where
       getArg = inContext errorPrefix (peek narg)
       errorPrefix = "could not read argument " ++
-                    show (fromStackIndex narg) ++ ": "
+                    show (fromStackIndex narg) ++ ":"
 
 -- | Convert a Haskell function to a function type directly exposable to
 -- Lua. Any Haskell function can be converted provided that:
@@ -76,11 +75,7 @@ instance (Peekable a, Exposable e b) => Exposable e (a -> b) where
 --
 toHaskellFunction :: forall e a. Exposable e a => a -> HaskellFunction e
 toHaskellFunction a = do
-  let ctx = "Error during function call:"
-  -- Lua.exceptionToError errConv . Lua.addContextToException errConv ctx $
-  partialApply 1 a `Catch.catch` \(err :: e) ->
-    Catch.throwM (luaException ctx <> err)
-
+  inContext "Error during function call:" $ partialApply 1 a
 
 -- | Imports a Haskell function and registers it at global name.
 registerHaskellFunction :: Exposable e a

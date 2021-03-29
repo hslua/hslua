@@ -37,10 +37,6 @@ import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as BL
 import qualified HsLua.Marshalling as Peek
 
-#if !MIN_VERSION_base(4,12,0)
-import Data.Semigroup (Semigroup)
-#endif
-
 -- | Use @test@ to check whether the value at stack index @n@ has the
 -- correct type and use @peekfn@ to convert it to a haskell value if
 -- possible. Throws and exception if the test failes with the expected
@@ -139,7 +135,7 @@ peekList = typeChecked "table" istable $ \idx -> do
         x <- (rawgeti idx i *> peek top) `Catch.finally` pop 1
         (x:) <$> elementsAt is
   listLength <- fromIntegral <$> rawlen idx
-  inContext "Could not read list: " (elementsAt [1..listLength])
+  inContext "Could not read list:" (elementsAt [1..listLength])
 
 -- | Read a table into a list of pairs.
 peekKeyValuePairs :: (Peekable a, Peekable b, PeekError e)
@@ -162,9 +158,9 @@ nextPair :: (PeekError e, Peekable a, Peekable b)
 nextPair idx = do
   hasNext <- next idx
   if hasNext
-    then let pair = (,) <$> inContext "Could not read key of key-value pair: "
+    then let pair = (,) <$> inContext "Could not read key of key-value pair:"
                                       (peek (nth 2))
-                        <*> inContext "Could not read value of key-value pair: "
+                        <*> inContext "Could not read value of key-value pair:"
                                       (peek (nth 1))
          in Just <$> pair `Catch.finally` pop 1
             -- removes the value, keeps the key
@@ -175,13 +171,14 @@ nextPair idx = do
 inContext :: forall e a. PeekError e
           => String -> LuaE e a -> LuaE e a
 inContext ctx op = try op >>= \case
-  Left (err :: e) -> Catch.throwM $ luaException @e (ctx ++ messageFromException err)
   Right x  -> return x
+  Left (err :: e) -> Catch.throwM $
+    luaException @e (ctx ++ "\n\t" ++ messageFromException err)
 
 -- | Exceptions that are to be used with 'peek' and similar functions
 -- must be instances of this class. It ensures that error can be amended
 -- with the context in which they happened.
-class (LuaError e, Semigroup e) => PeekError e where
+class LuaError e => PeekError e where
   messageFromException :: e -> String
 
 instance PeekError Lua.Exception where
