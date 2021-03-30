@@ -39,6 +39,7 @@ module HsLua.Marshalling
     -- ** Combinators
   , optional
   , peekFieldRaw
+  , peekPair
     -- ** Lua peek monad
   , LuaPeek (..)
   , runLuaPeek

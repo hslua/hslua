@@ -339,6 +339,19 @@ tests = testGroup "Peek"
           Lua.pushnil
           peekFieldRaw (peekIntegral @Int) "int" (Lua.nth 2)
       ]
+
+    , testGroup "peekPair"
+      [ "pair from table" =:
+        Success ("ninety", 9) `shouldBeResultOf` do
+          pushLuaExpr "{'ninety', 9}"
+          Lua.pushnil
+          peekPair (peekString, peekIntegral @Int) (Lua.nth 2)
+
+      , "fails if a component peeker fails" =:
+        Failure "fail" [] `shouldBeResultOf` do
+          pushLuaExpr "{ 'second', 2 }"
+          peekPair (peekString, const $ return (failure @() "fail")) Lua.top
+      ]
     ]
 
   , testGroup "helper"

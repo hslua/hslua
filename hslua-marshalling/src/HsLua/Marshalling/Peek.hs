@@ -43,6 +43,7 @@ module HsLua.Marshalling.Peek
   -- * Combinators
   , optional
   , peekFieldRaw
+  , peekPair
   -- * Helpers
   , reportValueOnFailure
   , typeMismatchMessage
@@ -382,3 +383,15 @@ peekFieldRaw peeker name = typeChecked "table" Lua.istable $ \idx ->
     pushstring $ fromName name
     rawget absidx
     peeker top <* Lua.pop 1
+
+-- | Retrieves a value pair from a table. Expects the values to be
+-- stored in a numerically indexed table; does not access metamethods.
+peekPair :: LuaError e
+         => (Peeker e a, Peeker e b)
+         -> Peeker e (a, b)
+peekPair (peekA, peekB) idx = do
+  idx' <- absindex idx
+  a <- rawgeti idx' 1 *> peekA top
+  b <- rawgeti idx' 2 *> peekB top
+  Lua.pop 2
+  return $ (,) <$> a <*> b
