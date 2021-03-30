@@ -45,9 +45,6 @@ import qualified Foreign.Storable as Storable
 import qualified HsLua.Core.Types as Lua
 import qualified HsLua.Core.Utf8 as Utf8
 
-#if !MIN_VERSION_base(4,12,0)
-import Data.Semigroup (Semigroup ((<>)))
-#endif
 #if !MIN_VERSION_base(4,13,0)
 import Control.Monad.Fail (MonadFail (..))
 #endif

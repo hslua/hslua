@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP                   #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
@@ -24,10 +23,6 @@ module HsLua.Class.Exposable
 import HsLua.Core as Lua
 import HsLua.Class.Peekable (Peekable (peek), PeekError (..), inContext)
 import HsLua.Class.Pushable (Pushable (push))
-
-#if !MIN_VERSION_base(4,12,0)
-import Data.Semigroup (Semigroup ((<>)))
-#endif
 
 -- | Operations and functions that can be pushed to the Lua stack. This
 -- is a helper function not intended to be used directly. Use the

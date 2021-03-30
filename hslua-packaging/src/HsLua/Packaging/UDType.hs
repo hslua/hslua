@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications    #-}
@@ -45,10 +44,6 @@ import HsLua.Packaging.Function
 import HsLua.Packaging.Operation
 import qualified Data.Map.Strict as Map
 import qualified HsLua.Core.Utf8 as Utf8
-
-#if !MIN_VERSION_base(4,12,0)
-import Data.Semigroup (Semigroup ((<>)))
-#endif
 
 -- | A userdata type, capturing the behavior of Lua objects that wrap
 -- Haskell values. The type name must be unique; once the type has been

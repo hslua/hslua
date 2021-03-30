@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP               #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : HsLua.Packaging.Module
@@ -26,10 +25,6 @@ import HsLua.Core
 import HsLua.Marshalling (pushName, pushText)
 import HsLua.Packaging.Types
 import qualified HsLua.Packaging.Function as Call
-
-#if !MIN_VERSION_base(4,12,0)
-import Data.Semigroup (Semigroup ((<>)))
-#endif
 
 -- | Create a new module (i.e., a Lua table).
 create :: LuaE e ()
