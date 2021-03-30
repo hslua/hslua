@@ -44,6 +44,7 @@ module HsLua.Marshalling.Peek
   , optional
   , peekFieldRaw
   , peekPair
+  , peekTriple
   -- * Helpers
   , reportValueOnFailure
   , typeMismatchMessage
@@ -395,3 +396,16 @@ peekPair (peekA, peekB) idx = do
   b <- rawgeti idx' 2 *> peekB top
   Lua.pop 2
   return $ (,) <$> a <*> b
+
+-- | Retrieves a value triple from a table. Expects the values to be
+-- stored in a numerically indexed table, with no metamethods.
+peekTriple :: LuaError e
+           => (Peeker e a, Peeker e b, Peeker e c)
+           -> Peeker e (a, b, c)
+peekTriple (peekA, peekB, peekC) idx = do
+  idx' <- absindex idx
+  a <- rawgeti idx' 1 *> peekA top
+  b <- rawgeti idx' 2 *> peekB top
+  c <- rawgeti idx' 3 *> peekC top
+  Lua.pop 3
+  return $ (,,) <$> a <*> b <*> c

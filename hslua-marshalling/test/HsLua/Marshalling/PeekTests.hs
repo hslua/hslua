@@ -342,8 +342,8 @@ tests = testGroup "Peek"
 
     , testGroup "peekPair"
       [ "pair from table" =:
-        Success ("ninety", 9) `shouldBeResultOf` do
-          pushLuaExpr "{'ninety', 9}"
+        Success ("ninety", 90) `shouldBeResultOf` do
+          pushLuaExpr "{'ninety', 90}"
           Lua.pushnil
           peekPair (peekString, peekIntegral @Int) (Lua.nth 2)
 
@@ -351,6 +351,22 @@ tests = testGroup "Peek"
         Failure "fail" [] `shouldBeResultOf` do
           pushLuaExpr "{ 'second', 2 }"
           peekPair (peekString, const $ return (failure @() "fail")) Lua.top
+      ]
+
+    , testGroup "peekTriple"
+      [ "pair from table" =:
+        Success ("hundred", 100, True) `shouldBeResultOf` do
+          pushLuaExpr "{'hundred', 100, 1}"
+          Lua.pushnil
+          peekTriple (peekString, peekIntegral @Int, peekBool) (Lua.nth 2)
+
+      , "fails if a component peeker fails" =:
+        Failure "fail" [] `shouldBeResultOf` do
+          pushLuaExpr "{ 'second', 2, true }"
+          peekTriple ( peekString
+                     , const $ return (failure @() "fail")
+                     , peekBool)
+            Lua.top
       ]
     ]
 
