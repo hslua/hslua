@@ -38,6 +38,7 @@ module HsLua.Marshalling
   , peekAny
     -- ** Combinators
   , optional
+  , choice
   , peekFieldRaw
   , peekPair
   , peekTriple

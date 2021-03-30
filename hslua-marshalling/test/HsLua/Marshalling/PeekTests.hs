@@ -368,6 +368,26 @@ tests = testGroup "Peek"
                      , peekBool)
             Lua.top
       ]
+    , testGroup "peekChoice"
+      [ "uses first result to succeed" =:
+        Success 1337 `shouldBeResultOf` do
+          choice [ const $ return (failure @Int "nope")
+                 , const $ return (failure @Int "neither")
+                 , const $ return (Success 1337)
+                 ] Lua.top
+
+      , "uses peekers" =:
+        Success "[]" `shouldBeResultOf` do
+          Lua.newtable
+          choice [ peekString
+                 , fmap (fmap show) . peekList peekBool
+                 ]
+            Lua.top
+
+      , "fails if all peekers fail" =:
+        Failure "all choices failed" [] `shouldBeResultOf` do
+          choice [const $ return (failure @() "nope")] Lua.top
+      ]
     ]
 
   , testGroup "helper"

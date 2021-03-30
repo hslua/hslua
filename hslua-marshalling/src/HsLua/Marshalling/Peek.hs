@@ -42,6 +42,7 @@ module HsLua.Marshalling.Peek
   , peekSet
   -- * Combinators
   , optional
+  , choice
   , peekFieldRaw
   , peekPair
   , peekTriple
@@ -409,3 +410,13 @@ peekTriple (peekA, peekB, peekC) idx = do
   c <- rawgeti idx' 3 *> peekC top
   Lua.pop 3
   return $ (,,) <$> a <*> b <*> c
+
+-- | Try all peekers and return the result of the first to succeed.
+choice :: LuaError e
+       => [Peeker e a]
+       -> Peeker e a
+choice peekers idx = case peekers of
+  [] -> return $ failure "all choices failed"
+  p:ps -> p idx >>= \case
+    Failure {} -> choice ps idx
+    x          -> return x
