@@ -20,6 +20,7 @@ module HsLua.Core.Error
   , failLua
   , throwErrorAsException
   , throwTypeMismatchError
+  , changeErrorType
     -- * Helpers for hslua C wrapper functions.
   , liftLuaThrow
   , popErrorMessage
@@ -118,6 +119,13 @@ throwTypeMismatchError :: forall e a. LuaError e
 throwTypeMismatchError expected idx = do
   pushTypeMismatchError expected idx
   throwErrorAsException
+
+-- | Change the error type of a computation.
+changeErrorType :: forall old new a. LuaE old a -> LuaE new a
+changeErrorType op = Lua.liftLua $ \l -> do
+  x <- Lua.runWith l op
+  return $! x
+
 
 --
 -- Orphan instances

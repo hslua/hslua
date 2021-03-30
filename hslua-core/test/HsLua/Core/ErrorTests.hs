@@ -1,15 +1,23 @@
+{-# LANGUAGE DeriveDataTypeable   #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications     #-}
 {-| Tests for error handling.
 -}
 module HsLua.Core.ErrorTests (tests) where
 
 import Control.Applicative ((<|>), empty)
+import Control.Exception
+import Data.ByteString (ByteString)
+import Data.Typeable (Typeable)
 import Data.Either (isLeft)
 import HsLua.Core (Lua, failLua)
-import Test.Tasty.HsLua ( (=:), (?:), shouldHoldForResultOf)
+import HsLua.Core.Error (LuaError, changeErrorType, popErrorMessage)
+import HsLua.Core.Types (liftLua)
+import Test.Tasty.HsLua ( (=:), (?:), shouldBeResultOf, shouldHoldForResultOf)
 import Test.Tasty (TestTree, testGroup)
 
 import qualified HsLua.Core as Lua
+import qualified HsLua.Core.Utf8 as Utf8
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
@@ -23,4 +31,25 @@ tests = testGroup "Error"
 
   , "Applicative.empty implementation throws an exception" =:
     isLeft `shouldHoldForResultOf` Lua.try (empty :: Lua ())
+
+  , testGroup "changeErrorType"
+    [ "catches error as different type in argument operation" =:
+      Left (SampleException "message") `shouldBeResultOf`
+      changeErrorType (Lua.try @SampleException @() $ failLua "message")
+
+    , "passes value through on success" =:
+      Just "plant" `shouldBeResultOf` do
+        Lua.pushstring "plant"
+        changeErrorType (Lua.tostring Lua.top)
+    ]
   ]
+
+newtype SampleException = SampleException ByteString
+  deriving (Eq, Typeable, Show)
+
+instance Exception SampleException
+
+instance LuaError SampleException where
+  popException = SampleException <$> liftLua popErrorMessage
+  pushException (SampleException msg) = Lua.pushstring msg
+  luaException = SampleException . Utf8.fromString

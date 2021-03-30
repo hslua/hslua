@@ -190,6 +190,7 @@ module HsLua.Core
   , failLua
   , throwErrorAsException
   , throwTypeMismatchError
+  , changeErrorType
     -- ** Helpers
   , popErrorMessage
   , pushTypeMismatchError
