@@ -25,6 +25,8 @@ module HsLua.Marshalling.Push
   , pushKeyValuePairs
   , pushMap
   , pushSet
+  -- * Combinators
+  , pushPair
   ) where
 
 import Control.Monad (zipWithM_)
@@ -117,3 +119,19 @@ pushSet pushElement set = do
   let addItem item = pushElement item *> pushboolean True *> rawset (-3)
   newtable
   mapM_ addItem set
+
+--
+-- Combinators
+--
+
+-- | Pushes a pair of values as a two element list.
+pushPair :: LuaError e
+         => (Pusher e a, Pusher e b)
+         -> (a, b)
+         -> LuaE e ()
+pushPair (pushA, pushB) (a,b) = do
+  newtable
+  pushA a
+  rawseti (nth 2) 1
+  pushB b
+  rawseti (nth 2) 2

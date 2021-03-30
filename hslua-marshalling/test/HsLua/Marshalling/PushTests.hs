@@ -217,6 +217,15 @@ tests = testGroup "Push"
       , testSingleElementProperty (pushMap pushText (pushRealFloat @Double))
       ]
     ]
+  , testGroup "Combinators"
+    [ testProperty "pushPair" $ \(a, b) -> monadicIO $ do
+        mpair <- run $ Lua.run @Lua.Exception $ do
+          pushPair (pushIntegral, pushByteString) (a, b)
+          ma <- Lua.rawgeti Lua.top 1 *> Lua.tointeger Lua.top <* Lua.pop 1
+          mb <- Lua.rawgeti Lua.top 2 *> Lua.tostring Lua.top  <* Lua.pop 1
+          return $ (,) <$> ma <*> mb
+        assert (mpair == Just (a, b))
+    ]
   ]
 
 -- | Executes a Lua action and checks whether a the value at the top of the
