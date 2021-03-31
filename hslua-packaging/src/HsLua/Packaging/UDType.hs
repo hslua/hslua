@@ -1,6 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications    #-}
 {-|
 Module      : HsLua.Packaging.UDType
 Copyright   : © 2020-2021 Albert Krewinkel
@@ -180,43 +179,18 @@ newindexFunction ty = do
 pairsFunction :: forall e a. LuaError e => UDType e a -> LuaE e NumResults
 pairsFunction ty = do
   obj <- peekUD ty (nthBottom 1) >>= force
-
-  -- push initial state
-  pushHaskellFunction (nextMember obj)
-  pushState $
+  let pushMember = \case
+        MemberProperty name prop -> do
+          pushName name
+          getresults <- propertyGet prop obj
+          return $ getresults + 1
+        MemberMethod name f -> do
+          pushName name
+          pushDocumentedFunction f
+          return 2
+  pushIterator pushMember $
     map (uncurry MemberProperty) (Map.toAscList (udProperties ty)) ++
     map (uncurry MemberMethod) (Map.toAscList (udMethods ty))
-  pushnil
-  return (NumResults 3)
-  where
-    nextMember :: a -> LuaE e NumResults
-    nextMember obj = do
-      props <- fromuserdata @[Member e a] (nthBottom 1) statename
-      case props of
-        Nothing -> failLua "Error in __pairs: could not retrieve loop state."
-        Just [] -> 2 <$ (pushnil *> pushnil)  -- end loop
-        Just (member:xs) -> do
-          success <- putuserdata @[Member e a] (nthBottom 1) statename xs
-          if not success
-            then failLua "Error in __pairs: could not update loop state."
-            else case member of
-                   MemberProperty name prop -> do
-                     pushName name
-                     getresults <- propertyGet prop obj
-                     return $ getresults + 1
-                   MemberMethod name f -> do
-                     pushName name
-                     pushDocumentedFunction f
-                     return 2
-
-    statename :: Name
-    statename = "HsLua__pairs_state"
-
-    pushState :: [Member e a] -> LuaE e ()
-    pushState xs = do
-      newhsuserdata xs
-      void (newudmetatable statename)
-      setmetatable (nth 2)
 
 -- | Pushes a userdata value of the given type.
 pushUD :: LuaError e => UDType e a -> a -> LuaE e ()
