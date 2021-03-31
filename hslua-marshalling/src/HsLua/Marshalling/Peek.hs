@@ -55,6 +55,7 @@ module HsLua.Marshalling.Peek
   , withContext
   ) where
 
+import Control.Monad ((<$!>))
 import Data.ByteString (ByteString)
 import Data.List (intercalate)
 import Data.Map (Map)
@@ -103,9 +104,9 @@ instance Applicative (LuaPeek e) where
   pure = LuaPeek . return . pure
   {-# INLINE pure #-}
 
-  LuaPeek f <*> x = LuaPeek $ f >>= \case
+  LuaPeek f <*> x = LuaPeek $! f >>= \case
     Failure msg stack -> return $ Failure msg stack
-    Success f'        -> fmap f' <$> runLuaPeek x
+    Success f'        -> fmap f' <$!> runLuaPeek x
   {-# INLINEABLE (<*>) #-}
 
   m *> k = m >>= const k
@@ -171,8 +172,8 @@ toPeeker :: LuaError e
          => (StackIndex -> LuaE e a)
          -> Peeker e a
 toPeeker op idx = try (op idx) >>= \case
-  Left err  -> return $ failure $ Utf8.fromString (show err)
-  Right res -> return $ Success res
+  Left err  -> return $! failure $ Utf8.fromString (show err)
+  Right res -> return $! Success res
 
 -- | Use @test@ to check whether the value at stack index @n@ has
 -- the correct type and use @peekfn@ to convert it to a Haskell
@@ -188,7 +189,7 @@ typeChecked expectedType test peekfn idx = do
   v <- test idx
   if v
     then peekfn idx
-    else failure <$> typeMismatchMessage expectedType idx
+    else failure <$!> typeMismatchMessage expectedType idx
 
 -- | Generate a type mismatch error.
 typeMismatchMessage :: LuaError e
@@ -283,14 +284,14 @@ peekRead = fmap (>>= readValue) . peekString
 peekIntegral :: forall a e. (LuaError e, Integral a, Read a) => Peeker e a
 peekIntegral idx =
   ltype idx >>= \case
-    TypeNumber  -> fmap fromIntegral <$>
+    TypeNumber  -> fmap fromIntegral <$!>
                    reportValueOnFailure "Integral" tointeger idx
     TypeString  -> do
       str <- fromMaybe (Prelude.error "programming error in peekIntegral")
              <$> tostring idx
       msg <- typeMismatchMessage "Integral" idx
       return $ maybe (failure msg) Success $ readMaybe (Utf8.toString str)
-    _ -> failure <$> typeMismatchMessage "Integral" idx
+    _ -> failure <$!> typeMismatchMessage "Integral" idx
 
 -- | Retrieve a 'RealFloat' (e.g., 'Float' or 'Double') from the stack.
 peekRealFloat :: forall a e. (LuaError e, RealFloat a, Read a) => Peeker e a
@@ -301,7 +302,7 @@ peekRealFloat idx =
              <$> tostring idx
       msg <- typeMismatchMessage "RealFloat" idx
       return $ maybe (failure msg) Success $ readMaybe (Utf8.toString str)
-    _ -> fmap realToFrac <$> reportValueOnFailure "RealFloat" tonumber idx
+    _ -> fmap realToFrac <$!> reportValueOnFailure "RealFloat" tonumber idx
 
 -- | Reads a numerically indexed table @t@ into a list, where the 'length' of
 -- the list is equal to @rawlen(t)@. The operation will fail unless all
@@ -335,7 +336,7 @@ peekKeyValuePairs keyPeeker valuePeeker =
     let remainingPairs = do
           LuaPeek (nextPair keyPeeker valuePeeker idx') >>= \case
             Nothing -> return []
-            Just a  -> (a:) <$> remainingPairs
+            Just a  -> (a:) <$!> remainingPairs
     pushnil
     runLuaPeek remainingPairs
 
@@ -353,7 +354,7 @@ nextPair keyPeeker valuePeeker idx = retrieving "key-value pair" $ do
       key   <- retrieving "key"   $ keyPeeker   (nth 2)
       value <- retrieving "value" $ valuePeeker (nth 1)
       pop 1    -- remove value, leave the key
-      return $ curry Just <$> key <*> value
+      return $ curry Just <$!> key <*> value
 
 -- | Retrieves a 'Set' from an idiomatic Lua representation. A
 -- set in Lua is idiomatically represented as a table with the
@@ -375,7 +376,7 @@ optional peeker idx = do
   noValue <- Lua.isnoneornil idx
   if noValue
     then return $ Success Nothing
-    else fmap Just <$> peeker idx
+    else fmap Just <$!> peeker idx
 
 -- | Get value at key from a table.
 peekFieldRaw :: LuaError e => Peeker e a -> Name -> Peeker e a
@@ -396,7 +397,7 @@ peekPair (peekA, peekB) idx = do
   a <- rawgeti idx' 1 *> peekA top
   b <- rawgeti idx' 2 *> peekB top
   Lua.pop 2
-  return $ (,) <$> a <*> b
+  return $! (,) <$> a <*> b
 
 -- | Retrieves a value triple from a table. Expects the values to be
 -- stored in a numerically indexed table, with no metamethods.
@@ -409,7 +410,7 @@ peekTriple (peekA, peekB, peekC) idx = do
   b <- rawgeti idx' 2 *> peekB top
   c <- rawgeti idx' 3 *> peekC top
   Lua.pop 3
-  return $ (,,) <$> a <*> b <*> c
+  return $! (,,) <$> a <*> b <*> c
 
 -- | Try all peekers and return the result of the first to succeed.
 choice :: LuaError e

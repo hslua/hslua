@@ -8,7 +8,9 @@
 
 - ignore:
     name: "Reduce duplication"
-    within: "HsLua.Class.Pushable"
+    within:
+      - HsLua.Class.Pushable
+      - HsLua.Peek
 
 # Lua functions use snake_case, not camelCase
 - ignore:
