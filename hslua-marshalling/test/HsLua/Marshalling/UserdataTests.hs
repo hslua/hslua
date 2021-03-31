@@ -11,10 +11,11 @@ Tests that any data type can be pushed to Lua as userdata.
 -}
 module HsLua.Marshalling.UserdataTests (tests) where
 
+import Control.Monad (when)
 import Data.Data (Data)
 import Data.Word (Word64)
 import Data.Typeable (Typeable)
-import HsLua.Marshalling.Userdata (metatableName, pushAny, toAny)
+import HsLua.Marshalling.Userdata
 import Test.Tasty.HsLua ( (=:), shouldBeResultOf, shouldHoldForResultOf )
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual)
@@ -69,6 +70,25 @@ tests = testGroup "Userdata"
       Just (Dummy 42 "answer") `shouldBeResultOf` do
         pushAny (Dummy 42 "answer")
         toAny Lua.top
+    ]
+
+  , testGroup "pushIterator"
+    [ "iterate over list" =:
+      Just "0,1,1,2,3,5,8,13,21" `shouldBeResultOf` do
+        let fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
+        Lua.openlibs
+        Lua.pushHaskellFunction $
+          pushIterator (\n -> 1 <$ Lua.pushinteger n) (take 9 fibs)
+        Lua.setglobal "fibs"
+        stat <- Lua.dostring $ mconcat
+          [ "local acc = {}\n"
+          , "for n in fibs() do\n"
+          , "  table.insert(acc, n)\n"
+          , "end\n"
+          , "return table.concat(acc, ',')\n"
+          ]
+        when (stat /= Lua.OK) Lua.throwErrorAsException
+        Lua.tostring Lua.top
     ]
   ]
 

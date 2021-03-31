@@ -1,4 +1,6 @@
 {-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications    #-}
 {-|
 Module      : HsLua.Marshalling.Userdata
 Copyright   : © 2007–2012 Gracjan Polak;
@@ -38,16 +40,14 @@ module HsLua.Marshalling.Userdata
   , peekAny
   , ensureUserdataMetatable
   , metatableName
+  , pushIterator
   ) where
 
-import Control.Monad (when)
+import Control.Monad (when, void)
 import Data.Data (Data, dataTypeName, dataTypeOf)
 import Data.String (IsString (..))
-import HsLua.Core
-  ( LuaE, LuaError, Name, fromuserdata, newhsuserdata, newudmetatable
-  , nth, throwTypeMismatchError )
+import HsLua.Core as Lua
 
-import qualified HsLua.Core as Lua
 import qualified HsLua.Core.Utf8 as Utf8
 
 -- | Push data by wrapping it into a userdata object.
@@ -116,3 +116,39 @@ peekAny idx = peek' undefined
 -- the given type as userdata.  The argument is never evaluated.
 metatableName :: Data a => a -> Name
 metatableName x = fromString $ "HSLUA_" ++ dataTypeName (dataTypeOf x)
+
+-- | Pushes three values to the stack that can be used in a generic for
+-- loop to lazily iterate over all values in the list. Keeps the
+-- remaining list in a userdata state.
+pushIterator :: forall a e. LuaError e
+             => (a -> LuaE e NumResults)  -- ^ the values to push
+             -> [a]                       -- ^ list to iterate over lazily
+             -> LuaE e NumResults
+pushIterator pushValues xs = do
+  -- push initial state
+  pushHaskellFunction nextItem
+  pushInitialState
+  pushnil
+  return (NumResults 3)
+  where
+    nextItem :: LuaE e NumResults
+    nextItem = do
+      props <- fromuserdata @[a] (nthBottom 1) statename
+      case props of
+        Nothing -> failLua
+          "Error in iterator: could not retrieve iterator state."
+        Just [] -> 2 <$ (pushnil *> pushnil)  -- end loop
+        Just (y:ys) -> do
+          success <- putuserdata @[a] (nthBottom 1) statename ys
+          if not success
+            then failLua "Error in iterator: could not update iterator state."
+            else pushValues y
+
+    statename :: Name
+    statename = "HsLua iterator state"
+
+    pushInitialState :: LuaE e ()
+    pushInitialState = do
+      newhsuserdata @[a] xs
+      void (newudmetatable statename)
+      setmetatable (nth 2)

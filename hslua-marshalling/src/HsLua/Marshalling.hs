@@ -53,10 +53,13 @@ module HsLua.Marshalling
     -- * Pushing values to Lua stack (Haskell → Lua)
   , module HsLua.Marshalling.Push
   , pushAny
+
+    -- * Utilities
+  , pushIterator
   ) where
 
 import Prelude hiding (compare, concat)
 
 import HsLua.Marshalling.Peek
 import HsLua.Marshalling.Push
-import HsLua.Marshalling.Userdata (peekAny, pushAny)
+import HsLua.Marshalling.Userdata (peekAny, pushAny, pushIterator)
