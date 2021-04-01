@@ -61,6 +61,7 @@ library
                      , HsLua.Core.Package
                      , HsLua.Core.Run
                      , HsLua.Core.Types
+                     , HsLua.Core.Unsafe
                      , HsLua.Core.Userdata
                      , HsLua.Core.Utf8
   other-modules:       HsLua.Core.Auxiliary
@@ -86,6 +87,7 @@ test-suite test-hslua-core
                      , HsLua.Core.ClosuresTests
                      , HsLua.Core.ErrorTests
                      , HsLua.Core.RunTests
+                     , HsLua.Core.UnsafeTests
                      , HsLua.Core.UserdataTests
                      , Test.Tasty.HsLua
                      , Test.HsLua.Arbitrary

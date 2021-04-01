@@ -23,7 +23,7 @@ import HsLua.Core as Lua
 import HsLua.Core.Types (toType)
 import Lua.Arbitrary ()
 import Test.Tasty.HsLua ( (?:), (=:), shouldBeErrorMessageOf, shouldBeResultOf
-                       , shouldHoldForResultOf, pushLuaExpr )
+                        , shouldHoldForResultOf, pushLuaExpr )
 import Test.QuickCheck (Property, (.&&.))
 import Test.QuickCheck.Monadic (assert, monadicIO)
 import Test.Tasty (TestTree, testGroup)
@@ -35,6 +35,7 @@ import qualified Data.ByteString as B
 import qualified HsLua.Core.AuxiliaryTests
 import qualified HsLua.Core.ErrorTests
 import qualified HsLua.Core.RunTests
+import qualified HsLua.Core.UnsafeTests
 import qualified HsLua.Core.UserdataTests
 import qualified Foreign.Marshal as Foreign
 import qualified Foreign.Ptr as Foreign
@@ -433,6 +434,7 @@ tests = testGroup "Core module"
       assertEqual "error handling leaks values to the stack" 0 res
 
   , HsLua.Core.RunTests.tests
+  , HsLua.Core.UnsafeTests.tests
   , HsLua.Core.UserdataTests.tests
   ]
 
