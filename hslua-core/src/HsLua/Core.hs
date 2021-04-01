@@ -133,7 +133,7 @@ module HsLua.Core
   , Status (..)
   , status
   -- ** garbage-collection function and options
-  , GCCONTROL (..)
+  , GCControl (..)
   , gc
   -- ** miscellaneous and helper functions
   , next

@@ -203,39 +203,13 @@ error = liftLua hslua_error
 
 -- |  Controls the garbage collector.
 --
--- This function performs several tasks, according to the value of the
--- parameter what:
---
---   * @'GCSTOP'@: stops the garbage collector.
---
---   * @'GCRESTART'@: restarts the garbage collector.
---
---   * @'GCCOLLECT'@: performs a full garbage-collection cycle.
---
---   * @'GCCOUNT'@: returns the current amount of memory (in Kbytes) in
---     use by Lua.
---
---   * @'GCCOUNTB'@: returns the remainder of dividing the current
---     amount of bytes of memory in use by Lua by 1024.
---
---   * @'GCSTEP'@: performs an incremental step of garbage collection.
---     The step "size" is controlled by data (larger values mean more
---     steps) in a non-specified way. If you want to control the step
---     size you must experimentally tune the value of data. The function
---     returns 1 if the step finished a garbage-collection cycle.
---
---   * @'GCSETPAUSE@': sets data as the new value for the pause of the
---     collector (see §2.10). The function returns the previous value of
---     the pause.
---
---   * @'GCSETSTEPMUL'@: sets data as the new value for the step
---     multiplier of the collector (see §2.10). The function returns the
---     previous value of the step multiplier.
+-- This function performs several tasks, according to the given control
+-- command. See the documentation for 'GCControl'.
 --
 -- Wraps 'lua_gc'.
-gc :: GCCONTROL -> Int -> LuaE e Int
-gc what data' = liftLua $ \l ->
-  fromIntegral <$!> lua_gc l (toGCCode what) (fromIntegral data')
+gc :: GCControl -> LuaE e Int
+gc what = liftLua $ \l ->
+  fromIntegral <$!> lua_gc l (toGCcode what) (toGCdata what)
 
 -- | Pushes onto the stack the value @t[k]@, where @t@ is the value at
 -- the given stack index. As in Lua, this function may trigger a

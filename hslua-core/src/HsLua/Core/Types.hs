@@ -26,8 +26,9 @@ module HsLua.Core.Types
   , state
   , runWith
   , unsafeRunWith
-  , GCCONTROL (..)
-  , toGCCode
+  , GCControl (..)
+  , toGCcode
+  , toGCdata
   , Type (..)
   , fromType
   , toType
@@ -70,6 +71,7 @@ import Control.Monad.Catch (MonadCatch, MonadMask, MonadThrow)
 import Control.Monad.Reader (ReaderT (..), MonadReader, MonadIO, asks, liftIO)
 import Data.ByteString (ByteString)
 import Data.String (IsString (..))
+import Foreign.C (CInt)
 import Lua (nth, nthBottom, nthTop, top)
 import Lua.Constants
 import Lua.Types
@@ -253,30 +255,50 @@ toLuaBool False = FALSE
 -- Garbage collection
 --
 
--- | Enumeration used by @gc@ function.
-data GCCONTROL
-  = GCSTOP
-  | GCRESTART
-  | GCCOLLECT
-  | GCCOUNT
-  | GCCOUNTB
-  | GCSTEP
-  | GCSETPAUSE
-  | GCSETSTEPMUL
-  | GCISRUNNING
-  deriving (Enum, Eq, Ord, Show)
+-- | Commands to control the garbage collector.
+data GCControl
+  = GCStop            -- ^ stops the garbage collector.
+  | GCRestart         -- ^ restarts the garbage collector
+  | GCCollect         -- ^ performs a full garbage-collection cycle.
+  | GCCount           -- ^ returns the current amount of memory (in
+                      -- Kbytes) in use by Lua.
+  | GCCountb          -- ^ returns the remainder of dividing the current
+                      -- amount of bytes of memory in use by Lua by 1024.
+  | GCStep            -- ^ performs an incremental step of garbage
+                      -- collection.
+  | GCSetPause CInt   -- ^ sets data as the new value for the pause of
+                      -- the collector (see
+                      -- <https://www.lua.org/manual/5.3/manual.html#2.5
+                      -- §2.5> of the Lua reference manual) and returns
+                      -- the previous value of the pause.
+  | GCSetStepMul CInt -- ^ sets data as the new value for the step
+                      -- multiplier of the collector (see
+                      -- <https://www.lua.org/manual/5.3/manual.html#2.5
+                      -- §2.5> of the Lua reference manual) and returns
+                      -- the previous value of the step multiplier.
+  | GCIsRunning       -- ^ returns a boolean that tells whether the
+                      -- collector is running (i.e., not stopped).
+  deriving (Eq, Ord, Show)
 
-toGCCode :: GCCONTROL -> GCCode
-toGCCode = \case
-  GCSTOP       -> LUA_GCSTOP
-  GCRESTART    -> LUA_GCRESTART
-  GCCOLLECT    -> LUA_GCCOLLECT
-  GCCOUNT      -> LUA_GCCOUNT
-  GCCOUNTB     -> LUA_GCCOUNTB
-  GCSTEP       -> LUA_GCSTEP
-  GCSETPAUSE   -> LUA_GCSETPAUSE
-  GCSETSTEPMUL -> LUA_GCSETSTEPMUL
-  GCISRUNNING  -> LUA_GCISRUNNING
+-- | Converts a GCControl command to its corresponding code.
+toGCcode :: GCControl -> GCCode
+toGCcode = \case
+  GCStop          -> LUA_GCSTOP
+  GCRestart       -> LUA_GCRESTART
+  GCCollect       -> LUA_GCCOLLECT
+  GCCount         -> LUA_GCCOUNT
+  GCCountb        -> LUA_GCCOUNTB
+  GCStep          -> LUA_GCSTEP
+  GCSetPause {}   -> LUA_GCSETPAUSE
+  GCSetStepMul {} -> LUA_GCSETSTEPMUL
+  GCIsRunning     -> LUA_GCISRUNNING
+
+-- | Returns the data value associated with a GCControl command.
+toGCdata :: GCControl -> CInt
+toGCdata = \case
+  GCSetPause p   -> p
+  GCSetStepMul m -> m
+  _              -> 0
 
 --
 -- Special values

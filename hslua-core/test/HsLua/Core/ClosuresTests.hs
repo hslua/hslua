@@ -50,5 +50,5 @@ tests = testGroup "Closures"
             pushHaskellFunction fn
             pop 1
       forM_ [1..5000::Lua.Integer] pushAndPopAdder
-      () <$ gc Lua.GCCOLLECT 0
+      () <$ gc Lua.GCCollect
   ]
