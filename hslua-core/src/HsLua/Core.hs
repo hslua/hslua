@@ -160,6 +160,7 @@ module HsLua.Core
   , newmetatable
   , tostring'
   , traceback
+  , where'
   -- ** References
   , Reference (..)
   , ref

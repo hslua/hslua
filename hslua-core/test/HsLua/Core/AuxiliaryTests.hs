@@ -81,6 +81,26 @@ tests = testGroup "Auxiliary"
         Lua.getmetatable' "yep"
     ]
 
+  , testGroup "where'"
+    [ "return location in chunk" =:
+      "test:1: nope, not yet" `shouldBeResultOf` do
+        Lua.openlibs
+        Lua.pushHaskellFunction $ 1 <$ do
+          Lua.settop 1
+          Lua.where' 2
+          Lua.pushstring "nope, "
+          Lua.pushvalue 1
+          Lua.concat 3
+        Lua.setglobal "frob"
+        Lua.OK <- Lua.loadbuffer
+          "return frob('not yet')"
+          "@test"
+        result <- Lua.pcall 0 1 Nothing
+        if (result /= Lua.OK)
+          then Lua.throwErrorAsException
+          else Lua.tostring' Lua.top
+    ]
+
   , "loaded" =: ("_LOADED" @=? Lua.loaded)
   , "preload" =: ("_PRELOAD" @=? Lua.preload)
   ]

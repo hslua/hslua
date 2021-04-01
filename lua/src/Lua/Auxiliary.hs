@@ -22,6 +22,7 @@ module Lua.Auxiliary
   , luaL_testudata
   , luaL_traceback
   , luaL_unref
+  , luaL_where
     -- ** Registry fields
   , loadedTableRegistryField
   , preloadTableRegistryField
@@ -163,6 +164,21 @@ foreign import capi SAFTY "lauxlib.h luaL_testudata"
                  -> StackIndex  -- ^ arg
                  -> CString     -- ^ tname
                  -> IO (Ptr ())
+
+-- | Pushes onto the stack a string identifying the current position of
+-- the control at level @lvl@ in the call stack. Typically this string
+-- has the following format:
+--
+-- > chunkname:currentline:
+--
+-- Level 0 is the running function, level 1 is the function that called
+-- the running function, etc.
+--
+-- This function is used to build a prefix for error messages.
+foreign import capi SAFTY "lauxlib.h luaL_where"
+  luaL_where :: Lua.State -- ^ l
+             -> CInt      -- ^ lvl
+             -> IO ()
 
 --
 -- References

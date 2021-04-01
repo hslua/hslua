@@ -27,6 +27,7 @@ module HsLua.Core.Auxiliary
   , newstate
   , tostring'
   , traceback
+  , where'
     -- ** References
   , getref
   , ref
@@ -269,6 +270,20 @@ unref :: StackIndex -- ^ idx
       -> LuaE e ()
 unref idx r = liftLua $ \l ->
   luaL_unref l idx (Lua.fromReference r)
+
+-- | Pushes onto the stack a string identifying the current position of
+-- the control at level @lvl@ in the call stack. Typically this string
+-- has the following format:
+--
+-- > chunkname:currentline:
+--
+-- Level 0 is the running function, level 1 is the function that called
+-- the running function, etc.
+--
+-- This function is used to build a prefix for error messages.
+where' :: Int        -- ^ lvl
+       -> LuaE e ()
+where' lvl = liftLua $ \l -> luaL_where l (fromIntegral lvl)
 
 --
 -- Registry fields
