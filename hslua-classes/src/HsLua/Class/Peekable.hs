@@ -34,6 +34,7 @@ import qualified Control.Monad.Catch as Catch
 import qualified Data.Set as Set
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as BL
+import qualified HsLua.Core.Unsafe as Unsafe
 import qualified HsLua.Marshalling as Peek
 
 -- | Use @test@ to check whether the value at stack index @n@ has the
@@ -150,12 +151,12 @@ peekKeyValuePairs = typeChecked "table" istable $ \idx -> do
     -- ensure the remaining key is removed from the stack on exception
     `Catch.onException` pop 1
 
--- | Get the next key-value pair from a table. Assumes the last key to be on the
--- top of the stack and the table at the given index @idx@.
+-- | Get the next key-value pair from a table. Assumes the last key to
+-- be on the top of the stack and the table at the given index @idx@.
 nextPair :: (PeekError e, Peekable a, Peekable b)
          => StackIndex -> LuaE e (Maybe (a, b))
 nextPair idx = do
-  hasNext <- next idx
+  hasNext <- Unsafe.next idx
   if hasNext
     then let pair = (,) <$> inContext "Could not read key of key-value pair:"
                                       (peek (nth 2))
