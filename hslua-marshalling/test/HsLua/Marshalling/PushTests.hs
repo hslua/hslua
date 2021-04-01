@@ -225,6 +225,15 @@ tests = testGroup "Push"
           mb <- Lua.rawgeti Lua.top 2 *> Lua.tostring Lua.top  <* Lua.pop 1
           return $ (,) <$> ma <*> mb
         assert (mpair == Just (a, b))
+
+    , testProperty "pushTriple" $ \(a, b, c) -> monadicIO $ do
+        mpair <- run $ Lua.run @Lua.Exception $ do
+          pushTriple pushIntegral pushByteString Lua.pushnumber (a, b, c)
+          ma <- Lua.rawgeti Lua.top 1 *> Lua.tointeger Lua.top <* Lua.pop 1
+          mb <- Lua.rawgeti Lua.top 2 *> Lua.tostring Lua.top  <* Lua.pop 1
+          mc <- Lua.rawgeti Lua.top 3 *> Lua.tonumber Lua.top  <* Lua.pop 1
+          return $ (,,) <$> ma <*> mb <*> mc
+        assert (mpair == Just (a, b, c))
     ]
   ]
 

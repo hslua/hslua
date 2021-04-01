@@ -27,6 +27,7 @@ module HsLua.Marshalling.Push
   , pushSet
   -- * Combinators
   , pushPair
+  , pushTriple
   ) where
 
 import Control.Monad (zipWithM_)
@@ -135,3 +136,14 @@ pushPair pushA pushB (a,b) = do
   rawseti (nth 2) 1
   pushB b
   rawseti (nth 2) 2
+
+-- | Pushes a value triple as a three element list.
+pushTriple :: LuaError e
+           => Pusher e a -> Pusher e b -> Pusher e c
+           -> (a, b, c)
+           -> LuaE e ()
+pushTriple pushA pushB pushC (a,b,c) = do
+  newtable
+  zipWithM_ (\p i -> p *> rawseti (nth 2) i)
+            [pushA a, pushB b, pushC c]
+            [1..]
