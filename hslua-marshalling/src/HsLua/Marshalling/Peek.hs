@@ -73,6 +73,7 @@ import qualified Data.ByteString.Lazy as BL
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import qualified Data.Text as T
+import qualified HsLua.Core.Unsafe as Unsafe
 import qualified HsLua.Core.Utf8 as Utf8
 
 -- | Record to keep track of failure contexts while retrieving objects
@@ -344,10 +345,12 @@ peekKeyValuePairs keyPeeker valuePeeker =
 -- key to be on the top of the stack and the table at the given
 -- index @idx@. The next key, if it exists, is left at the top of
 -- the stack.
-nextPair :: LuaError e
-         => Peeker e a -> Peeker e b -> Peeker e (Maybe (a, b))
+--
+-- The key must be either nil or must exist in the table, or this
+-- function will crash with an unrecoverable error.
+nextPair :: Peeker e a -> Peeker e b -> Peeker e (Maybe (a, b))
 nextPair keyPeeker valuePeeker idx = retrieving "key-value pair" $ do
-  hasNext <- next idx
+  hasNext <- Unsafe.next idx
   if not hasNext
     then return $ Success Nothing
     else do
