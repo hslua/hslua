@@ -390,9 +390,9 @@ peekFieldRaw peeker name = typeChecked "table" Lua.istable $ \idx ->
 -- | Retrieves a value pair from a table. Expects the values to be
 -- stored in a numerically indexed table; does not access metamethods.
 peekPair :: LuaError e
-         => (Peeker e a, Peeker e b)
+         => Peeker e a -> Peeker e b
          -> Peeker e (a, b)
-peekPair (peekA, peekB) idx = do
+peekPair peekA peekB idx = do
   idx' <- absindex idx
   a <- rawgeti idx' 1 *> peekA top
   b <- rawgeti idx' 2 *> peekB top
@@ -402,9 +402,9 @@ peekPair (peekA, peekB) idx = do
 -- | Retrieves a value triple from a table. Expects the values to be
 -- stored in a numerically indexed table, with no metamethods.
 peekTriple :: LuaError e
-           => (Peeker e a, Peeker e b, Peeker e c)
+           => Peeker e a -> Peeker e b -> Peeker e c
            -> Peeker e (a, b, c)
-peekTriple (peekA, peekB, peekC) idx = do
+peekTriple peekA peekB peekC idx = do
   idx' <- absindex idx
   a <- rawgeti idx' 1 *> peekA top
   b <- rawgeti idx' 2 *> peekB top

@@ -220,7 +220,7 @@ tests = testGroup "Push"
   , testGroup "Combinators"
     [ testProperty "pushPair" $ \(a, b) -> monadicIO $ do
         mpair <- run $ Lua.run @Lua.Exception $ do
-          pushPair (pushIntegral, pushByteString) (a, b)
+          pushPair pushIntegral pushByteString (a, b)
           ma <- Lua.rawgeti Lua.top 1 *> Lua.tointeger Lua.top <* Lua.pop 1
           mb <- Lua.rawgeti Lua.top 2 *> Lua.tostring Lua.top  <* Lua.pop 1
           return $ (,) <$> ma <*> mb

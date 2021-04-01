@@ -126,10 +126,10 @@ pushSet pushElement set = do
 
 -- | Pushes a pair of values as a two element list.
 pushPair :: LuaError e
-         => (Pusher e a, Pusher e b)
+         => Pusher e a -> Pusher e b
          -> (a, b)
          -> LuaE e ()
-pushPair (pushA, pushB) (a,b) = do
+pushPair pushA pushB (a,b) = do
   newtable
   pushA a
   rawseti (nth 2) 1
