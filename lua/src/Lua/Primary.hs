@@ -53,6 +53,7 @@ module Lua.Primary
   , lua_load
   , lua_newthread
   , lua_newuserdata
+  , lua_next
   , lua_pcall
   , lua_pop
   , lua_pushboolean
@@ -397,6 +398,48 @@ foreign import ccall SAFTY "lua.h lua_newthread"
 -- <https://www.lua.org/manual/5.3/manual.html#lua_newuserdata>.
 foreign import ccall SAFTY "lua.h lua_newuserdata"
   lua_newuserdata :: Lua.State -> CSize -> IO (Ptr ())
+
+
+-- | Pops a key from the stack, and pushes a key–value pair from the
+-- table at the given index (the \"next\" pair after the given key). If
+-- there are no more elements in the table, then
+-- <https://www.lua.org/manual/5.3/manual.html#lua_next lua_next>
+-- returns 'FALSE' (and pushes nothing).
+--
+-- A typical traversal looks like this:
+--
+-- > /* table is in the stack at index 't' */
+-- > lua_pushnil(L);  /* first key */
+-- > while (lua_next(L, t) != 0) {
+-- >   /* uses 'key' (at index -2) and 'value' (at index -1) */
+-- >   printf("%s - %s\n",
+-- >          lua_typename(L, lua_type(L, -2)),
+-- >          lua_typename(L, lua_type(L, -1)));
+-- >   /* removes 'value'; keeps 'key' for next iteration */
+-- >   lua_pop(L, 1);
+-- > }
+--
+-- While traversing a table, do not call 'lua_tolstring' directly on a
+-- key, unless you know that the key is actually a string. Recall that
+-- 'lua_tolstring' may change the value at the given index; this
+-- confuses the next call to
+-- <https://www.lua.org/manual/5.3/manual.html#lua_next lua_next>.
+--
+-- See function
+-- <https://www.lua.org/manual/5.3/manual.html#pdf-next next> for the
+-- caveats of modifying the table during its traversal.
+--
+-- __WARNING__: @lua_next@ is unsafe in Haskell: This function will
+-- cause an unrecoverable crash an error if the given key is neither
+-- @nil@ nor present in the table. Consider using the @'Lua.hslua_next'@
+-- ersatz function instead.
+foreign import ccall SAFTY "lua.h lua_next"
+  lua_next :: State -> StackIndex {- ^ index -} -> IO LuaBool
+{-# WARNING lua_next
+      [ "This is an unsafe function, it will cause a program crash if"
+      , "the given key is neither nil nor present in the table."
+      , "Consider using hslua_next instead."
+      ] #-}
 
 -- | Calls a function in protected mode.
 --

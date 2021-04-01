@@ -1,7 +1,6 @@
 {-# OPTIONS_GHC -Wno-warnings-deprecations #-}
-{-# LANGUAGE CPP #-}
 {-|
-Module      : Main
+Module      : Lua.UnsafeTests
 Copyright   : © 2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
@@ -15,7 +14,7 @@ import Foreign.C.String (withCString, withCStringLen)
 import Foreign.Ptr (nullPtr)
 import Lua
 import Lua.Primary
-  ( lua_getglobal, lua_gettable, lua_setglobal, lua_settable )
+  ( lua_getglobal, lua_gettable, lua_next, lua_setglobal, lua_settable )
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (Assertion, HasCallStack, testCase, (@=?) )
 
@@ -99,6 +98,27 @@ tests = testGroup "Unsafe"
           lua_pushlstring l ptr (fromIntegral len)
         lua_rawget l (nth 2)
         lua_tonumberx l top nullPtr
+    ]
+
+  , testGroup "next"
+    [ "get next key from table" =:
+      41 `shouldBeResultOf` \l -> do
+        -- create table {41}
+        lua_createtable l 0 0
+        lua_pushinteger l 41
+        lua_rawseti l (nth 2) 1
+        -- first key
+        lua_pushnil l
+        x <- lua_next l (nth 2)
+        if x == FALSE
+          then fail "expected truish return value"
+          else lua_tonumberx l top nullPtr
+
+    , "returns FALSE if table is empty" =:
+      FALSE `shouldBeResultOf` \l -> do
+        lua_createtable l 0 0
+        lua_pushnil l
+        lua_next l (nth 2)
     ]
   ]
 
