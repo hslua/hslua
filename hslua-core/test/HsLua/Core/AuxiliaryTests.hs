@@ -96,7 +96,7 @@ tests = testGroup "Auxiliary"
           "return frob('not yet')"
           "@test"
         result <- Lua.pcall 0 1 Nothing
-        if (result /= Lua.OK)
+        if result /= Lua.OK
           then Lua.throwErrorAsException
           else Lua.tostring' Lua.top
     ]
