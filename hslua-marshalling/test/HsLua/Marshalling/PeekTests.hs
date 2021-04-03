@@ -12,6 +12,7 @@ Tests for Haskell-value retriever functions.
 -}
 module HsLua.Marshalling.PeekTests (tests) where
 
+import Control.Applicative (Alternative ((<|>)))
 import Control.Monad (forM_, zipWithM_)
 import Data.Maybe (fromMaybe)
 import HsLua.Marshalling.Peek
@@ -427,6 +428,12 @@ tests = testGroup "Peek"
           Lua.pushinteger 1337
           toPeeker firstindex Lua.top
       ]
+    ]
+
+  , testGroup "LuaPeek"
+    [ "lazy alternative" =:
+      Success @Int 5 `shouldBeResultOf` runLuaPeek
+        (return 5 <|> error "nope")
     ]
 
   , testGroup "error messages"
