@@ -201,13 +201,13 @@ peekList peekElement = fmap (retrieving "list") .
   typeChecked "table" istable $ \idx -> do
   let elementsAt [] = return []
       elementsAt (i : is) = do
-        x  <- LuaPeek . retrieving ("index " <> showInt i) $
+        x  <- Peek . retrieving ("index " <> showInt i) $
               rawgeti idx i *> peekElement top <* pop 1
         xs <- elementsAt is
         return (x:xs)
       showInt (Lua.Integer x) = fromString $ show x
   listLength <- fromIntegral <$> rawlen idx
-  runLuaPeek $ elementsAt [1..listLength]
+  runPeek $ elementsAt [1..listLength]
 
 -- | Retrieves a key-value Lua table as 'Map'.
 peekMap :: (LuaError e, Ord a)
@@ -223,11 +223,11 @@ peekKeyValuePairs keyPeeker valuePeeker =
   typeChecked "table" istable $ \idx -> do
     idx' <- absindex idx
     let remainingPairs = do
-          LuaPeek (nextPair keyPeeker valuePeeker idx') >>= \case
+          Peek (nextPair keyPeeker valuePeeker idx') >>= \case
             Nothing -> return []
             Just a  -> (a:) <$!> remainingPairs
     pushnil
-    runLuaPeek remainingPairs
+    runPeek remainingPairs
 
 -- | Get the next key-value pair from a table. Assumes the last
 -- key to be on the top of the stack and the table at the given

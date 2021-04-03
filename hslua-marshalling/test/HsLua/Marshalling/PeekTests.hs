@@ -46,9 +46,9 @@ tests = testGroup "Peek"
       ]
     ]
 
-  , testGroup "LuaPeek"
+  , testGroup "Peek"
     [ "lazy alternative" =:
-      Success @Int 5 `shouldBeResultOf` runLuaPeek
+      Success @Int 5 `shouldBeResultOf` runPeek
         (return 5 <|> error "nope")
     ]
   ]

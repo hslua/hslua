@@ -69,7 +69,7 @@ import Data.Semigroup (Semigroup ((<>)))
 
 -- | Lua operation with an additional failure mode that can stack errors
 -- from different contexts; errors are not based on exceptions).
-type LuaExcept e a = LuaPeek e a
+type LuaExcept e a = Peek e a
 
 -- | Helper type used to create 'HaskellFunction's.
 data HsFnPrecursor e a = HsFnPrecursor
@@ -149,7 +149,7 @@ applyParameter bldr param = do
   let context = Name . Utf8.fromText $ "function argument " <>
         (parameterName . parameterDoc) param
   let nextAction f = withContext context $ do
-        x <- LuaPeek $ parameterPeeker param i
+        x <- Peek $ parameterPeeker param i
         return $ f x
   bldr
     { hsFnPrecursorAction = action >>= nextAction
@@ -166,7 +166,7 @@ returnResults :: HsFnPrecursor e (LuaE e a)
 returnResults bldr fnResults = DocumentedFunction
   { callFunction = do
       hsResult <- retrieving ("arguments for function " <> hsFnName bldr)
-                . runLuaPeek $ hsFnPrecursorAction bldr
+                . runPeek $ hsFnPrecursorAction bldr
       case resultToEither hsResult of
         Left err -> do
           pushString err
@@ -193,7 +193,7 @@ returnResultsOnStack :: HsFnPrecursor e (LuaE e NumResults)
 returnResultsOnStack bldr desc = DocumentedFunction
   { callFunction = do
       hsResult <- retrieving ("arguments for function " <> hsFnName bldr)
-                . runLuaPeek $ hsFnPrecursorAction bldr
+                . runPeek $ hsFnPrecursorAction bldr
       case resultToEither hsResult of
         Left err -> do
           pushString err

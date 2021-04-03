@@ -43,8 +43,8 @@ module HsLua.Marshalling
   , peekPair
   , peekTriple
     -- ** Lua peek monad
-  , LuaPeek (..)
-  , runLuaPeek
+  , Peek (..)
+  , runPeek
   , withContext
     -- ** Helpers
   , typeMismatchMessage

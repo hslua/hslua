@@ -21,8 +21,8 @@ module HsLua.Marshalling.Peek
   , resultToEither
   , toPeeker
   -- * Lua peek monad
-  , LuaPeek (..)
-  , runLuaPeek
+  , Peek (..)
+  , runPeek
   , withContext
   ) where
 
@@ -62,48 +62,48 @@ instance Alternative Result where
     _          -> x
 
 --
--- LuaPeek
+-- Peek
 --
 
 -- | Lua operation with an additional failure mode that can stack errors
 -- from different contexts; errors are not based on exceptions).
-newtype LuaPeek e a = LuaPeek (LuaE e (Result a))
+newtype Peek e a = Peek (LuaE e (Result a))
   deriving (Functor)
 
--- | The inverse of LuaPeek.
-runLuaPeek :: LuaPeek e a -> LuaE e (Result a)
-runLuaPeek (LuaPeek x) = x
+-- | The inverse of Peek.
+runPeek :: Peek e a -> LuaE e (Result a)
+runPeek (Peek x) = x
 
-instance Applicative (LuaPeek e) where
-  pure = LuaPeek . return . pure
+instance Applicative (Peek e) where
+  pure = Peek . return . pure
   {-# INLINE pure #-}
 
-  LuaPeek f <*> x = LuaPeek $! f >>= \case
+  Peek f <*> x = Peek $! f >>= \case
     Failure msg stack -> return $ Failure msg stack
-    Success f'        -> fmap f' <$!> runLuaPeek x
+    Success f'        -> fmap f' <$!> runPeek x
   {-# INLINEABLE (<*>) #-}
 
   m *> k = m >>= const k
   {-# INLINE (*>) #-}
 
-instance Monad (LuaPeek e) where
-  LuaPeek m >>= k = LuaPeek $
+instance Monad (Peek e) where
+  Peek m >>= k = Peek $
     m >>= \case
       Failure msg stack -> return $ Failure msg stack
-      Success x         -> runLuaPeek (k x)
+      Success x         -> runPeek (k x)
 
-instance Alternative (LuaPeek e) where
-  a <|> b = LuaPeek $ runLuaPeek a >>= \case
-    Failure {} -> runLuaPeek b
+instance Alternative (Peek e) where
+  a <|> b = Peek $ runPeek a >>= \case
+    Failure {} -> runPeek b
     Success ra -> return (pure ra)
-  empty = LuaPeek . return $ failure "empty"
+  empty = Peek . return $ failure "empty"
 
-instance MonadFail (LuaPeek e) where
-  fail = LuaPeek . return . failure . Utf8.fromString
+instance MonadFail (Peek e) where
+  fail = Peek . return . failure . Utf8.fromString
 
 -- | Transform the result using the given function.
-withContext :: Name -> LuaPeek e a -> LuaPeek e a
-withContext ctx = LuaPeek . retrieving ctx . runLuaPeek
+withContext :: Name -> Peek e a -> Peek e a
+withContext ctx = Peek . retrieving ctx . runPeek
 
 
 -- | Returns 'True' iff the peek result is a Failure.
