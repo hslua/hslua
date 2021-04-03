@@ -55,6 +55,7 @@ module HsLua.Marshalling.Peek
   , withContext
   ) where
 
+import Control.Applicative (Alternative (..))
 import Control.Monad ((<$!>))
 import Data.ByteString (ByteString)
 import Data.List (intercalate)
@@ -75,6 +76,10 @@ import qualified Data.Set as Set
 import qualified Data.Text as T
 import qualified HsLua.Core.Unsafe as Unsafe
 import qualified HsLua.Core.Utf8 as Utf8
+
+#if !MIN_VERSION_base(4,13,0)
+import Control.Monad.Fail (MonadFail (..))
+#endif
 
 -- | Record to keep track of failure contexts while retrieving objects
 -- from the Lua stack.
@@ -118,6 +123,15 @@ instance Monad (LuaPeek e) where
     m >>= \case
       Failure msg stack -> return $ Failure msg stack
       Success x         -> runLuaPeek (k x)
+
+instance Alternative (LuaPeek e) where
+  a <|> b = LuaPeek $ runLuaPeek a >>= \case
+    Failure {} -> runLuaPeek b
+    Success ra -> return (pure ra)
+  empty = LuaPeek . return $ failure "empty"
+
+instance MonadFail (LuaPeek e) where
+  fail = LuaPeek . return . failure . Utf8.fromString
 
 -- | Transform the result using the given function.
 withContext :: Name -> LuaPeek e a -> LuaPeek e a
@@ -384,7 +398,7 @@ optional peeker idx = do
 -- | Get value at key from a table.
 peekFieldRaw :: LuaError e => Peeker e a -> Name -> Peeker e a
 peekFieldRaw peeker name = typeChecked "table" Lua.istable $ \idx ->
-  retrieving ("raw field '" <> name <> "'") $ do
+  retrieving ("raw field '" <> name <> "'") $! do
     absidx <- Lua.absindex idx
     pushstring $ fromName name
     rawget absidx
