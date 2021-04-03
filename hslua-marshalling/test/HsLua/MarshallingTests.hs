@@ -12,6 +12,7 @@ module HsLua.MarshallingTests (tests) where
 
 import Test.Tasty (TestTree, testGroup)
 import qualified HsLua.Marshalling.PeekTests
+import qualified HsLua.Marshalling.PeekersTests
 import qualified HsLua.Marshalling.PushTests
 import qualified HsLua.Marshalling.UserdataTests
 
@@ -19,6 +20,7 @@ import qualified HsLua.Marshalling.UserdataTests
 tests :: TestTree
 tests = testGroup "Marshalling"
   [ HsLua.Marshalling.PeekTests.tests
+  , HsLua.Marshalling.PeekersTests.tests
   , HsLua.Marshalling.PushTests.tests
   , HsLua.Marshalling.UserdataTests.tests
   ]

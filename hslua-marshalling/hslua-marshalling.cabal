@@ -57,6 +57,7 @@ library
   import:              common-options
   exposed-modules:     HsLua.Marshalling
                      , HsLua.Marshalling.Peek
+                     , HsLua.Marshalling.Peekers
                      , HsLua.Marshalling.Push
                      , HsLua.Marshalling.Userdata
   hs-source-dirs:      src
@@ -74,6 +75,7 @@ test-suite test-hslua
   ghc-options:         -threaded -Wno-unused-do-bind
   other-modules:       HsLua.MarshallingTests
                      , HsLua.Marshalling.PeekTests
+                     , HsLua.Marshalling.PeekersTests
                      , HsLua.Marshalling.PushTests
                      , HsLua.Marshalling.UserdataTests
   build-depends:       hslua-marshalling

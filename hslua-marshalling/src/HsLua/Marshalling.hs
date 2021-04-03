@@ -61,5 +61,6 @@ module HsLua.Marshalling
 import Prelude hiding (compare, concat)
 
 import HsLua.Marshalling.Peek
+import HsLua.Marshalling.Peekers
 import HsLua.Marshalling.Push
 import HsLua.Marshalling.Userdata (peekAny, pushAny, pushIterator)
