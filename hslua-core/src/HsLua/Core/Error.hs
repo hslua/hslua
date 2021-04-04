@@ -86,12 +86,15 @@ instance E.Exception Exception
 instance LuaError Exception where
   popException = do
     Exception . Utf8.toString <$!> liftLua popErrorMessage
+  {-# INLINABLE popException #-}
 
   pushException (Exception msg) = Lua.liftLua $ \l ->
     B.unsafeUseAsCStringLen (Utf8.fromString msg) $ \(msgPtr, z) ->
       lua_pushlstring l msgPtr (fromIntegral z)
+  {-# INLINABLE pushException #-}
 
   luaException = Exception
+  {-# INLINABLE luaException #-}
 
 -- | Return either the result of a Lua computation or, if an exception was
 -- thrown, the error.
@@ -102,6 +105,7 @@ try = Catch.try
 -- | Raises an exception in the Lua monad.
 failLua :: forall e a. LuaError e => String -> LuaE e a
 failLua msg = Catch.throwM (luaException @e msg)
+{-# INLINABLE failLua #-}
 
 -- | Converts a Lua error at the top of the stack into a Haskell
 -- exception and throws it.
@@ -119,12 +123,14 @@ throwTypeMismatchError :: forall e a. LuaError e
 throwTypeMismatchError expected idx = do
   pushTypeMismatchError expected idx
   throwErrorAsException
+{-# INLINABLE throwTypeMismatchError #-}
 
 -- | Change the error type of a computation.
 changeErrorType :: forall old new a. LuaE old a -> LuaE new a
 changeErrorType op = Lua.liftLua $ \l -> do
   x <- Lua.runWith l op
   return $! x
+{-# INLINABLE changeErrorType #-}
 
 
 --

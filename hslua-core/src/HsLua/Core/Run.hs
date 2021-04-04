@@ -29,9 +29,11 @@ import qualified HsLua.Core.Primary as Lua
 -- is the responsibility of the caller.
 run :: LuaE e a -> IO a
 run = (Lua.newstate `bracket` Lua.close) . flip runWith . Catch.mask_
+{-# INLINABLE run #-}
 
 -- | Run the given Lua computation; exceptions raised in Haskell code are
 -- caught, but other exceptions (user exceptions raised in Haskell, unchecked
 -- type errors, etc.) are passed through.
 runEither :: Catch.Exception e => LuaE e a -> IO (Either e a)
 runEither = try . run
+{-# INLINABLE runEither #-}

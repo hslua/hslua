@@ -31,6 +31,7 @@ import qualified Control.Monad.Catch as Catch
 pushPreCFunction :: PreCFunction -> LuaE e ()
 pushPreCFunction preCFn = liftLua $ \l ->
   hslua_pushhsfunction l preCFn
+{-# INLINABLE pushPreCFunction #-}
 
 -- | Pushes Haskell function as a callable userdata. All values created
 -- will be garbage collected. The function should behave similar to a
@@ -53,6 +54,8 @@ pushHaskellFunction :: LuaError e => HaskellFunction e -> LuaE e ()
 pushHaskellFunction fn = do
   let preCFn l = runWith l (exceptionToError fn)
   pushPreCFunction preCFn
+{-# INLINABLE pushHaskellFunction #-}
 
 exceptionToError :: LuaError e => HaskellFunction e -> HaskellFunction e
 exceptionToError op = op `Catch.catch` \e -> pushException e *> error
+{-# INLINABLE exceptionToError #-}

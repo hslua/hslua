@@ -31,6 +31,7 @@ import qualified Data.ByteString as B
 -- userdata is pushed to the top of the stack.
 newhsuserdata :: forall a e. a -> LuaE e ()
 newhsuserdata = liftLua . flip hslua_newhsuserdata
+{-# INLINABLE newhsuserdata #-}
 
 -- | Creates and registers a new metatable for a userdata-wrapped
 -- Haskell value; checks whether a metatable of that name has been
@@ -44,6 +45,7 @@ newhsuserdata = liftLua . flip hslua_newhsuserdata
 newudmetatable :: Name -> LuaE e Bool
 newudmetatable (Name name) = liftLua $ \l ->
   B.useAsCString name (fmap fromLuaBool . hslua_newudmetatable l)
+{-# INLINABLE newudmetatable #-}
 
 -- | Retrieves a Haskell object from userdata at the given index. The
 -- userdata /must/ have the given name.
@@ -53,6 +55,7 @@ fromuserdata :: forall a e.
              -> LuaE e (Maybe a)
 fromuserdata idx (Name name) = liftLua $ \l ->
   B.useAsCString name (hslua_fromuserdata l idx)
+{-# INLINABLE fromuserdata #-}
 
 -- | Replaces the Haskell value contained in the userdata value at
 -- @index@. Checks that the userdata is of type @name@ and returns
@@ -65,3 +68,4 @@ putuserdata :: forall a e.
 putuserdata idx (Name name) x = liftLua $ \l ->
   B.useAsCString name $ \namePtr ->
   hslua_putuserdata l idx namePtr x
+{-# INLINABLE putuserdata #-}

@@ -109,20 +109,24 @@ newtype LuaE e a = Lua { unLua :: ReaderT LuaEnvironment IO a }
 -- operation.
 liftLua :: (State -> IO a) -> LuaE e a
 liftLua f = state >>= liftIO . f
+{-# INLINABLE liftLua #-}
 
 -- | Turn a function of typ @Lua.State -> a -> IO b@ into a monadic Lua
 -- operation.
 liftLua1 :: (State -> a -> IO b) -> a -> LuaE e b
 liftLua1 f x = liftLua $ \l -> f l x
+{-# INLINABLE liftLua1 #-}
 
 -- | Get the Lua state of this Lua computation.
 state :: LuaE e State
 state = asks luaEnvState
+{-# INLINABLE state #-}
 
 -- | Run Lua computation with the given Lua state. Exception handling is
 -- left to the caller; resulting exceptions are left unhandled.
 runWith :: State -> LuaE e a -> IO a
 runWith l s = runReaderT (unLua s) (LuaEnvironment l)
+{-# INLINABLE runWith #-}
 
 -- | Run the given operation, but crash if any Haskell exceptions occur.
 unsafeRunWith :: State -> LuaE e a -> IO a
@@ -169,6 +173,7 @@ fromType = \case
   TypeFunction      -> LUA_TFUNCTION
   TypeUserdata      -> LUA_TUSERDATA
   TypeThread        -> LUA_TTHREAD
+{-# INLINABLE fromType #-}
 
 -- | Convert numerical code to Lua 'Type'.
 toType :: TypeCode -> Type
@@ -184,6 +189,7 @@ toType = \case
   LUA_TUSERDATA      -> TypeUserdata
   LUA_TTHREAD        -> TypeThread
   TypeCode c         -> error ("No Type corresponding to " ++ show c)
+{-# INLINABLE toType #-}
 
 
 --
@@ -292,6 +298,7 @@ toGCcode = \case
   GCSetPause {}   -> LUA_GCSETPAUSE
   GCSetStepMul {} -> LUA_GCSETSTEPMUL
   GCIsRunning     -> LUA_GCISRUNNING
+{-# INLINABLE toGCcode #-}
 
 -- | Returns the data value associated with a GCControl command.
 toGCdata :: GCControl -> CInt
@@ -299,6 +306,7 @@ toGCdata = \case
   GCSetPause p   -> p
   GCSetStepMul m -> m
   _              -> 0
+{-# INLINABLE toGCdata #-}
 
 --
 -- Special values
@@ -335,3 +343,4 @@ newtype Name = Name { fromName :: ByteString }
 
 instance IsString Name where
   fromString = Name . Utf8.fromString
+  {-# INLINABLE fromString #-}

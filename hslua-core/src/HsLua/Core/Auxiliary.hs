@@ -66,6 +66,7 @@ dostring s = do
   if loadRes == Lua.OK
     then Lua.pcall 0 multret Nothing
     else return loadRes
+{-# INLINABLE dostring #-}
 
 -- | Loads and runs the given file. Note that the filepath is
 -- interpreted by Haskell, not Lua. The resulting chunk is named using
@@ -76,6 +77,7 @@ dofile fp = do
   if loadRes == Lua.OK
     then Lua.pcall 0 multret Nothing
     else return loadRes
+{-# INLINABLE dofile #-}
 
 -- | Pushes onto the stack the field @e@ from the metatable of the
 -- object at index @obj@ and returns the type of the pushed value. If
@@ -88,6 +90,7 @@ getmetafield :: StackIndex -- ^ obj
              -> LuaE e Lua.Type
 getmetafield obj (Name name) = liftLua $ \l ->
   B.useAsCString name $! fmap Lua.toType . luaL_getmetafield l obj
+{-# INLINABLE getmetafield #-}
 
 -- | Pushes onto the stack the metatable associated with name @tname@ in
 -- the registry (see 'newmetatable') (@nil@ if there is no metatable
@@ -98,10 +101,12 @@ getmetatable' :: Name      -- ^ tname
               -> LuaE e Lua.Type
 getmetatable' (Name tname) = liftLua $ \l ->
   B.useAsCString tname $ fmap Lua.toType . luaL_getmetatable l
+{-# INLINABLE getmetatable' #-}
 
 -- | Push referenced value from the table at the given index.
 getref :: LuaError e => StackIndex -> Reference -> LuaE e ()
 getref idx ref' = Lua.rawgeti idx (fromIntegral (Lua.fromReference ref'))
+{-# INLINABLE getref #-}
 
 -- | Ensures that the value @t[fname]@, where @t@ is the value at index
 -- @idx@, is a table, and pushes that table onto the stack. Returns True
@@ -123,6 +128,7 @@ getsubtable idx fname@(Name namestr) = do
       Lua.pushvalue top -- copy to be left at top
       Lua.setfield idx' fname
       return False
+{-# INLINABLE getsubtable #-}
 
 -- | Loads a ByteString as a Lua chunk.
 --
@@ -138,6 +144,7 @@ loadbuffer bs (Name name) = liftLua $ \l ->
   B.useAsCStringLen bs $ \(str, len) ->
   B.useAsCString name $!
     fmap Lua.toStatus . luaL_loadbuffer l str (fromIntegral len)
+{-# INLINABLE loadbuffer #-}
 
 -- | Loads a file as a Lua chunk. This function uses @lua_load@ (see
 -- @'Lua.load'@) to load the chunk in the file named filename. The first
@@ -165,6 +172,7 @@ loadfile fp = Lua.liftIO contentOrError >>= \case
  where
   contentOrError :: IO (Either IOException ByteString)
   contentOrError = try (B.readFile fp)
+{-# INLINABLE loadfile #-}
 
 -- | Loads a string as a Lua chunk. This function uses @lua_load@ to
 -- load the chunk in the given ByteString. The given string may not
@@ -180,6 +188,7 @@ loadfile fp = Lua.liftIO contentOrError >>= \case
 -- <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadstring>.
 loadstring :: ByteString -> LuaE e Status
 loadstring s = loadbuffer s (Name s)
+{-# INLINE loadstring #-}
 
 -- | If the registry already has the key tname, returns @False@.
 -- Otherwise, creates a new table to be used as a metatable for
@@ -197,6 +206,7 @@ loadstring s = loadbuffer s (Name s)
 newmetatable :: Name -> LuaE e Bool
 newmetatable (Name tname) = liftLua $ \l ->
   Lua.fromLuaBool <$!> B.useAsCString tname (luaL_newmetatable l)
+{-# INLINABLE newmetatable #-}
 
 -- | Creates a new Lua state. It calls @lua_newstate@ with an allocator
 -- based on the standard C @realloc@ function and then sets a panic
@@ -208,6 +218,7 @@ newmetatable (Name tname) = liftLua $ \l ->
 -- <https://www.lua.org/manual/5.3/manual.html#luaL_newstate luaL_newstate>.
 newstate :: IO Lua.State
 newstate = hsluaL_newstate
+{-# INLINE newstate #-}
 
 -- | Creates and returns a reference, in the table at index @t@, for the
 -- object at the top of the stack (and pops the object).
@@ -225,6 +236,7 @@ newstate = hsluaL_newstate
 -- Wraps 'luaL_ref'.
 ref :: StackIndex -> LuaE e Reference
 ref t = liftLua $ \l -> Lua.toReference <$> luaL_ref l t
+{-# INLINABLE ref #-}
 
 -- | Converts any Lua value at the given index to a 'ByteString' in a
 -- reasonable format. The resulting string is pushed onto the stack and
@@ -245,6 +257,7 @@ tostring' n = do
       else do
         cstrLen <- Storable.peek lenPtr
         B.packCStringLen (cstr, fromIntegral cstrLen)
+{-# INLINABLE tostring' #-}
 
 -- | Creates and pushes a traceback of the stack L1. If a message is
 -- given it appended at the beginning of the traceback. The level
@@ -257,6 +270,7 @@ traceback l1 msg level = liftLua $ \l ->
     Nothing -> luaL_traceback l l1 nullPtr (fromIntegral level)
     Just msg' -> B.useAsCString msg' $ \cstr ->
       luaL_traceback l l1 cstr (fromIntegral level)
+{-# INLINABLE traceback #-}
 
 -- | Releases reference @'ref'@ from the table at index @idx@ (see
 -- @'ref'@). The entry is removed from the table, so that the referred
@@ -270,6 +284,7 @@ unref :: StackIndex -- ^ idx
       -> LuaE e ()
 unref idx r = liftLua $ \l ->
   luaL_unref l idx (Lua.fromReference r)
+{-# INLINABLE unref #-}
 
 -- | Pushes onto the stack a string identifying the current position of
 -- the control at level @lvl@ in the call stack. Typically this string
@@ -284,6 +299,7 @@ unref idx r = liftLua $ \l ->
 where' :: Int        -- ^ lvl
        -> LuaE e ()
 where' lvl = liftLua $ \l -> luaL_where l (fromIntegral lvl)
+{-# INLINABLE where' #-}
 
 --
 -- Registry fields

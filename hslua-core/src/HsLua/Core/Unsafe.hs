@@ -27,3 +27,4 @@ import Lua.Primary (lua_next)
 -- @'HsLua.Core.Primary.next'@ function in HsLua.Core instead.
 next :: StackIndex -> LuaE e Bool
 next idx = liftLua $ \l -> fromLuaBool <$!> lua_next l idx
+{-# INLINABLE next #-}
