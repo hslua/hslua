@@ -24,7 +24,6 @@ module HsLua.Marshalling.Peek
   , toPeeker
   -- * Lua peek monad
   , Peek (..)
-  , runPeek
   , forcePeek
   , failPeek
   , liftLua
@@ -53,8 +52,10 @@ data Result a
 
 instance Applicative Result where
   pure = Success
+  {-# INLINE pure #-}
   Success f         <*> s = fmap f s
   Failure msg stack <*> _         = Failure msg stack
+  {-# INLINE (<*>) #-}
 
 instance Monad Result where
   Failure msg stack >>= _ = Failure msg stack
@@ -62,9 +63,11 @@ instance Monad Result where
 
 instance Alternative Result where
   empty = Failure "empty" []
+  {-# INLINE empty #-}
   x <|> y = case x of
     Failure {} -> y
     _          -> x
+  {-# INLINE (<|>) #-}
 
 --
 -- Peek
@@ -72,25 +75,24 @@ instance Alternative Result where
 
 -- | Lua operation with an additional failure mode that can stack errors
 -- from different contexts; errors are not based on exceptions).
-newtype Peek e a = Peek (LuaE e (Result a))
+newtype Peek e a = Peek { runPeek :: LuaE e (Result a) }
   deriving (Functor)
-
--- | The inverse of Peek.
-runPeek :: Peek e a -> LuaE e (Result a)
-runPeek (Peek x) = x
 
 -- | Converts a Peek action into a LuaE action, throwing an exception in
 -- case of a peek failure.
 forcePeek :: LuaError e => Peek e a -> LuaE e a
 forcePeek = force <=< runPeek
+{-# INLINE forcePeek #-}
 
 -- | Fails the peek operation.
 failPeek :: forall a e. ByteString -> Peek e a
 failPeek = Peek . return . failure
+{-# INLINE failPeek #-}
 
 -- | Lifts a Lua operation into the Peek monad.
 liftLua :: LuaE e a -> Peek e a
 liftLua = Peek . fmap pure
+{-# INLINE liftLua #-}
 
 instance Applicative (Peek e) where
   pure = Peek . return . pure
@@ -109,20 +111,25 @@ instance Monad (Peek e) where
     m >>= \case
       Failure msg stack -> return $ Failure msg stack
       Success x         -> runPeek (k x)
+  {-# INLINE (>>=) #-}
 
 instance Alternative (Peek e) where
+  empty = Peek . return $ failure "empty"
+  {-# INLINE empty #-}
+
   a <|> b = Peek $ runPeek a >>= \case
     Failure {} -> runPeek b
     Success ra -> return (pure ra)
-  empty = Peek . return $ failure "empty"
+  {-# INLINE (<|>) #-}
 
 instance MonadFail (Peek e) where
   fail = Peek . return . failure . Utf8.fromString
+  {-# INLINABLE fail #-}
 
 -- | Transform the result using the given function.
 withContext :: Name -> Peek e a -> Peek e a
 withContext ctx = Peek . fmap (addFailureContext ctx) . runPeek
-
+{-# INLINABLE withContext #-}
 
 -- | Returns 'True' iff the peek result is a Failure.
 isFailure :: Result a -> Bool
@@ -151,12 +158,14 @@ addFailureContext :: Name -> Result a -> Result a
 addFailureContext name = \case
   Failure msg stack -> Failure msg (name : stack)
   x -> x
+{-# INLINABLE addFailureContext #-}
 
 -- | Add context information to the peek traceback stack.
 retrieving :: Name
            -> Peek e a
            -> Peek e a
 retrieving = withContext
+{-# INLINE retrieving #-}
 
 -- | Force creation of an unwrapped result, throwing an exception if
 -- that's not possible.
@@ -164,6 +173,7 @@ force :: LuaError e => Result a -> LuaE e a
 force = \case
   Success x -> return x
   Failure msg stack -> failLua $ formatPeekFailure msg stack
+{-# INLINABLE force #-}
 
 -- | Converts a Result into an Either, where @Left@ holds the reportable
 -- string in case of an failure.

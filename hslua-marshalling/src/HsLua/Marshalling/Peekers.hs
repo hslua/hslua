@@ -123,18 +123,22 @@ toByteString idx = do
   -- copy value, as tostring converts numbers to strings *in-place*.
   pushvalue idx
   tostring top <* pop 1
+{-# INLINABLE toByteString #-}
 
 -- | Retrieves a 'ByteString' as a raw string.
 peekByteString :: LuaError e => Peeker e ByteString
 peekByteString = reportValueOnFailure "string" toByteString
+{-# INLINABLE peekByteString #-}
 
 -- | Retrieves a lazy 'BL.ByteString' as a raw string.
 peekLazyByteString :: LuaError e => Peeker e BL.ByteString
 peekLazyByteString = (BL.fromStrict <$!>) . peekByteString
+{-# INLINABLE peekLazyByteString #-}
 
 -- | Retrieves a 'String' from an UTF-8 encoded Lua string.
 peekString :: LuaError e => Peeker e String
 peekString = peekStringy
+{-# INLINABLE peekString #-}
 
 -- | Retrieves a String-like value from an UTF-8 encoded Lua string.
 --
@@ -143,14 +147,17 @@ peekString = peekStringy
 -- information.
 peekStringy :: forall a e. (LuaError e, IsString a) => Peeker e a
 peekStringy = fmap (fromString . Utf8.toString) . peekByteString
+{-# INLINABLE peekStringy #-}
 
 -- | Retrieves a 'T.Text' value as an UTF-8 encoded string.
 peekText :: LuaError e => Peeker e T.Text
 peekText = (Utf8.toText <$!>) . peekByteString
+{-# INLINABLE peekText #-}
 
 -- | Retrieves a Lua string as 'Name'.
 peekName :: LuaError e => Peeker e Name
 peekName = (Name <$!>) . peekByteString
+{-# INLINABLE peekName #-}
 
 --
 -- Arbitrary values
@@ -265,6 +272,7 @@ optional peeker idx = do
   if noValue
     then return Nothing
     else Just <$!> peeker idx
+{-# INLINABLE optional #-}
 
 -- | Get value at key from a table.
 peekFieldRaw :: LuaError e => Peeker e a -> Name -> Peeker e a
@@ -275,6 +283,7 @@ peekFieldRaw peeker name = typeChecked "table" Lua.istable $ \idx ->
       pushstring $ fromName name
       rawget absidx
     peeker top <* liftLua (Lua.pop 1)
+{-# INLINABLE peekFieldRaw #-}
 
 -- | Retrieves a value pair from a table. Expects the values to be
 -- stored in a numerically indexed table; does not access metamethods.
@@ -308,3 +317,4 @@ choice :: LuaError e
 choice peekers idx = case peekers of
   [] -> failPeek "all choices failed"
   p:ps -> p idx <|> choice ps idx
+{-# INLINABLE choice #-}

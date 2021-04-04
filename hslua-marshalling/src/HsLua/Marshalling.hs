@@ -45,7 +45,6 @@ module HsLua.Marshalling
   , peekTriple
     -- ** Lua peek monad
   , Peek (..)
-  , runPeek
   , forcePeek
   , liftLua
   , withContext
