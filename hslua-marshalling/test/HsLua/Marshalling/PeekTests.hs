@@ -25,8 +25,8 @@ tests :: TestTree
 tests = testGroup "Peek"
   [ testGroup "helper"
     [ "retrieving" =:
-      Failure "message" ["context"] `shouldBeResultOf` do
-        retrieving "context" . return $ failure @() "message"
+      Failure @() "message" ["context"] `shouldBeResultOf`
+      runPeek (retrieving "context" $ failPeek "message")
 
     , let firstindex idx = do
             Lua.rawgeti idx 1
@@ -35,14 +35,14 @@ tests = testGroup "Peek"
       [ "passes result through" =:
         Success 1337 `shouldBeResultOf` do
           pushLuaExpr "{1337}"
-          toPeeker firstindex Lua.top
+          runPeeker (toPeeker firstindex) Lua.top
 
       , "catches error" =:
         let msg = "Lua exception: expected table, got '1337' (number)"
         in
           Failure msg [] `shouldBeResultOf` do
           Lua.pushinteger 1337
-          toPeeker firstindex Lua.top
+          runPeeker (toPeeker firstindex) Lua.top
       ]
     ]
 

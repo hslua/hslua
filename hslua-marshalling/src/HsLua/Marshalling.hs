@@ -11,6 +11,7 @@ Functions to push and retrieve data to and from Lua.
 module HsLua.Marshalling
   ( -- * Receiving values from Lua stack (Lua → Haskell)
     Peeker
+  , runPeeker
   , Result (..)
   , force
   , retrieving
@@ -45,7 +46,10 @@ module HsLua.Marshalling
     -- ** Lua peek monad
   , Peek (..)
   , runPeek
+  , forcePeek
+  , liftLua
   , withContext
+  , failPeek
     -- ** Helpers
   , typeMismatchMessage
   , reportValueOnFailure

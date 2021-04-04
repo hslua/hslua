@@ -1,4 +1,5 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP                 #-}
+{-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
 Module      : HsLua.Packaging.UDType
@@ -36,6 +37,9 @@ module HsLua.Packaging.UDType
 import Control.Monad.Except
 import Data.Maybe (mapMaybe)
 import Data.Map (Map)
+#if !MIN_VERSION_base(4,12,0)
+import Data.Semigroup (Semigroup ((<>)))
+#endif
 import Data.Text (Text)
 import HsLua.Core
 import HsLua.Marshalling
@@ -104,7 +108,7 @@ property name desc (push, get) (peek, set) = MemberProperty name $
       push $ get x
       return (NumResults 1)
   , propertySet = \idx x -> do
-      value  <- peek idx >>= force
+      value  <- forcePeek $ peek idx
       return $ set x value
   , propertyDescription = desc
   }
@@ -117,9 +121,8 @@ readonly :: LuaError e
          -> (Pusher e b, a -> b) -- ^ how to get the property value
          -> Member e a
 readonly name desc getter = property name desc getter $
-  let msg = "'" ++ Utf8.toString (fromName name) ++
-            "' is a read-only property."
-  in (const (failLua msg), const)
+  let msg = "'" <> fromName name <> "' is a read-only property."
+  in (const (failPeek msg), const)
 
 -- | Declares a new object operation from a documented function.
 operation :: Operation             -- ^ the kind of operation
@@ -150,8 +153,8 @@ pushUDMetatable ty = do
 -- This is expected to be used with the /Index/ operation.
 indexFunction :: LuaError e => UDType e a -> LuaE e NumResults
 indexFunction ty = do
-  x    <- peekUD ty (nthBottom 1) >>= force
-  name <- peekName (nthBottom 2) >>= force
+  x    <- forcePeek $ peekUD ty (nthBottom 1)
+  name <- forcePeek $ peekName (nthBottom 2)
   case Map.lookup name (udProperties ty) of
     Just p -> propertyGet p x
     Nothing -> case Map.lookup name (udMethods ty) of
@@ -163,8 +166,8 @@ indexFunction ty = do
 -- This is expected to be used with the /Newindex/ operation.
 newindexFunction :: LuaError e => UDType e a -> LuaE e NumResults
 newindexFunction ty = do
-  x     <- peekUD ty (nthBottom 1) >>= force
-  name  <- peekName (nthBottom 2) >>= force
+  x     <- forcePeek $ peekUD ty (nthBottom 1)
+  name  <- forcePeek $ peekName (nthBottom 2)
   case Map.lookup name (udProperties ty) of
     Just p -> do
       newx <- propertySet p (nthBottom 3) x
@@ -178,7 +181,7 @@ newindexFunction ty = do
 -- pairs in a generic *for* loop.
 pairsFunction :: forall e a. LuaError e => UDType e a -> LuaE e NumResults
 pairsFunction ty = do
-  obj <- peekUD ty (nthBottom 1) >>= force
+  obj <- forcePeek $ peekUD ty (nthBottom 1)
   let pushMember = \case
         MemberProperty name prop -> do
           pushName name

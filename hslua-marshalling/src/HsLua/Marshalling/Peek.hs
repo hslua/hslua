@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP                 #-}
 {-# LANGUAGE DeriveFunctor       #-}
 {-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-|
 Module      : HsLua.Marshalling.Peek
 Copyright   : © 2020-2021 Albert Krewinkel
@@ -13,6 +14,7 @@ Types for unmarshalling of values from Lua.
 -}
 module HsLua.Marshalling.Peek
   ( Peeker
+  , runPeeker
   , Result (..)
   , isFailure
   , failure
@@ -23,11 +25,14 @@ module HsLua.Marshalling.Peek
   -- * Lua peek monad
   , Peek (..)
   , runPeek
+  , forcePeek
+  , failPeek
+  , liftLua
   , withContext
   ) where
 
 import Control.Applicative (Alternative (..))
-import Control.Monad ((<$!>))
+import Control.Monad ((<$!>), (<=<))
 import Data.ByteString (ByteString)
 import Data.List (intercalate)
 import HsLua.Core as Lua
@@ -74,6 +79,19 @@ newtype Peek e a = Peek (LuaE e (Result a))
 runPeek :: Peek e a -> LuaE e (Result a)
 runPeek (Peek x) = x
 
+-- | Converts a Peek action into a LuaE action, throwing an exception in
+-- case of a peek failure.
+forcePeek :: LuaError e => Peek e a -> LuaE e a
+forcePeek = force <=< runPeek
+
+-- | Fails the peek operation.
+failPeek :: forall a e. ByteString -> Peek e a
+failPeek = Peek . return . failure
+
+-- | Lifts a Lua operation into the Peek monad.
+liftLua :: LuaE e a -> Peek e a
+liftLua = Peek . fmap pure
+
 instance Applicative (Peek e) where
   pure = Peek . return . pure
   {-# INLINE pure #-}
@@ -103,7 +121,7 @@ instance MonadFail (Peek e) where
 
 -- | Transform the result using the given function.
 withContext :: Name -> Peek e a -> Peek e a
-withContext ctx = Peek . retrieving ctx . runPeek
+withContext ctx = Peek . fmap (addFailureContext ctx) . runPeek
 
 
 -- | Returns 'True' iff the peek result is a Failure.
@@ -118,7 +136,11 @@ formatPeekFailure msg stack =
   map Utf8.toString (msg : map fromName (reverse stack))
 
 -- | Function to retrieve a value from Lua's stack.
-type Peeker e a = StackIndex -> LuaE e (Result a)
+type Peeker e a = StackIndex -> Peek e a
+
+-- | Runs the peeker function.
+runPeeker :: Peeker e a -> StackIndex -> LuaE e (Result a)
+runPeeker p = runPeek . p
 
 -- | Create a peek failure record from an error message.
 failure :: ByteString -> Result a
@@ -132,9 +154,9 @@ addFailureContext name = \case
 
 -- | Add context information to the peek traceback stack.
 retrieving :: Name
-           -> LuaE e (Result a)
-           -> LuaE e (Result a)
-retrieving msg = fmap (addFailureContext msg)
+           -> Peek e a
+           -> Peek e a
+retrieving = withContext
 
 -- | Force creation of an unwrapped result, throwing an exception if
 -- that's not possible.
@@ -154,6 +176,6 @@ resultToEither = \case
 toPeeker :: LuaError e
          => (StackIndex -> LuaE e a)
          -> Peeker e a
-toPeeker op idx = try (op idx) >>= \case
+toPeeker op idx = Peek $ try (op idx) >>= \case
   Left err  -> return $! failure $ Utf8.fromString (show err)
   Right res -> return $! Success res

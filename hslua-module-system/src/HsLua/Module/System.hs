@@ -330,13 +330,13 @@ with_tmpdir = defun "with_tmpdir"
       `T.append` "The directory is deleted after use.")
   where
     peekParentDir idx = do
-      args <- gettop
+      args <- liftLua gettop
       if args < 3
-        then do
+        then liftLua $ do
           pushnil
           insert idx
-          return $ pure Nothing
-        else fmap Just <$> peekString idx
+          return Nothing
+        else Just <$> peekString idx
 
 
 --

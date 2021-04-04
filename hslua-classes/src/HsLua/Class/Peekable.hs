@@ -28,6 +28,7 @@ import Data.ByteString (ByteString)
 import Data.Map (Map, fromList)
 import Data.Set (Set)
 import HsLua.Core as Lua
+import HsLua.Marshalling.Peek (runPeeker)
 import Foreign.Ptr (Ptr)
 
 import qualified Control.Monad.Catch as Catch
@@ -82,7 +83,7 @@ instance Peekable Lua.Number where
   peek = reportValueOnFailure "number" tonumber
 
 instance Peekable ByteString where
-  peek = Peek.peekByteString >=> Peek.force
+  peek = runPeeker Peek.peekByteString >=> Peek.force
 
 instance Peekable Bool where
   peek = toboolean
@@ -97,25 +98,25 @@ instance Peekable Lua.State where
   peek = reportValueOnFailure "Lua state (i.e., a thread)" tothread
 
 instance Peekable T.Text where
-  peek = Peek.peekText >=> Peek.force
+  peek = runPeeker Peek.peekText >=> Peek.force
 
 instance Peekable BL.ByteString where
-  peek = Peek.peekLazyByteString >=> Peek.force
+  peek = runPeeker Peek.peekLazyByteString >=> Peek.force
 
 instance Peekable Prelude.Integer where
-  peek = Peek.peekIntegral >=> Peek.force
+  peek = runPeeker Peek.peekIntegral >=> Peek.force
 
 instance Peekable Int where
-  peek = Peek.peekIntegral >=> Peek.force
+  peek = runPeeker Peek.peekIntegral >=> Peek.force
 
 instance Peekable Float where
-  peek = Peek.peekRealFloat >=> Peek.force
+  peek = runPeeker Peek.peekRealFloat >=> Peek.force
 
 instance Peekable Double where
-  peek = Peek.peekRealFloat >=> Peek.force
+  peek = runPeeker Peek.peekRealFloat >=> Peek.force
 
 instance {-# OVERLAPS #-} Peekable [Char] where
-  peek = Peek.peekString >=> Peek.force
+  peek = runPeeker Peek.peekString >=> Peek.force
 
 instance Peekable a => Peekable [a] where
   peek = peekList

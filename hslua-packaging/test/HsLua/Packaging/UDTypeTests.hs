@@ -30,7 +30,7 @@ tests = testGroup "UDType"
         pushUD typeFoo $ Foo 7 "seven"
         setglobal "foo"
         _ <- dostring "return tostring(foo)"
-        peekText top >>= force
+        forcePeek $ peekText top
 
     , "show" =:
       "Foo 5 \"five\"" `shouldBeResultOf` do
@@ -38,12 +38,12 @@ tests = testGroup "UDType"
         pushUD typeFoo $ Foo 5 "five"
         setglobal "foo"
         _ <- dostring "return foo:show()"
-        peekText top >>= force
+        forcePeek $ peekText top
 
     , "peek" =:
       Foo 37 "ananas" `shouldBeResultOf` do
         pushUD typeFoo $ Foo 37 "ananas"
-        peekUD typeFoo top >>= force
+        forcePeek $ peekUD typeFoo top
 
     , "get number" =:
       (-1) `shouldBeResultOf` do
@@ -51,7 +51,7 @@ tests = testGroup "UDType"
         pushUD typeFoo $ Foo (-1) "a"
         setglobal "foo"
         dostring "return foo.num" >>= \case
-          OK -> peekIntegral @Int top >>= force
+          OK -> forcePeek $ peekIntegral @Int top
           _ -> throwErrorAsException
 
     , "modify number" =:
@@ -61,7 +61,7 @@ tests = testGroup "UDType"
         setglobal "foo"
         OK <- dostring "foo.num = -1"
         TypeUserdata <- getglobal "foo"
-        peekUD typeFoo top >>= force
+        forcePeek $ peekUD typeFoo top
 
     , "get string" =:
       "lint" `shouldBeResultOf` do
@@ -69,7 +69,7 @@ tests = testGroup "UDType"
         pushUD typeFoo $ Foo 0 "lint"
         setglobal "foo"
         dostring "return foo.str" >>= \case
-          OK -> peekText top >>= force
+          OK -> forcePeek $ peekText top
           _ -> throwErrorAsException
 
     , "cannot change readonly string" =:
@@ -96,7 +96,7 @@ tests = testGroup "UDType"
           , "end"
           , "return result"
           ]
-        peekList peekText top >>= force
+        forcePeek $ peekList peekText top
     ]
   ]
 

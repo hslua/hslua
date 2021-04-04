@@ -16,7 +16,8 @@ import HsLua.Core (StackIndex, top)
 import HsLua.Packaging.Function
 import HsLua.Packaging.Types
 import HsLua.Marshalling
-  (force, peekIntegral, peekRealFloat, peekText, pushIntegral, pushRealFloat)
+  ( forcePeek, peekIntegral, peekRealFloat, peekText
+  , pushIntegral, pushRealFloat)
 import Test.Tasty.HsLua ((=:), shouldBeResultOf, shouldHoldForResultOf)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit ((@=?))
@@ -34,7 +35,7 @@ tests = testGroup "Call"
         factLua <- factLuaAtIndex <$> Lua.gettop
         Lua.pushinteger 6
         _ <- callFunction factLua
-        peekIntegral @Integer Lua.top >>= force
+        forcePeek $ peekIntegral @Integer Lua.top
 
     , "error message" =:
       mconcat [ "expected Integral, got 'true' (boolean)\n"
@@ -44,7 +45,7 @@ tests = testGroup "Call"
         factLua <- factLuaAtIndex <$> Lua.gettop
         Lua.pushboolean True
         _ <- callFunction factLua
-        peekText Lua.top >>= force
+        forcePeek $ peekText Lua.top
     ]
   , testGroup "use as C function"
     [ "push factorial" =:
@@ -58,14 +59,14 @@ tests = testGroup "Call"
         pushDocumentedFunction $ factLuaAtIndex 0
         Lua.pushinteger 5
         Lua.call 1 1
-        peekIntegral @Integer Lua.top >>= force
+        forcePeek $ peekIntegral @Integer Lua.top
     , "use from Lua" =:
       24
       `shouldBeResultOf` do
         pushDocumentedFunction $ factLuaAtIndex 0
         Lua.setglobal "factorial"
         Lua.loadstring "return factorial(4)" *> Lua.call 0 1
-        peekIntegral @Integer Lua.top >>= force
+        forcePeek $ peekIntegral @Integer Lua.top
 
     , "with setting an optional param" =:
       8
@@ -73,14 +74,14 @@ tests = testGroup "Call"
         pushDocumentedFunction nroot
         Lua.setglobal "nroot"
         Lua.loadstring "return nroot(64)" *> Lua.call 0 1
-        peekRealFloat @Double Lua.top >>= force
+        forcePeek $ peekRealFloat @Double Lua.top
     , "with setting an optional param" =:
       2
       `shouldBeResultOf` do
         pushDocumentedFunction nroot
         Lua.setglobal "nroot"
         Lua.loadstring "return nroot(64, 6)" *> Lua.call 0 1
-        peekRealFloat @Double Lua.top >>= force
+        forcePeek $ peekRealFloat @Double Lua.top
     ]
 
   , testGroup "documentation access"
@@ -89,7 +90,7 @@ tests = testGroup "Call"
         pushDocumentedFunction (factLuaAtIndex 0)
         numres <- pushDocumentation top
         Lua.liftIO $ numres @=? Lua.NumResults 1
-        peekText top >>= force
+        forcePeek $ peekText top
 
     , "undocumented value" =:
       Lua.TypeNil `shouldBeResultOf` do

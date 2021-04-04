@@ -19,12 +19,12 @@ module Test.Tasty.Lua.Core
   )
 where
 
-import Control.Monad (void)
+import Control.Monad ((<$!>), void)
 import Data.ByteString (ByteString)
 import HsLua.Core (LuaE, LuaError, absindex, pop, toboolean, top)
 import HsLua.Marshalling
-  ( Peeker, failure, resultToEither, retrieving
-  , peekList, peekString, typeMismatchMessage)
+  ( Peeker, failPeek, liftLua, resultToEither, retrieving
+  , peekList, peekString, runPeek, typeMismatchMessage)
 import Test.Tasty.Lua.Module (pushModule)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T.Encoding
@@ -40,7 +40,7 @@ runTastyFile fp = do
   res <- Lua.dofile fp
   if res /= Lua.OK
     then Left . toString <$> Lua.tostring' top
-    else resultToEither <$> peekList peekResultTree top
+    else resultToEither <$> runPeek (peekList peekResultTree top)
 
 -- | Convert UTF8-encoded @'ByteString'@ to a @'String'@.
 toString :: ByteString -> String
@@ -54,11 +54,11 @@ data ResultTree = ResultTree Tasty.TestName UnnamedTree
 
 peekResultTree :: LuaError e => Peeker e ResultTree
 peekResultTree idx = do
-  idx'   <- absindex idx
-  name   <- Lua.getfield idx' "name"   *> peekString top
-  result <- Lua.getfield idx' "result" *> peekUnnamedTree top
-  pop 2
-  return $! ResultTree <$> name <*> result
+  idx'   <- liftLua $ absindex idx
+  name   <- liftLua (Lua.getfield idx' "name")   *> peekString top
+  result <- liftLua (Lua.getfield idx' "result") *> peekUnnamedTree top
+  liftLua $ pop 2
+  return $! ResultTree name result
 
 
 -- | Either a raw test outcome, or a nested @'Tree'@.
@@ -68,9 +68,9 @@ data UnnamedTree
 
 -- | Unmarshal an @'UnnamedTree'@.
 peekUnnamedTree :: LuaError e => Peeker e UnnamedTree
-peekUnnamedTree idx = Lua.ltype idx >>= \case
-  Lua.TypeTable -> fmap TestGroup   <$> peekList peekResultTree idx
-  _             -> fmap SingleTest  <$> peekOutcome idx
+peekUnnamedTree idx = liftLua (Lua.ltype idx) >>= \case
+  Lua.TypeTable -> TestGroup   <$!> peekList peekResultTree idx
+  _             -> SingleTest  <$!> peekOutcome idx
 
 
 -- | Test outcome
@@ -79,9 +79,9 @@ data Outcome = Success | Failure String
 -- | Unmarshal a test outcome
 peekOutcome :: LuaError e => Peeker e Outcome
 peekOutcome idx = retrieving "test result" $ do
-  Lua.ltype idx >>= \case
-    Lua.TypeString  -> fmap Failure <$> peekString idx
+  liftLua (Lua.ltype idx) >>= \case
+    Lua.TypeString  -> Failure <$!> peekString idx
     Lua.TypeBoolean -> do
-      b <- toboolean idx
-      return . pure $ if b then Success else Failure "???"
-    _ -> failure <$> typeMismatchMessage "string or boolean" idx
+      b <- liftLua $ toboolean idx
+      return $ if b then Success else Failure "???"
+    _ -> typeMismatchMessage "string or boolean" idx >>= failPeek

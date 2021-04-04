@@ -12,7 +12,7 @@ Tests creating and loading of modules with Haskell.
 -}
 module HsLua.Packaging.ModuleTests (tests) where
 
-import HsLua.Marshalling (Result (Success), peekIntegral, pushIntegral)
+import HsLua.Marshalling (Result (Success), peekIntegral, pushIntegral, runPeek)
 import HsLua.Packaging.Function
 import HsLua.Packaging.Module
 import Test.Tasty.HsLua ((=:), pushLuaExpr, shouldBeResultOf)
@@ -82,7 +82,7 @@ tests = testGroup "Module"
              [ "local mymath = require 'mymath'\n"
              , "return mymath.factorial(4)"
              ]
-        peekIntegral @Integer Lua.top
+        runPeek $ peekIntegral @Integer Lua.top
     ]
   ]
 
