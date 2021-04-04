@@ -49,6 +49,8 @@ module HsLua.Marshalling
   , liftLua
   , withContext
   , failPeek
+  , lastly
+  , cleanup
     -- ** Helpers
   , typeMismatchMessage
   , reportValueOnFailure

@@ -28,6 +28,8 @@ module HsLua.Marshalling.Peek
   , failPeek
   , liftLua
   , withContext
+  , lastly
+  , cleanup
   ) where
 
 import Control.Applicative (Alternative (..))
@@ -130,6 +132,23 @@ instance MonadFail (Peek e) where
 withContext :: Name -> Peek e a -> Peek e a
 withContext ctx = Peek . fmap (addFailureContext ctx) . runPeek
 {-# INLINABLE withContext #-}
+
+-- | Runs the peek action and Lua action in sequence, even if the peek
+-- action fails.
+lastly :: Peek e a -> LuaE e b -> Peek e a
+lastly p after = Peek $ runPeek p <* after
+{-# INLINABLE lastly #-}
+
+-- | Runs the peek action, resetting the stack top afterwards. This can
+-- be used with peek actions that might otherwise leave elements on the
+-- stack in case of a failure.
+cleanup :: Peek e a -> Peek e a
+cleanup p = Peek $ do
+  oldtop <- gettop
+  result <- runPeek p
+  settop oldtop
+  return result
+{-# INLINABLE cleanup #-}
 
 -- | Returns 'True' iff the peek result is a Failure.
 isFailure :: Result a -> Bool

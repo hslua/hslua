@@ -36,6 +36,7 @@ module HsLua.Marshalling.Peekers
   , optional
   , choice
   , peekFieldRaw
+  , peekIndexRaw
   , peekPair
   , peekTriple
   -- ** Helpers
@@ -207,7 +208,7 @@ peekList peekElement = fmap (retrieving "list") .
   let elementsAt [] = return []
       elementsAt (i : is) = do
         x  <- retrieving ("index " <> showInt i) $
-              liftLua (rawgeti idx i) *> peekElement top <* liftLua (pop 1)
+              liftLua (rawgeti idx i) *> peekElement top `lastly` pop 1
         xs <- elementsAt is
         return (x:xs)
       showInt (Lua.Integer x) = fromString $ show x
@@ -225,7 +226,7 @@ peekMap keyPeeker valuePeeker = retrieving "Map"
 peekKeyValuePairs :: LuaError e
                   => Peeker e a -> Peeker e b -> Peeker e [(a, b)]
 peekKeyValuePairs keyPeeker valuePeeker =
-  typeChecked "table" istable $ \idx -> do
+  typeChecked "table" istable $ \idx -> cleanup $ do
     idx' <- liftLua $ absindex idx
     let remainingPairs = nextPair keyPeeker valuePeeker idx' >>= \case
           Nothing -> return []
@@ -248,8 +249,8 @@ nextPair keyPeeker valuePeeker idx = retrieving "key-value pair" $ do
     else do
       key   <- retrieving "key"   $ keyPeeker   (nth 2)
       value <- retrieving "value" $ valuePeeker (nth 1)
-      liftLua $ pop 1    -- remove value, leave the key
-      return $ Just (key, value)
+      return (Just (key, value))
+        `lastly` pop 1  -- remove value, leave the key
 
 -- | Retrieves a 'Set' from an idiomatic Lua representation. A
 -- set in Lua is idiomatically represented as a table with the
@@ -282,19 +283,27 @@ peekFieldRaw peeker name = typeChecked "table" Lua.istable $ \idx ->
       absidx <- Lua.absindex idx
       pushstring $ fromName name
       rawget absidx
-    peeker top <* liftLua (Lua.pop 1)
+    peeker top `lastly` Lua.pop 1
 {-# INLINABLE peekFieldRaw #-}
+
+-- | Get value at integer index key from a table.
+peekIndexRaw :: LuaError e => Lua.Integer -> Peeker e a -> Peeker e a
+peekIndexRaw i peeker = typeChecked "table" Lua.istable $ \idx -> do
+  let showInt (Lua.Integer x) = fromString $ show x
+  retrieving (fromString $ "raw index '" <> showInt i <> "'") $! do
+    liftLua $ rawgeti idx i
+    peeker top `lastly` Lua.pop 1
+{-# INLINABLE peekIndexRaw #-}
 
 -- | Retrieves a value pair from a table. Expects the values to be
 -- stored in a numerically indexed table; does not access metamethods.
 peekPair :: LuaError e
          => Peeker e a -> Peeker e b
          -> Peeker e (a, b)
-peekPair peekA peekB idx = do
+peekPair peekA peekB idx = cleanup $ do
   idx' <- liftLua $ absindex idx
   a <- liftLua (rawgeti idx' 1) *> peekA top
   b <- liftLua (rawgeti idx' 2) *> peekB top
-  liftLua $ Lua.pop 2
   return (a, b)
 
 -- | Retrieves a value triple from a table. Expects the values to be
@@ -302,12 +311,11 @@ peekPair peekA peekB idx = do
 peekTriple :: LuaError e
            => Peeker e a -> Peeker e b -> Peeker e c
            -> Peeker e (a, b, c)
-peekTriple peekA peekB peekC idx = do
+peekTriple peekA peekB peekC idx = cleanup $ do
   idx' <- liftLua $ absindex idx
   a <- liftLua (rawgeti idx' 1) *> peekA top
   b <- liftLua (rawgeti idx' 2) *> peekB top
   c <- liftLua (rawgeti idx' 3) *> peekC top
-  liftLua (Lua.pop 3)
   return (a,b,c)
 
 -- | Try all peekers and return the result of the first to succeed.
