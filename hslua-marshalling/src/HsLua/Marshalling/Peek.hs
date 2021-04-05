@@ -120,8 +120,8 @@ instance Alternative (Peek e) where
   {-# INLINE empty #-}
 
   a <|> b = Peek $ runPeek a >>= \case
-    Failure {} -> runPeek b
     Success ra -> return (pure ra)
+    _          -> runPeek b
   {-# INLINE (<|>) #-}
 
 instance MonadFail (Peek e) where
