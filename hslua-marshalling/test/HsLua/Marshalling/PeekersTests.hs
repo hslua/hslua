@@ -5,8 +5,6 @@ Module      : HsLua.Marshalling.PeekersTests
 Copyright   : © 2020-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
-Stability   : alpha
-Portability : OverloadedStrings, TypeApplications
 
 Tests for Haskell-value retriever functions.
 -}
@@ -36,7 +34,25 @@ import qualified HsLua.Core.Utf8 as Utf8
 -- | Calling Haskell functions from Lua.
 tests :: TestTree
 tests = testGroup "Peekers"
-  [ testGroup "peekBool"
+  [ testGroup "unit peekers"
+    [ "peekNil succeeds on nil" =:
+      Success () `shouldBeResultOf` do
+        Lua.pushnil
+        runPeek $ peekNil Lua.top
+    , "peekNil fails on bool" =:
+      isFailure `shouldHoldForResultOf` do
+        Lua.pushboolean False
+        runPeek $ peekNil Lua.top
+    , "peekNoneOrNil succeeds on nil" =:
+      Success () `shouldBeResultOf` do
+        Lua.pushnil
+        runPeek $ peekNoneOrNil Lua.top
+    , "peekNoneOrNilfails on bool" =:
+      isFailure `shouldHoldForResultOf` do
+        Lua.pushboolean False
+        runPeek $ peekNoneOrNil Lua.top
+    ]
+  , testGroup "peekBool"
     [ "True" =:
       Success True `shouldBeResultOf` do
         Lua.pushboolean True
@@ -319,16 +335,7 @@ tests = testGroup "Peekers"
     ]
 
   , testGroup "combinators"
-    [ "optional with nil" =:
-      Success Nothing `shouldBeResultOf` do
-        Lua.pushnil
-        runPeek $ optional peekString Lua.top
-    , "optional with number" =:
-      Success (Just 23) `shouldBeResultOf` do
-        Lua.pushinteger @Lua.Exception 23
-        runPeek $ optional (peekIntegral @Int) Lua.top
-
-    , testGroup "peekFieldRaw"
+    [ testGroup "peekFieldRaw"
       [ "access field" =:
         Success 8 `shouldBeResultOf` do
           pushLuaExpr "{ num = 8 }"

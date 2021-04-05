@@ -49,6 +49,7 @@ module HsLua.Packaging.Function
   , toHsFnPrecursor
   ) where
 
+import Control.Applicative ((<|>))
 import Control.Monad.Except
 import Data.Text (Text)
 import Data.Version (Version)
@@ -337,13 +338,15 @@ parameter peeker type_ name desc = Parameter
   }
 
 -- | Creates an optional parameter.
-optionalParameter :: Peeker e a   -- ^ method to retrieve the value from Lua
+optionalParameter :: LuaError e
+                  => Peeker e a   -- ^ method to retrieve the value from Lua
                   -> Text         -- ^ expected Lua type
                   -> Text         -- ^ parameter name
                   -> Text         -- ^ parameter description
                   -> Parameter e (Maybe a)
 optionalParameter peeker type_ name desc = Parameter
-  { parameterPeeker = optional peeker
+  { parameterPeeker = \idx -> (Nothing <$ peekNoneOrNil idx)
+                          <|> (Just <$!> peeker idx)
   , parameterDoc = ParameterDoc
     { parameterName = name
     , parameterDescription = desc

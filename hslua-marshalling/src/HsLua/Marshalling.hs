@@ -18,6 +18,8 @@ module HsLua.Marshalling
   , failure
   , resultToEither
     -- ** Primitive types
+  , peekNil
+  , peekNoneOrNil
   , peekBool
   , peekIntegral
   , peekRealFloat
@@ -38,7 +40,6 @@ module HsLua.Marshalling
     -- ** Userdata
   , peekAny
     -- ** Combinators
-  , optional
   , choice
   , peekFieldRaw
   , peekPair

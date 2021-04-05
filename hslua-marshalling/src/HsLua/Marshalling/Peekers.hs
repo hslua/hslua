@@ -15,7 +15,9 @@ Functions which unmarshal and retrieve Haskell values from Lua's stack.
 module HsLua.Marshalling.Peekers
   ( -- * Peeking values from the stack
     -- ** Primitives
-    peekBool
+    peekNil
+  , peekNoneOrNil
+  , peekBool
   , peekIntegral
   , peekRealFloat
     -- ** Strings
@@ -33,7 +35,6 @@ module HsLua.Marshalling.Peekers
   , peekMap
   , peekSet
   -- ** Combinators
-  , optional
   , choice
   , peekFieldRaw
   , peekIndexRaw
@@ -108,6 +109,21 @@ reportValueOnFailure expected peekMb idx = do
   case res of
     Just x  -> return $! x
     Nothing -> typeMismatchMessage expected idx >>= failPeek
+
+--
+-- Primitives
+--
+
+-- | Succeeds if the value at the given index is @nil@.
+peekNil :: LuaError e => Peeker e ()
+peekNil = typeChecked "nil" Lua.isnil $ const (return ())
+{-# INLINABLE peekNil #-}
+
+-- | Succeeds if the given index is not valid or if the value at this
+-- index is @nil@.
+peekNoneOrNil :: LuaError e => Peeker e ()
+peekNoneOrNil = typeChecked "none or nil" Lua.isnoneornil $ const (return ())
+{-# INLINABLE peekNoneOrNil #-}
 
 -- | Retrieves a 'Bool' as a Lua boolean.
 peekBool :: Peeker e Bool
@@ -263,17 +279,6 @@ peekSet elementPeeker = withContext "Set"
 --
 -- Combinators
 --
-
--- | Makes a result optional. Returns 'Nothing' if the Lua value
--- is @nil@; otherwise applies the peeker and returns its result.
-optional :: Peeker e a -- ^ peeker
-         -> Peeker e (Maybe a)
-optional peeker idx = do
-  noValue <- liftLua $ Lua.isnoneornil idx
-  if noValue
-    then return Nothing
-    else Just <$!> peeker idx
-{-# INLINABLE optional #-}
 
 -- | Get value at key from a table.
 peekFieldRaw :: LuaError e => Peeker e a -> Name -> Peeker e a
