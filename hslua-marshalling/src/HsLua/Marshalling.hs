@@ -52,7 +52,8 @@ module HsLua.Marshalling
   , failPeek
   , lastly
   , cleanup
-    -- ** Helpers
+    -- ** Building Peek functions
+  , typeChecked
   , typeMismatchMessage
   , reportValueOnFailure
 

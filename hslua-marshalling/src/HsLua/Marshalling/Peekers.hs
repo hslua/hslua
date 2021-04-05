@@ -40,7 +40,8 @@ module HsLua.Marshalling.Peekers
   , peekIndexRaw
   , peekPair
   , peekTriple
-  -- ** Helpers
+  -- ** Building peek functions
+  , typeChecked
   , reportValueOnFailure
   , typeMismatchMessage
   ) where
