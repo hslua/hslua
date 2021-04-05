@@ -282,7 +282,7 @@ peekSet elementPeeker = withContext "Set"
 
 -- | Get value at key from a table.
 peekFieldRaw :: LuaError e => Peeker e a -> Name -> Peeker e a
-peekFieldRaw peeker name = typeChecked "table" Lua.istable $ \idx ->
+peekFieldRaw peeker name idx =
   retrieving ("raw field '" <> name <> "'") $! do
     liftLua $ do
       absidx <- Lua.absindex idx
@@ -293,7 +293,7 @@ peekFieldRaw peeker name = typeChecked "table" Lua.istable $ \idx ->
 
 -- | Get value at integer index key from a table.
 peekIndexRaw :: LuaError e => Lua.Integer -> Peeker e a -> Peeker e a
-peekIndexRaw i peeker = typeChecked "table" Lua.istable $ \idx -> do
+peekIndexRaw i peeker idx = do
   let showInt (Lua.Integer x) = fromString $ show x
   retrieving (fromString $ "raw index '" <> showInt i <> "'") $! do
     liftLua $ rawgeti idx i
