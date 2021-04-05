@@ -38,7 +38,7 @@ tests = testGroup "Call"
         forcePeek $ peekIntegral @Integer Lua.top
 
     , "error message" =:
-      mconcat [ "expected Integral, got 'true' (boolean)\n"
+      mconcat [ "Integral expected, got boolean\n"
               , "\twhile retrieving function argument n\n"
               , "\twhile retrieving arguments for function factorial"]
       `shouldBeResultOf` do

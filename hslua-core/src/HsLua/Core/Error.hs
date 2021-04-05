@@ -30,7 +30,7 @@ module HsLua.Core.Error
 
 import Control.Applicative (Alternative (..))
 import Control.Monad ((<$!>))
-import Data.ByteString (ByteString, append)
+import Data.ByteString (ByteString)
 import Data.Proxy (Proxy (Proxy))
 import Data.Typeable (Typeable)
 import Foreign.Marshal.Alloc (alloca)
@@ -203,9 +203,11 @@ pushTypeMismatchError expected idx = liftLua $ \l -> do
   idx' <- lua_absindex l idx
   let pushstring str = B.unsafeUseAsCStringLen str $ \(cstr, cstrLen) ->
         lua_pushlstring l cstr (fromIntegral cstrLen)
-  pushstring ("expected " `append` expected `append` ", got '")
-  _ <- hsluaL_tolstring l idx' nullPtr
-  pushstring "' ("
-  _ <- lua_type l idx' >>= lua_typename l >>= lua_pushstring l
-  pushstring  ")"
-  lua_concat l 5
+  let pushtype = lua_type l idx' >>= lua_typename l >>= lua_pushstring l
+  pushstring expected
+  pushstring " expected, got "
+  B.unsafeUseAsCString "__name" (luaL_getmetafield l idx) >>= \case
+    LUA_TSTRING -> return () -- pushed the name
+    LUA_TNIL    -> () <$ pushtype
+    _           -> lua_pop l 1 <* pushtype
+  lua_concat l 3

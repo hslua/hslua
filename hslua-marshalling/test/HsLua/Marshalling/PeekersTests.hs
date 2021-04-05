@@ -88,13 +88,13 @@ tests = testGroup "Peekers"
         runPeek $ peekIntegral @Int Lua.top
 
     , "fail on boolean" =:
-      let msg = "expected Integral, got 'true' (boolean)"
+      let msg = "Integral expected, got boolean"
       in failure msg `shouldBeResultOf` do
         Lua.pushboolean True
         runPeek $ peekIntegral @Int Lua.top
 
     , "fail on non-numeric string" =:
-      let msg = "expected Integral, got 'not a number' (string)"
+      let msg = "Integral expected, got string"
       in failure msg `shouldBeResultOf` do
         Lua.pushstring "not a number"
         runPeek $ peekIntegral @Integer Lua.top
@@ -117,13 +117,13 @@ tests = testGroup "Peekers"
         runPeek $ peekRealFloat @Float Lua.top
 
     , "fail on boolean" =:
-      let msg = "expected RealFloat, got 'true' (boolean)"
+      let msg = "RealFloat expected, got boolean"
       in failure msg `shouldBeResultOf` do
         Lua.pushboolean True
         runPeek $ peekRealFloat @Float Lua.top
 
     , "fail on non-numeric string" =:
-      let msg = "expected RealFloat, got 'not a number' (string)"
+      let msg = "RealFloat expected, got string"
       in failure msg `shouldBeResultOf` do
         Lua.pushstring "not a number"
         runPeek $ peekRealFloat @Double Lua.top
@@ -145,7 +145,7 @@ tests = testGroup "Peekers"
           assert (retrieved == Success numberAsByteString)
 
       , "fails on boolean" =:
-      let msg = "expected string, got 'true' (boolean)"
+      let msg = "string expected, got boolean"
       in failure msg `shouldBeResultOf` do
         Lua.pushboolean True
         runPeeker peekByteString Lua.top
@@ -172,7 +172,7 @@ tests = testGroup "Peekers"
           assert (retrieved == Success numberAsByteString)
 
       , "fails on nil" =:
-        let msg = "expected string, got 'nil' (nil)"
+        let msg = "string expected, got nil"
         in failure msg `shouldBeResultOf` do
           Lua.pushnil
           runPeeker peekByteString Lua.top
@@ -244,7 +244,7 @@ tests = testGroup "Peekers"
         runPeek $ peekRead @Int Lua.top
 
     , "fails on non-string input" =:
-      "expected string, got 'true' (boolean)" `shouldBeErrorMessageOf` do
+      "string expected, got boolean" `shouldBeErrorMessageOf` do
         Lua.pushboolean True
         runPeeker (peekRead @Int) Lua.top >>= force
     ]
@@ -301,7 +301,7 @@ tests = testGroup "Peekers"
 
       , "fails if element peeker fails" =:
         let errorStack = [ "Set", "key-value pair", "key"]
-            errorMsg = "expected string, got 'true' (boolean)"
+            errorMsg = "string expected, got boolean"
         in Failure errorMsg errorStack `shouldBeResultOf` do
           pushLuaExpr "{ NaN = true, [true] = false }"
           runPeek $ peekSet peekText Lua.top
@@ -320,14 +320,14 @@ tests = testGroup "Peekers"
 
       , "fails if key peeker fails" =:
         let errorStack = [ "Map", "key-value pair" , "key" ]
-            errorMsg = "expected Integral, got 'NaN' (string)"
+            errorMsg = "Integral expected, got string"
         in Failure errorMsg errorStack `shouldBeResultOf` do
           pushLuaExpr "{ NaN = true }"
           runPeek $ peekMap (peekIntegral @Int) peekBool Lua.top
 
       , "fails if value peeker fails" =:
         let errorStack = [ "Map", "key-value pair", "value" ]
-            errorMsg = "expected string, got 'true' (boolean)"
+            errorMsg = "string expected, got boolean"
         in Failure errorMsg errorStack `shouldBeResultOf` do
           pushLuaExpr "{ [42] = true }"
           runPeek $ peekMap (peekIntegral @Int) peekText Lua.top
@@ -411,7 +411,7 @@ tests = testGroup "Peekers"
             (Lua.nthBottom 1)
 
       , "failure" =:
-        Failure "expected squirrel, got '23' (number)" []
+        Failure "squirrel expected, got number" []
         `shouldBeResultOf` do
           Lua.pushinteger 23
           let peekSquirrel :: Peeker Lua.Exception ()
@@ -423,7 +423,7 @@ tests = testGroup "Peekers"
 
   , testGroup "error messages"
     [ "value in list" =:
-      mconcat ["expected Integral, got '⚘' (table)\n"
+      mconcat ["Integral expected, got table\n"
               , "\twhile retrieving index 3\n"
               , "\twhile retrieving list"
               ] `shouldBeErrorMessageOf` do
@@ -434,14 +434,14 @@ tests = testGroup "Peekers"
         runPeeker (peekList (peekIntegral @Int)) Lua.top >>= force
 
     , "nil instead of list" =:
-      mconcat ["expected table, got 'nil' (nil)\n"
+      mconcat ["table expected, got nil\n"
               , "\twhile retrieving list"
               ] `shouldBeErrorMessageOf` do
         Lua.pushnil
         runPeeker (peekList peekString) Lua.top >>= force
 
     , "value in key-value pairs" =:
-      mconcat [ "expected string, got 'true' (boolean)\n"
+      mconcat [ "string expected, got boolean\n"
               , "\twhile retrieving value\n"
               , "\twhile retrieving key-value pair"
               ] `shouldBeErrorMessageOf` do

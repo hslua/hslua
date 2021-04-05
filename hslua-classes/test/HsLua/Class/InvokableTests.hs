@@ -42,7 +42,7 @@ tests = testGroup "Invokable"
       invoke @Lua.Exception "error" (Char8.pack "foo") :: Lua ()
 
   , "Error when Lua-to-Haskell result conversion fails" =:
-    "expected string, got 'false' (boolean)" `shouldBeErrorMessageOf` do
+    "string expected, got boolean" `shouldBeErrorMessageOf` do
       openlibs
       invoke @Lua.Exception "rawequal" (Char8.pack "a") () :: Lua String
   ]

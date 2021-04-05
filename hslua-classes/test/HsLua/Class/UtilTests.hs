@@ -67,7 +67,7 @@ tests = testGroup "Utilities"
 
     , "return error message on failure" =:
       let msg = "Could not read list:\n"
-             <> "\texpected integer, got 'false' (boolean)"
+             <> "\tinteger expected, got boolean"
       in
       Left (Lua.Exception msg)
       `shouldBeResultOf` do

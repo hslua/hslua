@@ -38,7 +38,7 @@ tests = testGroup "Peek"
           runPeeker (toPeeker firstindex) Lua.top
 
       , "catches error" =:
-        let msg = "Lua exception: expected table, got '1337' (number)"
+        let msg = "Lua exception: table expected, got number"
         in
           Failure msg [] `shouldBeResultOf` do
           Lua.pushinteger 1337

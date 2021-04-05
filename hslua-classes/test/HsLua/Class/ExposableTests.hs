@@ -46,7 +46,7 @@ tests =
 
   , "argument type errors are propagated" =:
      ("Error during function call:\n\tcould not read argument 2:\n\t"
-      ++ "expected integer, got 'true' (boolean)") `shouldBeErrorMessageOf` do
+      ++ "integer expected, got boolean") `shouldBeErrorMessageOf` do
           Lua.registerHaskellFunction "integerOp" integerOperation
           pushLuaExpr "integerOp(23, true)"
 
