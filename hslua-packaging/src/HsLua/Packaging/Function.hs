@@ -338,8 +338,7 @@ parameter peeker type_ name desc = Parameter
   }
 
 -- | Creates an optional parameter.
-optionalParameter :: LuaError e
-                  => Peeker e a   -- ^ method to retrieve the value from Lua
+optionalParameter :: Peeker e a   -- ^ method to retrieve the value from Lua
                   -> Text         -- ^ expected Lua type
                   -> Text         -- ^ parameter name
                   -> Text         -- ^ parameter description

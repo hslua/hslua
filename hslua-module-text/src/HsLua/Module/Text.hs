@@ -24,13 +24,12 @@ module HsLua.Module.Text
 import Prelude hiding (reverse)
 import Data.Text (Text)
 import Data.Maybe (fromMaybe)
-import HsLua.Core
 import HsLua.Marshalling (peekIntegral, peekText, pushIntegral, pushText)
 import HsLua.Packaging
 import qualified Data.Text as T
 
 -- | The @text@ module.
-documentedModule :: LuaError e => Module e
+documentedModule :: Module e
 documentedModule = Module
   { moduleName = "text"
   , moduleFields = []
@@ -50,7 +49,7 @@ documentedModule = Module
 --
 
 -- | Wrapper for @'T.length'@.
-len :: LuaError e => DocumentedFunction e
+len :: DocumentedFunction e
 len = defun "len"
   ### liftPure T.length
   <#> textParam "s"
@@ -58,7 +57,7 @@ len = defun "len"
   #? "Determines the number of characters in a string."
 
 -- | Wrapper for @'T.toLower'@.
-lower :: LuaError e => DocumentedFunction e
+lower :: DocumentedFunction e
 lower = defun "lower"
   ### liftPure T.toLower
   <#> textParam "s"
@@ -66,7 +65,7 @@ lower = defun "lower"
   #? "Converts a string to lower case."
 
 -- | Wrapper for @'T.reverse'@.
-reverse :: LuaError e => DocumentedFunction e
+reverse :: DocumentedFunction e
 reverse = defun "reverse"
   ### liftPure T.reverse
   <#> textParam "s"
@@ -74,7 +73,7 @@ reverse = defun "reverse"
   #? "Reverses a string."
 
 -- | Returns a substring, using Lua's string indexing rules.
-sub :: LuaError e => DocumentedFunction e
+sub :: DocumentedFunction e
 sub = defun "sub"
   ### liftPure3 substring
   <#> textParam "s"
@@ -91,7 +90,7 @@ sub = defun "sub"
       in T.dropEnd fromEnd . T.drop fromStart $ s
 
 -- | Wrapper for @'T.toUpper'@.
-upper :: LuaError e => DocumentedFunction e
+upper :: DocumentedFunction e
 upper = defun "upper"
   ### liftPure T.toUpper
   <#> textParam "s"
@@ -102,14 +101,14 @@ upper = defun "upper"
 -- Parameters
 --
 
-textParam :: LuaError e => Text -> Parameter e Text
+textParam :: Text -> Parameter e Text
 textParam name =
   parameter peekText "string" name "UTF-8 encoded string"
 
-textIndex :: LuaError e => Text -> Text -> Parameter e Int
+textIndex :: Text -> Text -> Parameter e Int
 textIndex = parameter (peekIntegral @Int) "integer"
 
-textOptionalIndex :: LuaError e => Text -> Text -> Parameter e (Maybe Int)
+textOptionalIndex :: Text -> Text -> Parameter e (Maybe Int)
 textOptionalIndex = optionalParameter (peekIntegral @Int) "integer"
 
 --

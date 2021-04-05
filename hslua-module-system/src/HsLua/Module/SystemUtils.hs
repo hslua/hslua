@@ -23,7 +23,7 @@ import HsLua.Marshalling
 -- the same caveats apply.
 newtype Callback = Callback StackIndex
 
-peekCallback :: LuaError e => Peeker e Callback
+peekCallback :: Peeker e Callback
 peekCallback = reportValueOnFailure "function" $ \idx -> do
   idx' <- absindex idx
   isFn <- isfunction idx'

@@ -72,8 +72,7 @@ import qualified HsLua.Core.Utf8 as Utf8
 -- value if possible. A successfully received value is wrapped
 -- using the 'Right' constructor, while a type mismatch results
 -- in @Left PeekError@ with the given error message.
-typeChecked :: LuaError e
-            => Name                         -- ^ expected type
+typeChecked :: Name                         -- ^ expected type
             -> (StackIndex -> LuaE e Bool)  -- ^ pre-condition checker
             -> Peeker e a
             -> Peeker e a
@@ -84,8 +83,7 @@ typeChecked expectedType test peekfn idx = do
     else typeMismatchMessage expectedType idx >>= failPeek
 
 -- | Generate a type mismatch error.
-typeMismatchMessage :: LuaError e
-                    => Name       -- ^ expected type
+typeMismatchMessage :: Name       -- ^ expected type
                     -> StackIndex -- ^ index of offending value
                     -> Peek e ByteString
 typeMismatchMessage (Name expected) idx = liftLua $ do
@@ -101,8 +99,7 @@ typeMismatchMessage (Name expected) idx = liftLua $ do
 
 -- | Report the expected and actual type of the value under the given
 -- index if conversion failed.
-reportValueOnFailure :: LuaError e
-                     => Name         -- ^ expected type
+reportValueOnFailure :: Name         -- ^ expected type
                      -> (StackIndex -> LuaE e (Maybe a))
                      -> Peeker e a
 reportValueOnFailure expected peekMb idx = do
@@ -116,13 +113,13 @@ reportValueOnFailure expected peekMb idx = do
 --
 
 -- | Succeeds if the value at the given index is @nil@.
-peekNil :: LuaError e => Peeker e ()
+peekNil :: Peeker e ()
 peekNil = typeChecked "nil" Lua.isnil $ const (return ())
 {-# INLINABLE peekNil #-}
 
 -- | Succeeds if the given index is not valid or if the value at this
 -- index is @nil@.
-peekNoneOrNil :: LuaError e => Peeker e ()
+peekNoneOrNil :: Peeker e ()
 peekNoneOrNil = typeChecked "none or nil" Lua.isnoneornil $ const (return ())
 {-# INLINABLE peekNoneOrNil #-}
 
@@ -144,17 +141,17 @@ toByteString idx = do
 {-# INLINABLE toByteString #-}
 
 -- | Retrieves a 'ByteString' as a raw string.
-peekByteString :: LuaError e => Peeker e ByteString
+peekByteString :: Peeker e ByteString
 peekByteString = reportValueOnFailure "string" toByteString
 {-# INLINABLE peekByteString #-}
 
 -- | Retrieves a lazy 'BL.ByteString' as a raw string.
-peekLazyByteString :: LuaError e => Peeker e BL.ByteString
+peekLazyByteString :: Peeker e BL.ByteString
 peekLazyByteString = (BL.fromStrict <$!>) . peekByteString
 {-# INLINABLE peekLazyByteString #-}
 
 -- | Retrieves a 'String' from an UTF-8 encoded Lua string.
-peekString :: LuaError e => Peeker e String
+peekString :: Peeker e String
 peekString = peekStringy
 {-# INLINABLE peekString #-}
 
@@ -163,17 +160,17 @@ peekString = peekStringy
 -- This should not be used to peek 'ByteString' values or other values
 -- for which construction via 'fromString' can result in loss of
 -- information.
-peekStringy :: forall a e. (LuaError e, IsString a) => Peeker e a
+peekStringy :: forall a e. IsString a => Peeker e a
 peekStringy = fmap (fromString . Utf8.toString) . peekByteString
 {-# INLINABLE peekStringy #-}
 
 -- | Retrieves a 'T.Text' value as an UTF-8 encoded string.
-peekText :: LuaError e => Peeker e T.Text
+peekText :: Peeker e T.Text
 peekText = (Utf8.toText <$!>) . peekByteString
 {-# INLINABLE peekText #-}
 
 -- | Retrieves a Lua string as 'Name'.
-peekName :: LuaError e => Peeker e Name
+peekName :: Peeker e Name
 peekName = (Name <$!>) . peekByteString
 {-# INLINABLE peekName #-}
 
@@ -183,7 +180,7 @@ peekName = (Name <$!>) . peekByteString
 
 -- | Retrieves a value by getting a String from Lua, then using
 -- 'readMaybe' to convert the String into a Haskell value.
-peekRead :: forall a e. (LuaError e, Read a) => Peeker e a
+peekRead :: forall a e. Read a => Peeker e a
 peekRead = peekString >=> readValue
   where
     readValue s = case readMaybe s of
@@ -195,7 +192,7 @@ peekRead = peekString >=> readValue
 --
 
 -- | Retrieves an 'Integral' value from the Lua stack.
-peekIntegral :: forall a e. (LuaError e, Integral a, Read a) => Peeker e a
+peekIntegral :: forall a e. (Integral a, Read a) => Peeker e a
 peekIntegral idx = liftLua (ltype idx) >>= \case
   TypeNumber  -> fromIntegral <$!>
                  reportValueOnFailure "Integral" tointeger idx
@@ -207,7 +204,7 @@ peekIntegral idx = liftLua (ltype idx) >>= \case
   _ -> typeMismatchMessage "Integral" idx >>= failPeek
 
 -- | Retrieve a 'RealFloat' (e.g., 'Float' or 'Double') from the stack.
-peekRealFloat :: forall a e. (LuaError e, RealFloat a, Read a) => Peeker e a
+peekRealFloat :: forall a e. (RealFloat a, Read a) => Peeker e a
 peekRealFloat idx = liftLua (ltype idx) >>= \case
   TypeString  -> do
     Just str <- liftLua $ tostring idx
@@ -233,15 +230,13 @@ peekList peekElement = fmap (retrieving "list") .
   elementsAt [1..fromIntegral listLength]
 
 -- | Retrieves a key-value Lua table as 'Map'.
-peekMap :: (LuaError e, Ord a)
-        => Peeker e a -> Peeker e b -> Peeker e (Map a b)
+peekMap :: Ord a => Peeker e a -> Peeker e b -> Peeker e (Map a b)
 peekMap keyPeeker valuePeeker = retrieving "Map"
   . fmap Map.fromList
   . peekKeyValuePairs keyPeeker valuePeeker
 
 -- | Read a table into a list of pairs.
-peekKeyValuePairs :: LuaError e
-                  => Peeker e a -> Peeker e b -> Peeker e [(a, b)]
+peekKeyValuePairs :: Peeker e a -> Peeker e b -> Peeker e [(a, b)]
 peekKeyValuePairs keyPeeker valuePeeker =
   typeChecked "table" istable $ \idx -> cleanup $ do
     idx' <- liftLua $ absindex idx
@@ -272,7 +267,7 @@ nextPair keyPeeker valuePeeker idx = retrieving "key-value pair" $ do
 -- | Retrieves a 'Set' from an idiomatic Lua representation. A
 -- set in Lua is idiomatically represented as a table with the
 -- elements as keys. Elements with falsy values are omitted.
-peekSet :: (LuaError e, Ord a) => Peeker e a -> Peeker e (Set a)
+peekSet :: Ord a => Peeker e a -> Peeker e (Set a)
 peekSet elementPeeker = withContext "Set"
   . fmap (Set.fromList . map fst . filter snd)
   . peekKeyValuePairs elementPeeker peekBool

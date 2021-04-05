@@ -344,12 +344,11 @@ with_tmpdir = defun "with_tmpdir"
 --
 
 -- | Retrieves a file path from the stack.
-peekFilePath :: LuaError e => Peeker e FilePath
+peekFilePath :: Peeker e FilePath
 peekFilePath = peekString
 
 -- | Filepath function parameter.
-filepathParam :: LuaError e
-              => Text  -- ^ name
+filepathParam :: Text  -- ^ name
               -> Text  -- ^ description
               -> Parameter e FilePath
 filepathParam name description = Parameter

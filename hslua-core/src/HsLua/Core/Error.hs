@@ -4,6 +4,7 @@
 {-# LANGUAGE ScopedTypeVariables  #-}
 {-# LANGUAGE TypeApplications     #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# OPTIONS_GHC -Wno-warnings-deprecations #-}
 {-|
 Module      : HsLua.Core.Error
 Copyright   : © 2017-2021 Albert Krewinkel
@@ -36,6 +37,7 @@ import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 import HsLua.Core.Types (LuaE, liftLua)
 import Lua
+import Lua.Primary (lua_concat)
 
 import qualified Control.Exception as E
 import qualified Control.Monad.Catch as Catch
@@ -194,8 +196,7 @@ popErrorMessage l = alloca $ \lenPtr -> do
 
 -- | Creates an error to notify about a Lua type mismatch and pushes it
 -- to the stack.
-pushTypeMismatchError :: forall e. LuaError e
-                      => ByteString  -- ^ name or description of expected type
+pushTypeMismatchError :: ByteString  -- ^ name or description of expected type
                       -> StackIndex  -- ^ stack index of mismatching object
                       -> LuaE e ()
 pushTypeMismatchError expected idx = liftLua $ \l -> do
@@ -207,4 +208,4 @@ pushTypeMismatchError expected idx = liftLua $ \l -> do
   pushstring "' ("
   _ <- lua_type l idx' >>= lua_typename l >>= lua_pushstring l
   pushstring  ")"
-  throwOnError (Proxy @e) (`hslua_concat` 5) l
+  lua_concat l 5

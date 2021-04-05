@@ -107,7 +107,7 @@ functions =
   ]
 
 -- | See @Path.takeDirectory@
-directory :: LuaError e => DocumentedFunction e
+directory :: DocumentedFunction e
 directory = defun "directory"
   ### liftPure Path.takeDirectory
   <#> filepathParam
@@ -117,7 +117,7 @@ directory = defun "directory"
   `since` initialVersion
 
 -- | See @Path.takeFilename@
-filename :: LuaError e => DocumentedFunction e
+filename :: DocumentedFunction e
 filename = defun "filename"
   ### liftPure Path.takeFileName
   <#> filepathParam
@@ -126,7 +126,7 @@ filename = defun "filename"
   `since` initialVersion
 
 -- | See @Path.isAbsolute@
-is_absolute :: LuaError e => DocumentedFunction e
+is_absolute :: DocumentedFunction e
 is_absolute = defun "is_absolute"
   ### liftPure Path.isAbsolute
   <#> filepathParam
@@ -136,7 +136,7 @@ is_absolute = defun "is_absolute"
   `since` initialVersion
 
 -- | See @Path.isRelative@
-is_relative :: LuaError e => DocumentedFunction e
+is_relative :: DocumentedFunction e
 is_relative = defun "is_relative"
   ### liftPure Path.isRelative
   <#> filepathParam
@@ -162,7 +162,7 @@ join = defun "join"
   #? "Join path elements back together by the directory separator."
   `since` initialVersion
 
-make_relative :: LuaError e => DocumentedFunction e
+make_relative :: DocumentedFunction e
 make_relative = defun "make_relative"
   ### liftPure3 makeRelative
   <#> parameter
@@ -192,7 +192,7 @@ make_relative = defun "make_relative"
   `since` initialVersion
 
 -- | See @Path.normalise@
-normalize :: LuaError e => DocumentedFunction e
+normalize :: DocumentedFunction e
 normalize = defun "normalize"
   ### liftPure Path.normalise
   <#> filepathParam
@@ -222,7 +222,7 @@ split = defun "split"
   `since` initialVersion
 
 -- | See @Path.splitExtension@
-split_extension :: LuaError e => DocumentedFunction e
+split_extension :: DocumentedFunction e
 split_extension = defun "split_extension"
   ### liftPure Path.splitExtension
   <#> filepathParam
@@ -268,7 +268,7 @@ split_search_path = defun "split_search_path"
   `since` initialVersion
 
 -- | Join two paths with a directory separator. Wraps @'Path.combine'@.
-combine :: LuaError e => DocumentedFunction e
+combine :: DocumentedFunction e
 combine = defun "combine"
   ### liftPure2 Path.combine
   <#> filepathParam
@@ -277,7 +277,7 @@ combine = defun "combine"
   #? "Combine two paths with a path separator."
 
 -- | Adds an extension to a file path. Wraps @'Path.addExtension'@.
-add_extension :: LuaError e => DocumentedFunction e
+add_extension :: DocumentedFunction e
 add_extension = defun "add_extension"
   ### liftPure2 Path.addExtension
   <#> filepathParam
@@ -333,11 +333,11 @@ treat_strings_as_paths = defun "treat_strings_as_paths"
 --
 
 -- | Retrieves a file path from the stack.
-peekFilePath :: LuaError e => Peeker e FilePath
+peekFilePath :: Peeker e FilePath
 peekFilePath = peekString
 
 -- | Filepath function parameter.
-filepathParam :: LuaError e => Parameter e FilePath
+filepathParam :: Parameter e FilePath
 filepathParam = Parameter
   { parameterPeeker = peekFilePath
   , parameterDoc = ParameterDoc

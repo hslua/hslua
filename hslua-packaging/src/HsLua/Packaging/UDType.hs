@@ -203,14 +203,13 @@ pushUD ty x = do
   setmetatable (nth 2)
 
 -- | Retrieves a userdata value of the given type.
-peekUD :: LuaError e => UDType e a -> Peeker e a
+peekUD :: UDType e a -> Peeker e a
 peekUD ty = do
   let name = udName ty
   reportValueOnFailure name (`fromuserdata` name)
 
 -- | Defines a function parameter that takes the given type.
-udparam :: LuaError e
-        => UDType e a      -- ^ expected type
+udparam :: UDType e a      -- ^ expected type
         -> Text            -- ^ parameter name
         -> Text            -- ^ parameter description
         -> Parameter e a

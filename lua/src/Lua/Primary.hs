@@ -29,6 +29,7 @@ module Lua.Primary
   ( lua_absindex
   , lua_checkstack
   , lua_close
+  , lua_concat
   , lua_copy
   , lua_createtable
   , lua_gc
@@ -139,6 +140,26 @@ foreign import capi unsafe "lua.h lua_checkstack"
 -- <https://www.lua.org/manual/5.3/manual.html#lua_close>
 foreign import ccall safe "lua.h lua_close"
   lua_close :: Lua.State -> IO ()
+
+-- | Concatenates the @n@ values at the top of the stack, pops them, and
+-- leaves the result at the top. If @n@ is 1, the result is the single
+-- value on the stack (that is, the function does nothing); if @n@ is 0,
+-- the result is the empty string. Concatenation is performed following
+-- the usual semantics of Lua (see
+-- <https://www.lua.org/manual/5.3/manual.html#3.4.6 §3.4.6> of the Lua
+-- manual).
+--
+-- __WARNING__: @lua_concat@ is unsafe in Haskell: This function will
+-- cause an unrecoverable crash an error if any of the concatenated
+-- values causes an error when executing a metamethod. Consider using
+-- the @'Lua.hslua_concat'@ ersatz function instead.
+foreign import ccall SAFTY "lua.h lua_concat"
+  lua_concat :: State -> CInt {- ^ n -} -> IO ()
+{-# WARNING lua_concat
+      [ "This is an unsafe function, it will cause a program crash if"
+      , "a metamethod throws an error."
+      , "Consider using hslua_concat instead."
+      ] #-}
 
 -- | Copies the element at index @fromidx@ into the valid index @toidx@,
 -- replacing the value at that position. Values at other positions are
