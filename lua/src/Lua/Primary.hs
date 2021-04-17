@@ -37,6 +37,7 @@ module Lua.Primary
   , lua_getmetatable
   , lua_gettable
   , lua_gettop
+  , lua_getuservalue
   , lua_insert
   , lua_isboolean
   , lua_iscfunction
@@ -80,6 +81,7 @@ module Lua.Primary
   , lua_setmetatable
   , lua_settable
   , lua_settop
+  , lua_setuservalue
   , lua_status
   , lua_toboolean
   , lua_tocfunction
@@ -252,6 +254,15 @@ foreign import ccall SAFTY "lua.h lua_gettable"
 -- <https://www.lua.org/manual/5.3/manual.html#lua_gettop>
 foreign import ccall unsafe "lua.h lua_gettop"
   lua_gettop :: Lua.State -> IO StackIndex
+
+-- | Pushes onto the stack the Lua value associated with the full
+-- userdata at the given index.
+--
+-- Returns the type of the pushed value.
+--
+-- <https://www.lua.org/manual/5.3/manual.html#lua_getuservalue>
+foreign import ccall unsafe "lua.h lua_getuservalue"
+  lua_getuservalue :: Lua.State -> StackIndex -> IO TypeCode
 
 -- | Moves the top element into the given valid index, shifting up the
 -- elements above this index to open space. This function cannot be
@@ -742,6 +753,13 @@ foreign import ccall SAFTY "lua.h lua_settable"
 -- <https://www.lua.org/manual/5.3/manual.html#lua_settop>
 foreign import ccall unsafe "lua.h lua_settop"
   lua_settop :: Lua.State -> StackIndex {- ^ index -} -> IO ()
+
+-- | Pops a value from the stack and sets it as the new value associated
+-- to the full userdata at the given index.
+--
+-- <https://www.lua.org/manual/5.3/manual.html#lua_setuservalue>
+foreign import ccall unsafe "lua.h lua_setuservalue"
+  lua_setuservalue :: Lua.State -> StackIndex -> IO ()
 
 -- |  Returns the status of this Lua thread.
 --

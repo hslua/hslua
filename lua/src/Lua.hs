@@ -143,10 +143,12 @@ module Lua
   , lua_createtable
   , lua_newuserdata
   , lua_getmetatable
+  , lua_getuservalue
     -- ** Set functions (stack → Lua)
   , lua_rawset
   , lua_rawseti
   , lua_setmetatable
+  , lua_setuservalue
     -- ** Load and run Lua code
   , lua_pcall
   , lua_load
