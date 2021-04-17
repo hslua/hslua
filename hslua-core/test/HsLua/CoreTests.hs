@@ -187,6 +187,16 @@ tests = testGroup "Core module"
         toboolean top
     ]
 
+  , "setting and getting a global works" =:
+    Just "Fisch" `shouldBeResultOf` do
+      newhsuserdata ()
+      pushstring "Fisch"
+      setuservalue (nth 2)
+
+      -- get uservalue again
+      TypeString <- getuservalue top
+      tostring top
+
   , "can push and receive a thread" ?: do
       luaSt <- state
       isMain <- pushthread

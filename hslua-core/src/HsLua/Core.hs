@@ -115,6 +115,7 @@ module HsLua.Core
   , newtable
   , newuserdata
   , getmetatable
+  , getuservalue
   -- ** set functions (stack → Lua)
   , setglobal
   , settable
@@ -122,6 +123,7 @@ module HsLua.Core
   , rawset
   , rawseti
   , setmetatable
+  , setuservalue
   -- ** load and call functions (load and run Lua code)
   , call
   , pcall

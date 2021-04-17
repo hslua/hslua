@@ -287,6 +287,15 @@ gettop :: LuaE e StackIndex
 gettop = liftLua lua_gettop
 {-# INLINABLE gettop #-}
 
+-- | Pushes onto the stack the Lua value associated with the full
+-- userdata at the given index.
+--
+-- Returns the type of the pushed value.
+--
+-- Wraps 'lua_getuservalue'.
+getuservalue :: StackIndex -> LuaE e Type
+getuservalue idx = toType <$> liftLua (`lua_getuservalue` idx)
+
 -- | Moves the top element into the given valid index, shifting up the
 -- elements above this index to open space. This function cannot be
 -- called with a pseudo-index, because a pseudo-index is not an actual
@@ -838,6 +847,13 @@ settable index = liftLuaThrow $ \l -> hslua_settable l index
 settop :: StackIndex -> LuaE e ()
 settop = liftLua1 lua_settop
 {-# INLINABLE settop #-}
+
+-- | Pops a value from the stack and sets it as the new value associated
+-- to the full userdata at the given index.
+--
+-- <https://www.lua.org/manual/5.3/manual.html#lua_setuservalue>
+setuservalue :: StackIndex -> LuaE e ()
+setuservalue idx = liftLua (`lua_setuservalue` idx)
 
 -- |  Returns the status of this Lua thread.
 --
