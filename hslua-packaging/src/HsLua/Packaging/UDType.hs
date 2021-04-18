@@ -250,12 +250,14 @@ peekUD ty idx = do
   let name = udName ty
   x <- reportValueOnFailure name (`fromuserdata` name) idx
   liftLua $ do
-    getuservalue idx >>= \case
+    result <- getuservalue idx >>= \case
       TypeTable -> do
         pushnil
         setProperties (udProperties ty) x
       _ -> do
         return x
+    pop 1          -- uservalue (caching) table
+    return result
 
 setProperties :: LuaError e => Map Name (Property e a) -> a -> LuaE e a
 setProperties props x = do
