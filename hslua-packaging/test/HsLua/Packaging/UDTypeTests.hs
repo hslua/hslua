@@ -89,6 +89,15 @@ tests = testGroup "UDType"
         ErrRun <- dostring "foo.str = 'c'"
         throwErrorAsException :: Lua ()
 
+    , "Can peek after getting read-only property" =:
+      Foo 144 "gros" `shouldBeResultOf` do
+        openlibs
+        pushUD typeFoo $ Foo 144 "gros"
+        setglobal "foo"
+        OK <- dostring "bar = foo.str"
+        _ <- getglobal "foo"
+        forcePeek $ peekUD typeFoo top
+
     , "cannot change unknown property" =:
       "Cannot set unknown property." `shouldBeErrorMessageOf` do
         openlibs

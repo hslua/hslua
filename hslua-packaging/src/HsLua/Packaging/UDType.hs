@@ -265,15 +265,12 @@ setProperties props x = do
     else ltype (nth 2) >>= \case
       TypeString -> do
         propName <- forcePeek $ peekName (nth 2)
-        case Map.lookup propName props of
+        case Map.lookup propName props >>= propertySet of
           Nothing -> pop 1 *> setProperties props x
-          Just prop -> case propertySet prop of
-            Nothing -> failLua $ "Trying to set read-only property "
-                       ++ Utf8.toString (fromName propName)
-            Just setter -> do
-              x' <- setter top x
-              pop 1
-              setProperties props x'
+          Just setter -> do
+            x' <- setter top x
+            pop 1
+            setProperties props x'
       _ -> x <$ pop 1
 
 
