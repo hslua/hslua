@@ -160,7 +160,7 @@ return {
     test('use `..` when allowing unsafe operation', function()
       assert.are_equal(
         path.make_relative('/foo/baz/file.txt', '/foo/bar', true),
-        '../baz/file.txt'
+        path.join{'..', 'baz', 'file.txt'}
       )
     end),
     test('return dot if both paths are the same', function()
