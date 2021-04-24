@@ -46,13 +46,13 @@ return {
     test('capitalized word with umlaut', function ()
       assert.are_equal(text.upper 'Lübeck', 'LÜBECK')
     end),
-    test('German ß becomes double S', function ()
+    test('German eszett becomes double S', function ()
       assert.are_equal(text.upper 'Spaß', 'SPASS')
     end),
   },
 
   group 'reverse' {
-    test('être becomes ertê', function ()
+    test('reverse word with accent circumflex', function ()
       assert.are_equal(text.reverse 'être', 'ertê')
     end)
   },
