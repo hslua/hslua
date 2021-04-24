@@ -140,12 +140,17 @@ library
                      , cbits/hslua/hslauxlib.c
                      , cbits/hslua/hslua.c
   include-dirs:        cbits/hslua
+  includes:            lua.h
+                     , luaconf.h
+                     , lauxlib.h
+  install-includes:    lua.h
+                     , luaconf.h
+                     , lauxlib.h
   if flag(system-lua) || flag(pkg-config)
     if flag(pkg-config)
       pkgconfig-depends: lua5.3
     else
       extra-libraries:   lua
-      includes:          lua.h
   else
     include-dirs:        cbits/lua-5.3.6
     c-sources:           cbits/lua-5.3.6/lapi.c
