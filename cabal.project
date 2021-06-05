@@ -3,6 +3,7 @@ packages: lua/lua.cabal
           hslua/hslua.cabal
           hslua-core/hslua-core.cabal
           hslua-classes/hslua-classes.cabal
+          hslua-examples/hslua-examples.cabal
           hslua-marshalling/hslua-marshalling.cabal
           hslua-module-path/hslua-module-path.cabal
           hslua-module-system/hslua-module-system.cabal

@@ -1,0 +1,44 @@
+cabal-version:       2.2
+name:                hslua-examples
+version:             2.0.0
+synopsis:            Examples of how to combine Haskell and Lua.
+description:         The HsLua modules provide wrappers of Lua language
+                     interpreter as described on the official
+                     <https://www.lua.org/ Lua website).
+                     .
+                     This package contains example programs, demonstrating
+                     the possibility to work with Lua from within Haskell
+                     and /vice versa/.
+homepage:            https://hslua.github.io/
+bug-reports:         https://github.com/hslua/hslua/issues
+license:             MIT
+license-File:        LICENSE
+author:              Albert Krewinkel
+copyright:           © 2020–2021 Albert Krewinkel
+maintainer:          Albert Krewinkel <albert+hslua@zeitkraut.de>
+category:            Foreign
+build-type:          Simple
+extra-source-files:  README.md
+                     CHANGELOG.md
+                     wishlist/filter.lua
+
+source-repository head
+  type:                git
+  location:            https://github.com/hslua/hslua.git
+  subdir:              hslua-examples
+
+executable run-lua
+  main-is:             run-lua.hs
+  hs-source-dirs:      run-lua
+  build-depends:       base
+                     , bytestring
+                     , hslua             >= 2.0 && < 2.1
+
+executable wishlist
+  main-is:             wishlist.hs
+  hs-source-dirs:      wishlist
+  build-depends:       base
+                     , bytestring
+                     , hslua             >= 2.0 && < 2.1
+                     , hslua-marshalling >= 2.0 && < 2.1
+                     , text
