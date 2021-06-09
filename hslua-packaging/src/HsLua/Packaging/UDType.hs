@@ -24,6 +24,7 @@ module HsLua.Packaging.UDType
   , deftype
   , method
   , property
+  , possibleProperty
   , readonly
   , operation
   , peekUD
@@ -33,6 +34,7 @@ module HsLua.Packaging.UDType
   , Member
   , Property
   , Operation
+  , Possible (..)
   ) where
 
 import Control.Monad.Except
@@ -98,6 +100,12 @@ data Member e a
 method :: DocumentedFunction e -> Member e a
 method f = MemberMethod (functionName f) f
 
+-- | A property or method which may be available in some instances but
+-- not in others.
+data Possible a
+  = Actual a
+  | Absent
+
 -- | Declares a new read- and writable property.
 property :: LuaError e
          => Name                       -- ^ property name
@@ -105,14 +113,32 @@ property :: LuaError e
          -> (Pusher e b, a -> b)       -- ^ how to get the property value
          -> (Peeker e b, a -> b -> a)  -- ^ how to set a new property value
          -> Member e a
-property name desc (push, get) (peek, set) = MemberProperty name $
+property name desc (push, get) (peek, set) =
+  possibleProperty name desc
+    (push, Actual . get)
+    (peek, \a b -> Actual (set a b))
+
+-- | Declares a new read- and writable property which is not always
+-- available.
+possibleProperty :: LuaError e
+  => Name                               -- ^ property name
+  -> Text                               -- ^ property description
+  -> (Pusher e b, a -> Possible b)      -- ^ how to get the property value
+  -> (Peeker e b, a -> b -> Possible a) -- ^ how to set a new property value
+  -> Member e a
+possibleProperty name desc (push, get) (peek, set) = MemberProperty name $
   Property
   { propertyGet = \x -> do
-      push $ get x
-      return (NumResults 1)
+      case get x of
+        Actual y -> NumResults 1 <$ push y
+        Absent   -> return (NumResults 0)
   , propertySet = Just $ \idx x -> do
       value  <- forcePeek $ peek idx
-      return $ set x value
+      case set x value of
+        Actual y -> return y
+        Absent   -> failLua $ "Trying to set unavailable property "
+                            <> Utf8.toString (fromName name)
+                            <> "."
   , propertyDescription = desc
   }
 

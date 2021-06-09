@@ -135,6 +135,40 @@ tests = testGroup "UDType"
         _ <- getglobal "bar"
         forcePeek $ peekUD typeBar top
     ]
+
+  , testGroup "possible properties"
+    [ "tostring Quux" =:
+      "Quux 11 \"eleven\"" `shouldBeResultOf` do
+        openlibs
+        pushUD typeQux $ Quux 11 "eleven"
+        setglobal "quux"
+        _ <- dostring "return tostring(quux)"
+        forcePeek $ peekText top
+    , "show Quux" =:
+      "Quux 11 \"eleven\"" `shouldBeResultOf` do
+        openlibs
+        pushUD typeQux $ Quux 11 "eleven"
+        setglobal "quux"
+        _ <- dostring "return quux:show()"
+        forcePeek $ peekText top
+
+    , "access Quux.num" =:
+      "12" `shouldBeResultOf` do
+        openlibs
+        pushUD typeQux $ Quux 12 "twelve"
+        setglobal "quux"
+        _ <- dostring "return quux.num"
+        forcePeek $ peekText top
+
+    , "access Quux.str" =:
+      "thirteen!" `shouldBeResultOf` do
+        openlibs
+        pushUD typeQux $ Quux 13 "thirteen"
+        setglobal "quux"
+        _ <- dostring "return quux.num"
+        _ <- dostring "quux.str = quux.str .. '!'; return quux.str"
+        forcePeek $ peekText top
+    ]
   ]
 
 --
@@ -169,4 +203,42 @@ typeBar = deftype "Bar" []
   [ property "nums" "some numbers"
     (pushList pushIntegral, \(Bar nums) -> nums)
     (peekList peekIntegral, \(Bar _) nums -> Bar nums)
+  ]
+
+--
+-- Sum Type
+--
+data Qux
+  = Quux Int String
+  | Quuz Double Int
+  deriving (Eq, Show)
+
+showQux :: LuaError e => DocumentedFunction e
+showQux = defun "show"
+  ### liftPure (show @Qux)
+  <#> parameter peekQux "qux" "qux" "Object"
+  =#> functionResult pushString "string" "stringified Qux"
+
+peekQux :: LuaError e => Peeker e Qux
+peekQux = peekUD typeQux
+
+typeQux :: LuaError e => UDType e Qux
+typeQux = deftype "Qux"
+  [ operation Tostring showQux ]
+  [ method showQux
+  , property "num" "some number"
+      (pushIntegral, \case
+          Quux n _ -> n
+          Quuz _ n -> n)
+      (peekIntegral, \case
+          Quux _ s -> (`Quux` s)
+          Quuz d _ -> Quuz d)
+
+  , possibleProperty "str" "a string in Quux"
+    (pushString, \case
+        Quux _ s -> Actual s
+        Quuz {}  -> Absent)
+    (peekString, \case
+        Quux n _ -> Actual . Quux n
+        Quuz {}  -> const Absent)
   ]
