@@ -26,6 +26,7 @@ module HsLua.Packaging.UDType
   , property
   , possibleProperty
   , readonly
+  , alias
   , operation
   , peekUD
   , pushUD
@@ -62,6 +63,7 @@ data UDType e a = UDType
   , udOperations    :: [(Operation, DocumentedFunction e)]
   , udProperties    :: Map Name (Property e a)
   , udMethods       :: Map Name (DocumentedFunction e)
+  , udAliases       :: Map Name Alias
   }
 
 -- | Defines a new type, defining the behavior of objects in Lua.
@@ -75,6 +77,7 @@ deftype name ops members = UDType
   , udOperations    = ops
   , udProperties    = Map.fromList $ mapMaybe mbproperties members
   , udMethods       = Map.fromList $ mapMaybe mbmethods members
+  , udAliases       = Map.fromList $ mapMaybe mbaliases members
   }
   where
     mbproperties = \case
@@ -82,6 +85,9 @@ deftype name ops members = UDType
       _ -> Nothing
     mbmethods = \case
       MemberMethod n m -> Just (n, m)
+      _ -> Nothing
+    mbaliases = \case
+      MemberAlias n a -> Just (n, a)
       _ -> Nothing
 
 -- | A read- and writable property on a UD object.
@@ -91,10 +97,14 @@ data Property e a = Property
   , propertyDescription :: Text
   }
 
+-- | Alias for a different property of this or of a nested object.
+type Alias = [Name]
+
 -- | A type member, either a method or a variable.
 data Member e a
   = MemberProperty Name (Property e a)
   | MemberMethod Name (DocumentedFunction e)
+  | MemberAlias Name Alias
 
 -- | Use a documented function as an object method.
 method :: DocumentedFunction e -> Member e a
@@ -163,6 +173,13 @@ operation :: Operation             -- ^ the kind of operation
           -> (Operation, DocumentedFunction e)
 operation op f = (,) op $ setName (metamethodName op) f
 
+-- | Define an alias for another, possibly nested, property.
+alias :: Name  -- ^ property alias
+      -> Text  -- ^ description
+      -> [Name] -- ^ sequence of nested properties
+      -> Member e a
+alias name desc = MemberAlias name
+
 -- | Pushes the metatable for the given type to the Lua stack. Creates
 -- the new table afresh on the first time it is needed, and retrieves it
 -- from the registry after that.
@@ -178,6 +195,7 @@ pushUDMetatable ty = do
     add "getters" $ pushGetters ty
     add "setters" $ pushSetters ty
     add "methods" $ pushMethods ty
+    add "aliases" $ pushAliases ty
   where
     add :: LuaError e => Name -> LuaE e () -> LuaE e ()
     add name op = do
@@ -245,6 +263,14 @@ pushMethods ty = do
     pushDocumentedFunction fn
     rawset (nth 3)
 
+pushAliases :: LuaError e => UDType e a -> LuaE e ()
+pushAliases ty = do
+  newtable
+  void $ flip Map.traverseWithKey (udAliases ty) $ \name propSeq -> do
+    pushName name
+    pushList pushName propSeq
+    rawset (nth 3)
+
 -- | Pushes the function used to iterate over the object's key-value
 -- pairs in a generic *for* loop.
 pairsFunction :: forall e a. LuaError e => UDType e a -> LuaE e NumResults
@@ -259,6 +285,7 @@ pairsFunction ty = do
           pushName name
           pushDocumentedFunction f
           return 2
+        MemberAlias{} -> fail "aliases are not full properties"
   pushIterator pushMember $
     map (uncurry MemberProperty) (Map.toAscList (udProperties ty)) ++
     map (uncurry MemberMethod) (Map.toAscList (udMethods ty))

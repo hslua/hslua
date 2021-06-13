@@ -66,6 +66,24 @@ int hslua_udindex(lua_State *L)
     }
     lua_pop(L, 1);
   }
+
+  /* try aliases */
+  if (luaL_getmetafield(L, 1, "aliases") == LUA_TTABLE) {
+    lua_pushvalue(L, 2);
+    if (lua_rawget(L, -2) == LUA_TTABLE) { /* key is an alias */
+      lua_pushvalue(L, 1);    /* start with the original object */
+      /* Iterate over properties; last object is on top of stack,
+       * list of properties is the second object. */
+      for (int i = 1; i <= lua_rawlen(L, -2); i++) {
+        lua_rawgeti(L, -2, i);
+        lua_gettable(L, -2);  /* get property */
+        lua_remove(L, -2);    /* remove previous object */
+      }
+      return 1;
+    }
+  }
+
+  /* get method */
   if (luaL_getmetafield(L, 1, "methods") == LUA_TTABLE) {
     lua_pushvalue(L, 2);
     lua_rawget(L, -2);
@@ -88,6 +106,24 @@ int hslua_udindex(lua_State *L)
  */
 int hslua_udnewindex(lua_State *L)
 {
+  /* try aliases */
+  if (luaL_getmetafield(L, 1, "aliases") == LUA_TTABLE) {
+    lua_pushvalue(L, 2);
+    if (lua_rawget(L, -2) == LUA_TTABLE) { /* key is an alias */
+      lua_pushvalue(L, 1);    /* start with the original object */
+      /* Iterate over properties; last object is on top of stack,
+       * list of properties is the second object. */
+      for (int i = 1; i < lua_rawlen(L, -2); i++) {
+        lua_rawgeti(L, -2, i);
+        lua_gettable(L, -2);  /* get property */
+        lua_remove(L, -2);    /* remove previous object */
+      }
+      lua_rawgeti(L, -2, lua_rawlen(L, -2)); /* last element */
+      lua_pushvalue(L, 3);    /* new value */
+      lua_settable(L, -3);
+      return 0;
+    }
+  }
   if (luaL_getmetafield(L, 1, "setters") == LUA_TTABLE) {
     lua_pushvalue(L, 2);      /* key */
     if (lua_rawget(L, -2) == LUA_TFUNCTION) {

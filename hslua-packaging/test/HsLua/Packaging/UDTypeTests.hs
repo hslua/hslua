@@ -168,6 +168,25 @@ tests = testGroup "UDType"
         _ <- dostring "return quux.num"
         _ <- dostring "quux.str = quux.str .. '!'; return quux.str"
         forcePeek $ peekText top
+
+    , testGroup "alias"
+      [ "read subelement via alias" =:
+        13.37 `shouldBeResultOf` do
+          openlibs
+          pushUD typeQux $ Quuz (Point 13.37 0) undefined
+          setglobal "quuz"
+          _ <- dostring "return quuz.x"
+          forcePeek $ peekRealFloat @Double top
+      , "set subelement via alias" =:
+        Point 42 1 `shouldBeResultOf` do
+          openlibs
+          pushUD typeQux $ Quuz (Point 1 1) undefined
+          setglobal "quuz"
+          _ <- dostring "quuz.x = 42; return quuz.point"
+          -- msg <- forcePeek $ peekString top
+          -- liftIO $ putStrLn msg
+          forcePeek $ peekPoint top
+      ]
     ]
   ]
 
@@ -210,8 +229,23 @@ typeBar = deftype "Bar" []
 --
 data Qux
   = Quux Int String
-  | Quuz Double Int
+  | Quuz Point Int
   deriving (Eq, Show)
+
+data Point = Point Double Double
+  deriving (Eq, Show)
+
+pushPoint :: LuaError e => Pusher e Point
+pushPoint (Point x y) = do
+  newtable
+  pushName "x" *> pushRealFloat x *> rawset (nth 3)
+  pushName "y" *> pushRealFloat y *> rawset (nth 3)
+
+peekPoint :: LuaError e => Peeker e Point
+peekPoint idx = do
+  x <- peekFieldRaw peekRealFloat "x" idx
+  y <- peekFieldRaw peekRealFloat "y" idx
+  return $ x `seq` y `seq` Point x y
 
 showQux :: LuaError e => DocumentedFunction e
 showQux = defun "show"
@@ -241,4 +275,14 @@ typeQux = deftype "Qux"
     (peekString, \case
         Quux n _ -> Actual . Quux n
         Quuz {}  -> const Absent)
+
+  , possibleProperty "point" "a point in Quuz"
+    (pushPoint, \case
+        Quuz p _ -> Actual p
+        Quux {}  -> Absent)
+    (peekPoint, \case
+        Quuz _ n -> Actual . (`Quuz` n)
+        Quux {}  -> const Absent)
+
+  , alias "x" "The x coordinate of a point in Quuz" ["point", "x"]
   ]
