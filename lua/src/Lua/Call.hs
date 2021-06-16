@@ -57,6 +57,19 @@ foreign import ccall SAFTY "hslcall.c hslua_newhsfunction"
 -- | Pushes a Haskell operation as a Lua function. The Haskell operation
 -- is expected to follow the custom error protocol, i.e., it must signal
 -- errors with @'Lua.hslua_error'@.
+--
+-- === Example
+-- Export the function to calculate triangular numbers.
+--
+-- > let triangular :: PreCFunction
+-- >     triangular l' = do
+-- >       n <- lua_tointegerx l' (nthBottom 1) nullPtr
+-- >       lua_pushinteger l' (sum [1..n])
+-- >       return (NumResults 1)
+-- >
+-- > hslua_newhsfunction l triangular
+-- > withCString "triangular" (lua_setglobal l)
+--
 hslua_pushhsfunction :: State -> PreCFunction -> IO ()
 hslua_pushhsfunction l preCFn =
   newStablePtr preCFn >>= hslua_newhsfunction l
