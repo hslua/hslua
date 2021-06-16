@@ -65,7 +65,7 @@ Packages
 --------
 
 Requirements differ, so we broke HsLua into multiple packages.
-These are the packages that make up HsLua:
+These are the base packages that make up HsLua:
 
   - **lua**: Raw bindings to the Lua interpreter; ships with a
     full Lua implementation, but can be configured to use a
@@ -86,3 +86,24 @@ These are the packages that make up HsLua:
     Lua more convenient.
 
   - **hslua**: All-in-one collection of the above packages.
+
+Packages for testing:
+
+  - **lua-arbitrary**: Make it easier to check Lua functions by
+    making the relevant types instances of QuickCheck's Arbitrary
+    typeclass.
+
+  - **tasty-hslua**: Helper functions for writing tasty tests to
+    check Lua operations.
+
+  - **tasty-lua**: Build test suites for Lua modules.
+
+Packages with ready-made modules:
+
+  - **hslua-module-path**: Lua module to work with file paths.
+
+  - **hslua-module-system**: Lua wrapper around Haskell's "System"
+    modules.
+
+  - **hslua-module-text**: Wrappers around Haskell's "text"
+    package.
