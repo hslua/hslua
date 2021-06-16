@@ -13,8 +13,6 @@ module Lua.UnsafeTests (tests) where
 import Foreign.C.String (withCString, withCStringLen)
 import Foreign.Ptr (nullPtr)
 import Lua
-import Lua.Primary
-  ( lua_getglobal, lua_gettable, lua_next, lua_setglobal, lua_settable )
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (Assertion, HasCallStack, testCase, (@=?) )
 
