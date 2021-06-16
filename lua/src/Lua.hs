@@ -18,13 +18,14 @@ However, there are important differences of which users must be aware:
 The method for error signaling used in Lua, based on @setjmp@ and
 @longjmp@, is incompatible with the Haskell FFI. All errors /must/ be
 handled at language boundaries, as failure to do so will lead to
-unrecoverable crashes. Therefore, C API functions which can throw Lua
-errors are not exported directly. Non-error throwing @hslua_@ versions
-are provided instead. The @hslua@ ersatz functions have worse
-performance than the original versions.
+unrecoverable crashes. C API functions that can throw Lua errors are
+still exported, but non-error throwing @hslua_@ versions are provided as
+safer alternatives. . The @hslua@ ersatz functions have worse
+performance than the original versions, but should be fast enough for
+most use cases.
 
-The Haskell FFI requires all C function that can call back into to be
-imported @safe@ly. Some of the Lua functions may, directly or
+The Haskell FFI requires all C function that can call back into Haskell
+to be imported @safe@ly. Some of the Lua functions may, directly or
 indirectly, call a Haskell function, so they are always imported with
 the @safe@ keyword.
 
@@ -236,6 +237,17 @@ import Lua.Types as Lua
 -- when the function is called and closed on return. The state, and all
 -- pointers to values within it, __must not__ be used after the function
 -- returns.
+--
+-- === Example
+-- Run a small Lua operation (prints the major version of Lua).
+--
+-- > withNewState $ \l -> do
+-- >   luaL_openlibs l
+-- >   withCString "print" (lua_getglobal l)
+-- >   withCString "_VERSION" (lua_getglobal l)
+-- >   lua_pcall l (NumArgs 1) (NumResults 1) (StackIndex 0)
+--
+-- @since 2.0.0
 withNewState :: (State -> IO a) -> IO a
 withNewState f = do
   l <- hsluaL_newstate
@@ -248,21 +260,29 @@ withNewState f = do
 --
 
 -- | Stack index of the nth element from the top of the stack.
+--
+-- @since 2.0.0
 nthTop :: CInt -> StackIndex
 nthTop n = StackIndex (-n)
 {-# INLINABLE nthTop #-}
 
 -- | Stack index of the nth element from the bottom of the stack.
+--
+-- @since 2.0.0
 nthBottom :: CInt -> StackIndex
 nthBottom = StackIndex
 {-# INLINABLE nthBottom #-}
 
 -- | Alias for 'nthTop'.
+--
+-- @since 2.0.0
 nth :: CInt -> StackIndex
 nth = nthTop
 {-# INLINABLE nth #-}
 
 -- | Index of the topmost stack element.
+--
+-- @since 2.0.0
 top :: StackIndex
 top = nthTop 1
 {-# INLINABLE top #-}
