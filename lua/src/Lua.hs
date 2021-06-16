@@ -42,6 +42,7 @@ module Lua
   , Reader
     -- ** Base Lua types
   , CFunction
+  , PreCFunction
   , Lua.Integer (..)
   , Number (..)
     -- *** Booleans
@@ -222,10 +223,14 @@ module Lua
   , luaopen_math
   , luaopen_debug
   , luaopen_package
+
+    -- * Push Haskell functions
+  , hslua_pushhsfunction
   ) where
 
 import Foreign.C (CInt)
 import Lua.Auxiliary
+import Lua.Call
 import Lua.Constants
 import Lua.Ersatz.Functions
 import Lua.Ersatz.Auxiliary
