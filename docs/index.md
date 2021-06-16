@@ -23,7 +23,7 @@ HsLua ships with batteries included and includes a recent Lua
 version, currently Lua 5.3.6. Cabal flags make it easy to compile
 against a system-wide Lua installation.
 
-### When to use it
+### Use-cases
 
 You should give HsLua a try if you
 
@@ -37,6 +37,22 @@ improved type-safety when compared to the raw C functions, while
 also translating Lua errors to Haskell exceptions. Furthermore,
 HsLua provides an convenience functions which make interacting
 with Lua straight-forward and safe.
+
+### Showcases
+
+Possibly the best-known real world use case of HsLua is used in
+[pandoc], the universal document converter, where it serves as a
+building block for [Lua filters] and [custom writers].
+
+[Santa's little Lua scripts], originally written for [Advent of
+Haskell], is a friendly introduction that showcases how an Haskell
+application can be extended through Lua.
+
+[pandoc]: https://pandoc.org
+[Lua filters]: https://pandoc.org/lua-filters.html
+[custom writers]: https://pandoc.org/MANUAL.html#custom-writers
+[Santa's little Lua scripts]: ./santas-little-lua-scripts.html
+[Advent of Haskell]: https://adventofhaskell.com/
 
 Packages
 --------
