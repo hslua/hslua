@@ -19,9 +19,22 @@ A simple program which uses Lua to calculate and print Fibonacci
 numbers. It demonstrates how a Lua script can be embedded and
 executed.
 
+print-version
+-------------
+
+Demonstrates the use of the the low-level C API functions from the
+`lua` package. Prints the Lua version.
+
 wishlist
 ----------
 
 The code for [Santa's Little Lua Scripts][SLLS].
+
+low-level-factorial
+-------------------
+
+Calculate integer factorials in Haskell, allowing for results
+which don't fit into a normal Lua integer. Uses only the low-level
+C API functions from the `lua` package.
 
 [SLLS]: https://hslua.github.io/santas-little-lua-scripts.html

@@ -64,3 +64,9 @@ executable wishlist
                      , hslua             >= 2.0 && < 2.1
                      , hslua-marshalling >= 2.0 && < 2.1
                      , text
+
+executable low-level-factorial
+  import:              common-options
+  main-is:             low-level-factorial.hs
+  hs-source-dirs:      low-level-factorial
+  build-depends:       lua               >= 2.0 && < 2.1
