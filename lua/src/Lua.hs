@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wno-warnings-deprecations #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-|
 Module      : Lua
@@ -144,11 +145,18 @@ module Lua
   , lua_newuserdata
   , lua_getmetatable
   , lua_getuservalue
+  , lua_getglobal
+  , lua_gettable
     -- ** Set functions (stack → Lua)
   , lua_rawset
   , lua_rawseti
   , lua_setmetatable
   , lua_setuservalue
+  , lua_setglobal
+  , lua_settable
+    -- ** Misc (unsafe)
+  , lua_concat
+  , lua_next
     -- ** Load and run Lua code
   , lua_pcall
   , lua_load
