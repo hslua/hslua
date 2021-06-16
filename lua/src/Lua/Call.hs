@@ -9,12 +9,20 @@ Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta
 Portability : non-portable (depends on GHC)
 
-Raw bindings to function call helpers.
+Function to push Haskell functions as Lua C functions.
+
+Haskell functions are converted into C functions in a two-step process.
+First, a function pointer to the Haskell function is stored in a Lua
+userdata object. The userdata gets a metatable which allows to invoke
+the object as a function. The userdata also ensures that the function
+pointer is freed when the object is garbage collected in Lua.
+
+In a second step, the userdata is then wrapped into a C closure. The
+wrapping function calls the userdata object and implements the error
+protocol, converting special error values into proper Lua errors.
 -}
 module Lua.Call
-  ( HsFunction
-  , hslua_newhsfunction
-  , hslua_pushhsfunction
+  ( hslua_pushhsfunction
   ) where
 
 import Foreign.C (CInt (CInt))
@@ -23,6 +31,7 @@ import Foreign.StablePtr (StablePtr, deRefStablePtr, newStablePtr)
 import Foreign.Storable (peek)
 import Lua.Types
   ( NumResults (NumResults)
+  , PreCFunction
   , State (State)
   )
 
@@ -32,23 +41,23 @@ import Lua.Types
 #define SAFTY safe
 #endif
 
--- | Type of raw Haskell functions that can be made into
--- 'Lua.CFunction's.
-type HsFunction = State -> IO NumResults
-
 -- | Retrieve the pointer to a Haskell function from the wrapping
 -- userdata object.
 foreign import ccall SAFTY "hslcall.c hslua_extracthsfun"
   hslua_extracthsfun :: State -> IO (Ptr ())
 
--- | Pushes a new C function created from an 'HsFunction'.
+-- | Creates a new C function created from a 'PreCFunction'. The
+-- function pointer to the PreCFunction is stored in a userdata object,
+-- which is then wrapped by a C closure. The userdata object ensures
+-- that the function pointer is freed when the function is garbage
+-- collected in Lua.
 foreign import ccall SAFTY "hslcall.c hslua_newhsfunction"
   hslua_newhsfunction :: State -> StablePtr a -> IO ()
 
 -- | Pushes a Haskell operation as a Lua function. The Haskell operation
 -- is expected to follow the custom error protocol, i.e., it must signal
 -- errors with @'Lua.hslua_error'@.
-hslua_pushhsfunction :: State -> HsFunction -> IO ()
+hslua_pushhsfunction :: State -> PreCFunction -> IO ()
 hslua_pushhsfunction l preCFn =
   newStablePtr preCFn >>= hslua_newhsfunction l
 {-# INLINABLE hslua_pushhsfunction #-}
@@ -56,7 +65,7 @@ hslua_pushhsfunction l preCFn =
 -- | Call the Haskell function stored in the userdata. This
 -- function is exported as a C function, as the C code uses it as
 -- the @__call@ value of the wrapping userdata metatable.
-hslua_callhsfun :: HsFunction
+hslua_callhsfun :: PreCFunction
 hslua_callhsfun l = do
   udPtr <- hslua_extracthsfun l
   if udPtr == nullPtr
@@ -65,4 +74,4 @@ hslua_callhsfun l = do
       fn <- peek (castPtr udPtr) >>= deRefStablePtr
       fn l
 
-foreign export ccall hslua_callhsfun :: HsFunction
+foreign export ccall hslua_callhsfun :: PreCFunction
