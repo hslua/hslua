@@ -1,1 +1,6 @@
 theme: jekyll-theme-cayman
+title: HsLua
+description: Haskell bindings to Lua, an embeddable scripting language
+github:
+  owner_name: tarleb
+  owner_url: https://github.com/tarleb
