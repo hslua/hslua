@@ -1,3 +1,10 @@
+---
+layout: default
+author: Albert Krewinkel
+title: HsLua
+date: 2021-06-16
+---
+
 [![Hackage]](https://hackage.haskell.org/package/hslua)
 
 [Hackage]: https://img.shields.io/hackage/v/hslua.svg
