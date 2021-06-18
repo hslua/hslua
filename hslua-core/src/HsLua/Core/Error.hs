@@ -4,6 +4,7 @@
 {-# LANGUAGE ScopedTypeVariables  #-}
 {-# LANGUAGE TypeApplications     #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+-- Don't warn about lua_concat; the way it's use here is safe.
 {-# OPTIONS_GHC -Wno-warnings-deprecations #-}
 {-|
 Module      : HsLua.Core.Error
@@ -37,7 +38,6 @@ import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 import HsLua.Core.Types (LuaE, liftLua)
 import Lua
-import Lua.Primary (lua_concat)
 
 import qualified Control.Exception as E
 import qualified Control.Monad.Catch as Catch

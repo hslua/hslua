@@ -178,7 +178,7 @@ alias :: Name  -- ^ property alias
       -> Text  -- ^ description
       -> [Name] -- ^ sequence of nested properties
       -> Member e a
-alias name desc = MemberAlias name
+alias name _desc = MemberAlias name
 
 -- | Pushes the metatable for the given type to the Lua stack. Creates
 -- the new table afresh on the first time it is needed, and retrieves it

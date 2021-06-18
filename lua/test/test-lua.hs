@@ -22,7 +22,6 @@ import Foreign.Marshal (alloca)
 import Foreign.Ptr (Ptr, nullPtr)
 import Foreign.Storable as Storable
 import Lua
-import Lua.Call
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit (Assertion, HasCallStack, assertBool, testCase, (@=?))
 import qualified Lua.UnsafeTests
