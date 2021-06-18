@@ -140,6 +140,57 @@ int hslua_udindex(lua_State *L)
 }
 
 /*
+** Set value via a property alias. Assumes the stack to be in a state as
+** after __newindex is called. Returns 1 on success, and 0 otherwise.
+ */
+int hsluaP_set_via_alias(lua_State *L)
+{
+  if (luaL_getmetafield(L, 1, "aliases") != LUA_TTABLE) {
+    return 0;
+  }
+  lua_pushvalue(L, 2);
+  if (lua_rawget(L, -2) != LUA_TTABLE) { /* key is an alias */
+    lua_pop(L, 2);
+    return 0;
+  }
+  lua_pushvalue(L, 1);    /* start with the original object */
+  /* Iterate over properties; last object is on top of stack,
+   * list of properties is the second object. */
+  for (int i = 1; i < lua_rawlen(L, -2); i++) {
+    lua_rawgeti(L, -2, i);
+    lua_gettable(L, -2);  /* get property */
+    lua_remove(L, -2);    /* remove previous object */
+  }
+  lua_rawgeti(L, -2, lua_rawlen(L, -2)); /* last element */
+  lua_pushvalue(L, 3);    /* new value */
+  lua_settable(L, -3);
+  return 1;
+}
+
+/*
+** Set value via a property alias. Assumes the stack to be in a state as
+** after __newindex is called. Returns 1 on success, 0 if the object is
+** readonly, and throws an error if there is no setter for the given
+** key.
+*/
+int hsluaP_set_via_setter(lua_State *L)
+{
+  if (luaL_getmetafield(L, 1, "setters") != LUA_TTABLE)
+    return 0;
+
+  lua_pushvalue(L, 2);                  /* key */
+  if (lua_rawget(L, -2) != LUA_TFUNCTION) {
+    lua_pushliteral(L, "Cannot set unknown property.");
+    return lua_error(L);
+  }
+
+  lua_insert(L, 1);
+  lua_settop(L, 4);       /* 1: setter, 2: ud, 3: key, 4: value */
+  lua_call(L, 3, 0);
+  return 1;
+}
+
+/*
 ** Sets a new value in the userdata caching table via a setter
 ** functions.
 **
@@ -149,36 +200,11 @@ int hslua_udindex(lua_State *L)
  */
 int hslua_udnewindex(lua_State *L)
 {
-  /* try aliases */
-  if (luaL_getmetafield(L, 1, "aliases") == LUA_TTABLE) {
-    lua_pushvalue(L, 2);
-    if (lua_rawget(L, -2) == LUA_TTABLE) { /* key is an alias */
-      lua_pushvalue(L, 1);    /* start with the original object */
-      /* Iterate over properties; last object is on top of stack,
-       * list of properties is the second object. */
-      for (int i = 1; i < lua_rawlen(L, -2); i++) {
-        lua_rawgeti(L, -2, i);
-        lua_gettable(L, -2);  /* get property */
-        lua_remove(L, -2);    /* remove previous object */
-      }
-      lua_rawgeti(L, -2, lua_rawlen(L, -2)); /* last element */
-      lua_pushvalue(L, 3);    /* new value */
-      lua_settable(L, -3);
-      return 0;
-    }
+  if (hsluaP_set_via_alias(L) || hsluaP_set_via_setter(L)) {
+    return 0;
   }
-  if (luaL_getmetafield(L, 1, "setters") == LUA_TTABLE) {
-    lua_pushvalue(L, 2);      /* key */
-    if (lua_rawget(L, -2) == LUA_TFUNCTION) {
-      lua_insert(L, 1);
-      lua_settop(L, 4);       /* 1: setter, 2: ud, 3: key, 4: value */
-      lua_call(L, 3, 0);
-      return 0;
-    }
-    lua_pushliteral(L, "Cannot set unknown property.");
-  } else {
-    lua_pushliteral(L, "Cannot modify read-only object.");
-  }
+
+  lua_pushliteral(L, "Cannot modify read-only object.");
   return lua_error(L);
 }
 
