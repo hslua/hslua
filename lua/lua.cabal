@@ -8,7 +8,7 @@ description:         This package provides bindings and types to bridge
                      The full Lua interpreter version 5.3.6 is included.
                      Alternatively, a system-wide Lua installation can be
                      linked instead.
-homepage:            https://hslua.github.io/
+homepage:            https://hslua.org/
 bug-reports:         https://github.com/hslua/hslua/issues
 license:             MIT
 license-file:        LICENSE

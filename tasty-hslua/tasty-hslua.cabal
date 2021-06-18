@@ -4,7 +4,7 @@ version:             1.0.0
 synopsis:            Tasty helpers to test HsLua.
 description:         Various tasty helpers and utilities to test HsLua
                      oparations. Built on top of tasty-hunit.
-homepage:            https://hslua.github.io/
+homepage:            https://hslua.org/
 bug-reports:         https://github.com/hslua/hslua/issues
 license:             MIT
 license-file:        LICENSE

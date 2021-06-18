@@ -3,7 +3,7 @@
 
 The program expexts the path to a filter file as its only argument.
 See the blog-post for more details:
-https://hslua.github.io/santas-little-lua-scripts.html
+https://hslua.org/santas-little-lua-scripts.html
 -}
 module Main where
 import Control.Monad (filterM)

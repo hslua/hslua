@@ -4,7 +4,7 @@ version:             1.0.0
 synopsis:            Arbitrary instances for Lua types.
 description:         Provides instances for QuickCheck's \"Arbitrary\"
                      typeclass.
-homepage:            https://hslua.github.io/
+homepage:            https://hslua.org/
 bug-reports:         https://github.com/hslua/hslua/issues
 license:             MIT
 license-file:        LICENSE

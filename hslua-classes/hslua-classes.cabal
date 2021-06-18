@@ -3,7 +3,7 @@ name:                hslua-classes
 version:             2.0.0
 synopsis:            Marshaling classes for HsLua
 description:         FIXME!
-homepage:            https://hslua.github.io/
+homepage:            https://hslua.org/
 bug-reports:         https://github.com/hslua/hslua/issues
 license:             MIT
 license-file:        LICENSE

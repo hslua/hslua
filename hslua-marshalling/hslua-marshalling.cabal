@@ -8,7 +8,7 @@ description:         Provides functions to marshal values from Haskell
                      This package is part of HsLua, a Haskell framework
                      built around the embeddable scripting language
                      <https://lua.org Lua>.
-homepage:            https://hslua.github.io/
+homepage:            https://hslua.org/
 bug-reports:         https://github.com/hslua/hslua/issues
 license:             MIT
 license-file:        LICENSE

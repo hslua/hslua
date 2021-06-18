@@ -7,7 +7,7 @@ description:         Wrappers and helpers to bridge Haskell and
                      .
                      It builds upon the /lua/ package, which allows to bundle
                      a Lua interpreter with a Haskell program.
-homepage:            https://hslua.github.io/
+homepage:            https://hslua.org/
 bug-reports:         https://github.com/hslua/hslua/issues
 license:             MIT
 license-file:        LICENSE

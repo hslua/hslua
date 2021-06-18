@@ -9,7 +9,7 @@ description:         The HsLua modules provide wrappers of Lua language
                      This package contains example programs, demonstrating
                      the possibility to work with Lua from within Haskell
                      and /vice versa/.
-homepage:            https://hslua.github.io/
+homepage:            https://hslua.org/
 bug-reports:         https://github.com/hslua/hslua/issues
 license:             MIT
 license-File:        LICENSE

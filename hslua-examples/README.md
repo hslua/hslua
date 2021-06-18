@@ -37,4 +37,4 @@ Calculate integer factorials in Haskell, allowing for results
 which don't fit into a normal Lua integer. Uses only the low-level
 C API functions from the `lua` package.
 
-[SLLS]: https://hslua.github.io/santas-little-lua-scripts.html
+[SLLS]: https://hslua.org/santas-little-lua-scripts.html

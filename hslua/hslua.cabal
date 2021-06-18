@@ -10,7 +10,7 @@ description:         HsLua provides wrappers and helpers
                      .
                      <https://github.com/hslua/hslua-examples Example programs>
                      are available in a separate repository.
-homepage:            https://hslua.github.io/
+homepage:            https://hslua.org/
 bug-reports:         https://github.com/hslua/hslua/issues
 license:             MIT
 license-file:        LICENSE
