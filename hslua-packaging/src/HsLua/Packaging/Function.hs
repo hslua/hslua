@@ -16,6 +16,7 @@ module HsLua.Packaging.Function
   ( DocumentedFunction (..)
     -- * Creating documented functions
   , defun
+  , lambda
   , applyParameter
   , returnResult
   , returnResultsOnStack
@@ -100,6 +101,11 @@ data Parameter e a = Parameter
 -- into a documented function exposable to Lua.
 defun :: Name -> a -> HsFnPrecursor e a
 defun = toHsFnPrecursor (StackIndex 0)
+
+-- | Just like @defun@, but uses an empty name for the documented
+-- function. Should be used when defining methods or operators.
+lambda :: a -> HsFnPrecursor e a
+lambda = defun (Name mempty)
 
 -- | Turns a pure function into a monadic Lua function.
 --
