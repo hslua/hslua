@@ -163,7 +163,7 @@ applyParameter bldr param = do
   let context = Name . Utf8.fromText $ "function argument " <>
         (parameterName . parameterDoc) param
   let nextAction f = withContext context $ do
-        x <- parameterPeeker param i
+        !x <- parameterPeeker param i
         return $ f x
   bldr
     { hsFnPrecursorAction = action >>= nextAction
