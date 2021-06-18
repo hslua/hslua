@@ -45,6 +45,15 @@ tests = testGroup "UDType"
         pushUD typeFoo $ Foo 37 "ananas"
         forcePeek $ peekUD typeFoo top
 
+    , "unknown properties have value `nil`" =:
+      TypeNil `shouldBeResultOf` do
+        openlibs
+        pushUD typeFoo $ Foo (-1) "a"
+        setglobal "foo"
+        dostring "return foo.does_not_exist" >>= \case
+          OK -> ltype top
+          _ -> throwErrorAsException
+
     , "get number" =:
       (-1) `shouldBeResultOf` do
         openlibs

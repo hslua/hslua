@@ -26,6 +26,98 @@ void hsluaP_get_caching_table(lua_State *L, int idx)
 }
 
 /*
+** Retrieve a value from the wrapped userdata project. The userdata must
+** be in position 1, and the key in position 2. Returns 1 if a value was
+** found and is at the top of the stack, 0 otherwise. Does not clean-up
+** on success.
+*/
+int hsluaP_get_from_cache(lua_State *L)
+{
+  /* Use value in caching table if present */
+  hsluaP_get_caching_table(L, 1);       /* table */
+  lua_pushvalue(L, 2);                  /* key */
+  if (lua_rawget(L, 3) == LUA_TNIL) {
+    lua_pop(L, 2);                      /* remove nil, caching table */
+    return 0;
+  }
+  /* found the key in the cache */
+  return 1;
+}
+
+
+/*
+** Retrieve a value from the wrapped userdata project.
+** The userdata must be in position 1, and the key in position 2.
+ */
+int hsluaP_get_via_getter(lua_State *L)
+{
+  /* Bail if there are no getterns, or no getter for the given key. */
+  if (luaL_getmetafield(L, 1, "getters") != LUA_TTABLE) {
+    return 0;
+  }
+  lua_pushvalue(L, 2);                  /* key */
+  if (lua_rawget(L, -2) == LUA_TNIL) {
+    lua_pop(L, 1);
+    return 0;
+  }
+
+  /* Call getter. Slow, as it calls into Haskell. */
+  lua_pushvalue(L, 1);
+  lua_call(L, 1, 1);
+
+  /* key found in wrapped userdata, add to caching table */
+  hsluaP_get_caching_table(L, 1);       /* object's caching table */
+  lua_pushvalue(L, 2);                  /* key */
+  lua_pushvalue(L, -3);                 /* value */
+  lua_rawset(L, -3);
+  lua_pop(L, 1);                        /* pop caching table */
+  /* return value */
+  return 1;
+}
+
+/*
+** Retrieve a value by using the key as the alias for a different
+** property. The userdata must be in position 1, and the key in position
+** 2.
+*/
+int hsluaP_get_via_alias(lua_State *L)
+{
+  if (luaL_getmetafield(L, 1, "aliases") != LUA_TTABLE) {
+    return 0;             /* no aliases available */
+  }
+  lua_pushvalue(L, 2);
+  if (lua_rawget(L, -2) != LUA_TTABLE) {
+    return 0;             /* key is not an alias */
+  }
+
+  /* key is an alias */
+  lua_pushvalue(L, 1);    /* start with the original object */
+  /* Iterate over properties; last object is on top of stack,
+   * list of properties is the second object. */
+  for (int i = 1; i <= lua_rawlen(L, -2); i++) {
+    lua_rawgeti(L, -2, i);
+    lua_gettable(L, -2);  /* get property */
+    lua_remove(L, -2);    /* remove previous object */
+  }
+  return 1;
+}
+
+/*
+** Retrieve a method for this object. The userdata must be in position
+** 1, and the key in position 2.
+*/
+int hsluaP_get_method(lua_State *L)
+{
+  if (luaL_getmetafield(L, 1, "methods") != LUA_TTABLE) {
+    lua_pop(L, 1);
+    return 0;
+  }
+  lua_pushvalue(L, 2);
+  lua_rawget(L, -2);
+  return 1;
+}
+
+/*
 ** Retrieves a key from a Haskell-data holding userdata value.
 **
 ** Does the following, in order, and returns the first non-nil result:
@@ -40,60 +132,11 @@ void hsluaP_get_caching_table(lua_State *L, int idx)
 int hslua_udindex(lua_State *L)
 {
   lua_settop(L, 2);
-  /* Use value in caching table if present */
-  hsluaP_get_caching_table(L, 1);      /* table */
-  lua_pushvalue(L, 2);                 /* key */
-  if (lua_rawget(L, 3) != LUA_TNIL) {
-    /* found the key in the cache */
-    return 1;
-  }
-  lua_pop(L, 1);              /* remove nil */
-
-  /* Get value from userdata object */
-  if (luaL_getmetafield(L, 1, "getters") == LUA_TTABLE) {
-    lua_pushvalue(L, 2);      /* key */
-    if (lua_rawget(L, -2) != LUA_TNIL) {
-      /* Call getter. Slow, as it calls into Haskell. */
-      lua_pushvalue(L, 1);
-      lua_call(L, 1, 1);
-
-      /* key found in wrapped userdata, add to caching table */
-      lua_pushvalue(L, 2);    /* key */
-      lua_pushvalue(L, -2);   /* value */
-      lua_rawset(L, 3);       /* caching table */
-      /* return value */
-      return 1;
-    }
-    lua_pop(L, 1);
-  }
-
-  /* try aliases */
-  if (luaL_getmetafield(L, 1, "aliases") == LUA_TTABLE) {
-    lua_pushvalue(L, 2);
-    if (lua_rawget(L, -2) == LUA_TTABLE) { /* key is an alias */
-      lua_pushvalue(L, 1);    /* start with the original object */
-      /* Iterate over properties; last object is on top of stack,
-       * list of properties is the second object. */
-      for (int i = 1; i <= lua_rawlen(L, -2); i++) {
-        lua_rawgeti(L, -2, i);
-        lua_gettable(L, -2);  /* get property */
-        lua_remove(L, -2);    /* remove previous object */
-      }
-      return 1;
-    }
-  }
-
-  /* get method */
-  if (luaL_getmetafield(L, 1, "methods") == LUA_TTABLE) {
-    lua_pushvalue(L, 2);
-    lua_rawget(L, -2);
-    return 1;
-  }
-  lua_pop(L, 1);
-
-  /* key not found, return nil */
-  lua_pushnil(L);
-  return 1;
+  /* try various sources in order; return 0 if nothing is found. */
+  return hsluaP_get_from_cache(L)
+    || hsluaP_get_via_getter(L)
+    || hsluaP_get_via_alias(L)
+    || hsluaP_get_method(L);
 }
 
 /*
