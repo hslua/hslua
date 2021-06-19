@@ -37,8 +37,6 @@ module HsLua.Marshalling
   , peekList
   , peekMap
   , peekSet
-    -- ** Userdata
-  , peekAny
     -- ** Combinators
   , choice
   , peekFieldRaw
@@ -59,7 +57,6 @@ module HsLua.Marshalling
 
     -- * Pushing values to Lua stack (Haskell → Lua)
   , module HsLua.Marshalling.Push
-  , pushAny
 
     -- * Utilities
   , pushIterator
@@ -70,4 +67,4 @@ import Prelude hiding (compare, concat)
 import HsLua.Marshalling.Peek
 import HsLua.Marshalling.Peekers
 import HsLua.Marshalling.Push
-import HsLua.Marshalling.Userdata (peekAny, pushAny, pushIterator)
+import HsLua.Marshalling.Userdata (pushIterator)
