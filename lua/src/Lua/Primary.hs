@@ -440,16 +440,17 @@ foreign import ccall SAFTY "lua.h lua_newuserdata"
 --
 -- A typical traversal looks like this:
 --
--- > /* table is in the stack at index 't' */
--- > lua_pushnil(L);  /* first key */
--- > while (lua_next(L, t) != 0) {
--- >   /* uses 'key' (at index -2) and 'value' (at index -1) */
--- >   printf("%s - %s\n",
--- >          lua_typename(L, lua_type(L, -2)),
--- >          lua_typename(L, lua_type(L, -1)));
--- >   /* removes 'value'; keeps 'key' for next iteration */
--- >   lua_pop(L, 1);
--- > }
+-- > -- table is in the stack at index 't'
+-- > lua_pushnil l    -- first key
+-- > let loop = lua_next l t >>= \case
+-- >       FALSE -> return ()
+-- >       _ -> do
+-- >         lua_type l (-2) >>= lua_typename l >>= peekCString >>= putStrLn
+-- >         lua_type l (-1) >>= lua_typename l >>= peekCString >>= putStrLn
+-- >         -- removes 'value'; keeps 'key' for next iteration
+-- >         lua_pop l 1
+-- >         loop
+-- > loop
 --
 -- While traversing a table, do not call 'lua_tolstring' directly on a
 -- key, unless you know that the key is actually a string. Recall that
