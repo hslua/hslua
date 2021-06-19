@@ -118,6 +118,21 @@ int hsluaP_get_method(lua_State *L)
 }
 
 /*
+** Retrieve a method for this object. The userdata must be in position
+** 1, and the key in position 2.
+*/
+int hsluaP_get_numerical(lua_State *L)
+{
+  if (luaL_getmetafield(L, 1, "numerical") != LUA_TTABLE) {
+    lua_pop(L, 1);
+    return 0;
+  }
+  lua_pushvalue(L, 2);
+  lua_rawget(L, -2);
+  return 1;
+}
+
+/*
 ** Retrieves a key from a Haskell-data holding userdata value.
 **
 ** Does the following, in order, and returns the first non-nil result:
