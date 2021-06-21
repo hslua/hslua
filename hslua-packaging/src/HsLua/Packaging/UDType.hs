@@ -14,10 +14,6 @@ methods and properties to interact with the Haskell value.
 
 The terminology in this module refers to the userdata values as /UD
 objects/, and to their type as /UD type/.
-
-Note that the values returned by the properties are /copies/ of the
-Haskell values; modifying them will not change the underlying Haskell
-values.
 -}
 module HsLua.Packaging.UDType
   ( UDType (..)
