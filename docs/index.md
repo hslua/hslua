@@ -93,6 +93,14 @@ main = run @HsLua.Exception $ do
     ]
 ```
 
+Running this program yields
+
+     5! =   120     number
+    30! =   265252859812191058636308480000000       string
+
+Note that the second result is too large for a Lua 64 bit integer,
+so the value is represented as a string.
+
 Packages
 --------
 
