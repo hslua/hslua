@@ -65,6 +65,13 @@ executable wishlist
                      , hslua-marshalling >= 2.0 && < 2.1
                      , text
 
+executable factorial
+  import:              common-options
+  main-is:             factorial.hs
+  hs-source-dirs:      factorial
+  build-depends:       bytestring
+                     , hslua             >= 2.0 && < 2.1
+
 executable low-level-factorial
   import:              common-options
   main-is:             low-level-factorial.hs
