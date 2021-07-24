@@ -137,12 +137,12 @@ int hsluaP_get_numerical(lua_State *L)
 **
 ** Does the following, in order, and returns the first non-nil result:
 **
-**   - Checks the userdata's uservalue table for the given key;
-**
-**   - Looks up a `getter` for the key and calls it with the userdata and
+**   + Checks the userdata's uservalue table for the given key;
+**   + looks up a `getter` for the key and calls it with the userdata and
 **     key as arguments;
-**
-**   - Looks up the key in the table in the `methods` metafield.
+**   + tries to lookup the key as an alias and retrieves the value of the
+**     alias;
+**   + looks up the key in the table in the `methods` metafield.
 */
 int hslua_udindex(lua_State *L)
 {
