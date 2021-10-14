@@ -1,5 +1,11 @@
 ## Changelog
 
+### 1.3.0.2
+
+Released 2021-10-14.
+
+- Bumped upper package version bound, allowing bytestring 0.11.
+
 ### 1.3.0.1
 
 Released 2021-02-06.
