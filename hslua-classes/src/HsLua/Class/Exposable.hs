@@ -12,7 +12,7 @@ Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta
 Portability : FlexibleInstances, ForeignFunctionInterface, ScopedTypeVariables
 
-Call haskell functions from Lua, and vice versa.
+Call Haskell functions from Lua.
 -}
 module HsLua.Class.Exposable
   ( Exposable (..)
