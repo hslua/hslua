@@ -112,7 +112,7 @@ library
   other-modules:       Foreign.Lua.Core.Auxiliary
                      , Foreign.Lua.Core.Functions
   build-depends:       base                 >= 4.8    && < 5
-                     , bytestring           >= 0.10.2 && < 0.11
+                     , bytestring           >= 0.10.2 && < 0.12
                      , containers           >= 0.5    && < 0.7
                      , exceptions           >= 0.8    && < 0.11
                      , mtl                  >= 2.2    && < 2.3
