@@ -13,7 +13,7 @@ Test exposing Haskell functions to Lua.
 -}
 module HsLua.Core.ClosuresTests (tests) where
 
-import Control.Monad (forM_)
+import Control.Monad (forM_, void)
 import Data.Maybe (fromMaybe)
 import HsLua.Core as Lua
 import Test.Tasty.HsLua ((=:), (?:), shouldBeResultOf)
@@ -50,5 +50,5 @@ tests = testGroup "Closures"
             pushHaskellFunction fn
             pop 1
       forM_ [1..5000::Lua.Integer] pushAndPopAdder
-      () <$ gc Lua.GCCollect
+      void $ gc Lua.GCCollect
   ]

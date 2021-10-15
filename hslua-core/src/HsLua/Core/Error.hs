@@ -30,7 +30,7 @@ module HsLua.Core.Error
   ) where
 
 import Control.Applicative (Alternative (..))
-import Control.Monad ((<$!>))
+import Control.Monad ((<$!>), void)
 import Data.ByteString (ByteString)
 import Data.Proxy (Proxy (Proxy))
 import Data.Typeable (Typeable)
@@ -208,6 +208,6 @@ pushTypeMismatchError expected idx = liftLua $ \l -> do
   pushstring " expected, got "
   B.unsafeUseAsCString "__name" (luaL_getmetafield l idx) >>= \case
     LUA_TSTRING -> return () -- pushed the name
-    LUA_TNIL    -> () <$ pushtype
+    LUA_TNIL    -> void pushtype
     _           -> lua_pop l 1 <* pushtype
   lua_concat l 3
