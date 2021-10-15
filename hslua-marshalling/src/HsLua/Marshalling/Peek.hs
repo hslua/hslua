@@ -37,9 +37,6 @@ import Control.Monad ((<$!>), (<=<))
 import Data.ByteString (ByteString)
 import Data.List (intercalate)
 import HsLua.Core as Lua
-#if !MIN_VERSION_base(4,12,0)
-import Data.Semigroup (Semigroup ((<>)))
-#endif
 #if !MIN_VERSION_base(4,13,0)
 import Control.Monad.Fail (MonadFail (..))
 #endif
