@@ -23,6 +23,9 @@ Release pending.
 - Provide bindings to more functions:
     + `lua_is...` type-checking functions;
     + `lua_pushstring` to push plain CStrings;
+    + auxiliary functions
+        * `luaL_loadfile`, and
+        * `luaL_loadfilex`;
     + unsafe functions
         * `lua_gettable`,
         * `lua_settable`,

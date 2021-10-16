@@ -16,6 +16,8 @@ module Lua.Auxiliary
     luaL_getmetafield
   , luaL_getmetatable
   , luaL_loadbuffer
+  , luaL_loadfile
+  , luaL_loadfilex
   , luaL_openlibs
   , luaL_newmetatable
   , luaL_ref
@@ -102,6 +104,31 @@ foreign import capi SAFTY "lauxlib.h luaL_loadbuffer"
                   -> CSize             -- ^ sz
                   -> CString           -- ^ name
                   -> IO Lua.StatusCode
+
+-- | Equivalent to luaL_loadfilex with mode equal to @NULL@.
+foreign import capi SAFTY "lauxlib.h luaL_loadfile"
+  luaL_loadfile :: Lua.State
+                -> Ptr CChar  -- ^ filename
+                -> IO Lua.StatusCode
+
+-- | Loads a file as a Lua chunk. This function uses @lua_load@ to load
+-- the chunk in the file named filename. If filename is @NULL@, then it
+-- loads from the standard input. The first line in the file is ignored
+-- if it starts with a @#@.
+--
+-- The string mode works as in function @lua_load@.
+--
+-- This function returns the same results as @lua_load@, but it has an
+-- extra error code LUA_ERRFILE for file-related errors (e.g., it cannot
+-- open or read the file).
+--
+-- As @lua_load@, this function only loads the chunk; it does not run
+-- it.
+foreign import capi SAFTY "lauxlib.h luaL_loadfilex"
+  luaL_loadfilex :: Lua.State
+                 -> Ptr CChar  -- ^ filename
+                 -> Ptr CChar  -- ^ mode
+                 -> IO Lua.StatusCode
 
 -- | If the registry already has the key @tname@, returns @0@.
 -- Otherwise, creates a new table to be used as a metatable for
