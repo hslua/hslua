@@ -37,7 +37,6 @@ module HsLua.Core.Auxiliary
   , preload
   ) where
 
-import Control.Exception (IOException, try)
 import Control.Monad ((<$!>))
 import Data.ByteString (ByteString)
 import Data.String (IsString (fromString))
@@ -47,13 +46,13 @@ import HsLua.Core.Types
 import Lua (top)
 import Lua.Auxiliary
 import Lua.Ersatz.Auxiliary
+import Foreign.C (withCString)
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 
 import qualified Data.ByteString as B
 import qualified HsLua.Core.Primary as Lua
 import qualified HsLua.Core.Types as Lua
-import qualified HsLua.Core.Utf8 as Utf8
 import qualified Foreign.Storable as Storable
 
 -- | Loads and runs the given string.
@@ -164,14 +163,8 @@ loadbuffer bs (Name name) = liftLua $ \l ->
 -- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadfile luaL_loadfile>.
 loadfile :: FilePath -- ^ filename
          -> LuaE e Status
-loadfile fp = Lua.liftIO contentOrError >>= \case
-  Right script -> loadbuffer script (fromString $ '@' : fp)
-  Left e -> do
-    Lua.pushstring (Utf8.fromString (show e))
-    return Lua.ErrFile
- where
-  contentOrError :: IO (Either IOException ByteString)
-  contentOrError = try (B.readFile fp)
+loadfile fp = liftLua $ \l ->
+  withCString fp $! fmap Lua.toStatus . luaL_loadfile l
 {-# INLINABLE loadfile #-}
 
 -- | Loads a string as a Lua chunk. This function uses @lua_load@ to

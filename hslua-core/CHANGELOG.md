@@ -21,6 +21,10 @@ Release pending.
 - Added new module HsLua.Core.Closures, containing functions to
   expose Haskell functions to Lua.
 
+- Reverted to using the auxlib `luaL_loadfile` function to load a
+  Lua file. Previously files were opened and read in Haskell, but
+  some functionality of the auxlib function was missing.
+
 ## hslua-core 1.0.0
 
 Released 2021-02-27.
