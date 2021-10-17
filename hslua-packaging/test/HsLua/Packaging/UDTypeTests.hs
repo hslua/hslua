@@ -169,6 +169,15 @@ tests = testGroup "UDType"
         setglobal "list"
         _ <- dostring "return list[0], list[5]"
         (,) <$> ltype (nth 1) <*> ltype (nth 2)
+
+    , "List is read-only" =:
+      (ErrRun, "Cannot set a numerical value.") `shouldBeResultOf` do
+        openlibs
+        pushUD typeLazyIntList $ LazyIntList [1,4,9,16]
+        setglobal "list"
+        statusCode <- dostring "list[1] = 2"
+        err <- forcePeek $ peekString top
+        pure (statusCode, err)
     ]
 
   , testGroup "possible properties"

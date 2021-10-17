@@ -16,13 +16,15 @@
 void hsluaP_get_caching_table(lua_State *L, int idx)
 {
   int absidx = lua_absindex(L, idx);
-  if (lua_getuservalue(L, idx) != LUA_TTABLE) {
-    lua_pop(L, 1);  /* remove nil */
-    /* no caching table yet, create one */
-    lua_createtable(L, 0, 0);
-    lua_pushvalue(L, -1);
-    lua_setuservalue(L, idx);
+  if (lua_getuservalue(L, idx) == LUA_TTABLE) {
+    return;
   }
+
+  /* No caching table set yet; create table and add to object. */
+  lua_pop(L, 1);                        /* remove nil */
+  lua_createtable(L, 0, 0);
+  lua_pushvalue(L, -1);
+  lua_setuservalue(L, idx);
 }
 
 /*
@@ -214,6 +216,7 @@ int hsluaP_set_via_setter(lua_State *L)
 
   lua_pushvalue(L, 2);                  /* key */
   if (lua_rawget(L, -2) != LUA_TFUNCTION) {
+    lua_pop(L, 1);
     lua_pushliteral(L, "Cannot set unknown property.");
     return lua_error(L);
   }
@@ -234,6 +237,10 @@ int hsluaP_set_via_setter(lua_State *L)
  */
 int hslua_udnewindex(lua_State *L)
 {
+  if (lua_type(L, 2) == LUA_TNUMBER) {
+    lua_pushliteral(L, "Cannot set a numerical value.");
+    return lua_error(L);
+  }
   if (hsluaP_set_via_alias(L) || hsluaP_set_via_setter(L)) {
     return 0;
   }
@@ -257,7 +264,7 @@ int hslua_udsetter(lua_State *L)
 }
 
 /*
-** Throws an error nothing that the given key is read-only.
+** Throws an error noting that the given key is read-only.
 */
 int hslua_udreadonly(lua_State *L)
 {
