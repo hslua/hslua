@@ -145,6 +145,32 @@ tests = testGroup "UDType"
         forcePeek $ peekUD typeBar top
     ]
 
+  , testGroup "lazy list"
+    [ "Access an element of a lazy list stub" =:
+      3 `shouldBeResultOf` do
+        openlibs
+        pushUD typeLazyIntList $ LazyIntList [1,1,2,3,5,8]
+        setglobal "list"
+        _ <- dostring "return (list[4])"
+        forcePeek $ peekIntegral @Int top
+
+    , "Remaining list is not evaluated" =:
+      2 `shouldBeResultOf` do
+        openlibs
+        pushUD typeLazyIntList $ LazyIntList [1,1,2, Prelude.error "CRASH!"]
+        setglobal "list"
+        _ <- dostring "return (list[3])"
+        forcePeek $ peekIntegral @Int top
+
+    , "Out-of-bounds indices return nil" =:
+      (TypeNil, TypeNil) `shouldBeResultOf` do
+        openlibs
+        pushUD typeLazyIntList $ LazyIntList [1,4,9,16]
+        setglobal "list"
+        _ <- dostring "return list[0], list[5]"
+        (,) <$> ltype (nth 1) <*> ltype (nth 2)
+    ]
+
   , testGroup "possible properties"
     [ "tostring Quux" =:
       "Quux 11 \"eleven\"" `shouldBeResultOf` do
@@ -232,6 +258,19 @@ typeBar = deftype "Bar" []
     (pushList pushIntegral, \(Bar nums) -> nums)
     (peekList peekIntegral, \(Bar _) nums -> Bar nums)
   ]
+
+newtype LazyIntList = LazyIntList { fromLazyIntList :: [Int] }
+  deriving (Eq, Show)
+
+typeLazyIntList :: LuaError e => UDTypeWithList e LazyIntList Int
+typeLazyIntList = deftype' "LazyIntList"
+  [ operation Tostring (lambda
+                        ### liftPure show
+                        <#> udparam typeLazyIntList "object" "Object"
+                        =#> functionResult pushString "string" "stringified")
+  ]
+  []
+  (Just (fromLazyIntList, pushIntegral))
 
 --
 -- Sum Type

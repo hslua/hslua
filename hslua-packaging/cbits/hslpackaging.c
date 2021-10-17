@@ -118,24 +118,40 @@ int hsluaP_get_method(lua_State *L)
 }
 
 /*
-** Retrieve a method for this object. The userdata must be in position
-** 1, and the key in position 2.
+** Retrieve a numerical index from this object. The userdata must be in
+** position 1, and the key in position 2.
 */
 int hsluaP_get_numerical(lua_State *L)
 {
-  if (luaL_getmetafield(L, 1, "numerical") != LUA_TTABLE) {
-    lua_pop(L, 1);
-    return 0;
+  hsluaP_get_caching_table(L, 1);
+  int requested = lua_tointeger(L, 2);
+
+  lua_getfield(L, 1, "__lazylistindex");
+  int last_index = lua_tointeger(L, -1);
+  lua_pop(L, 1);                        /* pop last-index value */
+
+  if (requested > last_index) {
+    /* index not in cache, force lazy evaluation of list items */
+    if (luaL_getmetafield(L, 1, "lazylisteval") == LUA_TFUNCTION &&
+        lua_getfield(L, 3, "__lazylist") == LUA_TUSERDATA) {
+      lua_pushinteger(L, last_index);
+      lua_pushinteger(L, requested);
+      lua_pushvalue(L, 3);              /* caching table */
+      lua_call(L, 4, 0);                /* populate cache with evaled values */
+    }
   }
-  lua_pushvalue(L, 2);
-  lua_rawget(L, -2);
+  lua_rawgeti(L, 3, requested);
   return 1;
 }
 
 /*
 ** Retrieves a key from a Haskell-data holding userdata value.
 **
-** Does the following, in order, and returns the first non-nil result:
+** If the key is an integer, any associated list is evaluated and the
+** result is stored in the cache before it is returned.
+**
+** For non-integer keys, it tries the following, in order, and returns
+** the first non-nil result:
 **
 **   + Checks the userdata's uservalue table for the given key;
 **   + looks up a `getter` for the key and calls it with the userdata and
@@ -147,11 +163,14 @@ int hsluaP_get_numerical(lua_State *L)
 int hslua_udindex(lua_State *L)
 {
   lua_settop(L, 2);
-  /* try various sources in order; return 0 if nothing is found. */
-  return hsluaP_get_from_cache(L)
-    || hsluaP_get_via_getter(L)
-    || hsluaP_get_via_alias(L)
-    || hsluaP_get_method(L);
+  /* do numeric lookup for integer keys */
+  return lua_isinteger(L, 2)
+    ? hsluaP_get_numerical(L)
+    /* try various sources in order; return 0 if nothing is found. */
+    : (hsluaP_get_from_cache(L)
+       || hsluaP_get_via_getter(L)
+       || hsluaP_get_via_alias(L)
+       || hsluaP_get_method(L));
 }
 
 /*

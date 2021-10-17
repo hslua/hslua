@@ -2,6 +2,7 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications    #-}
 {-|
 Module      : HsLua.Packaging.UDType
 Copyright   : © 2020-2021 Albert Krewinkel
@@ -16,8 +17,10 @@ The terminology in this module refers to the userdata values as /UD
 objects/, and to their type as /UD type/.
 -}
 module HsLua.Packaging.UDType
-  ( UDType (..)
+  ( UDType
+  , UDTypeWithList (..)
   , deftype
+  , deftype'
   , method
   , property
   , possibleProperty
@@ -42,6 +45,7 @@ import Data.Map (Map)
 import Data.Semigroup (Semigroup ((<>)))
 #endif
 import Data.Text (Text)
+import Data.Void (Void)
 import HsLua.Core
 import HsLua.Marshalling
 import HsLua.Packaging.Function
@@ -54,13 +58,18 @@ import qualified HsLua.Core.Utf8 as Utf8
 -- Haskell values. The type name must be unique; once the type has been
 -- used to push or retrieve a value, the behavior can no longer be
 -- modified through this type.
-data UDType e a = UDType
+data UDTypeWithList e a itemtype = UDTypeWithList
   { udName          :: Name
   , udOperations    :: [(Operation, DocumentedFunction e)]
   , udProperties    :: Map Name (Property e a)
   , udMethods       :: Map Name (DocumentedFunction e)
   , udAliases       :: Map Name Alias
+  , udListSpec      :: Maybe (ListSpec e a itemtype)
   }
+
+type ListSpec e a itemtype = (a -> [itemtype], Pusher e itemtype)
+
+type UDType e a = UDTypeWithList e a Void
 
 -- | Defines a new type, defining the behavior of objects in Lua.
 -- Note that the type name must be unique.
@@ -68,12 +77,23 @@ deftype :: Name                                  -- ^ type name
         -> [(Operation, DocumentedFunction e)]   -- ^ operations
         -> [Member e a]                          -- ^ methods
         -> UDType e a
-deftype name ops members = UDType
+deftype name ops members = deftype' name ops members Nothing
+
+-- | Defines a new type that could also be treated as a list; defines
+-- the behavior of objects in Lua. Note that the type name must be
+-- unique.
+deftype' :: Name                                  -- ^ type name
+         -> [(Operation, DocumentedFunction e)]   -- ^ operations
+         -> [Member e a]                          -- ^ methods
+         -> Maybe (ListSpec e a itemtype)         -- ^ list access
+         -> UDTypeWithList e a itemtype
+deftype' name ops members mbListSpec = UDTypeWithList
   { udName          = name
   , udOperations    = ops
   , udProperties    = Map.fromList $ mapMaybe mbproperties members
   , udMethods       = Map.fromList $ mapMaybe mbmethods members
   , udAliases       = Map.fromList $ mapMaybe mbaliases members
+  , udListSpec      = mbListSpec
   }
   where
     mbproperties = \case
@@ -179,7 +199,7 @@ alias name _desc = MemberAlias name
 -- | Pushes the metatable for the given type to the Lua stack. Creates
 -- the new table afresh on the first time it is needed, and retrieves it
 -- from the registry after that.
-pushUDMetatable :: LuaError e => UDType e a -> LuaE e ()
+pushUDMetatable :: LuaError e => UDTypeWithList e a itemtype -> LuaE e ()
 pushUDMetatable ty = do
   created <- newudmetatable (udName ty)
   when created $ do
@@ -192,6 +212,10 @@ pushUDMetatable ty = do
     add "setters" $ pushSetters ty
     add "methods" $ pushMethods ty
     add "aliases" $ pushAliases ty
+    case udListSpec ty of
+      Nothing -> pure ()
+      Just (_, pushItem) -> do
+        add "lazylisteval" $ pushHaskellFunction (lazylisteval pushItem)
   where
     add :: LuaError e => Name -> LuaE e () -> LuaE e ()
     add name op = do
@@ -231,7 +255,7 @@ foreign import ccall "hslpackaging.c &hslua_udreadonly"
   hslua_udreadonly_ptr :: FunPtr (State -> IO NumResults)
 
 -- | Pushes the metatable's @getters@ field table.
-pushGetters :: LuaError e => UDType e a -> LuaE e ()
+pushGetters :: LuaError e => UDTypeWithList e a itemtype -> LuaE e ()
 pushGetters ty = do
   newtable
   void $ flip Map.traverseWithKey (udProperties ty) $ \name prop -> do
@@ -240,7 +264,7 @@ pushGetters ty = do
     rawset (nth 3)
 
 -- | Pushes the metatable's @setters@ field table.
-pushSetters :: LuaError e => UDType e a -> LuaE e ()
+pushSetters :: LuaError e => UDTypeWithList e a itemtype -> LuaE e ()
 pushSetters ty = do
   newtable
   void $ flip Map.traverseWithKey (udProperties ty) $ \name prop -> do
@@ -251,7 +275,7 @@ pushSetters ty = do
     rawset (nth 3)
 
 -- | Pushes the metatable's @methods@ field table.
-pushMethods :: LuaError e => UDType e a -> LuaE e ()
+pushMethods :: LuaError e => UDTypeWithList e a itemtype -> LuaE e ()
 pushMethods ty = do
   newtable
   void $ flip Map.traverseWithKey (udMethods ty) $ \name fn -> do
@@ -259,7 +283,7 @@ pushMethods ty = do
     pushDocumentedFunction fn
     rawset (nth 3)
 
-pushAliases :: LuaError e => UDType e a -> LuaE e ()
+pushAliases :: LuaError e => UDTypeWithList e a itemtype -> LuaE e ()
 pushAliases ty = do
   newtable
   void $ flip Map.traverseWithKey (udAliases ty) $ \name propSeq -> do
@@ -269,7 +293,8 @@ pushAliases ty = do
 
 -- | Pushes the function used to iterate over the object's key-value
 -- pairs in a generic *for* loop.
-pairsFunction :: forall e a. LuaError e => UDType e a -> LuaE e NumResults
+pairsFunction :: forall e a itemtype. LuaError e
+              => UDTypeWithList e a itemtype -> LuaE e NumResults
 pairsFunction ty = do
   obj <- forcePeek $ peekUD ty (nthBottom 1)
   let pushMember = \case
@@ -286,15 +311,60 @@ pairsFunction ty = do
     map (uncurry MemberProperty) (Map.toAscList (udProperties ty)) ++
     map (uncurry MemberMethod) (Map.toAscList (udMethods ty))
 
+-- | Evaluate part of a lazy list. Takes the following arguments, in
+-- this order:
+--
+-- 1. userdata wrapping the unevalled part of the lazy list
+-- 2. index of the last evaluated element
+-- 3. index of the last requested element
+-- 4. the caching table
+lazylisteval :: forall itemtype e. LuaError e
+             => Pusher e itemtype -> LuaE e NumResults
+lazylisteval pushItem = do
+  munevaled <- fromuserdata @[itemtype] (nthBottom 1) lazyListStateName
+  mcurindex <- tointeger (nthBottom 2)
+  mnewindex <- tointeger (nthBottom 3)
+  case (munevaled, mcurindex, mnewindex) of
+    (Just unevaled, Just curindex, Just newindex) -> do
+      let numElems = fromIntegral $ max (newindex - curindex) 0
+          (as, rest) = splitAt numElems unevaled
+      -- put back remaining unevalled list
+      _ <- putuserdata @[itemtype] (nthBottom 1) lazyListStateName rest
+      -- push evaluated elements
+      settop 4  -- ensure caching table is at the top of the stack
+      forM_ (zip [(curindex + 1)..] as) $ \(i, a) -> do
+        pushItem a
+        rawseti (nthBottom 4) i
+      pushName "__lazylistindex"
+      pushinteger (curindex + fromIntegral (length as))
+      rawset (nthBottom 4)
+      return (NumResults 0)
+    _ -> pure (NumResults 0)
+
+-- | Name of the metatable used for unevaluated lazy list rema
+lazyListStateName :: Name
+lazyListStateName = "HsLua unevalled lazy list"
+
 -- | Pushes a userdata value of the given type.
-pushUD :: LuaError e => UDType e a -> a -> LuaE e ()
+pushUD :: LuaError e => UDTypeWithList e a itemtype -> a -> LuaE e ()
 pushUD ty x = do
   newhsuserdata x
   pushUDMetatable ty
   setmetatable (nth 2)
+  -- add list as value in caching table
+  case udListSpec ty of
+    Nothing -> pure ()
+    Just (toList, _) -> do
+      newtable
+      pushName "__lazylist"
+      newhsuserdata (toList x)
+      void (newudmetatable lazyListStateName)
+      setmetatable (nth 2)
+      rawset (nth 3)
+      setuservalue (nth 2)
 
 -- | Retrieves a userdata value of the given type.
-peekUD :: LuaError e => UDType e a -> Peeker e a
+peekUD :: LuaError e => UDTypeWithList e a itemtype -> Peeker e a
 peekUD ty idx = do
   let name = udName ty
   x <- reportValueOnFailure name (`fromuserdata` name) idx
@@ -327,7 +397,7 @@ setProperties props x = do
 
 -- | Defines a function parameter that takes the given type.
 udparam :: LuaError e
-        => UDType e a      -- ^ expected type
+        => UDTypeWithList e a itemtype  -- ^ expected type
         -> Text            -- ^ parameter name
         -> Text            -- ^ parameter description
         -> Parameter e a
