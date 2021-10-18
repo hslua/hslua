@@ -46,7 +46,7 @@ import qualified HsLua.Core.Utf8 as Utf8
 -- from the Lua stack.
 data Result a
   = Success a
-  | Failure ByteString [Name]
+  | Failure ByteString [Name]       -- ^ Error message and stack of contexts
   deriving (Show, Eq, Functor)
 
 instance Applicative Result where
