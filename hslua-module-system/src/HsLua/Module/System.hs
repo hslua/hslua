@@ -76,6 +76,7 @@ documentedModule = Module
       , with_tmpdir
       , with_wd
       ]
+  , moduleOperations = []
   , moduleDescription =
       "Access to the system's information and file functionality."
   }

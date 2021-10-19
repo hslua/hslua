@@ -17,12 +17,14 @@ module HsLua.Packaging.Module
   , preloadModule
   , preloadModuleWithName
   , pushModule
+  , Operation (..)
   )
 where
 
 import Control.Monad (forM_)
 import HsLua.Core
 import HsLua.Marshalling (pushName, pushText)
+import HsLua.ObjectOrientation.Operation (Operation (..), metamethodName)
 import HsLua.Packaging.Types
 import qualified HsLua.Packaging.Function as Call
 
@@ -61,3 +63,13 @@ pushModule mdl = do
     pushText (fieldName field)
     fieldPushValue field
     rawset (nth 3)
+  case moduleOperations mdl of
+    [] -> pure ()
+    ops -> do
+      -- create a metatable for this module and add operations
+      newtable
+      forM_ ops $ \(op, fn) -> do
+        pushName $ metamethodName op
+        Call.pushDocumentedFunction $ Call.setName "" fn
+        rawset (nth 3)
+      setmetatable (nth 2)

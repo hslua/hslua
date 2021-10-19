@@ -32,6 +32,7 @@ import qualified Data.Text as T
 documentedModule :: Module e
 documentedModule = Module
   { moduleName = "text"
+  , moduleOperations = []
   , moduleFields = []
   , moduleFunctions =
     [ len

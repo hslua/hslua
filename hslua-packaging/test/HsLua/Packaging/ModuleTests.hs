@@ -12,7 +12,8 @@ Tests creating and loading of modules with Haskell.
 -}
 module HsLua.Packaging.ModuleTests (tests) where
 
-import HsLua.Marshalling (Result (Success), peekIntegral, pushIntegral, runPeek)
+import HsLua.Marshalling
+  (Result (Success), peekIntegral, peekString, pushIntegral, pushText, runPeek)
 import HsLua.Packaging.Function
 import HsLua.Packaging.Module
 import Test.Tasty.HsLua ((=:), pushLuaExpr, shouldBeResultOf)
@@ -83,6 +84,14 @@ tests = testGroup "Module"
              , "return mymath.factorial(4)"
              ]
         runPeek $ peekIntegral @Integer Lua.top
+
+    , "call module as function" =:
+      Success "call me maybe" `shouldBeResultOf` do
+        Lua.openlibs
+        registerModule mymath
+        _ <- Lua.dostring "return (require 'mymath')()"
+        runPeek $ peekString Lua.top
+
     ]
   ]
 
@@ -92,6 +101,11 @@ mymath = Module
   , moduleDescription = "A math module."
   , moduleFields = []
   , moduleFunctions = [factorial]
+  , moduleOperations =
+    [ (,) Call $ lambda
+      ### (1 <$ pushText "call me maybe")
+      =?> "call result"
+    ]
   }
 
 factorial :: DocumentedFunction Lua.Exception

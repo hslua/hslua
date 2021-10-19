@@ -24,6 +24,7 @@ module HsLua.Packaging.Types
 import Data.Text (Text)
 import Data.Version (Version)
 import HsLua.Core (LuaE, Name, NumResults)
+import HsLua.ObjectOrientation (Operation)
 
 -- | Named and documented Lua module.
 data Module e = Module
@@ -31,6 +32,7 @@ data Module e = Module
   , moduleDescription :: Text
   , moduleFields :: [Field e]
   , moduleFunctions :: [DocumentedFunction e]
+  , moduleOperations :: [(Operation, DocumentedFunction e)]
   }
 
 -- | Self-documenting module field

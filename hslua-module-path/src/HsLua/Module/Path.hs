@@ -57,6 +57,7 @@ documentedModule = Module
   , moduleDescription = "Module for file path manipulations."
   , moduleFields = fields
   , moduleFunctions = functions
+  , moduleOperations = []
   }
 
 --
