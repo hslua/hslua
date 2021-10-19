@@ -7,6 +7,7 @@ packages:
 - 'hslua-module-path'
 - 'hslua-module-system'
 - 'hslua-module-text'
+- 'hslua-module-version'
 - 'hslua-objectorientation'
 - 'hslua-packaging'
 - 'lua'

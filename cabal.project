@@ -9,6 +9,7 @@ packages: lua/lua.cabal
           hslua-module-system/hslua-module-system.cabal
           hslua-module-text/hslua-module-text.cabal
           hslua-objectorientation/hslua-objectorientation.cabal
+          hslua-module-version/hslua-module-version.cabal
           hslua-packaging/hslua-packaging.cabal
           tasty-lua/tasty-lua.cabal
           tasty-hslua/tasty-hslua.cabal

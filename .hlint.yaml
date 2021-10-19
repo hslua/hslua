@@ -20,6 +20,7 @@
       - "Lua.Userdata"
       - "HsLua.Module.Path"
       - "HsLua.Module.System"
+      - "HsLua.Module.Version"
       - "HsLua.Packaging.RenderingTests"
 
 - modules:
