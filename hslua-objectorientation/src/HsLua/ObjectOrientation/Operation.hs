@@ -1,13 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-|
-Module      : HsLua.Packaging.Operation
+Module      : HsLua.ObjectOrientation.Operation
 Copyright   : © 2020-2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 
-Marshaling and documenting Haskell functions.
+Binary and unary object operations.
 -}
-module HsLua.Packaging.Operation
+module HsLua.ObjectOrientation.Operation
   ( Operation (..)
   , metamethodName
   ) where

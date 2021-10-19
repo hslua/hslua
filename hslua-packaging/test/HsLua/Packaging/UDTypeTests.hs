@@ -13,107 +13,23 @@ module HsLua.Packaging.UDTypeTests (tests) where
 
 import HsLua.Core
 import HsLua.Packaging.Function
-import HsLua.Packaging.Operation
 import HsLua.Packaging.UDType
 import HsLua.Marshalling
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HsLua ((=:), shouldBeResultOf, shouldBeErrorMessageOf)
+import Test.Tasty.HsLua ((=:), shouldBeResultOf)
 import qualified Data.ByteString.Char8 as Char8
 
 -- | Calling Haskell functions from Lua.
 tests :: TestTree
-tests = testGroup "UDType"
+tests = testGroup "DocumentedType"
   [ testGroup "Foo type"
-    [ "tostring" =:
-      "Foo 7 \"seven\"" `shouldBeResultOf` do
-        openlibs
-        pushUD typeFoo $ Foo 7 "seven"
-        setglobal "foo"
-        _ <- dostring "return tostring(foo)"
-        forcePeek $ peekText top
-
-    , "show" =:
+    [ "show" =:
       "Foo 5 \"five\"" `shouldBeResultOf` do
         openlibs
         pushUD typeFoo $ Foo 5 "five"
         setglobal "foo"
         _ <- dostring "return foo:show()"
         forcePeek $ peekText top
-
-    , "peek" =:
-      Foo 37 "ananas" `shouldBeResultOf` do
-        pushUD typeFoo $ Foo 37 "ananas"
-        forcePeek $ peekUD typeFoo top
-
-    , "unknown properties have value `nil`" =:
-      TypeNil `shouldBeResultOf` do
-        openlibs
-        pushUD typeFoo $ Foo (-1) "a"
-        setglobal "foo"
-        dostring "return foo.does_not_exist" >>= \case
-          OK -> ltype top
-          _ -> throwErrorAsException
-
-    , "get number" =:
-      (-1) `shouldBeResultOf` do
-        openlibs
-        pushUD typeFoo $ Foo (-1) "a"
-        setglobal "foo"
-        dostring "return foo.num" >>= \case
-          OK -> forcePeek $ peekIntegral @Int top
-          _ -> throwErrorAsException
-
-    , "get number twice" =:
-      8 `shouldBeResultOf` do
-        openlibs
-        pushUD typeFoo $ Foo 4 "d"
-        setglobal "foo"
-        dostring "return foo.num + foo.num" >>= \case
-          OK -> forcePeek $ peekIntegral @Int top
-          _ -> throwErrorAsException
-
-    , "modify number" =:
-      Foo (-1) "a" `shouldBeResultOf` do
-        openlibs
-        pushUD typeFoo $ Foo 1 "a"
-        setglobal "foo"
-        OK <- dostring "foo.num = -1"
-        TypeUserdata <- getglobal "foo"
-        forcePeek $ peekUD typeFoo top
-
-    , "get string" =:
-      "lint" `shouldBeResultOf` do
-        openlibs
-        pushUD typeFoo $ Foo 0 "lint"
-        setglobal "foo"
-        dostring "return foo.str" >>= \case
-          OK -> forcePeek $ peekText top
-          _ -> throwErrorAsException
-
-    , "cannot change readonly string" =:
-      "'str' is a read-only property." `shouldBeErrorMessageOf` do
-        openlibs
-        pushUD typeFoo $ Foo 2 "b"
-        setglobal "foo"
-        ErrRun <- dostring "foo.str = 'c'"
-        throwErrorAsException :: Lua ()
-
-    , "Can peek after getting read-only property" =:
-      Foo 144 "gros" `shouldBeResultOf` do
-        openlibs
-        pushUD typeFoo $ Foo 144 "gros"
-        setglobal "foo"
-        OK <- dostring "bar = foo.str"
-        _ <- getglobal "foo"
-        forcePeek $ peekUD typeFoo top
-
-    , "cannot change unknown property" =:
-      "Cannot set unknown property." `shouldBeErrorMessageOf` do
-        openlibs
-        pushUD typeFoo $ Foo 11 "eleven"
-        setglobal "foo"
-        ErrRun <- dostring "foo.does_not_exist = nil"
-        throwErrorAsException :: Lua ()
 
     , "pairs iterates over properties" =:
       ["num", "5", "str", "echo", "show", "function"] `shouldBeResultOf` do
@@ -134,53 +50,7 @@ tests = testGroup "UDType"
         forcePeek $ peekList peekText top
     ]
 
-  , testGroup "Bar type"
-    [ "Modifying a table modifies the object" =:
-      Bar [7, 8] `shouldBeResultOf` do
-        openlibs
-        pushUD typeBar $ Bar [7]
-        setglobal "bar"
-        OK <- dostring "table.insert(bar.nums, 8)"
-        _ <- getglobal "bar"
-        forcePeek $ peekUD typeBar top
-    ]
-
-  , testGroup "lazy list"
-    [ "Access an element of a lazy list stub" =:
-      3 `shouldBeResultOf` do
-        openlibs
-        pushUD typeLazyIntList $ LazyIntList [1,1,2,3,5,8]
-        setglobal "list"
-        _ <- dostring "return (list[4])"
-        forcePeek $ peekIntegral @Int top
-
-    , "Remaining list is not evaluated" =:
-      2 `shouldBeResultOf` do
-        openlibs
-        pushUD typeLazyIntList $ LazyIntList [1,1,2, Prelude.error "CRASH!"]
-        setglobal "list"
-        _ <- dostring "return (list[3])"
-        forcePeek $ peekIntegral @Int top
-
-    , "Out-of-bounds indices return nil" =:
-      (TypeNil, TypeNil) `shouldBeResultOf` do
-        openlibs
-        pushUD typeLazyIntList $ LazyIntList [1,4,9,16]
-        setglobal "list"
-        _ <- dostring "return list[0], list[5]"
-        (,) <$> ltype (nth 1) <*> ltype (nth 2)
-
-    , "List is read-only" =:
-      (ErrRun, "Cannot set a numerical value.") `shouldBeResultOf` do
-        openlibs
-        pushUD typeLazyIntList $ LazyIntList [1,4,9,16]
-        setglobal "list"
-        statusCode <- dostring "list[1] = 2"
-        err <- forcePeek $ peekString top
-        pure (statusCode, err)
-    ]
-
-  , testGroup "possible properties"
+  , testGroup "Sum type"
     [ "tostring Quux" =:
       "Quux 11 \"eleven\"" `shouldBeResultOf` do
         openlibs
@@ -195,42 +65,6 @@ tests = testGroup "UDType"
         setglobal "quux"
         _ <- dostring "return quux:show()"
         forcePeek $ peekText top
-
-    , "access Quux.num" =:
-      "12" `shouldBeResultOf` do
-        openlibs
-        pushUD typeQux $ Quux 12 "twelve"
-        setglobal "quux"
-        _ <- dostring "return quux.num"
-        forcePeek $ peekText top
-
-    , "access Quux.str" =:
-      "thirteen!" `shouldBeResultOf` do
-        openlibs
-        pushUD typeQux $ Quux 13 "thirteen"
-        setglobal "quux"
-        _ <- dostring "return quux.num"
-        _ <- dostring "quux.str = quux.str .. '!'; return quux.str"
-        forcePeek $ peekText top
-
-    , testGroup "alias"
-      [ "read subelement via alias" =:
-        13.37 `shouldBeResultOf` do
-          openlibs
-          pushUD typeQux $ Quuz (Point 13.37 0) undefined
-          setglobal "quuz"
-          _ <- dostring "return quuz.x"
-          forcePeek $ peekRealFloat @Double top
-      , "set subelement via alias" =:
-        Point 42 1 `shouldBeResultOf` do
-          openlibs
-          pushUD typeQux $ Quuz (Point 1 1) undefined
-          setglobal "quuz"
-          _ <- dostring "quuz.x = 42; return quuz.point"
-          -- msg <- forcePeek $ peekString top
-          -- liftIO $ putStrLn msg
-          forcePeek $ peekPoint top
-      ]
     ]
   ]
 
@@ -247,7 +81,7 @@ show' = defun "show"
   <#> udparam typeFoo "foo" "Object"
   =#> functionResult pushString "string" "stringified foo"
 
-typeFoo :: LuaError e => UDType e Foo
+typeFoo :: LuaError e => DocumentedType e Foo
 typeFoo = deftype "Foo"
   [ operation Tostring show'
   ]
@@ -257,29 +91,6 @@ typeFoo = deftype "Foo"
   , readonly "str" "some string" (pushString, \(Foo _ s) -> s)
   , method show'
   ]
-
-newtype Bar = Bar [Int]
-  deriving (Eq, Show)
-
-typeBar :: LuaError e => UDType e Bar
-typeBar = deftype "Bar" []
-  [ property "nums" "some numbers"
-    (pushList pushIntegral, \(Bar nums) -> nums)
-    (peekList peekIntegral, \(Bar _) nums -> Bar nums)
-  ]
-
-newtype LazyIntList = LazyIntList { fromLazyIntList :: [Int] }
-  deriving (Eq, Show)
-
-typeLazyIntList :: LuaError e => UDTypeWithList e LazyIntList Int
-typeLazyIntList = deftype' "LazyIntList"
-  [ operation Tostring (lambda
-                        ### liftPure show
-                        <#> udparam typeLazyIntList "object" "Object"
-                        =#> functionResult pushString "string" "stringified")
-  ]
-  []
-  (Just (fromLazyIntList, pushIntegral))
 
 --
 -- Sum Type
@@ -313,7 +124,7 @@ showQux = defun "show"
 peekQux :: LuaError e => Peeker e Qux
 peekQux = peekUD typeQux
 
-typeQux :: LuaError e => UDType e Qux
+typeQux :: LuaError e => DocumentedType e Qux
 typeQux = deftype "Qux"
   [ operation Tostring showQux ]
   [ method showQux
