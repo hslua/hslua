@@ -145,6 +145,14 @@ tests = testGroup "Object Orientation"
         OK <- dostring "table.insert(bar.nums, 8)"
         _ <- getglobal "bar"
         forcePeek $ peekUD typeBar top
+
+    , "Use integer index in alias" =:
+      42 `shouldBeResultOf` do
+        openlibs
+        pushUD typeBar $ Bar [42, 5, 23]
+        setglobal "bar"
+        OK <- dostring "return bar.first"
+        forcePeek $ peekIntegral @Int top
     ]
 
   , testGroup "lazy list"
@@ -282,6 +290,7 @@ typeBar = deftype "Bar" []
   [ property "nums" "some numbers"
     (pushList pushIntegral, \(Bar nums) -> nums)
     (peekList peekIntegral, \(Bar _) nums -> Bar nums)
+  , alias "first" "first element" ["nums", IntegerIndex 1]
   ]
 
 newtype LazyIntList = LazyIntList { fromLazyIntList :: [Int] }

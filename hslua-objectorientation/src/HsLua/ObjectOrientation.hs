@@ -35,6 +35,7 @@ module HsLua.ObjectOrientation
   , Operation (..)
   , ListSpec
   , Possible (..)
+  , AliasIndex (..)
   ) where
 
 import Control.Monad.Except
@@ -44,9 +45,10 @@ import Data.Map (Map)
 #if !MIN_VERSION_base(4,12,0)
 import Data.Semigroup (Semigroup ((<>)))
 #endif
+import Data.String (IsString (..))
 import Data.Text (Text)
 import Data.Void (Void)
-import HsLua.Core
+import HsLua.Core as Lua
 import HsLua.Marshalling
 import HsLua.ObjectOrientation.Operation
 import qualified Data.Map.Strict as Map
@@ -118,7 +120,15 @@ data Property e a = Property
   }
 
 -- | Alias for a different property of this or of a nested object.
-type Alias = [Name]
+type Alias = [AliasIndex]
+
+-- | Index types allowed in aliases (strings and integers)
+data AliasIndex
+  = StringIndex Name
+  | IntegerIndex Lua.Integer
+
+instance IsString AliasIndex where
+  fromString = StringIndex . fromString
 
 -- | A type member, either a method or a variable.
 data Member e fn a
@@ -196,7 +206,7 @@ operation = (,)
 -- | Define an alias for another, possibly nested, property.
 alias :: Name  -- ^ property alias
       -> Text  -- ^ description
-      -> [Name] -- ^ sequence of nested properties
+      -> [AliasIndex] -- ^ sequence of nested properties
       -> Member e fn a
 alias name _desc = MemberAlias name
 
@@ -292,8 +302,13 @@ pushAliases ty = do
   newtable
   void $ flip Map.traverseWithKey (udAliases ty) $ \name propSeq -> do
     pushName name
-    pushList pushName propSeq
+    pushList pushAliasIndex propSeq
     rawset (nth 3)
+
+pushAliasIndex :: Pusher e AliasIndex
+pushAliasIndex = \case
+  StringIndex name -> pushName name
+  IntegerIndex n   -> pushIntegral n
 
 -- | Pushes the function used to iterate over the object's key-value
 -- pairs in a generic *for* loop.
