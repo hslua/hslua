@@ -92,14 +92,18 @@ pushList = Push.pushList push
 --
 -- Tuples
 --
-instance (Pushable a, Pushable b) => Pushable (a, b) where
+instance {-# OVERLAPPABLE #-}
+  (Pushable a, Pushable b) =>
+  Pushable (a, b)
+ where
   push (a, b) = do
     newtable
     addRawInt 1 a
     addRawInt 2 b
 
-instance (Pushable a, Pushable b, Pushable c) =>
-         Pushable (a, b, c)
+instance {-# OVERLAPPABLE #-}
+  (Pushable a, Pushable b, Pushable c) =>
+  Pushable (a, b, c)
  where
   push (a, b, c) = do
     newtable
@@ -107,8 +111,9 @@ instance (Pushable a, Pushable b, Pushable c) =>
     addRawInt 2 b
     addRawInt 3 c
 
-instance (Pushable a, Pushable b, Pushable c, Pushable d) =>
-         Pushable (a, b, c, d)
+instance {-# OVERLAPPABLE #-}
+  (Pushable a, Pushable b, Pushable c, Pushable d) =>
+  Pushable (a, b, c, d)
  where
   push (a, b, c, d) = do
     newtable
@@ -117,9 +122,9 @@ instance (Pushable a, Pushable b, Pushable c, Pushable d) =>
     addRawInt 3 c
     addRawInt 4 d
 
-instance (Pushable a, Pushable b, Pushable c,
-          Pushable d, Pushable e) =>
-         Pushable (a, b, c, d, e)
+instance {-# OVERLAPPABLE #-}
+  (Pushable a, Pushable b, Pushable c, Pushable d, Pushable e) =>
+  Pushable (a, b, c, d, e)
  where
   push (a, b, c, d, e) = do
     newtable
@@ -129,9 +134,10 @@ instance (Pushable a, Pushable b, Pushable c,
     addRawInt 4 d
     addRawInt 5 e
 
-instance (Pushable a, Pushable b, Pushable c,
-          Pushable d, Pushable e, Pushable f) =>
-         Pushable (a, b, c, d, e, f)
+instance  {-# OVERLAPPABLE #-}
+  (Pushable a, Pushable b, Pushable c,
+    Pushable d, Pushable e, Pushable f) =>
+  Pushable (a, b, c, d, e, f)
  where
   push (a, b, c, d, e, f) = do
     newtable
@@ -142,9 +148,10 @@ instance (Pushable a, Pushable b, Pushable c,
     addRawInt 5 e
     addRawInt 6 f
 
-instance (Pushable a, Pushable b, Pushable c, Pushable d,
-          Pushable e, Pushable f, Pushable g) =>
-         Pushable (a, b, c, d, e, f, g)
+instance {-# OVERLAPPABLE #-}
+  (Pushable a, Pushable b, Pushable c, Pushable d,
+    Pushable e, Pushable f, Pushable g) =>
+  Pushable (a, b, c, d, e, f, g)
  where
   push (a, b, c, d, e, f, g) = do
     newtable
@@ -156,9 +163,10 @@ instance (Pushable a, Pushable b, Pushable c, Pushable d,
     addRawInt 6 f
     addRawInt 7 g
 
-instance (Pushable a, Pushable b, Pushable c, Pushable d,
-          Pushable e, Pushable f, Pushable g, Pushable h) =>
-         Pushable (a, b, c, d, e, f, g, h)
+instance {-# OVERLAPPABLE #-}
+  (Pushable a, Pushable b, Pushable c, Pushable d,
+    Pushable e, Pushable f, Pushable g, Pushable h) =>
+  Pushable (a, b, c, d, e, f, g, h)
  where
   push (a, b, c, d, e, f, g, h) = do
     newtable

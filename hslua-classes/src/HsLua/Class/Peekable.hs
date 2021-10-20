@@ -189,52 +189,59 @@ instance PeekError Lua.Exception where
 -- Tuples
 --
 
-instance (Peekable a, Peekable b) => Peekable (a, b) where
+instance {-# OVERLAPPABLE #-}
+  (Peekable a, Peekable b) =>
+  Peekable (a, b)
+ where
   peek = typeChecked "table" istable $ \idx ->
     (,) <$> nthValue idx 1 <*> nthValue idx 2
 
-instance (Peekable a, Peekable b, Peekable c) =>
-         Peekable (a, b, c)
+instance {-# OVERLAPPABLE #-}
+  (Peekable a, Peekable b, Peekable c) =>
+  Peekable (a, b, c)
  where
   peek = typeChecked "table" istable $ \idx ->
     (,,) <$> nthValue idx 1 <*> nthValue idx 2 <*> nthValue idx 3
 
-instance (Peekable a, Peekable b, Peekable c, Peekable d) =>
-         Peekable (a, b, c, d)
+instance {-# OVERLAPPABLE #-}
+  (Peekable a, Peekable b, Peekable c, Peekable d) =>
+  Peekable (a, b, c, d)
  where
   peek = typeChecked "table" istable $ \idx ->
     (,,,) <$> nthValue idx 1 <*> nthValue idx 2 <*> nthValue idx 3
           <*> nthValue idx 4
 
-instance (Peekable a, Peekable b, Peekable c,
-          Peekable d, Peekable e) =>
-         Peekable (a, b, c, d, e)
+instance {-# OVERLAPPABLE #-}
+  (Peekable a, Peekable b, Peekable c, Peekable d, Peekable e) =>
+  Peekable (a, b, c, d, e)
  where
   peek = typeChecked "table" istable $ \idx ->
     (,,,,) <$> nthValue idx 1 <*> nthValue idx 2 <*> nthValue idx 3
            <*> nthValue idx 4 <*> nthValue idx 5
 
-instance (Peekable a, Peekable b, Peekable c,
-          Peekable d, Peekable e, Peekable f) =>
-         Peekable (a, b, c, d, e, f)
+instance {-# OVERLAPPABLE #-}
+  (Peekable a, Peekable b, Peekable c, Peekable d, Peekable e, Peekable f) =>
+  Peekable (a, b, c, d, e, f)
  where
   peek = typeChecked "table" istable $ \idx ->
     (,,,,,) <$> nthValue idx 1 <*> nthValue idx 2 <*> nthValue idx 3
             <*> nthValue idx 4 <*> nthValue idx 5 <*> nthValue idx 6
 
 
-instance (Peekable a, Peekable b, Peekable c, Peekable d,
-          Peekable e, Peekable f, Peekable g) =>
-         Peekable (a, b, c, d, e, f, g)
+instance {-# OVERLAPPABLE #-}
+  (Peekable a, Peekable b, Peekable c, Peekable d,
+   Peekable e, Peekable f, Peekable g) =>
+  Peekable (a, b, c, d, e, f, g)
  where
   peek = typeChecked "table" istable $ \idx ->
     (,,,,,,) <$> nthValue idx 1 <*> nthValue idx 2 <*> nthValue idx 3
              <*> nthValue idx 4 <*> nthValue idx 5 <*> nthValue idx 6
              <*> nthValue idx 7
 
-instance (Peekable a, Peekable b, Peekable c, Peekable d,
-          Peekable e, Peekable f, Peekable g, Peekable h) =>
-         Peekable (a, b, c, d, e, f, g, h)
+instance {-# OVERLAPPABLE #-}
+  (Peekable a, Peekable b, Peekable c, Peekable d,
+   Peekable e, Peekable f, Peekable g, Peekable h) =>
+  Peekable (a, b, c, d, e, f, g, h)
  where
   peek = typeChecked "table" istable $ \idx ->
     (,,,,,,,) <$> nthValue idx 1 <*> nthValue idx 2 <*> nthValue idx 3
