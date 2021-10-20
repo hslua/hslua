@@ -35,7 +35,6 @@ import HsLua.Marshalling
   ( Peeker, Pusher, failPeek, liftLua, peekIntegral, peekList, peekString
   , pushBool, pushIntegral, pushIterator, pushString, retrieving )
 import HsLua.Packaging
-import HsLua.Packaging.UDType
 import Text.ParserCombinators.ReadP (readP_to_S)
 
 import qualified HsLua.Core.Utf8 as UTF8
