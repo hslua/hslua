@@ -12,6 +12,12 @@ Haskell and Lua.
 [AppVeyor Status]: https://ci.appveyor.com/api/projects/status/ldutrilgxhpcau94/branch/main?svg=true
 [Hackage]: https://img.shields.io/hackage/v/hslua.svg
 
+This package is part of [HsLua], a Haskell framework built around
+the embeddable scripting language [Lua].
+
+[HsLua]: https://hslua.org/
+[Lua]: https://lua.org/
+
 
 Overview
 --------

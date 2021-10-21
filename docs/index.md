@@ -81,6 +81,7 @@ factorial = defun "factorial"
   <#> parameter      peekIntegral "integer"        "n"   "input number"
   =#> functionResult pushIntegral "integer|string"       "factorial of n"
   #? "Computes the factorial of an integer."
+  `since` makeVersion [1,0,0]
 
 main :: IO ()
 main = run @HsLua.Exception $ do
@@ -100,6 +101,28 @@ Running this program yields
 
 Note that the second result is too large for a Lua 64 bit integer,
 so the value is represented as a string.
+
+### Generated documentation
+
+The documentation can be rendered as pandoc Markdown:
+
+```
+### factorial (n)
+
+Calculates the factorial of a positive integer.
+
+*Since: 1.0.0*
+
+Parameters:
+
+n
+:   number for which the factorial is computed (integer)
+
+Returns:
+
+ - product of all integers from 1 upto n (integer)
+```
+
 
 Packages
 --------

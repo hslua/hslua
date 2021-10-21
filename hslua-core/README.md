@@ -16,12 +16,18 @@ Haskell-idiomatic style.
 Overview
 --------
 
-[Lua](https://lua.org) is a small, well-designed, embeddable
-scripting language. It has become the de-facto default to make
-programs extensible and is widely used everywhere from servers
-over games and desktop applications up to security software and
-embedded devices. This package provides the basic building blocks
-for coders to embed Lua into their programs.
+[Lua] is a small, well-designed, embeddable scripting language. It
+has become the de-facto default to make programs extensible and is
+widely used everywhere from servers over games and desktop
+applications up to security software and embedded devices. This
+package provides the basic building blocks for coders to embed Lua
+into their programs.
+
+This package is part of [HsLua], a Haskell framework built around
+the embeddable scripting language [Lua].
+
+[HsLua]: https://hslua.org/
+[Lua]: https://lua.org/
 
 Interacting with Lua
 --------------------

@@ -5,13 +5,18 @@
 [![Hackage]](https://hackage.haskell.org/package/hslua-packaging)
 
 Utilities to package up Haskell functions and values into a Lua
-module. This package is part of HsLua, a Haskell framework built
-around the embeddable scripting language [Lua](https://lua.org).
+module.
 
 [GitHub Actions badge]: https://img.shields.io/github/workflow/status/hslua/hslua/CI.svg?logo=github
 [GitHub Actions]: https://github.com/hslua/hslua/actions
 [AppVeyor Status]: https://ci.appveyor.com/api/projects/status/ldutrilgxhpcau94/branch/main?svg=true
 [Hackage]: https://img.shields.io/hackage/v/hslua-packaging.svg
+
+This package is part of [HsLua], a Haskell framework built around
+the embeddable scripting language [Lua].
+
+[HsLua]: https://hslua.org/
+[Lua]: https://lua.org/
 
 ## Functions
 
