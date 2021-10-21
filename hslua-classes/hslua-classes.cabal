@@ -1,8 +1,9 @@
 cabal-version:       2.2
 name:                hslua-classes
 version:             2.0.0
-synopsis:            Marshaling classes for HsLua
-description:         FIXME!
+synopsis:            Type classes for HsLua
+description:         Type classes for convenient marshalling and calling of
+                     Lua functions.
 homepage:            https://hslua.org/
 bug-reports:         https://github.com/hslua/hslua/issues
 license:             MIT
