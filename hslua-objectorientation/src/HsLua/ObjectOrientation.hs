@@ -21,12 +21,11 @@ module HsLua.ObjectOrientation
   , UDTypeWithList (..)
   , deftypeGeneric
   , deftypeGeneric'
-  , method
+  , methodGeneric
   , property
   , possibleProperty
   , readonly
   , alias
-  , operation
   , peekUD
   , pushUD
     -- * Helper types for building
@@ -137,8 +136,8 @@ data Member e fn a
   | MemberAlias Name Alias
 
 -- | Use a documented function as an object method.
-method :: Name -> fn -> Member e fn a
-method = MemberMethod
+methodGeneric :: Name -> fn -> Member e fn a
+methodGeneric = MemberMethod
 
 -- | A property or method which may be available in some instances but
 -- not in others.
@@ -196,12 +195,6 @@ readonly name desc (push, get) = MemberProperty name $
   , propertySet = Nothing
   , propertyDescription = desc
   }
-
--- | Declares a new object operation from a documented function.
-operation :: Operation             -- ^ the kind of operation
-          -> fn                    -- ^ function used to perform the operation
-          -> (Operation, fn)
-operation = (,)
 
 -- | Define an alias for another, possibly nested, property.
 alias :: Name  -- ^ property alias

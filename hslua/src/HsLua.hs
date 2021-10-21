@@ -20,7 +20,8 @@ module HsLua (
     module HsLua.Core
     -- * Marshalling
   , module HsLua.Marshalling
-    -- * Modules
+    -- * Module, data, and function packaging
+  , module HsLua.ObjectOrientation
   , module HsLua.Packaging
     -- * Type classes
   , module HsLua.Class.Exposable
@@ -44,4 +45,5 @@ import HsLua.Class.Pushable hiding (pushList)
 import HsLua.Class.Util
 import HsLua.Packaging
 import HsLua.Marshalling
+import HsLua.ObjectOrientation
 import HsLua.Util

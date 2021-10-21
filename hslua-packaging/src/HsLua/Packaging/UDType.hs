@@ -34,11 +34,10 @@ module HsLua.Packaging.UDType
 
 import Data.Text (Text)
 import HsLua.Core
-import HsLua.ObjectOrientation hiding (method, operation)
+import HsLua.ObjectOrientation
 import HsLua.ObjectOrientation.Operation (metamethodName)
 import HsLua.Packaging.Function
 import qualified HsLua.Core.Utf8 as Utf8
-import qualified HsLua.ObjectOrientation as OO
 
 -- | Type definitions containing documented functions.
 type DocumentedType e a = UDType e (DocumentedFunction e) a
@@ -73,13 +72,13 @@ deftype' = deftypeGeneric' pushDocumentedFunction
 -- | Use a documented function as an object method.
 method :: DocumentedFunction e
        -> Member e (DocumentedFunction e) a
-method f = OO.method (functionName f) f
+method f = methodGeneric (functionName f) f
 
 -- | Declares a new object operation from a documented function.
 operation :: Operation             -- ^ the kind of operation
           -> DocumentedFunction e  -- ^ function used to perform the operation
           -> (Operation, DocumentedFunction e)
-operation op f = OO.operation op $ setName (metamethodName op) f
+operation op f = (,) op $ setName (metamethodName op) f
 
 -- | Defines a function parameter that takes the given type.
 udparam :: LuaError e

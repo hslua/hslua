@@ -259,13 +259,15 @@ deftype' :: LuaError e
          -> UDTypeWithList e (HaskellFunction e) a itemtype
 deftype' = deftypeGeneric' pushHaskellFunction
 
---
--- Sample product type
---
+-- | Define a (meta) operation on a type.
+operation :: Operation -> HaskellFunction e -> (Operation, HaskellFunction e)
+operation = (,)
 
+-- | Sample product type
 data Foo = Foo Int String
   deriving (Eq, Show)
 
+-- | Specify behavior of Foo values in Lua.
 typeFoo :: LuaError e => UDType e (HaskellFunction e) Foo
 typeFoo = deftype "Foo"
   [ operation Tostring show' ]
@@ -273,7 +275,7 @@ typeFoo = deftype "Foo"
       (pushIntegral, \(Foo n _) -> n)
       (peekIntegral, \(Foo _ s) n -> Foo n s)
   , readonly "str" "some string" (pushString, \(Foo _ s) -> s)
-  , method "show" show'
+  , methodGeneric "show" show'
   ]
   where
     show' = do
@@ -342,7 +344,7 @@ peekQux = peekUD typeQux
 typeQux :: LuaError e => UDType e (HaskellFunction e) Qux
 typeQux = deftype "Qux"
   [ operation Tostring showQux ]
-  [ method "show" showQux
+  [ methodGeneric "show" showQux
   , property "num" "some number"
       (pushIntegral, \case
           Quux n _ -> n
