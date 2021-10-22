@@ -2,7 +2,7 @@
 
 ### 2.0.0
 
-Release pending.
+Release 2021-10-21.
 
 - Move module hierarchy from Foreign.Lua to HsLua.
 

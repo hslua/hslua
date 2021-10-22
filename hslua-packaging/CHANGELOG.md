@@ -4,7 +4,7 @@
 
 ### hslua-packaging 2.0.0
 
-Release pending.
+Release 2021-10-21.
 
 - Initially created. Contains modules previously found in the
   modules `Foreign.Lua.Call` and `Foreign.Lua.Module` from

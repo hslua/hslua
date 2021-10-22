@@ -4,7 +4,7 @@
 
 ## hslua-objectorientation 1.0.0
 
-Release pending.
+Release 2021-10-21.
 
 - Published without warning.
 

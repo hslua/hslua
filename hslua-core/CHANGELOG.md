@@ -6,7 +6,7 @@
 
 ## hslua-core 2.0.0
 
-Release pending.
+Release 2021-10-21.
 
 - Error handling has been reworked completely. The type of
   exceptions used and handled by HsLua is now exposed to the type
