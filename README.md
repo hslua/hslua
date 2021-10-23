@@ -47,14 +47,14 @@ You should give HsLua a try if you
 HsLua exposes most of Lua’s C API via Haskell functions. It offers
 improved type-safety when compared to the raw C functions, while
 also translating Lua errors to Haskell exceptions. Furthermore,
-HsLua provides an convenience functions which make interacting
-with Lua straight-forward and safe.
+HsLua provides convenience functions and helpers that make
+interacting with Lua straight-forward and safe.
 
 ### Showcases
 
-Possibly the best-known real world use case of HsLua is used in
+Possibly the best-known real world use case of HsLua is
 [pandoc][], the universal document converter, where it serves as a
-building block for [Lua filters][] and [custom writers][].
+central building block for [Lua filters][] and [custom writers][].
 
 [Santa’s little Lua scripts][], originally written for [Advent of
 Haskell][], is a friendly introduction that showcases how an
