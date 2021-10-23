@@ -1,5 +1,11 @@
 # hslua-aeson
 
+## v2.0.0
+
+Release pending.
+
+- Changed module name from `Foreign.Lua.Aeson` to `HsLua.Aeson`.
+
 ## v1.0.3.1
 
 Released 2020-10-16.

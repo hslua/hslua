@@ -27,7 +27,7 @@ source-repository head
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Foreign.Lua.Aeson
+  exposed-modules:     HsLua.Aeson
   build-depends:       base                 >= 4.7     && < 5
                      , aeson                >= 0.11    && < 1.6
                      , hashable             >= 1.2     && < 1.4

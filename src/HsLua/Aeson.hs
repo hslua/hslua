@@ -1,15 +1,12 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE LambdaCase #-}
 {-|
-Module      :  Foreign.Lua.Aeson
-Copyright   :  © 2017–2020 Albert Krewinkel
+Module      :  HsLua.Aeson
+Copyright   :  © 2017–2021 Albert Krewinkel
 License     :  MIT
-
 Maintainer  :  Albert Krewinkel <tarleb@zeitkraut.de>
-Stability   :  experimental
-Portability :  portable
 
-Glue to hslua for aeson values.
+Glue to HsLua for aeson values.
 
 This provides a @StackValue@ instance for aeson's @Value@ type. The following
 conventions are used:
@@ -27,7 +24,7 @@ conventions are used:
 - JSON numbers are converted to Lua numbers (usually doubles), which can cause
   a loss of precision.
 -}
-module Foreign.Lua.Aeson
+module HsLua.Aeson
   ( pushNull
   ) where
 
