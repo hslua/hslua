@@ -4,9 +4,17 @@
 
 [1]: https://pvp.haskell.org
 
+## hslua-core 2.0.0.1
+
+Released 2021-10-29.
+
+- Fixed bug in pushTypeMismatchError. The function did not use an
+  absolute stack index in one place, which sometimes lead to
+  incorrect actual types being reported.
+
 ## hslua-core 2.0.0
 
-Release 2021-10-21.
+Released 2021-10-21.
 
 - Error handling has been reworked completely. The type of
   exceptions used and handled by HsLua is now exposed to the type

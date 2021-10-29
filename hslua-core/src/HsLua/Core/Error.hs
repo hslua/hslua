@@ -206,7 +206,7 @@ pushTypeMismatchError expected idx = liftLua $ \l -> do
   let pushtype = lua_type l idx' >>= lua_typename l >>= lua_pushstring l
   pushstring expected
   pushstring " expected, got "
-  B.unsafeUseAsCString "__name" (luaL_getmetafield l idx) >>= \case
+  B.unsafeUseAsCString "__name" (luaL_getmetafield l idx') >>= \case
     LUA_TSTRING -> return () -- pushed the name
     LUA_TNIL    -> void pushtype
     _           -> lua_pop l 1 <* pushtype

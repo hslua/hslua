@@ -11,9 +11,11 @@ import Data.ByteString (ByteString)
 import Data.Typeable (Typeable)
 import Data.Either (isLeft)
 import HsLua.Core (Lua, failLua)
-import HsLua.Core.Error (LuaError, changeErrorType, popErrorMessage)
+import HsLua.Core.Error ( LuaError, changeErrorType, popErrorMessage
+                        , throwTypeMismatchError)
 import HsLua.Core.Types (liftLua)
-import Test.Tasty.HsLua ( (=:), (?:), shouldBeResultOf, shouldHoldForResultOf)
+import Test.Tasty.HsLua ( (=:), (?:), shouldBeResultOf, shouldHoldForResultOf
+                        , shouldBeErrorMessageOf)
 import Test.Tasty (TestTree, testGroup)
 
 import qualified HsLua.Core as Lua
@@ -41,6 +43,23 @@ tests = testGroup "Error"
       Just "plant" `shouldBeResultOf` do
         Lua.pushstring "plant"
         changeErrorType (Lua.tostring Lua.top)
+    ]
+
+  , testGroup "type mismatch"
+    [ "got string" =:
+      "number expected, got string" `shouldBeErrorMessageOf` do
+        Lua.pushstring "moin"
+        throwTypeMismatchError "number" Lua.top :: Lua ()
+    , "got unnamed userdata" =:
+      "number expected, got userdata" `shouldBeErrorMessageOf` do
+        Lua.newhsuserdata ()
+        throwTypeMismatchError "number" Lua.top :: Lua ()
+    , "named userdata" =:
+      "Bar expected, got Foo" `shouldBeErrorMessageOf` do
+        Lua.newhsuserdata ()
+        Lua.newudmetatable "Foo"
+        Lua.setmetatable (Lua.nth 2)
+        throwTypeMismatchError "Bar" Lua.top :: Lua ()
     ]
   ]
 
