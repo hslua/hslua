@@ -52,7 +52,7 @@ jobs:
           - ghc: '8.8.4'
             cabal: '3.2'
             lua: 'bundled'
-            flags: '-system-lua'
+            flags: '+rely-on-shared-lpeg-library'
           - ghc: '8.10.4'
             cabal: '3.4'
             lua: '5.3.6'

@@ -1,4 +1,5 @@
-packages: lua/lua.cabal
+packages: lpeg/lpeg.cabal
+          lua/lua.cabal
           lua-arbitrary/lua-arbitrary.cabal
           hslua/hslua.cabal
           hslua-core/hslua-core.cabal

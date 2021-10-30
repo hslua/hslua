@@ -17,6 +17,7 @@
     name: "Use camelCase"
     within:
       - "Lua.Call"
+      - "Lua.LPeg"
       - "Lua.Userdata"
       - "HsLua.Module.Path"
       - "HsLua.Module.System"

@@ -1,0 +1,89 @@
+cabal-version:       2.2
+name:                lpeg
+version:             1.0.0
+synopsis:            LPeg – Parsing Expression Grammars For Lua
+description:         This package contains the C sources of LPeg, as well
+                     as some tiny Haskell helper to load the package.
+                     .
+                     <http://www.inf.puc-rio.br/~roberto/lpeg/>
+homepage:            https://hslua.org/
+bug-reports:         https://github.com/hslua/hslua/issues
+license:             MIT
+license-file:        LICENSE
+author:              Albert Krewinkel
+maintainer:          Albert Krewinkel <albert+hslua@zeitkraut.de>
+copyright:           © 2007-2019 Lua.org, PUC-Rio;
+                     © 2021 Albert Krewinkel
+category:            Foreign
+build-type:          Simple
+extra-source-files:  cbits/lpeg-1.0.2/*.h
+                   , README.md
+                   , CHANGELOG.md
+tested-with:         GHC == 8.0.2
+                   , GHC == 8.2.2
+                   , GHC == 8.4.4
+                   , GHC == 8.6.5
+                   , GHC == 8.8.4
+                   , GHC == 8.10.7
+                   , GHC == 9.0.1
+
+source-repository head
+  type:                git
+  location:            https://github.com/hslua/hslua.git
+  subdir:              lpeg
+
+flag rely-on-shared-lpeg-library
+  default:             False
+  manual:              True
+  description:         Do not build lpeg from source, but trust that lpeg is
+                       made available in other ways, e.g., through a
+                       system-wide installation. The loader will be replaced
+                       with a placeholder function that only emits a message.
+
+common common-options
+  default-language:    Haskell2010
+  build-depends:       base                 >= 4.8    && < 5
+                     , lua                  >= 2.0    && < 2.1
+  ghc-options:         -Wall
+                       -Wincomplete-record-updates
+                       -Wnoncanonical-monad-instances
+                       -Wredundant-constraints
+  if impl(ghc >= 8.2)
+    ghc-options:         -Wcpp-undef
+                         -Werror=missing-home-modules
+  if impl(ghc >= 8.4)
+    ghc-options:         -Widentities
+                         -Wincomplete-uni-patterns
+                         -Wpartial-fields
+                         -fhide-source-paths
+
+library
+  import:              common-options
+  exposed-modules:     Lua.LPeg
+  default-extensions:  ForeignFunctionInterface
+
+  if flag(rely-on-shared-lpeg-library)
+    hs-source-dirs:      substitute
+    c-sources:           cbits/placeholder.c
+    cpp-options:         -DRELY_ON_SYSTEM_INSTALL
+  else
+    hs-source-dirs:      src
+    include-dirs:        cbits/lpeg-1.0.2
+    c-sources:           cbits/lpeg-1.0.2/lpvm.c
+                       , cbits/lpeg-1.0.2/lptree.c
+                       , cbits/lpeg-1.0.2/lpprint.c
+                       , cbits/lpeg-1.0.2/lpcode.c
+                       , cbits/lpeg-1.0.2/lpcap.c
+    cc-options:          -std=c99 -fPIC
+
+test-suite test-lpeg
+  import:              common-options
+  type:                exitcode-stdio-1.0
+  main-is:             test-lpeg.hs
+  hs-source-dirs:      test
+  build-depends:       lpeg
+                     , tasty                >= 0.11
+                     , tasty-hunit          >= 0.9
+  other-extensions:    CPP
+  if flag(rely-on-shared-lpeg-library)
+    cpp-options:         -DRELY_ON_SYSTEM_INSTALL
