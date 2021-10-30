@@ -6,13 +6,13 @@
 
 Released 2021-10-30.
 
-- Only install includes when using the Lua code shipped with the
-  package. Cabal no longer tries to install the header files if a
-  system-wide installation is used.
+- Only install includes when using the Lua code shipped with the package
+  (Ellie Hermaszewska). Cabal no longer tries to install the header
+  files if a system-wide installation is used.
 
 ## lua 2.0.0
 
-Release pending.
+Release 2021-10-21.
 
 - Module hierarchy moved from `Foreign.Lua.Raw` to `Lua`.
 
