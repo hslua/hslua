@@ -2,6 +2,14 @@
 
 `lua` uses [PVP Versioning][1].
 
+## lua 2.0.0.1
+
+Released 2021-10-30.
+
+- Only install includes when using the Lua code shipped with the
+  package. Cabal no longer tries to install the header files if a
+  system-wide installation is used.
+
 ## lua 2.0.0
 
 Release pending.
