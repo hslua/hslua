@@ -94,6 +94,7 @@ module Lua.Primary
   , lua_touserdata
   , lua_type
   , lua_typename
+  , lua_version
   , module Lua.Ersatz.Functions
   , module Lua.Ersatz.Auxiliary
   )
@@ -910,3 +911,12 @@ foreign import ccall unsafe "lua.h lua_type"
 -- <https://www.lua.org/manual/5.3/manual.html#lua_typename>
 foreign import ccall unsafe "lua.h lua_typename"
   lua_typename :: Lua.State -> TypeCode {- ^ tp -} -> IO CString
+
+-- | Returns the address of the version number (a C static variable)
+-- stored in the Lua core. When called with a valid 'Lua.State', returns
+-- the address of the version used to create that state. When called
+-- with @NULL@, returns the address of the version running the call.
+--
+-- <https://www.lua.org/manual/5.3/manual.html#lua_version>
+foreign import ccall unsafe "lua.h lua_version"
+  lua_version :: Lua.State -> IO (Ptr Lua.Number)

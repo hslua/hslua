@@ -93,6 +93,7 @@ module Lua
   , -- ** State manipulation
     lua_close
   , lua_newthread
+  , lua_version
     -- ** Basic stack manipulation
   , lua_absindex
   , lua_gettop
