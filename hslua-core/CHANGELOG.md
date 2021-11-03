@@ -4,6 +4,14 @@
 
 [1]: https://pvp.haskell.org
 
+## hslua-core 2.0.0.2
+
+Released 2021-11-03.
+
+- Fixed output of `pushTypeMismatchError` when there is no value
+  at the given index. Previously the function would report the
+  value as type `string` and now reports it as `no value`.
+
 ## hslua-core 2.0.0.1
 
 Released 2021-10-29.
