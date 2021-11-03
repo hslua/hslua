@@ -60,6 +60,11 @@ tests = testGroup "Error"
         Lua.newudmetatable "Foo"
         Lua.setmetatable (Lua.nth 2)
         throwTypeMismatchError "Bar" Lua.top :: Lua ()
+
+    , "missing value" =:
+      "boolean expected, got no value" `shouldBeErrorMessageOf` do
+        curtop <- Lua.gettop
+        throwTypeMismatchError "boolean" (curtop + 1) :: Lua ()
     ]
   ]
 

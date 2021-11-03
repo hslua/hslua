@@ -200,14 +200,14 @@ pushTypeMismatchError :: ByteString  -- ^ name or description of expected type
                       -> StackIndex  -- ^ stack index of mismatching object
                       -> LuaE e ()
 pushTypeMismatchError expected idx = liftLua $ \l -> do
-  idx' <- lua_absindex l idx
-  let pushstring str = B.unsafeUseAsCStringLen str $ \(cstr, cstrLen) ->
-        lua_pushlstring l cstr (fromIntegral cstrLen)
-  let pushtype = lua_type l idx' >>= lua_typename l >>= lua_pushstring l
-  pushstring expected
-  pushstring " expected, got "
-  B.unsafeUseAsCString "__name" (luaL_getmetafield l idx') >>= \case
+  let pushtype = lua_type l idx >>= lua_typename l >>= lua_pushstring l
+  B.unsafeUseAsCString "__name" (luaL_getmetafield l idx) >>= \case
     LUA_TSTRING -> return () -- pushed the name
     LUA_TNIL    -> void pushtype
     _           -> lua_pop l 1 <* pushtype
+  let pushstring str = B.unsafeUseAsCStringLen str $ \(cstr, cstrLen) ->
+        lua_pushlstring l cstr (fromIntegral cstrLen)
+  pushstring expected
+  pushstring " expected, got "
+  lua_rotate l (-3) (-1)  -- move actual type to the end
   lua_concat l 3
