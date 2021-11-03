@@ -98,8 +98,9 @@ int hsluaO_get_via_alias(lua_State *L)
    * list of properties is the second object. */
   for (int i = 1; i <= lua_rawlen(L, -2); i++) {
     lua_rawgeti(L, -2, i);
-    lua_gettable(L, -2);  /* get property */
+    int objtype = lua_gettable(L, -2);  /* get property */
     lua_remove(L, -2);    /* remove previous object */
+    if (!objtype) break;  /* abort if this property of the alias is absent */
   }
   return 1;
 }

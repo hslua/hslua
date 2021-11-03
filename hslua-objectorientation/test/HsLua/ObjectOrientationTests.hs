@@ -240,6 +240,14 @@ tests = testGroup "Object Orientation"
           -- msg <- forcePeek $ peekString top
           -- liftIO $ putStrLn msg
           forcePeek $ peekPoint top
+      , "absent alias returns `nil`" =:
+        TypeNil `shouldBeResultOf` do
+          openlibs
+          pushUD typeQux (Quux 9 "to five")
+          setglobal "quux"
+          dostring "return quux.x" >>= \case
+            OK -> ltype top
+            _ -> failLua =<< forcePeek (peekString top)
       ]
     ]
   ]
