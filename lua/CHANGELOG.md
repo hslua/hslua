@@ -2,6 +2,12 @@
 
 `lua` uses [PVP Versioning][1].
 
+## lua 2.0.1
+
+Released 2021-11-03.
+
+- Added bindings to `lua_rotate` and `lua_version`.
+
 ## lua 2.0.0.1
 
 Released 2021-10-30.
