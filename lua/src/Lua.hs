@@ -103,6 +103,7 @@ module Lua
   , lua_remove
   , lua_insert
   , lua_replace
+  , lua_rotate
   , lua_checkstack
     -- ** Access functions (stack → Haskell)
   , lua_isnil
