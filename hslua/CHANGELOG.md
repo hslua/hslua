@@ -1,8 +1,20 @@
 ## Changelog
 
-### 2.0.0
+### hslua-2.0.1
 
-Release 2021-10-21.
+Released 2021-11-04.
+
+  - Updated lower bounds of hslua packages:
+      + hslua >= 2.0.0.2,
+      + hslua-marshalling >= 2.0.1, and
+      + hslua-objectorientation >= 2.0.1.
+
+    This fixes a number of smaller issues; see the respective
+    package changelogs for details.
+
+### hslua-2.0.0
+
+Released 2021-10-21.
 
 - Move module hierarchy from Foreign.Lua to HsLua.
 
