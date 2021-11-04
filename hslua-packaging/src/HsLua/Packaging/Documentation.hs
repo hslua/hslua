@@ -8,12 +8,24 @@ Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Provides a function to print documentation if available.
 -}
 module HsLua.Packaging.Documentation
-  ( registerDocumentation
+  ( pushDocumentationFunction
+  , registerDocumentation
   ) where
 
 import Data.Text (Text)
 import HsLua.Core as Lua
 import HsLua.Marshalling (pushText)
+
+-- | Pushes a function to the stack that returns the documentation
+-- string of objects for which such is available.
+pushDocumentationFunction :: LuaError e => LuaE e ()
+pushDocumentationFunction = pushHaskellFunction $ do
+  settop 1 -- allow just one argument
+  -- retrieve documentation
+  pushDocumentationTable
+  pushvalue (nthBottom 1)
+  rawget (nth 2)
+  return (NumResults 1)
 
 -- | Registers text as documentation for the object at the stack index
 -- @idx@.

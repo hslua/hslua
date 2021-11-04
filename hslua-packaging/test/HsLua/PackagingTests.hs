@@ -9,6 +9,7 @@ Test packaging
 module HsLua.PackagingTests (tests) where
 
 import Test.Tasty (TestTree, testGroup)
+import qualified HsLua.Packaging.DocumentationTests
 import qualified HsLua.Packaging.FunctionTests
 import qualified HsLua.Packaging.ModuleTests
 import qualified HsLua.Packaging.RenderingTests
@@ -21,4 +22,5 @@ tests = testGroup "Packaging"
   , HsLua.Packaging.ModuleTests.tests
   , HsLua.Packaging.RenderingTests.tests
   , HsLua.Packaging.UDTypeTests.tests
+  , HsLua.Packaging.DocumentationTests.tests
   ]

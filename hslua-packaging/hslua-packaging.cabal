@@ -74,6 +74,7 @@ test-suite test-hslua-packaging
   hs-source-dirs:      test
   ghc-options:         -threaded
   other-modules:       HsLua.PackagingTests
+                     , HsLua.Packaging.DocumentationTests
                      , HsLua.Packaging.FunctionTests
                      , HsLua.Packaging.ModuleTests
                      , HsLua.Packaging.RenderingTests
