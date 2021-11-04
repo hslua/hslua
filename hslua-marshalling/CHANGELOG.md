@@ -2,9 +2,17 @@
 
 `hslua-marshalling` uses [PVP Versioning](https://pvp.haskell.org).
 
+### hslua-marshalling 2.0.1
+
+Released 2021-11-04.
+
+  - Allow `pushIterator` to skip values: If the function that
+    pushes the values of a list item signals that it didn't push any
+    values, then that value will be skipped.
+
 ### hslua-marshalling 2.0.0
 
-Release 2021-10-21.
+Released 2021-10-21.
 
 - Initially created. Contains modules previously found in the
   modules `Foreign.Lua.Peek` and `Foreign.Lua.Push` from
