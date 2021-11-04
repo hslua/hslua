@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                hslua-objectorientation
-version:             2.0.0
+version:             2.0.1
 synopsis:            Object orientation tools for HsLua
 description:         Expose Haskell objects to Lua with an object oriented
                      interface.
