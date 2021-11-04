@@ -57,6 +57,7 @@ import Data.Text (Text)
 import Data.Version (Version)
 import HsLua.Core
 import HsLua.Marshalling
+import HsLua.Packaging.Documentation (registerDocumentation)
 import HsLua.Packaging.Rendering (renderFunction)
 import HsLua.Packaging.Types
 import qualified HsLua.Core as Lua
@@ -302,23 +303,8 @@ docsField = "HsLua docs"
 pushDocumentedFunction :: LuaError e
                        => DocumentedFunction e -> LuaE e ()
 pushDocumentedFunction fn = do
-  -- push function
-  Lua.pushHaskellFunction $ callFunction fn
-
-  -- store documentation
-  Lua.getfield registryindex docsField >>= \case
-    TypeTable -> return () -- already have the documentation table
-    _ -> do
-      Lua.pop 1            -- pop non-table value
-      Lua.newtable         -- create documentation table
-      Lua.pushstring "k"   -- Make it an "ephemeron table" and..
-      Lua.setfield (nth 2) "__mode"  -- collect docs if function is GCed
-      Lua.pushvalue top    -- add copy of table to registry
-      Lua.setfield registryindex docsField
-  Lua.pushvalue (nth 2)  -- the function
-  pushText $ renderFunction fn
-  Lua.rawset (nth 3)
-  Lua.pop 1              -- pop doc table, leave function on stack
+  Lua.pushHaskellFunction $ callFunction fn  -- push function
+  registerDocumentation Lua.top $ renderFunction fn  -- store documentation
 
 -- | Pushes the documentation of the object at the given index to the
 -- stack, or just *nil* if no documentation is available.

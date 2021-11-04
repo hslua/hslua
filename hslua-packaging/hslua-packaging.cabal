@@ -55,6 +55,7 @@ common common-options
 library
   import:              common-options
   exposed-modules:     HsLua.Packaging
+                     , HsLua.Packaging.Documentation
                      , HsLua.Packaging.Function
                      , HsLua.Packaging.Module
                      , HsLua.Packaging.Rendering
