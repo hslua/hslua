@@ -313,7 +313,9 @@ pairsFunction ty = do
         MemberProperty name prop -> do
           pushName name
           getresults <- propertyGet prop obj
-          return $ getresults + 1
+          if getresults == 0
+            then 0 <$ pop 1  -- property is absent, don't push anything
+            else return $ getresults + 1
         MemberMethod name f -> do
           pushName name
           udFnPusher ty f

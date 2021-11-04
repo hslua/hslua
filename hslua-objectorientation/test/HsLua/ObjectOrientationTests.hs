@@ -134,6 +134,19 @@ tests = testGroup "Object Orientation"
           , "return result"
           ]
         forcePeek $ peekList peekText top
+
+    , "absent properties are not included in `pairs`" =:
+      [("num", "number"), ("str", "string"), ("show", "function")]
+      `shouldBeResultOf` do
+        openlibs
+        pushUD typeQux $ Quux 1 "a"
+        setglobal "a"
+        OK <- dostring $ Char8.unlines
+          [ "local result = {}"
+          , "for k, v in pairs(a) do result[#result+1] = {k, type(v)} end"
+          , "return result"
+          ]
+        forcePeek $ peekList (peekPair peekText peekText) top
     ]
 
   , testGroup "Bar type"
