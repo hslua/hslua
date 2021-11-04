@@ -36,5 +36,19 @@ tests = testGroup "Userdata"
           ]
         when (stat /= Lua.OK) Lua.throwErrorAsException
         Lua.tostring Lua.top
+    , "skip entry if value pusher returned 0" =:
+      Just "1,3,4" `shouldBeResultOf` do
+        let pushNoTwo 2 = return 0
+            pushNoTwo i = 1 <$ Lua.pushinteger i
+        Lua.openlibs
+        Lua.pushHaskellFunction $ pushIterator pushNoTwo [1..4]
+        Lua.setglobal "skip"
+        stat <- Lua.dostring $ mconcat
+          [ "local acc = {}\n"
+          , "for n in skip() do table.insert(acc, n) end\n"
+          , "return table.concat(acc, ',')\n"
+          ]
+        when (stat /= Lua.OK) Lua.throwErrorAsException
+        Lua.tostring Lua.top
     ]
   ]

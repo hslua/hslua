@@ -23,8 +23,12 @@ import HsLua.Core as Lua
 -- | Pushes three values to the stack that can be used in a generic for
 -- loop to lazily iterate over all values in the list. Keeps the
 -- remaining list in a userdata state.
+--
+-- If the values pusher function returns @'NumResults' 0@ for a list
+-- item, then this item will be skipped and the values for the next item
+-- will be pushed.
 pushIterator :: forall a e. LuaError e
-             => (a -> LuaE e NumResults)  -- ^ the values to push
+             => (a -> LuaE e NumResults)  -- ^ pusher for the values
              -> [a]                       -- ^ list to iterate over lazily
              -> LuaE e NumResults
 pushIterator pushValues xs = do
@@ -45,7 +49,9 @@ pushIterator pushValues xs = do
           success <- putuserdata @[a] (nthBottom 1) statename ys
           if not success
             then failLua "Error in iterator: could not update iterator state."
-            else pushValues y
+            else pushValues y >>= \case
+              0 -> nextItem  -- keep going if nothing was pushed
+              n -> return n
 
     statename :: Name
     statename = "HsLua iterator state"
