@@ -14,4 +14,4 @@ packages:
 - 'lua-arbitrary'
 - 'tasty-lua'
 - 'tasty-hslua'
-resolver: 'lts-17.4'
+resolver: 'lts-18.16'
