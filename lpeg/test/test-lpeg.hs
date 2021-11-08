@@ -136,9 +136,6 @@ testScript = unlines
   , "assert(m.match('a' * m.P(true), 'a') == 2)"
   ]
 
--- reTestScript :: String
--- reTestScript = unlines
-
 #else
   [ testCase "loading the lpeg placeholder library causes an error" $ do
       l <- hsluaL_newstate
