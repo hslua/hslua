@@ -8,6 +8,7 @@ Haskell bindings to the LPeg Lua package.
 -}
 module Lua.LPeg
   ( luaopen_lpeg_ptr
+  , luaopen_re_ptr
   , lpeg_searcher
   ) where
 
@@ -21,9 +22,8 @@ import Lua
 foreign import ccall unsafe "lptree.c &luaopen_lpeg"
   luaopen_lpeg_ptr :: CFunction
 
--- | Name under which the module is loaded.
-moduleName :: String
-moduleName = "lpeg"
+foreign import ccall unsafe "&luaopen_re"
+  luaopen_re_ptr :: CFunction
 
 -- | A package searcher to be used with @package.searchers@), just for
 -- the "lpeg" module. Returns @nil@ on most inputs, but pushes a
@@ -37,6 +37,7 @@ lpeg_searcher l = 1 <$ do
       else do
         cstrLen <- peek lenPtr
         pkg <- peekCStringLen (cstr, fromIntegral cstrLen)
-        if pkg /= moduleName
-          then lua_pushnil l
-          else lua_pushcclosure l luaopen_lpeg_ptr 0
+        case pkg of
+          "lpeg" -> lua_pushcclosure l luaopen_lpeg_ptr 0
+          "re"   -> lua_pushcclosure l luaopen_re_ptr 0
+          _      -> lua_pushnil l

@@ -17,6 +17,7 @@ copyright:           © 2007-2019 Lua.org, PUC-Rio;
 category:            Foreign
 build-type:          Simple
 extra-source-files:  cbits/lpeg-1.0.2/*.h
+                   , cbits/re.h
                    , README.md
                    , CHANGELOG.md
 tested-with:         GHC == 8.0.2
@@ -69,11 +70,13 @@ library
   else
     hs-source-dirs:      src
     include-dirs:        cbits/lpeg-1.0.2
+                       , cbits
     c-sources:           cbits/lpeg-1.0.2/lpvm.c
                        , cbits/lpeg-1.0.2/lptree.c
                        , cbits/lpeg-1.0.2/lpprint.c
                        , cbits/lpeg-1.0.2/lpcode.c
                        , cbits/lpeg-1.0.2/lpcap.c
+                       , cbits/re.c
     cc-options:          -std=c99 -fPIC
 
 test-suite test-lpeg
