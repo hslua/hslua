@@ -24,7 +24,7 @@ import Lua.Primary (lua_next)
 -- __WARNING__: @lua_next@ is unsafe in Haskell: This function will
 -- cause an unrecoverable crash an error if the given key is neither
 -- @nil@ nor present in the table. Consider using the safe
--- @'HsLua.Core.Primary.next'@ function in HsLua.Core instead.
+-- @'HsLua.Core.next'@ function in HsLua.Core instead.
 next :: StackIndex -> LuaE e Bool
 next idx = liftLua $ \l -> fromLuaBool <$!> lua_next l idx
 {-# INLINABLE next #-}

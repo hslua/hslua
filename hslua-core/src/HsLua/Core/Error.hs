@@ -151,7 +151,7 @@ instance LuaError e => MonadFail (LuaE e) where
 --
 
 -- | Takes a failable HsLua function and transforms it into a
--- monadic 'Lua' operation. Throws an exception if an error
+-- monadic 'LuaE' operation. Throws an exception if an error
 -- occured.
 liftLuaThrow :: forall e a. LuaError e
              => (Lua.State -> Ptr Lua.StatusCode -> IO a)
@@ -179,7 +179,7 @@ throwOnError _errProxy f l = alloca $ \statusPtr -> do
 -- the message failed.
 --
 -- This helpful as a \"last resort\" method when implementing
--- 'peekException'.
+-- 'popException'.
 popErrorMessage :: Lua.State -> IO ByteString
 popErrorMessage l = alloca $ \lenPtr -> do
   cstr <- hsluaL_tolstring l (-1) lenPtr

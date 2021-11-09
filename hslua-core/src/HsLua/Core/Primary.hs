@@ -756,7 +756,7 @@ rawseti k m = ensureTable k (\l -> lua_rawseti l k m)
 
 -- | Sets the C function @f@ as the new value of global @name@.
 --
--- Wraps 'lua_register'.
+-- Behaves like "lua_register".
 register :: LuaError e => Name -> CFunction -> LuaE e ()
 register name f = do
   pushcfunction f

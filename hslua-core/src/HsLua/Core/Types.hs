@@ -312,7 +312,7 @@ toGCdata = \case
 -- Special values
 --
 
--- | Option for multiple returns in @'pcall'@.
+-- | Option for multiple returns in @'HsLua.Core.pcall'@.
 multret :: NumResults
 multret = LUA_MULTRET
 

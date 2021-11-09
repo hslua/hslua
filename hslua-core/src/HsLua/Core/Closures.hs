@@ -27,7 +27,7 @@ import qualified Control.Monad.Catch as Catch
 --
 -- Pre C functions collect parameters from the stack and return a @CInt@
 -- that represents number of return values left on the stack.
--- See 'Lua.CFunction' for more info.
+-- See 'Lua.Types.CFunction' for more info.
 pushPreCFunction :: PreCFunction -> LuaE e ()
 pushPreCFunction preCFn = liftLua $ \l ->
   hslua_pushhsfunction l preCFn
@@ -35,7 +35,7 @@ pushPreCFunction preCFn = liftLua $ \l ->
 
 -- | Pushes Haskell function as a callable userdata. All values created
 -- will be garbage collected. The function should behave similar to a
--- 'CFunction'.
+-- 'Lua.Types.CFunction'.
 --
 -- Error conditions should be indicated by raising a catchable exception
 -- or by returning the result of @'Lua.error'@.

@@ -8,7 +8,7 @@ Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta
 Portability : non-portable (depends on GHC)
 
-Helper functions to run 'Lua' computations.
+Helper functions to run 'LuaE' computations.
 -}
 module HsLua.Core.Run
   ( run

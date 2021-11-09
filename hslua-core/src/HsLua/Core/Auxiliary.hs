@@ -81,7 +81,7 @@ dofile fp = do
 -- | Pushes onto the stack the field @e@ from the metatable of the
 -- object at index @obj@ and returns the type of the pushed value. If
 -- the object does not have a metatable, or if the metatable does not
--- have this field, pushes nothing and returns 'TypeNil'.
+-- have this field, pushes nothing and returns 'Lua.TypeNil'.
 --
 -- Wraps 'luaL_getmetafield'.
 getmetafield :: StackIndex -- ^ obj
