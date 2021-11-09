@@ -438,7 +438,7 @@ foreign import ccall SAFTY "lua.h lua_newuserdata"
 -- table at the given index (the \"next\" pair after the given key). If
 -- there are no more elements in the table, then
 -- <https://www.lua.org/manual/5.3/manual.html#lua_next lua_next>
--- returns 'FALSE' (and pushes nothing).
+-- returns 'Lua.FALSE' (and pushes nothing).
 --
 -- A typical traversal looks like this:
 --
