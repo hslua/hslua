@@ -19,7 +19,9 @@ module HsLua.Packaging.Function
   , lambda
   , applyParameter
   , returnResult
+  , returnResults
   , returnResultsOnStack
+  , updateFunctionDescription
   , liftPure
   , liftPure2
   , liftPure3
@@ -48,6 +50,7 @@ module HsLua.Packaging.Function
   , optionalParameter
   , functionResult
     -- * Internal
+  , HsFnPrecursor
   , toHsFnPrecursor
   ) where
 
