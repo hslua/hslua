@@ -34,6 +34,7 @@ module HsLua.ObjectOrientation
   , Operation (..)
   , ListSpec
   , Possible (..)
+  , Alias
   , AliasIndex (..)
   ) where
 
