@@ -22,6 +22,7 @@ import Lua
 foreign import ccall unsafe "lptree.c &luaopen_lpeg"
   luaopen_lpeg_ptr :: CFunction
 
+-- | Pointer to the function which loads the "re" library.
 foreign import ccall unsafe "&luaopen_re"
   luaopen_re_ptr :: CFunction
 
