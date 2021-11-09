@@ -58,6 +58,9 @@ import qualified HsLua.Core.Utf8 as Utf8
 -- Haskell values. The type name must be unique; once the type has been
 -- used to push or retrieve a value, the behavior can no longer be
 -- modified through this type.
+--
+-- This type includes methods to define how the object should behave as
+-- a read-only list of type @itemtype@.
 data UDTypeWithList e fn a itemtype = UDTypeWithList
   { udName          :: Name
   , udOperations    :: [(Operation, fn)]
@@ -68,8 +71,15 @@ data UDTypeWithList e fn a itemtype = UDTypeWithList
   , udFnPusher      :: fn -> LuaE e ()
   }
 
+-- | Pair describing how a type can be pushes as a Lua list. The first
+-- value is a function converting the value into a list, and the second
+-- item is a pusher for the list items.
 type ListSpec e a itemtype = (a -> [itemtype], Pusher e itemtype)
 
+-- | A userdata type, capturing the behavior of Lua objects that wrap
+-- Haskell values. The type name must be unique; once the type has been
+-- used to push or retrieve a value, the behavior can no longer be
+-- modified through this type.
 type UDType e fn a = UDTypeWithList e fn a Void
 
 -- | Defines a new type, defining the behavior of objects in Lua.
