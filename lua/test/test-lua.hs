@@ -24,6 +24,7 @@ import Foreign.Storable as Storable
 import Lua
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit (Assertion, HasCallStack, assertBool, testCase, (@=?))
+import qualified Lua.ErsatzTests
 import qualified Lua.UnsafeTests
 
 -- | Runs tests.
@@ -390,6 +391,7 @@ tests = testGroup "lua"
     ]
 
   , Lua.UnsafeTests.tests
+  , Lua.ErsatzTests.tests
   ]
 
 infix  3 =:
