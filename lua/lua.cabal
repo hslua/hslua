@@ -144,6 +144,7 @@ library
   includes:            lua.h
                      , luaconf.h
                      , lauxlib.h
+                     , lualib.h
   if flag(system-lua) || flag(pkg-config)
     if flag(pkg-config)
       pkgconfig-depends: lua5.3
@@ -154,6 +155,7 @@ library
     install-includes:    lua.h
                        , luaconf.h
                        , lauxlib.h
+                       , lualib.h
     c-sources:           cbits/lua-5.3.6/lapi.c
                        , cbits/lua-5.3.6/lcode.c
                        , cbits/lua-5.3.6/lctype.c
