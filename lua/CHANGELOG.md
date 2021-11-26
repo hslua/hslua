@@ -2,6 +2,14 @@
 
 `lua` uses [PVP Versioning][1].
 
+## lua 2.0.2
+
+Released 2021-11-26.
+
+- Make sure lualib.h is available through this package. The header
+  file contains info on how and under which name the standard
+  library is loaded.
+
 ## lua 2.0.1
 
 Released 2021-11-03.
