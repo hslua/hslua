@@ -61,6 +61,10 @@ jobs:
             cabal: '3.4'
             lua: '5.3.6'
             flags: '+hardcode-reg-keys'
+          - ghc: '9.2.1'
+            cabal: '3.4'
+            lua: 'bundled'
+            flags: ''
 
     steps:
     - name: Checkout
