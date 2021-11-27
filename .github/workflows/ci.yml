@@ -103,3 +103,31 @@ jobs:
 
     - name: Test all
       run: cabal v2-test all
+
+  windows:
+    name: Windows (stack)
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Cache stack global package db
+        id:   stack-global-package-db
+        uses: actions/cache@v2
+        with:
+          path: 'C:\Users\runneradmin\AppData\Roaming\stack\'
+          key: ${{ runner.os }}-stack-${{ hashFiles('stack.yaml') }}
+
+      - name: Install dependencies
+        run: |
+          stack update
+          stack test --dependencies-only --fast
+
+      - name: Build
+        shell: cmd
+        run: |
+          stack test --no-run-tests --fast
+
+      - name: Test
+        shell: cmd
+        run: |
+          stack test --fast --test-arguments="--ansi-tricks=false"
