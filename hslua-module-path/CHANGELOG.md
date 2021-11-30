@@ -3,6 +3,14 @@
 `hslua-module-paths` uses [PVP Versioning][1].
 The changelog is available [on GitHub][2].
 
+## 1.0.1
+
+  - Bumped upper bound of hslua to allow version 2.1.
+
+## 1.0.0
+
+  - Updated to hslua 2.0.
+
 ## 0.1.0.1
 
 Released 2021-02-06.
