@@ -14,20 +14,21 @@ Tests for the `path` Lua module.
 module Main (main) where
 
 import Control.Monad (void)
-import HsLua (Lua)
-import HsLua.Packaging.Module (preloadModule, preloadModuleWithName, pushModule)
+import HsLua.Core (Lua, top)
+import HsLua.Packaging ( preloadModule, preloadModuleWithName, pushModule
+                       , registerModule)
 import HsLua.Module.Path (documentedModule)
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
 import Test.Tasty.Lua (translateResultsFromFile)
 
-import qualified HsLua as Lua
+import qualified HsLua.Core as Lua
 
 main :: IO ()
 main = do
   luaTestResults <- Lua.run @Lua.Exception $ do
     Lua.openlibs
-    Lua.registerModule documentedModule
+    registerModule documentedModule
     Lua.pop 1
     translateResultsFromFile "test/test-path.lua"
   defaultMain $ testGroup "hslua-module-path" [tests, luaTestResults]
@@ -42,7 +43,9 @@ tests = testGroup "HsLua path module"
       Lua.openlibs
       preloadModule documentedModule
       assertEqual' "function not added to preloader" Lua.TypeFunction =<< do
-        Lua.getglobal' "package.preload.path"
+        void $ Lua.getglobal "package"
+          *> Lua.getfield top "preload"
+          *> Lua.getfield top "path"
         Lua.ltype (-1)
 
   , testCase "path module can be loaded as hspath" . Lua.run $ do
