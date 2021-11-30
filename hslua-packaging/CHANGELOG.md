@@ -4,7 +4,16 @@
 
 ### hslua-packaging 2.0.0
 
-Release 2021-10-21.
+Release pending.
+
+  - Update to hslua-objectorientation 2.1.0. This entails a change
+    to `deftype'`, switching the order of item pusher and
+    list-extractor function in the tuple passed as the last
+    argument.
+
+### hslua-packaging 2.0.0
+
+Released 2021-10-21.
 
 - Initially created. Contains modules previously found in the
   modules `Foreign.Lua.Call` and `Foreign.Lua.Module` from
