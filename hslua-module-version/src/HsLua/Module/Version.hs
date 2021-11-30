@@ -76,7 +76,7 @@ typeVersion = deftype' "Version"
     =#> functionResult pushString "string" "stringified version"
   ]
   [ method must_be_at_least ]
-  (Just (versionBranch, pushIntegral))
+  (Just (pushIntegral, versionBranch))
   where
     versionComparison f descr = lambda
       ### liftPure2 f
