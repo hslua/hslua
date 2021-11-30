@@ -1,5 +1,11 @@
 # Revision history for hslua-module-system
 
+## 1.0.1
+
+Release pending.
+
+- Relaxed upper bound of hslua-packaging allowing version 2.1.
+
 ## 1.0.0
 
 Release pending.
