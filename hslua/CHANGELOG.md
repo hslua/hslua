@@ -1,5 +1,14 @@
 ## Changelog
 
+### hslua-2.1.0
+
+Release pending.
+
+  - Update to hslua-objectorientation 2.1.0. This entails changes
+    to `deftype'` and `deftypeGeneric`, switching the order of
+    item pusher and list-extractor function in the tuple passed as
+    the last argument.
+
 ### hslua-2.0.1
 
 Released 2021-11-04.
