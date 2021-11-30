@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                hslua-examples
-version:             2.1.0
+version:             2.0.1
 synopsis:            Examples of how to combine Haskell and Lua.
 description:         The HsLua modules provide wrappers of Lua language
                      interpreter as described on the official
