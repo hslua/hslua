@@ -253,6 +253,20 @@ tests = testGroup "Object Orientation"
           -- msg <- forcePeek $ peekString top
           -- liftIO $ putStrLn msg
           forcePeek $ peekPoint top
+      , "read subelement via integer alias" =:
+        13.37 `shouldBeResultOf` do
+          openlibs
+          pushUD typeQux $ Quuz (Point 13.37 0) undefined
+          setglobal "quuz"
+          _ <- dostring "return quuz[1]"
+          forcePeek $ peekRealFloat @Double top
+      , "set subelement via integer alias" =:
+        Point 42 1 `shouldBeResultOf` do
+          openlibs
+          pushUD typeQux $ Quuz (Point 1 1) undefined
+          setglobal "quuz"
+          _ <- dostring "quuz[1] = 42; return quuz.point"
+          forcePeek $ peekPoint top
       , "absent alias returns `nil`" =:
         TypeNil `shouldBeResultOf` do
           openlibs
@@ -391,4 +405,5 @@ typeQux = deftype "Qux"
         Quux {}  -> const Absent)
 
   , alias "x" "The x coordinate of a point in Quuz" ["point", "x"]
+  , alias (IntegerIndex 1) "The x coordinate of a point in Quuz" ["point", "x"]
   ]

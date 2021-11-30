@@ -67,7 +67,7 @@ data UDTypeWithList e fn a itemtype = UDTypeWithList
   , udOperations    :: [(Operation, fn)]
   , udProperties    :: Map Name (Property e a)
   , udMethods       :: Map Name fn
-  , udAliases       :: Map Name Alias
+  , udAliases       :: Map AliasIndex Alias
   , udListSpec      :: Maybe (ListSpec e a itemtype)
   , udFnPusher      :: fn -> LuaE e ()
   }
@@ -136,6 +136,7 @@ type Alias = [AliasIndex]
 data AliasIndex
   = StringIndex Name
   | IntegerIndex Lua.Integer
+  deriving (Eq, Ord)
 
 instance IsString AliasIndex where
   fromString = StringIndex . fromString
@@ -144,7 +145,7 @@ instance IsString AliasIndex where
 data Member e fn a
   = MemberProperty Name (Property e a)
   | MemberMethod Name fn
-  | MemberAlias Name Alias
+  | MemberAlias AliasIndex Alias
 
 -- | Use a documented function as an object method.
 methodGeneric :: Name -> fn -> Member e fn a
@@ -208,9 +209,9 @@ readonly name desc (push, get) = MemberProperty name $
   }
 
 -- | Define an alias for another, possibly nested, property.
-alias :: Name  -- ^ property alias
-      -> Text  -- ^ description
-      -> [AliasIndex] -- ^ sequence of nested properties
+alias :: AliasIndex    -- ^ property alias
+      -> Text          -- ^ description
+      -> [AliasIndex]  -- ^ sequence of nested properties
       -> Member e fn a
 alias name _desc = MemberAlias name
 
@@ -305,7 +306,7 @@ pushAliases :: LuaError e => UDTypeWithList e fn a itemtype -> LuaE e ()
 pushAliases ty = do
   newtable
   void $ flip Map.traverseWithKey (udAliases ty) $ \name propSeq -> do
-    pushName name
+    pushAliasIndex name
     pushList pushAliasIndex propSeq
     rawset (nth 3)
 

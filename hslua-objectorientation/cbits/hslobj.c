@@ -89,7 +89,8 @@ int hsluaO_get_via_alias(lua_State *L)
   }
   lua_pushvalue(L, 2);
   if (lua_rawget(L, -2) != LUA_TTABLE) {
-    return 0;             /* key is not an alias */
+    lua_pop(L, 2);       /* key is not an alias */
+    return 0;            /* try a different method */
   }
 
   /* key is an alias */
@@ -168,12 +169,12 @@ int hslua_udindex(lua_State *L)
   lua_settop(L, 2);
   /* do numeric lookup for integer keys */
   return lua_isinteger(L, 2)
-    ? hsluaO_get_numerical(L)
+    ? (hsluaO_get_via_alias(L) || hsluaO_get_numerical(L))
     /* try various sources in order; return 0 if nothing is found. */
-    : (hsluaO_get_from_cache(L)
-       || hsluaO_get_via_getter(L)
-       || hsluaO_get_via_alias(L)
-       || hsluaO_get_method(L));
+    : (hsluaO_get_from_cache(L) ||
+       hsluaO_get_via_getter(L) ||
+       hsluaO_get_via_alias(L)  ||
+       hsluaO_get_method(L));
 }
 
 /*
@@ -239,8 +240,11 @@ int hsluaO_set_via_setter(lua_State *L)
 int hslua_udnewindex(lua_State *L)
 {
   if (lua_type(L, 2) == LUA_TNUMBER) {
-    lua_pushliteral(L, "Cannot set a numerical value.");
-    return lua_error(L);
+    if (!hsluaO_set_via_alias(L)) {
+      lua_pushliteral(L, "Cannot set a numerical value.");
+      return lua_error(L);
+    }
+    return 0;
   }
   if (hsluaO_set_via_alias(L) || hsluaO_set_via_setter(L)) {
     return 0;
