@@ -342,7 +342,7 @@ typeLazyIntList = deftype' "LazyIntList"
       return (NumResults 1)
   ]
   []
-  (Just (fromLazyIntList, pushIntegral))
+  (Just (pushIntegral, fromLazyIntList))
 
 --
 -- Sample sum type

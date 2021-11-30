@@ -75,7 +75,7 @@ data UDTypeWithList e fn a itemtype = UDTypeWithList
 -- | Pair describing how a type can be pushes as a Lua list. The first
 -- value is a function converting the value into a list, and the second
 -- item is a pusher for the list items.
-type ListSpec e a itemtype = (a -> [itemtype], Pusher e itemtype)
+type ListSpec e a itemtype = (Pusher e itemtype, a -> [itemtype])
 
 -- | A userdata type, capturing the behavior of Lua objects that wrap
 -- Haskell values. The type name must be unique; once the type has been
@@ -233,7 +233,7 @@ pushUDMetatable ty = do
     add "aliases" $ pushAliases ty
     case udListSpec ty of
       Nothing -> pure ()
-      Just (_, pushItem) -> do
+      Just (pushItem, _) -> do
         add "lazylisteval" $ pushHaskellFunction (lazylisteval pushItem)
   where
     add :: LuaError e => Name -> LuaE e () -> LuaE e ()
@@ -380,7 +380,7 @@ pushUD ty x = do
   -- add list as value in caching table
   case udListSpec ty of
     Nothing -> pure ()
-    Just (toList, _) -> do
+    Just (_, toList) -> do
       newtable
       pushName "__lazylist"
       newhsuserdata (toList x)
