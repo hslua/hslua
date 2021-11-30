@@ -97,7 +97,8 @@ int hsluaO_get_via_alias(lua_State *L)
   lua_pushvalue(L, 1);    /* start with the original object */
   /* Iterate over properties; last object is on top of stack,
    * list of properties is the second object. */
-  for (int i = 1; i <= lua_rawlen(L, -2); i++) {
+  lua_Integer len = (lua_Integer) lua_rawlen(L, -2);
+  for (lua_Integer i = 1; i <= len; i++) {
     lua_rawgeti(L, -2, i);
     int objtype = lua_gettable(L, -2);  /* get property */
     lua_remove(L, -2);    /* remove previous object */
@@ -128,10 +129,10 @@ int hsluaO_get_method(lua_State *L)
 int hsluaO_get_numerical(lua_State *L)
 {
   hsluaO_get_caching_table(L, 1);
-  int requested = lua_tointeger(L, 2);
+  lua_Integer requested = lua_tointeger(L, 2);
 
   lua_getfield(L, 1, "__lazylistindex");
-  int last_index = lua_tointeger(L, -1);
+  lua_Integer last_index = lua_tointeger(L, -1);
   lua_pop(L, 1);                        /* pop last-index value */
 
   if (requested > last_index) {
@@ -194,13 +195,14 @@ int hsluaO_set_via_alias(lua_State *L)
   lua_pushvalue(L, 1);    /* start with the original object */
   /* Iterate over properties; last object is on top of stack,
    * list of properties is the second object. */
-  for (int i = 1; i < lua_rawlen(L, -2); i++) {
+  lua_Integer len = (lua_Integer) lua_rawlen(L, -2);
+  for (int i = 1; i < len; i++) {
     lua_rawgeti(L, -2, i);
     lua_gettable(L, -2);  /* get property */
     lua_remove(L, -2);    /* remove previous object */
   }
-  lua_rawgeti(L, -2, lua_rawlen(L, -2)); /* last element */
-  lua_pushvalue(L, 3);    /* new value */
+  lua_rawgeti(L, -2, len); /* last element */
+  lua_pushvalue(L, 3);     /* new value */
   lua_settable(L, -3);
   return 1;
 }
