@@ -11,6 +11,8 @@ Release pending.
     list-extractor function in the tuple passed as the last
     argument.
 
+  - Update to hslua-core 2.1.0 and hslua-marshalling 2.1.0.
+
 ### hslua-packaging 2.0.0
 
 Released 2021-10-21.

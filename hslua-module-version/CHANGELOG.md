@@ -4,9 +4,8 @@
 
 ## 1.0.1
 
--   Update to hslua-packaging-2.1.
-
--   Replace hslua dependency with the smaller hslua-core.
+-   Relaxed upper bound of hslua-core, hslua-marshalling, and
+    hslua-packaging, allowing their respective version 2.1.
 
 ## 1.0.0
 

@@ -4,7 +4,7 @@
 
 Release pending.
 
-- Allowed hslua-2.1
+- Allowed hslua-2.1, hslua-marshalling-2.1.
 
 ### 2.0.0
 

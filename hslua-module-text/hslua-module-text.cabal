@@ -52,7 +52,7 @@ library
   import:              common-options
   exposed-modules:     HsLua.Module.Text
   hs-source-dirs:      src
-  build-depends:       hslua-marshalling    >= 2.0    && < 2.1
+  build-depends:       hslua-marshalling    >= 2.0    && < 2.2
   other-extensions:    OverloadedStrings
 
 test-suite test-hslua-module-text
