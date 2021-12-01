@@ -25,16 +25,10 @@ on:
       - '**/*.cabal'
 
 jobs:
-  lint:
-    name: Lint
+  hlint:
     runs-on: ubuntu-latest
-    env:
-      hlint_script: https://raw.github.com/ndmitchell/hlint/master/misc/run.sh
-
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
-      - name: Download and run hlint
-        run: |
-          curl -sSL "${hlint_script}" | sh -s .
+      - name: HLint
+        uses: tfausak/hlint-action@v1
