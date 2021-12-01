@@ -4,6 +4,13 @@
 
 [1]: https://pvp.haskell.org
 
+## hslua-core 2.1.0
+
+Release pending.
+
+-   The functions `rawget`, `rawgeti`, and `getref` now return the
+    type of the value that was pushed to the stack.
+
 ## hslua-core 2.0.0.2
 
 Released 2021-11-03.
