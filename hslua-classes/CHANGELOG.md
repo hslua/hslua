@@ -6,7 +6,7 @@
 
 Release pending.
 
--   Updated to hslua-core 2.1.
+-   Updated to hslua-core 2.1 and hslua-marshalling 2.1.
 
 ## hslua-classes 2.0.0
 

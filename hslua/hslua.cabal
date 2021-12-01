@@ -44,7 +44,7 @@ common common-options
                      , exceptions              >= 0.8    && < 0.11
                      , hslua-core              >= 2.1    && < 2.2
                      , hslua-classes           >= 2.1    && < 2.2
-                     , hslua-marshalling       >= 2.0.1  && < 2.1
+                     , hslua-marshalling       >= 2.1    && < 2.2
                      , hslua-objectorientation >= 2.1    && < 2.2
                      , hslua-packaging         >= 2.1    && < 2.2
                      , mtl                     >= 2.2    && < 2.3
