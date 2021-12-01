@@ -646,7 +646,7 @@ foreign import ccall unsafe "lua.h lua_rawequal"
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawget>.
 foreign import ccall unsafe "lua.h lua_rawget"
-  lua_rawget :: Lua.State -> StackIndex -> IO ()
+  lua_rawget :: Lua.State -> StackIndex -> IO TypeCode
 
 -- | Pushes onto the stack the value @t[n]@, where @t@ is the table at
 -- the given index. The access is raw, that is, it does not invoke the
@@ -654,7 +654,8 @@ foreign import ccall unsafe "lua.h lua_rawget"
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawgeti>.
 foreign import ccall unsafe "lua.h lua_rawgeti"
-  lua_rawgeti :: Lua.State -> StackIndex -> Lua.Integer {- ^ n -} -> IO ()
+  lua_rawgeti :: Lua.State -> StackIndex -> Lua.Integer {- ^ n -}
+              -> IO TypeCode
 
 -- | Returns the raw "length" of the value at the given index: for
 -- strings, this is the string length; for tables, this is the result of

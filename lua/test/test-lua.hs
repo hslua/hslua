@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wno-unused-do-bind #-}
 {-# LANGUAGE CPP #-}
 {-|
 Module      : Main

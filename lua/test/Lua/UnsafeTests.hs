@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -Wno-warnings-deprecations #-}
+{-# OPTIONS_GHC -Wno-unused-do-bind        #-}
 {-|
 Module      : Lua.UnsafeTests
 Copyright   : © 2021 Albert Krewinkel
