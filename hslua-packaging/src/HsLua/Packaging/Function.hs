@@ -55,6 +55,7 @@ module HsLua.Packaging.Function
   ) where
 
 import Control.Applicative ((<|>))
+import Control.Monad (void)
 import Control.Monad.Except
 import Data.Text (Text)
 import Data.Version (Version)
@@ -317,7 +318,7 @@ pushDocumentation idx = do
   Lua.getfield registryindex docsField >>= \case
     TypeTable -> do
       Lua.pushvalue idx'
-      () <$ Lua.rawget (nth 2)
+      void (Lua.rawget (nth 2))
     _ -> do -- no documentation table available
       Lua.pop 1    -- pop contents of docsField
       Lua.pushnil
