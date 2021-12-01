@@ -2,6 +2,12 @@
 
 `hslua-classes` uses [PVP Versioning][1].
 
+## hslua-classes 2.1.0
+
+Release pending.
+
+-   Updated to hslua-core 2.1.
+
 ## hslua-classes 2.0.0
 
 Release 2021-10-21.
