@@ -53,7 +53,7 @@ tests = testGroup "LPeg" $
         fail =<< peekCString =<< lua_tolstring l (-1) nullPtr
 
       _ <- withCString "version" $ lua_pushstring l
-      lua_rawget l (-2)
+      _ <- lua_rawget l (-2)
       assertEqual "module should have `version` field of type function"
         LUA_TFUNCTION =<< lua_type l (-1)
       lua_close l
@@ -66,7 +66,7 @@ tests = testGroup "LPeg" $
       _ <- withCString "package" $ lua_getglobal l
       pushstring l "searchers"
       _ <- lua_gettable l (-2)
-      forM_ [1..4] $ \i -> lua_pushnil l *> lua_rawseti l (-2) i
+      forM_ [1..4] $ \i -> lua_pushnil l <* lua_rawseti l (-2) i
       lua_pop l 2
 
       -- ensure that lpeg cannot be found
@@ -76,7 +76,7 @@ tests = testGroup "LPeg" $
 
       -- get table "_LOADED" from registry
       _ <- withCString loadedTableRegistryField $ lua_pushstring l
-      lua_rawget l LUA_REGISTRYINDEX
+      _ <- lua_rawget l LUA_REGISTRYINDEX
 
       -- load lpeg
       _ <- withCString "lpeg" $ lua_pushstring l  -- key
