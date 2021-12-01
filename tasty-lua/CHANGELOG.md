@@ -1,5 +1,9 @@
 # Revision history for tasty-lua
 
+## 0.2.4
+
+-   Relaxed upper bound for hslua-core, hslua-marshalling.
+
 ## 0.2.3.2 -- 2021-01-11
 
 - Relaxed upper bound for tasty, allowing `tasty-1.4.*`.
