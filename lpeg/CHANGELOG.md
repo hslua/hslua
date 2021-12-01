@@ -2,6 +2,12 @@
 
 `lpeg` uses [PVP Versioning][1].
 
+## lpeg 1.0.2
+
+Release pending.
+
+  - Allow lua-2.1.0.
+
 ## lpeg 1.0.1
 
 Released 2021-11-08.
