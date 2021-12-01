@@ -9,6 +9,8 @@ Release pending.
     item pusher and list-extractor function in the tuple passed as
     the last argument.
 
+  - Update to hslua-core 2.1.0 and hslua-classes 2.1.0.
+
 ### hslua-2.0.1
 
 Released 2021-11-04.
