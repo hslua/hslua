@@ -24,7 +24,7 @@ pushDocumentationFunction = pushHaskellFunction $ do
   -- retrieve documentation
   pushDocumentationTable
   pushvalue (nthBottom 1)
-  rawget (nth 2)
+  _ <- rawget (nth 2)
   return (NumResults 1)
 
 -- | Registers text as documentation for the object at the stack index

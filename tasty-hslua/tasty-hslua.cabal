@@ -30,7 +30,7 @@ source-repository head
 common common-options
   default-language:    Haskell2010
   build-depends:       base          >= 4.8    && < 5
-                     , hslua-core    >= 2.0    && < 2.1
+                     , hslua-core    >= 2.0    && < 2.2
                      , bytestring    >= 0.10.2 && < 0.12
   ghc-options:         -Wall
                        -Wincomplete-record-updates

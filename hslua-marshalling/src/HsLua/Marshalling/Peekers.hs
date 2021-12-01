@@ -47,7 +47,7 @@ module HsLua.Marshalling.Peekers
   ) where
 
 import Control.Applicative (Alternative (..))
-import Control.Monad ((<$!>), (>=>))
+import Control.Monad ((<$!>), (>=>), void)
 import Data.ByteString (ByteString)
 import Data.Map (Map)
 import Data.Set (Set)
@@ -283,7 +283,7 @@ peekFieldRaw peeker name idx =
     liftLua $ do
       absidx <- Lua.absindex idx
       pushstring $ fromName name
-      rawget absidx
+      void (rawget absidx)
     peeker top `lastly` Lua.pop 1
 {-# INLINABLE peekFieldRaw #-}
 
@@ -292,7 +292,7 @@ peekIndexRaw :: LuaError e => Lua.Integer -> Peeker e a -> Peeker e a
 peekIndexRaw i peeker idx = do
   let showInt (Lua.Integer x) = fromString $ show x
   retrieving (fromString $ "raw index '" <> showInt i <> "'") $! do
-    liftLua $ rawgeti idx i
+    liftLua . void $ rawgeti idx i
     peeker top `lastly` Lua.pop 1
 {-# INLINABLE peekIndexRaw #-}
 

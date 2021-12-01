@@ -5,7 +5,7 @@ The changelog is available [on GitHub][2].
 
 ## 1.0.1
 
-  - Bumped upper bound of hslua to allow version 2.1.
+  - Bumped upper bound of hslua-core to allow version 2.1.
 
 ## 1.0.0
 

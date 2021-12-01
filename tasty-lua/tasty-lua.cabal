@@ -31,7 +31,7 @@ library
   build-depends:       base              >= 4.9    && < 5
                      , bytestring        >= 0.10.2 && < 0.12
                      , file-embed        >= 0.0    && < 0.1
-                     , hslua-core        >= 2.0    && < 2.1
+                     , hslua-core        >= 2.0    && < 2.2
                      , hslua-marshalling >= 2.0    && < 2.1
                      , tasty             >= 1.2    && < 1.5
                      , text              >= 1.0    && < 1.3

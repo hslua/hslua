@@ -317,7 +317,7 @@ pushDocumentation idx = do
   Lua.getfield registryindex docsField >>= \case
     TypeTable -> do
       Lua.pushvalue idx'
-      Lua.rawget (nth 2)
+      () <$ Lua.rawget (nth 2)
     _ -> do -- no documentation table available
       Lua.pop 1    -- pop contents of docsField
       Lua.pushnil

@@ -6,6 +6,8 @@
 
 Release pending.
 
+-   Relaxed upper bound of hslua-core, allowing version 2.1.
+
 -   Relaxed upper bound of hslua-packaging allowing version 2.1.
 
 ## 1.0.0

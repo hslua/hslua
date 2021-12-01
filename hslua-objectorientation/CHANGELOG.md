@@ -24,6 +24,8 @@ Release pending.
     `lua_Integer`. They are usually the same, but may differ in
     some setups.
 
+  - Require at least hslua-core-2.1.0.
+
 ## hslua-objectorientation 2.0.1
 
 Release 2021-11-04.

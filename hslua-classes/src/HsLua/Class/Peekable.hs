@@ -252,5 +252,5 @@ instance {-# OVERLAPPABLE #-}
 nthValue :: (PeekError e, Peekable a)
          => StackIndex -> Lua.Integer -> LuaE e a
 nthValue idx n = do
-  rawgeti idx n
+  _ <- rawgeti idx n
   peek top `Catch.finally` pop 1

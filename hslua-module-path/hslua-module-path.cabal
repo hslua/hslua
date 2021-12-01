@@ -31,7 +31,7 @@ source-repository head
 common common-options
   build-depends:       base              >= 4.9.1  && < 5
                      , filepath          >= 1.4    && < 1.5
-                     , hslua-core        >= 2.0    && < 2.1
+                     , hslua-core        >= 2.1    && < 2.2
                      , hslua-marshalling >= 2.0    && < 2.1
                      , hslua-packaging   >= 2.0    && < 2.2
                      , text              >= 1.0    && < 1.3

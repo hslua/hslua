@@ -2,6 +2,12 @@
 
 `hslua-marshalling` uses [PVP Versioning](https://pvp.haskell.org).
 
+### hslua-marshalling 2.1.0
+
+Release pending.
+
+-   Updated to hslua-core-2.1.0.
+
 ### hslua-marshalling 2.0.1
 
 Released 2021-11-04.

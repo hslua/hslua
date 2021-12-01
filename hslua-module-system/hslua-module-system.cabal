@@ -35,7 +35,7 @@ source-repository head
 common common-options
   default-language:    Haskell2010
   build-depends:       base                 >= 4.8    && < 5
-                     , hslua-core           >= 2.0    && < 2.1
+                     , hslua-core           >= 2.0    && < 2.2
                      , hslua-packaging      >= 2.0    && < 2.2
                      , text                 >= 1.0    && < 1.3
   default-extensions:  LambdaCase
