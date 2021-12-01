@@ -2,6 +2,13 @@
 
 `lua` uses [PVP Versioning][1].
 
+## lua 2.1.0
+
+Release pending.
+
+-   The functions `lua_rawget` and `lua_rawgeti` now return the
+    type of the value that was pushed to the stack.
+
 ## lua 2.0.2
 
 Released 2021-11-26.
