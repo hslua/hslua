@@ -38,7 +38,7 @@ import qualified Foreign.Storable as F
 
 -- | Execute an action only if the given index is a table. Throw an
 -- error otherwise.
-ensureTable :: LuaError e => StackIndex -> (Lua.State -> IO ()) -> LuaE e ()
+ensureTable :: LuaError e => StackIndex -> (Lua.State -> IO a) -> LuaE e a
 ensureTable idx ioOp = do
   isTbl <- istable idx
   if isTbl
@@ -711,8 +711,8 @@ rawequal idx1 idx2 = liftLua $ \l ->
 -- metamethods).
 --
 -- Wraps 'lua_rawget'.
-rawget :: LuaError e => StackIndex -> LuaE e ()
-rawget n = ensureTable n (\l -> lua_rawget l n)
+rawget :: LuaError e => StackIndex -> LuaE e Type
+rawget n = ensureTable n (\l -> toType <$!> lua_rawget l n)
 {-# INLINABLE rawget #-}
 
 -- | Pushes onto the stack the value @t[n]@, where @t@ is the table at
@@ -720,8 +720,8 @@ rawget n = ensureTable n (\l -> lua_rawget l n)
 -- @__index@ metamethod.
 --
 -- Wraps 'lua_rawgeti'.
-rawgeti :: LuaError e => StackIndex -> Lua.Integer -> LuaE e ()
-rawgeti k n = ensureTable k (\l -> lua_rawgeti l k n)
+rawgeti :: LuaError e => StackIndex -> Lua.Integer -> LuaE e Type
+rawgeti k n = ensureTable k (\l -> toType <$!> lua_rawgeti l k n)
 {-# INLINABLE rawgeti #-}
 
 -- | Returns the raw "length" of the value at the given index: for

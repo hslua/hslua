@@ -103,7 +103,7 @@ getmetatable' (Name tname) = liftLua $ \l ->
 {-# INLINABLE getmetatable' #-}
 
 -- | Push referenced value from the table at the given index.
-getref :: LuaError e => StackIndex -> Reference -> LuaE e ()
+getref :: LuaError e => StackIndex -> Reference -> LuaE e Lua.Type
 getref idx ref' = Lua.rawgeti idx (fromIntegral (Lua.fromReference ref'))
 {-# INLINABLE getref #-}
 
