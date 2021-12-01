@@ -6,10 +6,9 @@
 
 Release pending.
 
-  - Update to hslua-objectorientation 2.1.0. This entails a change
-    to `deftype'`, switching the order of item pusher and
-    list-extractor function in the tuple passed as the last
-    argument.
+  - Update to hslua-objectorientation 2.1.0. Lists are now
+    writable. This entails a change to `deftype'`. See the
+    changelog of hslua-objectorientation for details.
 
   - Update to hslua-core 2.1.0 and hslua-marshalling 2.1.0.
 

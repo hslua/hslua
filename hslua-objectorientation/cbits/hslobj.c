@@ -131,14 +131,23 @@ int hsluaO_get_numerical(lua_State *L)
   hsluaO_get_caching_table(L, 1);
   lua_Integer requested = lua_tointeger(L, 2);
 
-  lua_getfield(L, 1, "__lazylistindex");
-  lua_Integer last_index = lua_tointeger(L, -1);
-  lua_pop(L, 1);                        /* pop last-index value */
+  /* The __lazylistindex is set to `nil` or an integer if part of the
+     list is still unevaluated. If it's `false`, then all list values are
+     already in the cache. */
+  if (lua_getfield(L, 1, "__lazylistindex") == LUA_TBOOLEAN) {
+    lua_pop(L, 1);                      /* remove nil */
+  } else {
+    lua_Integer last_index = lua_tointeger(L, -1);
+    lua_pop(L, 1);                      /* pop last-index value */
 
-  if (requested > last_index) {
-    /* index not in cache, force lazy evaluation of list items */
-    if (luaL_getmetafield(L, 1, "lazylisteval") == LUA_TFUNCTION &&
-        lua_getfield(L, 3, "__lazylist") == LUA_TUSERDATA) {
+    if (requested > last_index &&
+        /* index not in cache, force lazy evaluation of list items */
+        luaL_getmetafield(L, 1, "lazylisteval") == LUA_TFUNCTION) {
+      if (lua_getfield(L, 3, "__lazylist") != LUA_TUSERDATA) {
+        /* lazy list thunk is missing; that shouldn't happen!!  */
+        luaL_error(L, "Error while getting numerical index %d: "
+                   "lazy list thunk is missing", requested);
+      }
       lua_pushinteger(L, last_index);
       lua_pushinteger(L, requested);
       lua_pushvalue(L, 3);              /* caching table */
@@ -208,6 +217,42 @@ int hsluaO_set_via_alias(lua_State *L)
 }
 
 /*
+** Sets a numerical index on this object. The userdata must be in
+** position 1, the key in position 2, and the new value in position 3.
+** Returns 1 on success and 0 otherwise.
+*/
+int hsluaO_set_numerical(lua_State *L)
+{
+  hsluaO_get_caching_table(L, 1);
+  lua_Integer target = lua_tointeger(L, 2);
+
+  /* The `__lazylistindex` field is set to `false` if each list element
+     has already been evaluated and stored in the cache. Otherwise it
+     will be either `nil` or an integer. */
+  if (lua_getfield(L, 1, "__lazylistindex") == LUA_TBOOLEAN) {
+    lua_pop(L, 1);                      /* pop boolean from last-index */
+  } else {
+    /* list is not fully evaluated yet, we may have to evaluate it
+       further. */
+    lua_Integer last_index = lua_tointeger(L, -1);
+    lua_pop(L, 1);                      /* pop last-index value */
+
+    if (target > last_index) {
+      /* the index we want to assign has not been cached yet. Evaluation
+       * is forced to avoid any uncertainty about the meaning of
+       * `nil`-valued indices. */
+      lua_pushcfunction(L, &hsluaO_get_numerical);
+      lua_pushvalue(L, 1);
+      lua_pushvalue(L, 2);
+      lua_call(L, 2, 0);
+    }
+  }
+  lua_pushvalue(L, 3);                  /* new value */
+  lua_rawseti(L, -2, target);           /* set in caching table */
+  return 1;
+}
+
+/*
 ** Set value via a property alias. Assumes the stack to be in a state as
 ** after __newindex is called. Returns 1 on success, 0 if the object is
 ** readonly, and throws an error if there is no setter for the given
@@ -242,11 +287,11 @@ int hsluaO_set_via_setter(lua_State *L)
 int hslua_udnewindex(lua_State *L)
 {
   if (lua_type(L, 2) == LUA_TNUMBER) {
-    if (!hsluaO_set_via_alias(L)) {
-      lua_pushliteral(L, "Cannot set a numerical value.");
-      return lua_error(L);
+    if (hsluaO_set_via_alias(L) || hsluaO_set_numerical(L)) {
+      return 0;
     }
-    return 0;
+    lua_pushliteral(L, "Cannot set a numerical value.");
+    return lua_error(L);
   }
   if (hsluaO_set_via_alias(L) || hsluaO_set_via_setter(L)) {
     return 0;

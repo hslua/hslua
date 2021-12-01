@@ -14,10 +14,13 @@ Release pending.
     `Member`. Also, `AliasIndex` is made into an instance of the
     Eq and Ord type classes.
 
-  - Switch types in `ListSpec` pair. This change is made to unify
-    the code: Properties already had the pusher as the first item
-    in the tuple, which is now matched in this type. Users of the
-    `deftype'` function will have to update their code.
+  - Reworked list representation of objects, allowing write access
+    to list components.
+
+    The `ListSpec` type has been updated and contains now a pair
+    of pairs, where the inner pairs define how to push and
+    retrieve lists, respectively. Users of the `deftypeGeneric'`
+    function will have to update their code.
 
   - Fixed some integer type declarations in C code. Some variables
     had been given incorrect types, like `int` instead of

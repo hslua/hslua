@@ -72,10 +72,15 @@ data UDTypeWithList e fn a itemtype = UDTypeWithList
   , udFnPusher      :: fn -> LuaE e ()
   }
 
--- | Pair describing how a type can be pushes as a Lua list. The first
--- value is a function converting the value into a list, and the second
--- item is a pusher for the list items.
-type ListSpec e a itemtype = (Pusher e itemtype, a -> [itemtype])
+-- | Pair of pairs, describing how a type can be used as a Lua list. The
+-- first pair describes how to push the list items, and how the list is
+-- extracted from the type; the second pair contains a method to
+-- retrieve list items, and defines how the list is used to create an
+-- updated value.
+type ListSpec e a itemtype =
+  ( (Pusher e itemtype, a -> [itemtype])
+  , (Peeker e itemtype, a -> [itemtype] -> a)
+  )
 
 -- | A userdata type, capturing the behavior of Lua objects that wrap
 -- Haskell values. The type name must be unique; once the type has been
@@ -233,7 +238,7 @@ pushUDMetatable ty = do
     add "aliases" $ pushAliases ty
     case udListSpec ty of
       Nothing -> pure ()
-      Just (pushItem, _) -> do
+      Just ((pushItem, _), _) -> do
         add "lazylisteval" $ pushHaskellFunction (lazylisteval pushItem)
   where
     add :: LuaError e => Name -> LuaE e () -> LuaE e ()
@@ -342,7 +347,7 @@ pairsFunction ty = do
 --
 -- 1. userdata wrapping the unevalled part of the lazy list
 -- 2. index of the last evaluated element
--- 3. index of the last requested element
+-- 3. index of the requested element
 -- 4. the caching table
 lazylisteval :: forall itemtype e. LuaError e
              => Pusher e itemtype -> LuaE e NumResults
@@ -354,16 +359,22 @@ lazylisteval pushItem = do
     (Just unevaled, Just curindex, Just newindex) -> do
       let numElems = fromIntegral $ max (newindex - curindex) 0
           (as, rest) = splitAt numElems unevaled
-      -- put back remaining unevalled list
-      _ <- putuserdata @[itemtype] (nthBottom 1) lazyListStateName rest
+      if null rest
+        then do
+          -- no more elements in list; unset variable
+          pushName "__lazylistindex"
+          pushBool False
+          rawset (nthBottom 4)
+        else do
+          -- put back remaining unevalled list
+          void $ putuserdata @[itemtype] (nthBottom 1) lazyListStateName rest
+          pushName "__lazylistindex"
+          pushinteger (curindex + fromIntegral (length as))
+          rawset (nthBottom 4)
       -- push evaluated elements
-      settop 4  -- ensure caching table is at the top of the stack
       forM_ (zip [(curindex + 1)..] as) $ \(i, a) -> do
         pushItem a
         rawseti (nthBottom 4) i
-      pushName "__lazylistindex"
-      pushinteger (curindex + fromIntegral (length as))
-      rawset (nthBottom 4)
       return (NumResults 0)
     _ -> pure (NumResults 0)
 
@@ -380,7 +391,7 @@ pushUD ty x = do
   -- add list as value in caching table
   case udListSpec ty of
     Nothing -> pure ()
-    Just (_, toList) -> do
+    Just ((_, toList), _) -> do
       newtable
       pushName "__lazylist"
       newhsuserdata (toList x)
@@ -394,16 +405,17 @@ peekUD :: LuaError e => UDTypeWithList e fn a itemtype -> Peeker e a
 peekUD ty idx = do
   let name = udName ty
   x <- reportValueOnFailure name (`fromuserdata` name) idx
-  liftLua $ do
-    result <- getuservalue idx >>= \case
-      TypeTable -> do
+  (`lastly` pop 1) $ liftLua (getuservalue idx) >>= \case
+    TypeTable -> do
+      -- set list
+      xWithList <- maybe pure setList (udListSpec ty) x
+      liftLua $ do
         pushnil
-        setProperties (udProperties ty) x
-      _ -> do
-        return x
-    pop 1          -- uservalue (caching) table
-    return result
+        setProperties (udProperties ty) xWithList
+    _ -> return x
 
+-- | Retrieves object properties from a uservalue table and sets them on
+-- the given value. Expects the uservalue table at the top of the stack.
 setProperties :: LuaError e => Map Name (Property e a) -> a -> LuaE e a
 setProperties props x = do
   hasNext <- Unsafe.next (nth 2)
@@ -419,3 +431,37 @@ setProperties props x = do
             pop 1
             setProperties props x'
       _ -> x <$ pop 1
+
+-- | Gets a list from a uservalue table and sets it on the given value.
+-- Expects the uservalue (i.e., caching) table to be at the top of the
+-- stack.
+setList :: forall itemtype e a. LuaError e
+        => ListSpec e a itemtype -> a
+        -> Peek e a
+setList (_pushspec, (peekItem, updateList)) x = (x `updateList`) <$!> do
+  liftLua (getfield top "__lazylistindex") >>= \case
+    TypeBoolean -> do
+      -- list had been fully evaluated
+      liftLua $ pop 1
+      peekList peekItem top
+    _ -> do
+      let getLazyList = do
+            liftLua (getfield top "__lazylist") >>= \case
+              TypeUserdata -> pure ()
+              _ -> failPeek "unevaled items of lazy list cannot be peeked"
+            (`lastly` pop 1) $ reportValueOnFailure
+              lazyListStateName
+              (\idx -> fromuserdata @[itemtype] idx lazyListStateName)
+              top
+      mlastIndex <- liftLua (tointeger top <* pop 1)
+      let itemsAfter = case mlastIndex of
+            Nothing -> const getLazyList
+            Just lastIndex -> \i ->
+              if i <= lastIndex
+              then liftLua (rawgeti top i) >>= \case
+                TypeNil -> [] <$ liftLua (pop 1)
+                _ -> do
+                  y <- peekItem top `lastly` pop 1
+                  (y:) <$!> itemsAfter (i + 1)
+              else getLazyList
+      itemsAfter 1

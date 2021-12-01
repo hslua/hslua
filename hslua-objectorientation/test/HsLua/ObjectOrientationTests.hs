@@ -193,14 +193,61 @@ tests = testGroup "Object Orientation"
         _ <- dostring "return list[0], list[5]"
         (,) <$> ltype (nth 1) <*> ltype (nth 2)
 
-    , "List is read-only" =:
-      (ErrRun, "Cannot set a numerical value.") `shouldBeResultOf` do
+    , "Last evaled index is available in __lazylistindex" =:
+      3 `shouldBeResultOf` do
+        openlibs
+        pushUD typeLazyIntList $ LazyIntList [9..17]
+        setglobal "quuz"
+        _ <- dostring "local foo = quuz[3]; return quuz.__lazylistindex"
+        forcePeek $ peekIntegral @Int top
+
+    , "__lazylistindex becomes `false` when all items are evaled" =:
+      False `shouldBeResultOf` do
+        openlibs
+        pushUD typeLazyIntList $ LazyIntList [1..3]
+        setglobal "quuz"
+        _ <- dostring "local foo = quuz[3]; return quuz.__lazylistindex"
+        forcePeek $ peekBool top
+
+    , "Input can be retrieved unchanged" =:
+      LazyIntList [9..17] `shouldBeResultOf` do
+        openlibs
+        pushUD typeLazyIntList $ LazyIntList [9..17]
+        setglobal "ninetofive"
+        _ <- dostring "assert(ninetofive[3] == 11); return ninetofive"
+        forcePeek $ peekUD typeLazyIntList top
+
+    , "List is writable" =:
+      LazyIntList [1, 4, 9, 16] `shouldBeResultOf` do
+        openlibs
+        pushUD typeLazyIntList $ LazyIntList [0,4,9,16]
+        setglobal "list"
+        OK <- dostring "list[1] = 1; return list"
+        forcePeek $ peekUD typeLazyIntList top
+
+    , "List can be extended" =:
+      LazyIntList [1, 4, 9, 16, 25] `shouldBeResultOf` do
         openlibs
         pushUD typeLazyIntList $ LazyIntList [1,4,9,16]
         setglobal "list"
-        statusCode <- dostring "list[1] = 2"
-        err <- forcePeek $ peekString top
-        pure (statusCode, err)
+        OK <- dostring "list[5] = 25; return list"
+        forcePeek $ peekUD typeLazyIntList top
+
+    , "List can be shortened" =:
+      LazyIntList [1, 9, 27, 81] `shouldBeResultOf` do
+        openlibs
+        pushUD typeLazyIntList $ LazyIntList [1, 9, 27, 81, 243]
+        setglobal "list"
+        OK <- dostring "list[5] = nil; return list"
+        forcePeek $ peekUD typeLazyIntList top
+
+    , "Setting element to nil shortenes the list" =:
+      LazyIntList [1, 9, 27] `shouldBeResultOf` do
+        openlibs
+        pushUD typeLazyIntList $ LazyIntList [1, 9, 27, 81, 243]
+        setglobal "list"
+        OK <- dostring "list[4] = nil; return list"
+        forcePeek $ peekUD typeLazyIntList top
     ]
 
   , testGroup "possible properties"
@@ -267,6 +314,13 @@ tests = testGroup "Object Orientation"
           setglobal "quuz"
           _ <- dostring "quuz[1] = 42; return quuz.point"
           forcePeek $ peekPoint top
+      , "non-aliased integer fields are nil" =:
+        TypeNil `shouldBeResultOf` do
+          openlibs
+          pushUD typeQux (Quuz undefined undefined)
+          setglobal "quuz"
+          _ <- dostring "return quuz[3]"
+          ltype top
       , "absent alias returns `nil`" =:
         TypeNil `shouldBeResultOf` do
           openlibs
@@ -342,7 +396,9 @@ typeLazyIntList = deftype' "LazyIntList"
       return (NumResults 1)
   ]
   []
-  (Just (pushIntegral, fromLazyIntList))
+  (Just ( (pushIntegral, fromLazyIntList)
+        , (peekIntegral, \_ lst -> LazyIntList lst)
+        ))
 
 --
 -- Sample sum type
