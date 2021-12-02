@@ -211,6 +211,7 @@ test-suite test-lua
   main-is:             test-lua.hs
   hs-source-dirs:      test
   other-modules:       Lua.ErsatzTests
+                     , Lua.PrimaryTests
                      , Lua.UnsafeTests
   build-depends:       lua
                      , tasty                >= 0.11

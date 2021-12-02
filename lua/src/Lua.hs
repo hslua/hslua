@@ -154,6 +154,7 @@ module Lua
   , lua_pushlstring
   , lua_pushstring
   , lua_pushcclosure
+  , lua_pushcfunction
   , lua_pushboolean
   , lua_pushlightuserdata
   , lua_pushthread

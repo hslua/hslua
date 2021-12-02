@@ -61,6 +61,7 @@ module Lua.Primary
   , lua_pop
   , lua_pushboolean
   , lua_pushcclosure
+  , lua_pushcfunction
   , lua_pushglobaltable
   , lua_pushinteger
   , lua_pushlightuserdata
@@ -591,6 +592,19 @@ foreign import ccall SAFTY "lua.h lua_pushcclosure"
                    -> CFunction   -- ^ fn
                    -> NumArgs     -- ^ n
                    -> IO ()
+
+-- | Pushes a C function onto the stack. This function receives a
+-- pointer to a C function and pushes onto the stack a Lua value of type
+-- @function@ that, when called, invokes the corresponding C function.
+--
+-- Any function to be callable by Lua must follow the correct protocol
+-- to receive its parameters and return its results (see 'CFunction').
+--
+-- <https://www.lua.org/manual/5.3/manual.html#lua_pushcfunction>.
+foreign import capi unsafe "lua.h lua_pushcfunction"
+  lua_pushcfunction :: Lua.State
+                    -> CFunction   -- ^ fn
+                    -> IO ()
 
 -- | Pushes the global environment onto the stack.
 --
