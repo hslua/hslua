@@ -31,6 +31,9 @@ Release pending.
 -   Added an ersatz function `hslua_arith` that wraps `lua_arith`
     and catches errors that occur in metamethods.
 
+-   Made types `OPCode`, `StatusCode`, and `GCCode` instances of
+    type class `Show`.
+
 ## lua 2.0.2
 
 Released 2021-11-26.

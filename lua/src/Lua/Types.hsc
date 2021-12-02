@@ -92,7 +92,7 @@ type Reader = FunPtr (State -> Ptr () -> Ptr CSize -> IO (Ptr CChar))
 -- |  The type of integers in Lua.
 --
 -- By default this type is @'Int64'@, but that can be changed to
--- different values in lua. (See @LUA_INT_TYPE@ in @luaconf.h@.)
+-- different values in Lua. (See @LUA_INT_TYPE@ in @luaconf.h@.)
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_Integer lua_Integer>.
 newtype Integer = Integer #{type LUA_INTEGER}
@@ -119,16 +119,16 @@ newtype TypeCode = TypeCode { fromTypeCode :: CInt }
   deriving (Eq, Ord, Show)
 
 -- | Relational operator code.
-newtype OPCode = OPCode CInt deriving (Eq, Storable)
+newtype OPCode = OPCode CInt deriving (Eq, Storable, Show)
 
 -- | Arithmetic operator code.
 newtype ArithOPCode = ArithOPCode CInt deriving (Eq, Storable, Show)
 
 -- | Integer code used to signal the status of a thread or computation.
-newtype StatusCode = StatusCode CInt deriving (Eq, Storable)
+newtype StatusCode = StatusCode CInt deriving (Eq, Storable, Show)
 
 -- | Garbage-collection options.
-newtype GCCode = GCCode CInt deriving (Eq, Storable)
+newtype GCCode = GCCode CInt deriving (Eq, Storable, Show)
 
 -- | A stack index
 newtype StackIndex = StackIndex { fromStackIndex :: CInt }
