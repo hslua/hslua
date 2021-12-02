@@ -6,8 +6,27 @@
 
 Release pending.
 
--   The functions `lua_rawget` and `lua_rawgeti` now return the
-    type of the value that was pushed to the stack.
+-   The functions `lua_rawget` and `lua_rawgeti` now return the type of
+    the value that was pushed to the stack.
+
+-   Added bindings to unsafe function `lua_arith`. A new type
+    `ArithOPCode` for arithmetic operations is added, as are pattern
+    synonyms for the supported operations. These are:
+
+    -   LUA_OPADD
+    -   LUA_OPSUB
+    -   LUA_OPMUL
+    -   LUA_OPDIV
+    -   LUA_OPIDIV
+    -   LUA_OPMOD
+    -   LUA_OPPOW
+    -   LUA_OPUNM
+    -   LUA_OPBNOT
+    -   LUA_OPBAND
+    -   LUA_OPBOR
+    -   LUA_OPBXOR
+    -   LUA_OPSHL
+    -   LUA_OPSHR
 
 ## lua 2.0.2
 

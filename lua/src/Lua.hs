@@ -73,8 +73,23 @@ module Lua
   , pattern LUA_OPEQ
   , pattern LUA_OPLT
   , pattern LUA_OPLE
-  , StatusCode (..)
+    -- ** Codes for arithmetic operations
+  , pattern LUA_OPADD
+  , pattern LUA_OPSUB
+  , pattern LUA_OPMUL
+  , pattern LUA_OPDIV
+  , pattern LUA_OPIDIV
+  , pattern LUA_OPMOD
+  , pattern LUA_OPPOW
+  , pattern LUA_OPUNM
+  , pattern LUA_OPBNOT
+  , pattern LUA_OPBAND
+  , pattern LUA_OPBOR
+  , pattern LUA_OPBXOR
+  , pattern LUA_OPSHL
+  , pattern LUA_OPSHR
     -- ** Status codes
+  , StatusCode (..)
   , pattern LUA_OK
   , pattern LUA_YIELD
   , pattern LUA_ERRRUN
@@ -159,6 +174,7 @@ module Lua
   , lua_setglobal
   , lua_settable
     -- ** Misc (unsafe)
+  , lua_arith
   , lua_concat
   , lua_next
     -- ** Load and run Lua code

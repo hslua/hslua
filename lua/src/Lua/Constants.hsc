@@ -40,6 +40,21 @@ module Lua.Constants
   , pattern LUA_OPEQ
   , pattern LUA_OPLT
   , pattern LUA_OPLE
+    -- * Codes for arithmetic operations
+  , pattern LUA_OPADD
+  , pattern LUA_OPSUB
+  , pattern LUA_OPMUL
+  , pattern LUA_OPDIV
+  , pattern LUA_OPIDIV
+  , pattern LUA_OPMOD
+  , pattern LUA_OPPOW
+  , pattern LUA_OPUNM
+  , pattern LUA_OPBNOT
+  , pattern LUA_OPBAND
+  , pattern LUA_OPBOR
+  , pattern LUA_OPBXOR
+  , pattern LUA_OPSHL
+  , pattern LUA_OPSHR
     -- * Garbage-collection options
   , pattern LUA_GCSTOP
   , pattern LUA_GCRESTART
@@ -173,6 +188,66 @@ pattern LUA_OPLT = OPCode #{const LUA_OPLT}
 -- | Compares for less or equal (<=)
 pattern LUA_OPLE :: OPCode
 pattern LUA_OPLE = OPCode #{const LUA_OPLE}
+
+--
+-- Arithmetic and bitwise operators
+--
+
+-- | Performs addition (@+@).
+pattern LUA_OPADD :: ArithOPCode
+pattern LUA_OPADD = ArithOPCode #{const LUA_OPADD}
+
+-- | Performs subtraction (@-@)
+pattern LUA_OPSUB :: ArithOPCode
+pattern LUA_OPSUB = ArithOPCode #{const LUA_OPSUB}
+
+-- | Performs multiplication (@*@)
+pattern LUA_OPMUL :: ArithOPCode
+pattern LUA_OPMUL = ArithOPCode #{const LUA_OPMUL}
+
+-- | Performs float division (@\/@)
+pattern LUA_OPDIV :: ArithOPCode
+pattern LUA_OPDIV = ArithOPCode #{const LUA_OPDIV}
+
+-- | Performs floor division (@\/\/@)
+pattern LUA_OPIDIV :: ArithOPCode
+pattern LUA_OPIDIV = ArithOPCode #{const LUA_OPIDIV}
+
+-- | Performs modulo (@%@)
+pattern LUA_OPMOD :: ArithOPCode
+pattern LUA_OPMOD = ArithOPCode #{const LUA_OPMOD}
+
+-- | Performs exponentiation (@^@)
+pattern LUA_OPPOW :: ArithOPCode
+pattern LUA_OPPOW = ArithOPCode #{const LUA_OPPOW}
+
+-- | Performs mathematical negation (unary @-@)
+pattern LUA_OPUNM :: ArithOPCode
+pattern LUA_OPUNM = ArithOPCode #{const LUA_OPUNM}
+
+-- | Performs bitwise NOT (@~@)
+pattern LUA_OPBNOT :: ArithOPCode
+pattern LUA_OPBNOT = ArithOPCode #{const LUA_OPBNOT}
+
+-- | Performs bitwise AND (@&@)
+pattern LUA_OPBAND :: ArithOPCode
+pattern LUA_OPBAND = ArithOPCode #{const LUA_OPBAND}
+
+-- | Performs bitwise OR (@|@)
+pattern LUA_OPBOR :: ArithOPCode
+pattern LUA_OPBOR = ArithOPCode #{const LUA_OPBOR}
+
+-- | Performs bitwise exclusive OR (@~@)
+pattern LUA_OPBXOR :: ArithOPCode
+pattern LUA_OPBXOR = ArithOPCode #{const LUA_OPBXOR}
+
+-- | Performs left shift (@\<\<@)
+pattern LUA_OPSHL :: ArithOPCode
+pattern LUA_OPSHL = ArithOPCode #{const LUA_OPSHL}
+
+-- | Performs right shift (@>>@)
+pattern LUA_OPSHR :: ArithOPCode
+pattern LUA_OPSHR = ArithOPCode #{const LUA_OPSHR}
 
 --
 -- Garbage-collection options

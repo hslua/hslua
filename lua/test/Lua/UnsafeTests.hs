@@ -119,6 +119,36 @@ tests = testGroup "Unsafe"
         lua_pushnil l
         lua_next l (nth 2)
     ]
+
+  , testGroup "arith"
+    [ "multiplies two numbers" =: do
+        10 `shouldBeResultOf` \l -> do
+          lua_pushinteger l 5
+          lua_pushinteger l 2
+          lua_arith l LUA_OPMUL
+          lua_tointegerx l top nullPtr
+    , "divides number" =: do
+        2 `shouldBeResultOf` \l -> do
+          lua_pushinteger l 6
+          lua_pushinteger l 3
+          lua_arith l LUA_OPIDIV
+          lua_tointegerx l top nullPtr
+    , "pops its arguments from the stack" =: do
+        1 `shouldBeResultOf` \l -> do
+          old <- lua_gettop l
+          lua_pushinteger l 4
+          lua_pushinteger l 3
+          lua_arith l LUA_OPSUB
+          new <- lua_gettop l
+          return (new - old)
+    , "pops a single argument for unary negation" =: do
+        1 `shouldBeResultOf` \l -> do
+          old <- lua_gettop l
+          lua_pushinteger l 9
+          lua_arith l LUA_OPUNM
+          new <- lua_gettop l
+          return (new - old)
+    ]
   ]
 
 infix  3 =:

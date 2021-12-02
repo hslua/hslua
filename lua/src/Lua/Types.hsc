@@ -26,6 +26,7 @@ module Lua.Types
   , NumArgs (..)
   , NumResults (..)
   , OPCode (..)
+  , ArithOPCode (..)
   , StatusCode (..)
     -- * Garbage-Collection
   , GCCode (..)
@@ -119,6 +120,9 @@ newtype TypeCode = TypeCode { fromTypeCode :: CInt }
 
 -- | Relational operator code.
 newtype OPCode = OPCode CInt deriving (Eq, Storable)
+
+-- | Arithmetic operator code.
+newtype ArithOPCode = ArithOPCode CInt deriving (Eq, Storable, Show)
 
 -- | Integer code used to signal the status of a thread or computation.
 newtype StatusCode = StatusCode CInt deriving (Eq, Storable)
