@@ -27,13 +27,13 @@ tests = testGroup "LPeg" $
   -- thing don't diverge.
   [ testCase "can push lpeg loader" $ do
       l <- hsluaL_newstate
-      lua_pushcclosure l luaopen_lpeg_ptr 0
+      lua_pushcfunction l luaopen_lpeg_ptr
       assertEqual "loader should be a function"
         LUA_TFUNCTION =<< lua_type l (-1)
       lua_close l
   , testCase "can push re loader" $ do
       l <- hsluaL_newstate
-      lua_pushcclosure l luaopen_re_ptr 0
+      lua_pushcfunction l luaopen_re_ptr
       assertEqual "loader should be a function"
         LUA_TFUNCTION =<< lua_type l (-1)
       lua_close l
@@ -47,7 +47,7 @@ tests = testGroup "LPeg" $
 #ifndef RELY_ON_SYSTEM_INSTALL
   [ testCase "load lpeg library via CFunction" $ do
       l <- hsluaL_newstate
-      lua_pushcclosure l luaopen_lpeg_ptr 0
+      lua_pushcfunction l luaopen_lpeg_ptr
       stts <- lua_pcall l 0 1 0
       when (stts /= LUA_OK) $
         fail =<< peekCString =<< lua_tolstring l (-1) nullPtr
@@ -80,7 +80,7 @@ tests = testGroup "LPeg" $
 
       -- load lpeg
       _ <- withCString "lpeg" $ lua_pushstring l  -- key
-      lua_pushcclosure l luaopen_lpeg_ptr 0
+      lua_pushcfunction l luaopen_lpeg_ptr
       stts <- lua_pcall l 0 1 0
       if stts == LUA_OK
         then lua_rawset l (-3)
@@ -88,7 +88,7 @@ tests = testGroup "LPeg" $
 
       -- load re
       _ <- withCString "re" $ lua_pushstring l  -- key
-      lua_pushcclosure l luaopen_re_ptr 0
+      lua_pushcfunction l luaopen_re_ptr
       stts' <- lua_pcall l 0 1 0
       if stts' == LUA_OK
         then lua_rawset l (-3)
@@ -139,7 +139,7 @@ testScript = unlines
 #else
   [ testCase "loading the lpeg placeholder library causes an error" $ do
       l <- hsluaL_newstate
-      lua_pushcclosure l luaopen_lpeg_ptr 0
+      lua_pushcfunction l luaopen_lpeg_ptr
       stts <- lua_pcall l 0 1 0
       stts `seq` lua_close l
       when (stts /= LUA_ERRRUN) $
@@ -147,7 +147,7 @@ testScript = unlines
 
   , testCase "loading the re placeholder library causes an error" $ do
       l <- hsluaL_newstate
-      lua_pushcclosure l luaopen_re_ptr 0
+      lua_pushcfunction l luaopen_re_ptr
       stts <- lua_pcall l 0 1 0
       stts `seq` lua_close l
       when (stts /= LUA_ERRRUN) $

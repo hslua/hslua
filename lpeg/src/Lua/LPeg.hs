@@ -39,6 +39,6 @@ lpeg_searcher l = 1 <$ do
         cstrLen <- peek lenPtr
         pkg <- peekCStringLen (cstr, fromIntegral cstrLen)
         case pkg of
-          "lpeg" -> lua_pushcclosure l luaopen_lpeg_ptr 0
-          "re"   -> lua_pushcclosure l luaopen_re_ptr 0
+          "lpeg" -> lua_pushcfunction l luaopen_lpeg_ptr
+          "re"   -> lua_pushcfunction l luaopen_re_ptr
           _      -> lua_pushnil l
