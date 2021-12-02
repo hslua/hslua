@@ -13,7 +13,8 @@ Ersatz functions for Lua API items which may, directly or indirectly,
 throw a Lua error.
 -}
 module Lua.Ersatz.Functions
-  ( hslua_compare
+  ( hslua_arith
+  , hslua_compare
     -- * Get functions (Lua -> stack)
   , hslua_gettable
   , hslua_getglobal
@@ -35,6 +36,39 @@ import Foreign.Ptr
 #else
 #define SAFTY safe
 #endif
+
+-- | Performs an arithmetic or bitwise operation over the two values (or
+-- one, in the case of negations) at the top of the stack, with the
+-- value at the top being the second operand, pops these values, and
+-- pushes the result of the operation. The function follows the
+-- semantics of the corresponding Lua operator (that is, it may call
+-- metamethods).
+--
+-- The value of @op@ must be one of the following constants:
+--
+-- -   __@LUA_OPADD@:__ performs addition (@+@)
+-- -   __@LUA_OPSUB@:__ performs subtraction (@-@)
+-- -   __@LUA_OPMUL@:__ performs multiplication (@*@)
+-- -   __@LUA_OPDIV@:__ performs float division (@\/@)
+-- -   __@LUA_OPIDIV@:__ performs floor division (@\/\/@)
+-- -   __@LUA_OPMOD@:__ performs modulo (@%@)
+-- -   __@LUA_OPPOW@:__ performs exponentiation (@^@)
+-- -   __@LUA_OPUNM@:__ performs mathematical negation (unary @-@)
+-- -   __@LUA_OPBNOT@:__ performs bitwise NOT (@~@)
+-- -   __@LUA_OPBAND@:__ performs bitwise AND (@&@)
+-- -   __@LUA_OPBOR@:__ performs bitwise OR (@|@)
+-- -   __@LUA_OPBXOR@:__ performs bitwise exclusive OR (@~@)
+-- -   __@LUA_OPSHL@:__ performs left shift (@\<\<@)
+-- -   __@LUA_OPSHR@:__ performs right shift (@>>@)
+--
+-- This function wraps @lua_arith@ and takes an additional parameter
+-- @status@; if it is not @NULL@, then the return value is set to the
+-- status after calling @lua_arith@.
+foreign import ccall SAFTY "hslua.h hslua_arith"
+  hslua_arith :: State
+              -> ArithOPCode     -- ^ op
+              -> Ptr StatusCode
+              -> IO ()
 
 -- | Compares two Lua values. Returns @1@ if the value at index @index1@
 -- satisfies op when compared with the value at index @index2@,

@@ -9,6 +9,34 @@
  * ***************************************************************/
 
 /*
+** arith auxiliary function.
+*/
+static int auxhslua_arith(lua_State *L)
+{
+  int op = lua_tointeger(L, -1);
+  lua_pop(L, 1);
+  lua_arith(L, op);
+  return 1;
+}
+
+/*
+** Compares two values on the stack. Behaves mostly like lua_compare,
+** but takes an additional parameter `status`, the referent of which is
+** assigned the result of calling the helper function.
+*/
+void hslua_arith(lua_State *L, int op, int *status)
+{
+  int nops = op == LUA_OPUNM ? 1 : 2;
+  lua_pushcfunction(L, auxhslua_arith);
+  lua_insert(L, -(nops + 1));
+  lua_pushinteger(L, op);
+  int outcome = lua_pcall(L, nops + 1, 1, 0);
+  if (status != NULL) {
+    *status = outcome;
+  }
+}
+
+/*
 ** compare
 */
 int hslua__compare(lua_State *L)

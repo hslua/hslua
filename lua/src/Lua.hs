@@ -230,6 +230,7 @@ module Lua
   , hslua_error
   , hslua_next
   , hslua_concat
+  , hslua_arith
   , hslua_compare
 
     -- * Standard Lua libraries
