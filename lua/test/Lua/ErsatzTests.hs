@@ -57,6 +57,13 @@ tests = testGroup "ersatz"
             peek status
           result <- lua_tointegerx l top nullPtr
           return (stts, result)
+    , "sets error status on error" =: do
+        LUA_ERRRUN `shouldBeResultOf` \l -> do
+          lua_pushinteger l 2
+          lua_pushboolean l TRUE
+          alloca $ \status -> do
+            hslua_arith l LUA_OPSHR status
+            peek status
     , "runs metamethod" =: do
         (LUA_OK, 7) `shouldBeResultOf` \l -> do
           lua_pushinteger l 2
