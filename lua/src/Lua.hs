@@ -174,6 +174,8 @@ module Lua
   , lua_setuservalue
   , lua_setglobal
   , lua_settable
+    -- ** Misc (safe)
+  , lua_stringtonumber
     -- ** Misc (unsafe)
   , lua_arith
   , lua_concat

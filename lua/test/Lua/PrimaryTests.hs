@@ -9,6 +9,8 @@ Tests for bindings to primary API functions.
 -}
 module Lua.PrimaryTests (tests) where
 
+import Foreign.C.String (withCString)
+import Foreign.Ptr (nullPtr)
 import Lua
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (Assertion, HasCallStack, testCase, (@=?) )
@@ -22,6 +24,18 @@ tests = testGroup "Primary"
           lua_pushcfunction l luaopen_math
           lua_pcall l 0 1 0
           lua_type l (-1)
+    ]
+  , testGroup "lua_stringtonumber"
+    [ "converts a string to a number" =: do
+        55 `shouldBeResultOf` \l -> do
+          _ <- withCString "55" $ lua_stringtonumber l
+          lua_tointegerx l top nullPtr
+    , "returns length (incl NULL) of the string on success" =: do
+        4 `shouldBeResultOf` \l -> do
+          withCString "512" $ lua_stringtonumber l
+    , "returns zero on failure" =: do
+        0 `shouldBeResultOf` \l -> do
+          withCString "NaN" $ lua_stringtonumber l
     ]
   ]
 

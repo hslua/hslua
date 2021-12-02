@@ -86,6 +86,7 @@ module Lua.Primary
   , lua_settop
   , lua_setuservalue
   , lua_status
+  , lua_stringtonumber
   , lua_toboolean
   , lua_tocfunction
   , lua_tointegerx
@@ -849,6 +850,19 @@ foreign import ccall unsafe "lua.h lua_setuservalue"
 -- <https://www.lua.org/manual/5.3/manual.html#lua_status>.
 foreign import ccall unsafe "lua.h lua_status"
   lua_status :: Lua.State -> IO StatusCode
+
+-- | Converts the zero-terminated string @s@ to a number, pushes that
+-- number into the stack, and returns the total size of the string, that
+-- is, its length plus one. The conversion can result in an integer or a
+-- float, according to the lexical conventions of Lua (see
+-- <https://www.lua.org/manual/5.3/manual.html#3.1 §3.1>). The string
+-- may have leading and trailing spaces and a sign. If the string is not
+-- a valid numeral, returns 0 and pushes nothing. (Note that the result
+-- can be used as a boolean, true if the conversion succeeds.)
+--
+-- <https://www.lua.org/manual/5.3/manual.html#lua_stringtonumber>.
+foreign import ccall unsafe "lua.h lua_stringtonumber"
+  lua_stringtonumber :: Lua.State -> CString -> IO CSize
 
 -- | Converts the Lua value at the given index to a haskell boolean
 -- value. Like all tests in Lua, @toboolean@ returns @True@ for any Lua
