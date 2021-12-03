@@ -8,7 +8,7 @@
 /* ***************************************************************
  * Transforming Haskell errors to Lua errors
  * ***************************************************************/
-void hslua_pushhaskellerr(lua_State *L)
+static void hslua_pushhaskellerr(lua_State *L)
 {
   lua_getfield(L, LUA_REGISTRYINDEX, HSLUA_ERR);
 }
@@ -27,7 +27,7 @@ int hslua_error(lua_State *L)
 /*
 ** Checks whether the object at the given index is a Haskell error.
 */
-int hslua_is_haskell_error(lua_State *L, int idx)
+static int hslua_is_haskell_error(lua_State *L, int idx)
 {
   int erridx = lua_absindex(L, idx);
   hslua_pushhaskellerr(L);

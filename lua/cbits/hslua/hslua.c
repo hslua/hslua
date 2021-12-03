@@ -39,7 +39,7 @@ void hslua_arith(lua_State *L, int op, int *status)
 /*
 ** compare
 */
-int hslua__compare(lua_State *L)
+static int hslua__compare(lua_State *L)
 {
   int op = lua_tointeger(L, 3);
   int res = lua_compare(L, 1, 2, op);
@@ -76,7 +76,7 @@ int hslua_compare(lua_State *L, int index1, int index2, int op, int *status)
 /*
 ** concat
 */
-int hslua__concat(lua_State *L)
+static int hslua__concat(lua_State *L)
 {
   lua_concat(L, lua_gettop(L));
   return 1;
@@ -93,7 +93,7 @@ void hslua_concat(lua_State *L, int n, int *status)
 /*
 ** getglobal
 */
-int hslua__getglobal(lua_State *L)
+static int hslua__getglobal(lua_State *L)
 {
   lua_gettable(L, 1);
   return 1;
@@ -116,7 +116,7 @@ int hslua_getglobal(lua_State *L, const char *name, size_t len, int *status)
 /*
 ** gettable
 */
-int hslua__gettable(lua_State *L)
+static int hslua__gettable(lua_State *L)
 {
   lua_pushvalue(L, 1);
   lua_gettable(L, 2);
@@ -140,7 +140,7 @@ int hslua_gettable(lua_State *L, int index, int *status)
 /*
 ** setglobal
 */
-int hslua__setglobal(lua_State *L)
+static int hslua__setglobal(lua_State *L)
 {
   /* index 1: value */
   /* index 2: the global table */
@@ -168,7 +168,7 @@ void hslua_setglobal(lua_State *L, const char *name, size_t len, int *status)
 /*
 ** settable
 */
-int hslua__settable(lua_State *L)
+static int hslua__settable(lua_State *L)
 {
   lua_pushvalue(L, 1); /* key */
   lua_pushvalue(L, 2); /* value */
@@ -188,7 +188,7 @@ void hslua_settable(lua_State *L, int index, int *status)
 /*
 ** next
 */
-int hslua__next(lua_State *L)
+static int hslua__next(lua_State *L)
 {
   lua_pushvalue(L, 1);
   return lua_next(L, 2) ? 2 : 0;

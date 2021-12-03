@@ -28,7 +28,7 @@ lua_State *hsluaL_newstate()
 /*
 ** Helper for hsluaL_tostring
 */
-int hsluaL__tolstring(lua_State *L)
+static int hsluaL__tolstring(lua_State *L)
 {
   luaL_tolstring(L, 1, NULL);
   return 1;
