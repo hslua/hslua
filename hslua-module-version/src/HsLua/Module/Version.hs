@@ -76,7 +76,8 @@ typeVersion = deftype' "Version"
     =#> functionResult pushString "string" "stringified version"
   ]
   [ method must_be_at_least ]
-  (Just (pushIntegral, versionBranch))
+  (Just ( (pushIntegral, versionBranch)
+        , (peekIntegral, const makeVersion)))
   where
     versionComparison f descr = lambda
       ### liftPure2 f

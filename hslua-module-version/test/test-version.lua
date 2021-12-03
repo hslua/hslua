@@ -105,6 +105,12 @@ return {
       assert.are_equal(#(Version '1.6'), 2)
       assert.are_equal(#(Version '8.7.5'), 3)
       assert.are_equal(#(Version '2.9.1.5'), 4)
+    end),
+    test('branches can be modified', function ()
+      local v = Version '5.3.6'
+      v[2] = 2
+      v[3] = nil
+      assert.are_equal(v, Version '5.2')
     end)
   }
 }
