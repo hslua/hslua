@@ -248,6 +248,16 @@ tests = testGroup "Object Orientation"
         setglobal "list"
         OK <- dostring "list[4] = nil; return list"
         forcePeek $ peekUD typeLazyIntList top
+
+    , "Infinite lists are ok" =:
+      233 `shouldBeResultOf` do
+        openlibs
+        let fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
+        pushUD typeLazyIntList $ LazyIntList fibs
+        setglobal "fibs"
+        dostring "return fibs[14]" >>= \case
+          OK -> forcePeek $ peekIntegral @Int top
+          _ -> failLua =<< forcePeek (peekString top)
     ]
 
   , testGroup "possible properties"
@@ -329,6 +339,14 @@ tests = testGroup "Object Orientation"
           dostring "return quux.x" >>= \case
             OK -> ltype top
             _ -> failLua =<< forcePeek (peekString top)
+      , "alias can point to the element itself" =:
+        9 `shouldBeResultOf` do
+          openlibs
+          pushUD typeLazyIntList (LazyIntList [1, 1, 1, 3, 5, 9, 17, 31])
+          setglobal "tribonacci"
+          dostring "return tribonacci.seq[6]" >>= \case
+            OK -> forcePeek $ peekIntegral @Int top
+            _ -> failLua =<< forcePeek (peekString top)
       ]
     ]
   ]
@@ -395,7 +413,7 @@ typeLazyIntList = deftype' "LazyIntList"
       pushString (show lazyList)
       return (NumResults 1)
   ]
-  []
+  [ alias "seq" "sequence" [] ]
   (Just ( (pushIntegral, fromLazyIntList)
         , (peekIntegral, \_ lst -> LazyIntList lst)
         ))
