@@ -1,18 +1,18 @@
 # Changelog
 
-`hslua-classes` uses [PVP Versioning][1].
+`hslua-classes` uses [PVP Versioning][].
 
-## hslua-classes 2.1.0
+## hslua-classes-2.1.0
 
 Release pending.
 
 -   Updated to hslua-core 2.1 and hslua-marshalling 2.1.
 
-## hslua-classes 2.0.0
+## hslua-classes-2.0.0
 
-Release 2021-10-21.
+Released 2021-10-21.
 
-- Initially created. Contains modules previously found in the
-  `Foreign.Lua.Types` hierarchy from `hslua-1.3`.
+-   Initially created. Contains modules previously found in the
+    `Foreign.Lua.Types` hierarchy from `hslua-1.3`.
 
-[1]: https://pvp.haskell.org
+  [PVP Versioning]: https://pvp.haskell.org
