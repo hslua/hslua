@@ -122,6 +122,7 @@ library
                      , Lua.Auxiliary
                      , Lua.Call
                      , Lua.Constants
+                     , Lua.Debug
                      , Lua.Ersatz
                      , Lua.Ersatz.Auxiliary
                      , Lua.Ersatz.Functions
@@ -212,6 +213,7 @@ test-suite test-lua
   main-is:             test-lua.hs
   hs-source-dirs:      test
   other-modules:       Lua.ErsatzTests
+                     , Lua.DebugTests
                      , Lua.PrimaryTests
                      , Lua.UnsafeTests
   build-depends:       lua
