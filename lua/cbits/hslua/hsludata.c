@@ -12,7 +12,7 @@
 ** The userdata whose contents is garbage collected must be on
 ** stack index 1 (i.e., the first argument).
 */
-int hslua_userdata_gc(lua_State *L)
+static int hslua_userdata_gc(lua_State *L)
 {
   HsStablePtr *userdata = lua_touserdata(L, 1);
   if (userdata) {

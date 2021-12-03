@@ -34,6 +34,8 @@ Release pending.
 -   Made types `OPCode`, `StatusCode`, and `GCCode` instances of
     type class `Show`.
 
+-   Removed `hslua_userdata_gc` from `hslua.h`.
+
 ## lua 2.0.2
 
 Released 2021-11-26.
