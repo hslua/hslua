@@ -138,13 +138,13 @@ foreign import capi SAFTY "lauxlib.h luaL_loadfilex"
 --
 -- In both cases pushes onto the stack the final value associated with
 -- @tname@ in the registry.
-foreign import ccall SAFTY "lauxlib.h luaL_newmetatable"
+foreign import capi SAFTY "lauxlib.h luaL_newmetatable"
   luaL_newmetatable :: Lua.State -> CString {- ^ tname -} -> IO Lua.LuaBool
 
 -- | Opens all standard Lua libraries into the given state.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#luaL_openlibs>
-foreign import ccall unsafe "lualib.h luaL_openlibs"
+foreign import capi unsafe "lualib.h luaL_openlibs"
   luaL_openlibs :: Lua.State -> IO ()
 
 -- | Creates and returns a reference, in the table at index @t@, for the
@@ -160,7 +160,7 @@ foreign import ccall unsafe "lualib.h luaL_openlibs"
 -- constant @'Lua.Constants.LUA_REFNIL'@. The constant
 -- @'Lua.Constants.LUA_NOREF'@ is guaranteed to be different
 -- from any reference returned by @luaL_ref@.
-foreign import ccall SAFTY "lauxlib.h luaL_ref"
+foreign import capi SAFTY "lauxlib.h luaL_ref"
   luaL_ref :: Lua.State -> StackIndex {- ^ t -} -> IO CInt
 
 -- | Creates and pushes a traceback of the stack @l1@. If @msg@ is not
@@ -177,7 +177,7 @@ foreign import capi SAFTY "lauxlib.h luaL_traceback"
 -- @'luaL_ref'@). The entry is removed from the table, so that the
 -- referred object can be collected. The reference @ref@ is also freed
 -- to be used again.
-foreign import ccall SAFTY "lauxlib.h luaL_unref"
+foreign import capi SAFTY "lauxlib.h luaL_unref"
   luaL_unref :: Lua.State -> StackIndex {- ^ t -} -> CInt {- ^ ref -} -> IO ()
 
 -- | Checks whether the function argument @arg@ is a userdata of the

@@ -119,7 +119,7 @@ import Foreign.Ptr
 -- index (that is, one that does not depend on the stack top).
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_absindex>
-foreign import ccall unsafe "lua.h lua_absindex"
+foreign import capi unsafe "lua.h lua_absindex"
   lua_absindex :: Lua.State
                -> StackIndex     -- ^ idx
                -> IO StackIndex
@@ -156,7 +156,7 @@ foreign import ccall unsafe "lua.h lua_absindex"
 -- without @allow-unsafe-gc@.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_arith>.
-foreign import ccall SAFTY "lua.h lua_arith"
+foreign import capi SAFTY "lua.h lua_arith"
   lua_arith :: State -> ArithOPCode {- ^ op -} -> IO ()
 {-# WARNING lua_arith
       [ "This is an unsafe function, errors will lead to a program crash;"
@@ -184,7 +184,7 @@ foreign import capi unsafe "lua.h lua_checkstack"
 -- will probably need to close states as soon as they are not needed.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_close>
-foreign import ccall safe "lua.h lua_close"
+foreign import capi safe "lua.h lua_close"
   lua_close :: Lua.State -> IO ()
 
 -- | Concatenates the @n@ values at the top of the stack, pops them, and
@@ -199,7 +199,7 @@ foreign import ccall safe "lua.h lua_close"
 -- cause an unrecoverable crash an error if any of the concatenated
 -- values causes an error when executing a metamethod. Consider using
 -- the @'Lua.hslua_concat'@ ersatz function instead.
-foreign import ccall SAFTY "lua.h lua_concat"
+foreign import capi SAFTY "lua.h lua_concat"
   lua_concat :: State -> CInt {- ^ n -} -> IO ()
 {-# WARNING lua_concat
       [ "This is an unsafe function, it will cause a program crash if"
@@ -212,7 +212,7 @@ foreign import ccall SAFTY "lua.h lua_concat"
 -- not affected.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_copy>
-foreign import ccall unsafe "lua.h lua_copy"
+foreign import capi unsafe "lua.h lua_copy"
   lua_copy :: Lua.State
            -> StackIndex  -- ^ fromidx
            -> StackIndex  -- ^ toidx
@@ -227,7 +227,7 @@ foreign import ccall unsafe "lua.h lua_copy"
 -- can use the function @lua_newtable@.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_createtable>.
-foreign import ccall SAFTY "lua.h lua_createtable"
+foreign import capi SAFTY "lua.h lua_createtable"
   lua_createtable :: Lua.State
                   -> CInt -- ^ narr
                   -> CInt -- ^ nrec
@@ -237,7 +237,7 @@ foreign import ccall SAFTY "lua.h lua_createtable"
 --
 -- See the Lua docs at
 -- <https://www.lua.org/manual/5.3/manual.html#lua_gc>.
-foreign import ccall safe "lua.h lua_gc"
+foreign import capi safe "lua.h lua_gc"
   lua_gc :: Lua.State -> GCCode {- ^ what -} -> CInt {- ^ data -} -> IO CInt
 
 -- | Pushes onto the stack the value of the global name. Returns the
@@ -251,7 +251,7 @@ foreign import ccall safe "lua.h lua_gc"
 -- compiled without @allow-unsafe-gc@.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getglobal>.
-foreign import ccall SAFTY "lua.h lua_getglobal"
+foreign import capi SAFTY "lua.h lua_getglobal"
   lua_getglobal :: State -> CString {- ^ name -} -> IO TypeCode
 {-# WARNING lua_getglobal
       [ "This is an unsafe function, errors will lead to a program crash;"
@@ -263,7 +263,7 @@ foreign import ccall SAFTY "lua.h lua_getglobal"
 -- function returns @0@ and pushes nothing on the stack.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getmetatable>.
-foreign import ccall unsafe "lua.h lua_getmetatable"
+foreign import capi unsafe "lua.h lua_getmetatable"
   lua_getmetatable :: Lua.State -> StackIndex -> IO LuaBool
 
 -- | Pushes onto the stack the value @t[k]@, where @t@ is the value at
@@ -284,7 +284,7 @@ foreign import ccall unsafe "lua.h lua_getmetatable"
 -- compiled without @allow-unsafe-gc@.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_gettable>.
-foreign import ccall SAFTY "lua.h lua_gettable"
+foreign import capi SAFTY "lua.h lua_gettable"
   lua_gettable :: Lua.State -> StackIndex {- ^ index -} -> IO TypeCode
 {-# WARNING lua_gettable
       [ "This is an unsafe function, errors will lead to a program crash;"
@@ -296,7 +296,7 @@ foreign import ccall SAFTY "lua.h lua_gettable"
 -- stack (and so 0 means an empty stack).
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_gettop>
-foreign import ccall unsafe "lua.h lua_gettop"
+foreign import capi unsafe "lua.h lua_gettop"
   lua_gettop :: Lua.State -> IO StackIndex
 
 -- | Pushes onto the stack the Lua value associated with the full
@@ -305,7 +305,7 @@ foreign import ccall unsafe "lua.h lua_gettop"
 -- Returns the type of the pushed value.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_getuservalue>
-foreign import ccall unsafe "lua.h lua_getuservalue"
+foreign import capi unsafe "lua.h lua_getuservalue"
   lua_getuservalue :: Lua.State -> StackIndex -> IO TypeCode
 
 -- | Moves the top element into the given valid index, shifting up the
@@ -328,7 +328,7 @@ foreign import capi unsafe "lua.h lua_isboolean"
 -- function, and @'Lua.FALSE'@ otherwise.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_iscfunction>
-foreign import ccall unsafe "lua.h lua_iscfunction"
+foreign import capi unsafe "lua.h lua_iscfunction"
   lua_iscfunction :: Lua.State -> StackIndex -> IO LuaBool
 
 -- | Returns @'Lua.TRUE'@ if the value at the given index is a
@@ -343,7 +343,7 @@ foreign import capi unsafe "lua.h lua_isfunction"
 -- integer), and @'Lua.FALSE'@ otherwise.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isinteger>
-foreign import ccall unsafe "lua.h lua_isinteger"
+foreign import capi unsafe "lua.h lua_isinteger"
   lua_isinteger :: Lua.State -> StackIndex -> IO LuaBool
 
 -- | Returns @'Lua.TRUE'@ if the value at the given index is a
@@ -380,7 +380,7 @@ foreign import capi unsafe "lua.h lua_isnoneornil"
 -- otherwise.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isnumber>
-foreign import ccall unsafe "lua.h lua_isnumber"
+foreign import capi unsafe "lua.h lua_isnumber"
   lua_isnumber :: Lua.State -> StackIndex -> IO LuaBool
 
 -- | Returns @'Lua.TRUE'@ if the value at the given index is a
@@ -388,7 +388,7 @@ foreign import ccall unsafe "lua.h lua_isnumber"
 -- @'Lua.FALSE'@ otherwise.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isstring>
-foreign import ccall unsafe "lua.h lua_isstring"
+foreign import capi unsafe "lua.h lua_isstring"
   lua_isstring :: Lua.State -> StackIndex -> IO LuaBool
 
 -- | Returns @'Lua.TRUE'@ if the value at the given index is a
@@ -409,7 +409,7 @@ foreign import capi unsafe "lua.h lua_isthread"
 -- userdata (either full or light), and @'Lua.FALSE'@ otherwise.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_isuserdata>
-foreign import ccall unsafe "lua.h lua_isuserdata"
+foreign import capi unsafe "lua.h lua_isuserdata"
   lua_isuserdata :: Lua.State -> StackIndex -> IO LuaBool
 
 -- | Loads a Lua chunk (without running it). If there are no errors,
@@ -447,7 +447,7 @@ foreign import ccall unsafe "lua.h lua_isuserdata"
 -- always leave the stack unmodified when returning.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_load>.
-foreign import ccall safe "lua.h lua_load"
+foreign import capi safe "lua.h lua_load"
   lua_load :: Lua.State
            -> Lua.Reader     -- ^ reader
            -> Ptr ()         -- ^ data
@@ -464,7 +464,7 @@ foreign import ccall safe "lua.h lua_load"
 -- Threads are subject to garbage collection, like any Lua object.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_newthread>
-foreign import ccall SAFTY "lua.h lua_newthread"
+foreign import capi SAFTY "lua.h lua_newthread"
   lua_newthread :: Lua.State -> IO Lua.State
 
 -- | This function allocates a new block of memory with the given size,
@@ -472,7 +472,7 @@ foreign import ccall SAFTY "lua.h lua_newthread"
 -- returns this address. The host program can freely use this memory.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_newuserdata>.
-foreign import ccall SAFTY "lua.h lua_newuserdata"
+foreign import capi SAFTY "lua.h lua_newuserdata"
   lua_newuserdata :: Lua.State -> CSize -> IO (Ptr ())
 
 
@@ -510,7 +510,7 @@ foreign import ccall SAFTY "lua.h lua_newuserdata"
 -- cause an unrecoverable crash an error if the given key is neither
 -- @nil@ nor present in the table. Consider using the @'Lua.hslua_next'@
 -- ersatz function instead.
-foreign import ccall SAFTY "lua.h lua_next"
+foreign import capi SAFTY "lua.h lua_next"
   lua_next :: State -> StackIndex {- ^ index -} -> IO LuaBool
 {-# WARNING lua_next
       [ "This is an unsafe function, it will cause a program crash if"
@@ -569,7 +569,7 @@ foreign import capi unsafe "lua.h lua_pop"
 -- | Pushes a boolean value with the given value onto the stack.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_pushboolean>.
-foreign import ccall unsafe "lua.h lua_pushboolean"
+foreign import capi unsafe "lua.h lua_pushboolean"
   lua_pushboolean :: Lua.State -> LuaBool -> IO ()
 
 -- | Pushes a new C closure onto the stack.
@@ -588,7 +588,7 @@ foreign import ccall unsafe "lua.h lua_pushboolean"
 -- The maximum value for @n@ is 255.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_pushcclosure>.
-foreign import ccall SAFTY "lua.h lua_pushcclosure"
+foreign import capi SAFTY "lua.h lua_pushcclosure"
   lua_pushcclosure :: Lua.State
                    -> CFunction   -- ^ fn
                    -> NumArgs     -- ^ n
@@ -616,7 +616,7 @@ foreign import capi unsafe "lua.h lua_pushglobaltable"
 -- | Pushes an integer with with the given value onto the stack.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_pushinteger>.
-foreign import ccall unsafe "lua.h lua_pushinteger"
+foreign import capi unsafe "lua.h lua_pushinteger"
   lua_pushinteger :: Lua.State -> Lua.Integer -> IO ()
 
 -- | Pushes a light userdata onto the stack.
@@ -628,7 +628,7 @@ foreign import ccall unsafe "lua.h lua_pushinteger"
 -- to "any" light userdata with the same C address.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_pushlightuserdata>.
-foreign import ccall unsafe "lua.h lua_pushlightuserdata"
+foreign import capi unsafe "lua.h lua_pushlightuserdata"
   lua_pushlightuserdata :: Lua.State -> Ptr a -> IO ()
 
 -- | Pushes the string pointed to by @s@ with size @len@ onto the stack.
@@ -640,7 +640,7 @@ foreign import ccall unsafe "lua.h lua_pushlightuserdata"
 -- Returns a pointer to the internal copy of the string.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_pushlstring>.
-foreign import ccall SAFTY "lua.h lua_pushlstring"
+foreign import capi SAFTY "lua.h lua_pushlstring"
   lua_pushlstring :: Lua.State
                   -> Ptr CChar    -- ^ s
                   -> CSize        -- ^ len
@@ -649,13 +649,13 @@ foreign import ccall SAFTY "lua.h lua_pushlstring"
 -- | Pushes a nil value onto the stack.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_pushnil>.
-foreign import ccall unsafe "lua.h lua_pushnil"
+foreign import capi unsafe "lua.h lua_pushnil"
   lua_pushnil :: Lua.State -> IO ()
 
 -- | Pushes a float with the given value onto the stack.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_pushnumber>.
-foreign import ccall unsafe "lua.h lua_pushnumber"
+foreign import capi unsafe "lua.h lua_pushnumber"
   lua_pushnumber :: Lua.State -> Lua.Number -> IO ()
 
 
@@ -675,13 +675,13 @@ foreign import ccall unsafe "lua.h lua_pushstring"
 -- thread is the main thread of its state.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_pushthread>.
-foreign import ccall unsafe "lua.h lua_pushthread"
+foreign import capi unsafe "lua.h lua_pushthread"
   lua_pushthread :: Lua.State -> IO CInt
 
 -- | Pushes a copy of the element at the given index onto the stack.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_pushvalue>
-foreign import ccall unsafe "lua.h lua_pushvalue"
+foreign import capi unsafe "lua.h lua_pushvalue"
   lua_pushvalue :: Lua.State -> StackIndex -> IO ()
 
 -- | Returns @True@ if the two values in indices @idx1@ and @idx2@ are
@@ -690,7 +690,7 @@ foreign import ccall unsafe "lua.h lua_pushvalue"
 -- are not valid.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawequal>
-foreign import ccall unsafe "lua.h lua_rawequal"
+foreign import capi unsafe "lua.h lua_rawequal"
   lua_rawequal :: Lua.State
                -> StackIndex  -- ^ idx1
                -> StackIndex  -- ^ idx2
@@ -700,7 +700,7 @@ foreign import ccall unsafe "lua.h lua_rawequal"
 -- metamethods).
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawget>.
-foreign import ccall unsafe "lua.h lua_rawget"
+foreign import capi unsafe "lua.h lua_rawget"
   lua_rawget :: Lua.State -> StackIndex -> IO TypeCode
 
 -- | Pushes onto the stack the value @t[n]@, where @t@ is the table at
@@ -708,7 +708,7 @@ foreign import ccall unsafe "lua.h lua_rawget"
 -- @__index@ metamethod.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawgeti>.
-foreign import ccall unsafe "lua.h lua_rawgeti"
+foreign import capi unsafe "lua.h lua_rawgeti"
   lua_rawgeti :: Lua.State -> StackIndex -> Lua.Integer {- ^ n -}
               -> IO TypeCode
 
@@ -719,14 +719,14 @@ foreign import ccall unsafe "lua.h lua_rawgeti"
 -- values, it is 0.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawlen>.
-foreign import ccall unsafe "lua.h lua_rawlen"
+foreign import capi unsafe "lua.h lua_rawlen"
   lua_rawlen :: Lua.State -> StackIndex -> IO CSize
 
 -- | Similar to @'lua_settable'@, but does a raw assignment (i.e.,
 -- without metamethods).
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawset>.
-foreign import ccall SAFTY "lua.h lua_rawset"
+foreign import capi SAFTY "lua.h lua_rawset"
   lua_rawset :: Lua.State -> StackIndex -> IO ()
 
 -- | Does the equivalent of @t[i] = v@, where @t@ is the table at the
@@ -736,7 +736,7 @@ foreign import ccall SAFTY "lua.h lua_rawset"
 -- that is, it does not invoke the @__newindex@ metamethod.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_rawseti>.
-foreign import ccall SAFTY "lua.h lua_rawseti"
+foreign import capi SAFTY "lua.h lua_rawseti"
   lua_rawseti :: Lua.State -> StackIndex -> Lua.Integer -> IO ()
 
 -- | Removes the element at the given valid index, shifting down the
@@ -782,7 +782,7 @@ foreign import capi unsafe "lua.h lua_rotate"
 -- library was compiled without @allow-unsafe-gc@.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_setglobal>.
-foreign import ccall SAFTY "lua.h lua_setglobal"
+foreign import capi SAFTY "lua.h lua_setglobal"
   lua_setglobal :: State -> CString {- ^ name -} -> IO ()
 {-# WARNING lua_setglobal
       [ "This is an unsafe function, errors will lead to a program crash;"
@@ -793,7 +793,7 @@ foreign import ccall SAFTY "lua.h lua_setglobal"
 -- the value at the given index.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_setmetatable>.
-foreign import ccall unsafe "lua.h lua_setmetatable"
+foreign import capi unsafe "lua.h lua_setmetatable"
   lua_setmetatable :: Lua.State -> StackIndex -> IO ()
 
 -- | Does the equivalent to @t[k] = v@, where @t@ is the value at the
@@ -812,7 +812,7 @@ foreign import ccall unsafe "lua.h lua_setmetatable"
 -- compiled without @allow-unsafe-gc@.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_settable>
-foreign import ccall SAFTY "lua.h lua_settable"
+foreign import capi SAFTY "lua.h lua_settable"
   lua_settable :: Lua.State -> StackIndex {- ^ index -} -> IO ()
 {-# WARNING lua_settable
       [ "This is an unsafe function, errors will lead to a program crash;"
@@ -825,14 +825,14 @@ foreign import ccall SAFTY "lua.h lua_settable"
 -- removed.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_settop>
-foreign import ccall unsafe "lua.h lua_settop"
+foreign import capi unsafe "lua.h lua_settop"
   lua_settop :: Lua.State -> StackIndex {- ^ index -} -> IO ()
 
 -- | Pops a value from the stack and sets it as the new value associated
 -- to the full userdata at the given index.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_setuservalue>
-foreign import ccall unsafe "lua.h lua_setuservalue"
+foreign import capi unsafe "lua.h lua_setuservalue"
   lua_setuservalue :: Lua.State -> StackIndex -> IO ()
 
 -- |  Returns the status of this Lua thread.
@@ -848,7 +848,7 @@ foreign import ccall unsafe "lua.h lua_setuservalue"
 -- @'Lua.LUA_YIELD'@ (to resume a coroutine).
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_status>.
-foreign import ccall unsafe "lua.h lua_status"
+foreign import capi unsafe "lua.h lua_status"
   lua_status :: Lua.State -> IO StatusCode
 
 -- | Converts the zero-terminated string @s@ to a number, pushes that
@@ -861,7 +861,7 @@ foreign import ccall unsafe "lua.h lua_status"
 -- can be used as a boolean, true if the conversion succeeds.)
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_stringtonumber>.
-foreign import ccall unsafe "lua.h lua_stringtonumber"
+foreign import capi unsafe "lua.h lua_stringtonumber"
   lua_stringtonumber :: Lua.State -> CString -> IO CSize
 
 -- | Converts the Lua value at the given index to a haskell boolean
@@ -878,7 +878,7 @@ foreign import capi unsafe "lua.h lua_toboolean"
 -- must be a C function; otherwise, returns @Nothing@.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_tocfunction>
-foreign import ccall unsafe "lua.h lua_tocfunction"
+foreign import capi unsafe "lua.h lua_tocfunction"
   lua_tocfunction :: Lua.State -> StackIndex -> IO CFunction
 
 -- | Converts the Lua value at the given acceptable index to the signed
@@ -894,7 +894,7 @@ foreign import ccall unsafe "lua.h lua_tocfunction"
 -- that indicates whether the operation succeeded.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_tointegerx>
-foreign import ccall unsafe "lua.h lua_tointegerx"
+foreign import capi unsafe "lua.h lua_tointegerx"
   lua_tointegerx :: Lua.State
                  -> StackIndex       -- ^ index
                  -> Ptr LuaBool      -- ^ isnum
@@ -956,7 +956,7 @@ foreign import ccall unsafe "lua.h lua_topointer"
 -- function returns @'nullPtr'@.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_tothread>
-foreign import ccall unsafe "lua.h lua_tothread"
+foreign import capi unsafe "lua.h lua_tothread"
   lua_tothread :: Lua.State -> StackIndex -> IO Lua.State
 
 -- | If the value at the given index is a full userdata, returns its
@@ -964,14 +964,14 @@ foreign import ccall unsafe "lua.h lua_tothread"
 -- Otherwise, returns @'nullPtr'@.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_touserdata>
-foreign import ccall unsafe "lua.h lua_touserdata"
+foreign import capi unsafe "lua.h lua_touserdata"
   lua_touserdata :: Lua.State -> StackIndex -> IO (Ptr a)
 
 -- | Returns the type of the value in the given valid index, or
 -- @'Lua.LUA_TNONE'@ for a non-valid (but acceptable) index.
 --
 -- <https://www.lua.org/manual/5.3/manual.html#lua_type>
-foreign import ccall unsafe "lua.h lua_type"
+foreign import capi unsafe "lua.h lua_type"
   lua_type :: Lua.State -> StackIndex -> IO TypeCode
 
 -- | Returns the name of the type encoded by the value @tp@, which must
