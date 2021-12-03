@@ -6,7 +6,7 @@
 [![Stackage Nightly][Stackage Nightly badge]](http://stackage.org/nightly/package/hslua-module-path)
 [![MIT license][License badge]](LICENSE)
 
-[CI badge]: https://github.com/hslua/hslua-module-path/workflows/CI/badge.svg
+[CI badge]: https://img.shields.io/github/workflow/status/hslua/hslua/CI.svg?logo=github
 [Hackage badge]: https://img.shields.io/hackage/v/hslua-module-path.svg?logo=haskell
 [Stackage Lts badge]: http://stackage.org/package/hslua-module-path/badge/lts
 [Stackage Nightly badge]: http://stackage.org/package/hslua-module-path/badge/nightly

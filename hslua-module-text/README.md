@@ -7,7 +7,7 @@ hslua-module-text
 [![Stackage Nightly][Stackage Nightly badge]](http://stackage.org/nightly/package/hslua-module-text)
 [![MIT license][License badge]](LICENSE)
 
-[CI badge]: https://github.com/hslua/hslua/workflows/CI/badge.svg
+[CI badge]: https://img.shields.io/github/workflow/status/hslua/hslua/CI.svg?logo=github
 [Hackage badge]: https://img.shields.io/hackage/v/hslua-module-text.svg?logo=haskell
 [Stackage Lts badge]: http://stackage.org/package/hslua-module-text/badge/lts
 [Stackage Nightly badge]: http://stackage.org/package/hslua-module-text/badge/nightly
