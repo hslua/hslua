@@ -71,6 +71,7 @@ library
   reexported-modules:  lua:Lua
   hs-source-dirs:      src
   default-extensions:  LambdaCase
+                     , StrictData
   other-extensions:    CPP
                      , DeriveDataTypeable
                      , GeneralizedNewtypeDeriving

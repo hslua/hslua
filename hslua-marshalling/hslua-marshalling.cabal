@@ -64,6 +64,7 @@ library
                      , HsLua.Marshalling.Userdata
   hs-source-dirs:      src
   default-extensions:  LambdaCase
+                     , StrictData
   other-extensions:    DeriveDataTypeable
                      , DeriveFunctor
                      , OverloadedStrings

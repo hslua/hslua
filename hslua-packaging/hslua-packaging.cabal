@@ -64,6 +64,7 @@ library
                      , HsLua.Packaging.UDType
   hs-source-dirs:      src
   default-extensions:  LambdaCase
+                     , StrictData
   other-extensions:    DeriveFunctor
                      , OverloadedStrings
   build-depends:       containers              >= 0.5.9    && < 0.7

@@ -60,6 +60,7 @@ library
                      , HsLua.ObjectOrientation.Operation
   hs-source-dirs:      src
   default-extensions:  LambdaCase
+                     , StrictData
   other-extensions:    AllowAmbiguousTypes
                      , CPP
                      , FlexibleInstances

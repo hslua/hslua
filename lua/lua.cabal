@@ -133,6 +133,7 @@ library
   default-extensions:  CApiFFI
                      , ForeignFunctionInterface
                      , LambdaCase
+                     , StrictData
   other-extensions:    CPP
                      , DeriveGeneric
                      , GeneralizedNewtypeDeriving
