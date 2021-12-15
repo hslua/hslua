@@ -1,25 +1,24 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications  #-}
 {-|
-Copyright   :  © 2017–2020 Albert Krewinkel
+Copyright   :  © 2017–2021 Albert Krewinkel
 License     :  MIT
 
 Tests for Aeson–Lua glue.
 -}
-import Control.Monad (forM_, when)
+import Control.Monad (when)
 import Data.AEq ((~==))
-import Data.HashMap.Lazy (HashMap)
+import Data.ByteString
 import Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
-import Data.Text (Text)
-import Data.Vector (Vector)
-import Foreign.Lua as Lua
-import Foreign.Lua.Aeson (pushNull)
+import HsLua as Lua hiding (Property, property)
+import HsLua.Aeson
 import Test.Hspec
 import Test.HUnit
 import Test.QuickCheck
 import Test.QuickCheck.Instances ()
 
 import qualified Data.Aeson as Aeson
-import qualified Data.ByteString.Char8 as Char8
 
 -- | Run this spec.
 main :: IO ()
@@ -30,10 +29,10 @@ spec :: Spec
 spec = do
   describe "pushNull" $ do
     it "pushes a value that is recognized as null when peeked" $ do
-      val <- run (pushNull *> peek stackTop)
+      val <- run @Lua.Exception (pushNull *> forcePeek (peekValue top))
       assert (val == Aeson.Null)
     it "pushes a non-nil value" $ do
-      nil <- run (pushNull *> isnil stackTop)
+      nil <- run @Lua.Exception (pushNull *> isnil top)
       assert (not nil)
     it "pushes a single value" $ do
       diff <- run $ stackDiff pushNull
@@ -41,58 +40,53 @@ spec = do
     it "pushes two values when called twice" $ do
       diff <- run $ stackDiff (pushNull *> pushNull)
       assert (diff == 2)
+  describe "Value" $
+    it "can be round-tripped through the stack" . property $
+    \x -> assertRoundtripEqual pushValue peekValue (x::Aeson.Value)
   describe "Value component" $ do
     describe "Scientific" $ do
-      it "can be converted to a lua number" $ property $
-        \x -> assert =<< luaTest "type(x) == 'number'" [("x", x::Scientific)]
-      it "can be round-tripped through the stack with numbers of double precision" $
-        property $ \x -> assertRoundtripEqual (luaNumberToScientific (Lua.Number x))
-      it "can be round-tripped through the stack and stays approximately equal" $
+      it "is converted to a Lua number" $ property $ \x -> assert =<<
+        luaTest "type(x) == 'number'" ("x", x, pushScientific)
+      it "double precision numbers can be round-tripped" $
+        property $ \x ->
+        assertRoundtripEqual pushScientific peekScientific
+                             (luaNumberToScientific (Lua.Number x))
+      it "can be round-tripped and stays approximately equal" $
         property $ \x -> assertRoundtripApprox (x :: Scientific)
-    describe "Text" $ do
-      it "can be converted to a lua string" $ property $
-        \x -> assert =<< luaTest "type(x) == 'string'" [("x", x::Text)]
-      it "can be round-tripped through the stack" $ property $
-        \x -> assertRoundtripEqual (x::Text)
     describe "Vector" $ do
-      it "is converted to a lua table" $ property $
-        \x -> assert =<< luaTest "type(x) == 'table'" [("x", x::Vector Bool)]
+      it "is converted to a Lua table" $ property $ \x -> assert =<<
+        luaTest "type(x) == 'table'" ("x", x, pushVector)
       it "can contain Bools and be round-tripped through the stack" $ property $
-        \x -> assertRoundtripEqual (x::Vector Bool)
-      it "can contain Texts and be round-tripped through the stack" $ property $
-        \x -> assertRoundtripEqual (x::Vector Text)
-      it "can contain Vector of Bools and be round-tripped through the stack" $ property $
-        \x -> assertRoundtripEqual (x::(Vector (Vector Bool)))
+        assertRoundtripEqual pushVector peekVector
     describe "HashMap" $ do
-      it "is converted to a lua table" $ property $
-        \x -> assert =<< luaTest "type(x) == 'table'" [("x", x::HashMap Text Bool)]
-      it "can be round-tripped through the stack with Text keys and Bool values" $
-        property $ \x -> assertRoundtripEqual (x::HashMap Text Bool)
-      it "can be round-tripped through the stack with Text keys and Vector Bool values" $
-        property $ \x -> assertRoundtripEqual (x::HashMap Text (Vector Bool))
-    describe "Value" $
-      it "can be round-tripped through the stack" . property $
-        \x -> assertRoundtripEqual (x::Aeson.Value)
+      it "is converted to a Lua table" $ property $ \x -> assert =<<
+        luaTest "type(x) == 'table'" ("x", x, pushTextMap)
+      it "can be round-tripped through the stack" $
+        property $ assertRoundtripEqual pushTextMap peekTextMap
 
 assertRoundtripApprox :: Scientific -> IO ()
 assertRoundtripApprox x = do
-  y <- roundtrip x
+  y <- roundtrip (pushScientific @Lua.Exception)
+                 (peekScientific @Lua.Exception)
+                 x
   let xdouble = toRealFloat x :: Double
   let ydouble = toRealFloat y :: Double
   assert (xdouble ~== ydouble)
 
-assertRoundtripEqual :: (Show a, Eq a, Pushable a, Peekable a) => a -> IO ()
-assertRoundtripEqual x = do
-  y <- roundtrip x
+assertRoundtripEqual :: (Show a, Eq a)
+                     => Pusher Lua.Exception a -> Peeker Lua.Exception a
+                     -> a -> IO ()
+assertRoundtripEqual pushX peekX x = do
+  y <- roundtrip pushX peekX x
   assert (x == y)
 
-roundtrip :: (Pushable a, Peekable a) => a -> IO a
-roundtrip x = run $ do
-  push x
+roundtrip :: Pusher Lua.Exception a -> Peeker Lua.Exception a -> a -> IO a
+roundtrip pushX peekX x = run $ do
+  pushX x
   size <- gettop
   when (size /= 1) $
-    Prelude.error ("not the right amount of elements on the stack: " ++ show size)
-  peek (-1)
+    failLua $ "not the right amount of elements on the stack: " ++ show size
+  forcePeek $ peekX top
 
 stackDiff :: Lua a -> Lua StackIndex
 stackDiff op = do
@@ -101,14 +95,12 @@ stackDiff op = do
   topAfter <- gettop
   return (topAfter - topBefore)
 
-luaTest :: Pushable a => String -> [(String, a)] -> IO Bool
-luaTest luaTestCode xs = run $ do
+luaTest :: ByteString -> (Name, a, Pusher Lua.Exception a) -> IO Bool
+luaTest luaProperty (var, val, pushVal) = run $ do
   openlibs
-  forM_ xs $ \(var, value) ->
-    push value *> setglobal var
-  let luaScript = "function run() return (" ++ luaTestCode ++ ") end"
-  _ <- dostring (Char8.pack luaScript)
-  callFunc "run"
+  pushVal val *> setglobal var
+  _ <- dostring $ "return (" <> luaProperty <> ")"
+  toboolean top
 
 luaNumberToScientific :: Lua.Number -> Scientific
 luaNumberToScientific = fromFloatDigits . (realToFrac :: Lua.Number -> Double)
@@ -120,10 +112,10 @@ arbitraryValue :: Int -> Gen Aeson.Value
 arbitraryValue size = frequency
     [ (1, return Aeson.Null)
     , (4, Aeson.Bool <$> arbitrary)
-    -- FIXME: this is cheating: we don't draw numbers from the whole possible
-    -- range, but only from the range of nubers that can pass through the Lua
-    -- stack without rounding errors. Good enough for now, but we still might
-    -- want to do better in the future.
+    -- Note: we don't draw numbers from the whole possible range, but
+    -- only from the range of numbers that Lua can handle without
+    -- rounding errors. This is ok, as JSON doesn't define a required
+    -- precision, and (usually) matches the behavior of JavaScript.
     , (4, Aeson.Number . luaNumberToScientific . Lua.Number <$> arbitrary)
     , (4, Aeson.String <$> arbitrary)
     , (2, resize (size - 1) $ Aeson.Array <$> arbitrary)
