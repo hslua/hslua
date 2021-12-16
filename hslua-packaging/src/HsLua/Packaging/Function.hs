@@ -55,7 +55,6 @@ module HsLua.Packaging.Function
   ) where
 
 import Control.Applicative ((<|>))
-import Control.Monad (void)
 import Control.Monad.Except
 import Data.Text (Text)
 import Data.Version (Version)
