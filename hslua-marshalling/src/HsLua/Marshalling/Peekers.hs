@@ -219,6 +219,7 @@ peekRealFloat idx = liftLua (ltype idx) >>= \case
 peekList :: forall a e. LuaError e => Peeker e a -> Peeker e [a]
 peekList peekElement = fmap (retrieving "list") .
   typeChecked "table" istable $ \idx -> do
+  liftLua $ checkstack' 1 "retrieving a list"
   let elementsAt [] = return []
       elementsAt (i : is) = do
         x  <- retrieving ("index " <> showInt i) $
@@ -230,15 +231,18 @@ peekList peekElement = fmap (retrieving "list") .
   elementsAt [1..fromIntegral listLength]
 
 -- | Retrieves a key-value Lua table as 'Map'.
-peekMap :: Ord a => Peeker e a -> Peeker e b -> Peeker e (Map a b)
+peekMap :: (LuaError e, Ord a)
+        => Peeker e a -> Peeker e b -> Peeker e (Map a b)
 peekMap keyPeeker valuePeeker = retrieving "Map"
   . fmap Map.fromList
   . peekKeyValuePairs keyPeeker valuePeeker
 
 -- | Read a table into a list of pairs.
-peekKeyValuePairs :: Peeker e a -> Peeker e b -> Peeker e [(a, b)]
+peekKeyValuePairs :: LuaError e
+                  => Peeker e a -> Peeker e b -> Peeker e [(a, b)]
 peekKeyValuePairs keyPeeker valuePeeker =
   typeChecked "table" istable $ \idx -> cleanup $ do
+    liftLua $ checkstack' 2 "retrieving key-value pairs"
     idx' <- liftLua $ absindex idx
     let remainingPairs = nextPair keyPeeker valuePeeker idx' >>= \case
           Nothing -> return []
@@ -267,7 +271,7 @@ nextPair keyPeeker valuePeeker idx = retrieving "key-value pair" $ do
 -- | Retrieves a 'Set' from an idiomatic Lua representation. A
 -- set in Lua is idiomatically represented as a table with the
 -- elements as keys. Elements with falsy values are omitted.
-peekSet :: Ord a => Peeker e a -> Peeker e (Set a)
+peekSet :: (LuaError e, Ord a) => Peeker e a -> Peeker e (Set a)
 peekSet elementPeeker = withContext "Set"
   . fmap (Set.fromList . map fst . filter snd)
   . peekKeyValuePairs elementPeeker peekBool
@@ -302,6 +306,7 @@ peekPair :: LuaError e
          => Peeker e a -> Peeker e b
          -> Peeker e (a, b)
 peekPair peekA peekB idx = cleanup $ do
+  liftLua $ checkstack' 2 "retrieving a pair"
   idx' <- liftLua $ absindex idx
   a <- liftLua (rawgeti idx' 1) *> peekA top
   b <- liftLua (rawgeti idx' 2) *> peekB top
@@ -313,6 +318,7 @@ peekTriple :: LuaError e
            => Peeker e a -> Peeker e b -> Peeker e c
            -> Peeker e (a, b, c)
 peekTriple peekA peekB peekC idx = cleanup $ do
+  liftLua $ checkstack' 3 "retrieving a triple"
   idx' <- liftLua $ absindex idx
   a <- liftLua (rawgeti idx' 1) *> peekA top
   b <- liftLua (rawgeti idx' 2) *> peekB top

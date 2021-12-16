@@ -11,11 +11,13 @@ Release pending.
 -   The `Success` constructor of the `Result` type is now strict;
     the `Failure` constructor remains lazy.
 
--   The stack is checked before pushing nested structures: Pushing
-    a deeply nested structure could lead an overflow of the Lua
-    stack. The functions `pushList`, `pushSet`, and
-    `pushKeyValuePairs` now check that sufficient stack space is
-    available before pushing.
+-   The stack is checked before pushing or retrieving nested
+    structures: Pushing or peeking a deeply nested structure could
+    lead an overflow of the Lua stack. The functions `pushList`,
+    `pushSet`, and `pushKeyValuePairs`, as well as `peekList`,
+    `peekSet`, and `peekKeyValuePairs` now check that sufficient
+    stack space is available before pushing another value to the
+    stack.
 
 ## hslua-marshalling-2.0.1
 

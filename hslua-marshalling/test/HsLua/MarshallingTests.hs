@@ -33,8 +33,8 @@ tests = testGroup "Marshalling"
   , HsLua.Marshalling.UserdataTests.tests
   , testGroup "nested"
     [ "deeply nested list" =:
-      Success (mkDeeplyNested 33) `shouldBeResultOf` do
-        pushNested (mkDeeplyNested 33)
+      Success (mkDeeplyNested 500) `shouldBeResultOf` do
+        pushNested (mkDeeplyNested 500)
         runPeek $ peekNested top
     ]
   ]
@@ -48,11 +48,10 @@ pushNested = \case
   List nested -> pushList pushNested nested
 
 peekNested :: LuaError e => Peeker e Nested
-peekNested idx = liftLua (checkstack 2) >>= \case
-  False -> failPeek "stack overflow"
-  True -> liftLua (ltype idx) >>= \case
+peekNested idx = do
+  liftLua (ltype idx) >>= \case
     TypeNumber  -> Element <$!> peekIntegral idx
-    TypeTable   -> (List   <$!> peekList peekNested idx) `lastly` pop 1
+    TypeTable   -> (List   <$!> peekList peekNested idx)
     _           -> failPeek "you dun goofed"
 
 data Nested = Element Int | List [Nested]
