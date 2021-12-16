@@ -8,6 +8,9 @@ Release pending.
 
 -   Updated to hslua-core-2.1.0.
 
+-   The `Success` constructor of the `Result` type is now strict;
+    the `Failure` constructor remains lazy.
+
 ## hslua-marshalling-2.0.1
 
 Released 2021-11-04.

@@ -45,15 +45,15 @@ import qualified HsLua.Core.Utf8 as Utf8
 -- | Record to keep track of failure contexts while retrieving objects
 -- from the Lua stack.
 data Result a
-  = Success a
+  = Success !a
   | Failure ByteString [Name]       -- ^ Error message and stack of contexts
   deriving (Show, Eq, Functor)
 
 instance Applicative Result where
   pure = Success
   {-# INLINE pure #-}
-  Success f         <*> s = fmap f s
-  Failure msg stack <*> _         = Failure msg stack
+  Success f         <*> s = f <$!> s
+  Failure msg stack <*> _ = Failure msg stack
   {-# INLINE (<*>) #-}
 
 instance Monad Result where
@@ -133,7 +133,7 @@ withContext ctx = Peek . fmap (addFailureContext ctx) . runPeek
 -- | Runs the peek action and Lua action in sequence, even if the peek
 -- action fails.
 lastly :: Peek e a -> LuaE e b -> Peek e a
-lastly p after = Peek $ runPeek p <* after
+lastly p after = Peek $! runPeek p <* after
 {-# INLINABLE lastly #-}
 
 -- | Runs the peek action, resetting the stack top afterwards. This can
