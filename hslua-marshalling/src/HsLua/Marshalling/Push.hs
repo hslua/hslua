@@ -97,17 +97,21 @@ pushRealFloat f =
 -- | Push list of pairs as default key-value Lua table.
 pushKeyValuePairs :: LuaError e
                   => Pusher e a -> Pusher e b -> Pusher e [(a,b)]
-pushKeyValuePairs pushKey pushValue m = do
-  let addValue (k, v) = pushKey k *> pushValue v *> rawset (-3)
-  newtable
-  mapM_ addValue m
+pushKeyValuePairs pushKey pushValue m = checkstack 3 >>= \case
+  False -> failLua "stack overflow while pushing key-value pairs"
+  True  -> do
+    let addValue (k, v) = pushKey k *> pushValue v *> rawset (-3)
+    newtable
+    mapM_ addValue m
 
 -- | Push list as numerically indexed table.
 pushList :: LuaError e => Pusher e a -> [a] -> LuaE e ()
-pushList push xs = do
-  let setField i x = push x *> rawseti (-2) i
-  newtable
-  zipWithM_ setField [1..] xs
+pushList push xs = checkstack 2 >>= \case
+  False -> failLua "stack overflow while pushing a list"
+  True  -> do
+    let setField i x = push x *> rawseti (-2) i
+    newtable
+    zipWithM_ setField [1..] xs
 
 -- | Push 'Map' as default key-value Lua table.
 pushMap :: LuaError e => Pusher e a -> Pusher e b -> Pusher e (Map a b)
@@ -116,10 +120,12 @@ pushMap pushKey pushValue m = pushKeyValuePairs pushKey pushValue $ toList m
 -- | Push a 'Set' as idiomatic Lua set, i.e., as a table with the set
 -- elements as keys and @true@ as values.
 pushSet :: LuaError e => Pusher e a -> Pusher e (Set a)
-pushSet pushElement set = do
-  let addItem item = pushElement item *> pushboolean True *> rawset (-3)
-  newtable
-  mapM_ addItem set
+pushSet pushElement set = checkstack 3 >>= \case
+  False -> failLua "stack overflow while pushing a set"
+  True  -> do
+    let addItem item = pushElement item *> pushboolean True *> rawset (-3)
+    newtable
+    mapM_ addItem set
 
 --
 -- Combinators
