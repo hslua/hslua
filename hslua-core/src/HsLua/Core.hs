@@ -154,6 +154,7 @@ module HsLua.Core
   , openstring
   , opentable
   -- * Auxiliary library
+  , checkstack'
   , dostring
   , dofile
   , getmetafield

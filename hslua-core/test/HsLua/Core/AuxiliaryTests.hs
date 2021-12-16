@@ -16,7 +16,17 @@ import qualified HsLua.Core as Lua
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
 tests = testGroup "Auxiliary"
-  [ testGroup "getsubtable"
+  [ testGroup "checkstack'"
+    [ "returns unit if stack space can be provided" =:
+      () `shouldBeResultOf` Lua.checkstack' 2 "test"
+
+      -- testing the error case is not possible for some reason
+      -- , "fails if too much stack space is requested" =:
+      --    "stack overflow (test)"`shouldBeErrorMessageOf`
+      --    Lua.checkstack' maxBound "test"
+    ]
+
+  , testGroup "getsubtable"
     [ "gets a subtable from field" =:
       [5, 8] `shouldBeResultOf` do
         pushLuaExpr @Lua.Exception "{foo = {5, 8}}"

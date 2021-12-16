@@ -15,7 +15,8 @@ Wrappers for the auxiliary library.
 -}
 module HsLua.Core.Auxiliary
   ( -- * The Auxiliary Library
-    dostring
+    checkstack'
+  , dostring
   , dofile
   , getmetafield
   , getmetatable'
@@ -40,7 +41,7 @@ module HsLua.Core.Auxiliary
 import Control.Monad ((<$!>))
 import Data.ByteString (ByteString)
 import Data.String (IsString (fromString))
-import HsLua.Core.Error (LuaError, throwErrorAsException)
+import HsLua.Core.Error (LuaError, failLua, throwErrorAsException)
 import HsLua.Core.Types
   (LuaE, Name (Name), Status, StackIndex, liftLua, multret, runWith)
 import Lua (top)
@@ -54,6 +55,21 @@ import qualified Data.ByteString as B
 import qualified HsLua.Core.Primary as Lua
 import qualified HsLua.Core.Types as Lua
 import qualified Foreign.Storable as Storable
+
+-- | Grows the stack size to @top + sz@ elements, raising an error if
+-- the stack cannot grow to that size. @msg@ is an additional text to go
+-- into the error message (or the empty string for no additional text).
+checkstack' :: LuaError e
+            => Int    -- ^ sz (requested additional size)
+            -> String -- ^ msg
+            -> LuaE e ()
+checkstack' sz msg =
+  Lua.checkstack sz >>= \case
+    True  -> pure ()
+    False -> failLua $
+      if msg == ""
+      then "stack overflow"
+      else "stack overflow (" ++ msg ++ ")"
 
 -- | Loads and runs the given string.
 --

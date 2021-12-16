@@ -9,6 +9,12 @@ Release pending.
 -   The functions `rawget`, `rawgeti`, and `getref` now return the
     type of the value that was pushed to the stack.
 
+-   A new function `checkstack'` is added to HsLua.Core.Auxiliary
+    and exported from the main HsLua.Core module. The function
+    throws an exception if the stack cannot be grown to
+    accommodate a given number of elements; it is similar to
+    `luaL_checkstack`.
+
 ## hslua-core-2.0.0.2
 
 Released 2021-11-03.
