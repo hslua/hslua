@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications  #-}
+{-# LANGUAGE OverloadedStrings    #-}
+{-# LANGUAGE TypeApplications     #-}
 {-|
 Copyright   :  © 2017–2021 Albert Krewinkel
 License     :  MIT
@@ -9,16 +9,19 @@ Tests for Aeson–Lua glue.
 -}
 import Control.Monad (when)
 import Data.AEq ((~==))
-import Data.ByteString
+import Data.ByteString (ByteString)
 import Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
 import HsLua as Lua hiding (Property, property)
 import HsLua.Aeson
 import Test.Hspec
+import Test.Hspec.QuickCheck (modifyMaxSuccess)
 import Test.HUnit
 import Test.QuickCheck
 import Test.QuickCheck.Instances ()
 
 import qualified Data.Aeson as Aeson
+import qualified Data.HashMap.Lazy as HashMap
+import qualified Data.Vector as Vector
 
 -- | Run this spec.
 main :: IO ()
@@ -26,7 +29,7 @@ main = hspec spec
 
 -- | Specifications for Attributes parsing functions.
 spec :: Spec
-spec = do
+spec = modifyMaxSuccess (const 1000) $ do
   describe "pushNull" $ do
     it "pushes a value that is recognized as null when peeked" $ do
       val <- run @Lua.Exception (pushNull *> forcePeek (peekValue top))
@@ -40,9 +43,32 @@ spec = do
     it "pushes two values when called twice" $ do
       diff <- run $ stackDiff (pushNull *> pushNull)
       assert (diff == 2)
-  describe "Value" $
+  describe "Value" $ do
     it "can be round-tripped through the stack" . property $
-    \x -> assertRoundtripEqual pushValue peekValue (x::Aeson.Value)
+      assertRoundtripEqual pushValue peekValue
+    it "can roundtrip a bool nested in 50 layers of arrays" $
+      property $ \b -> do
+        let go _ x = Aeson.Array $ Vector.fromList [x]
+            mkValue a = foldr go (Aeson.Bool a) [ (1::Int) .. 50]
+        x <- run @Lua.Exception $ do
+          pushValue $ mkValue b
+          size <- gettop
+          when (size /= 1) $
+            failLua $ "elements on stack (should be 1): " ++ show size
+          forcePeek $! peekValue top
+        assert $! (x == mkValue b)
+    it "can roundtrip a bool nested in 50 layers of objects" $
+      property $ \b -> do
+        let go _ x = Aeson.Object $ HashMap.fromList [("x", x)]
+            mkValue a = foldr go (Aeson.Bool a) [ (1::Int) .. 50]
+        x <- run @Lua.Exception $ do
+          pushValue $ mkValue b
+          size <- gettop
+          when (size /= 1) $
+            failLua $ "elements on stack (should be 1): " ++ show size
+          forcePeek $! peekValue top
+        assert $! (x == mkValue b)
+
   describe "Value component" $ do
     describe "Scientific" $ do
       it "is converted to a Lua number" $ property $ \x -> assert =<<
@@ -52,17 +78,32 @@ spec = do
         assertRoundtripEqual pushScientific peekScientific
                              (luaNumberToScientific (Lua.Number x))
       it "can be round-tripped and stays approximately equal" $
-        property $ \x -> assertRoundtripApprox (x :: Scientific)
+        property assertRoundtripApprox
     describe "Vector" $ do
       it "is converted to a Lua table" $ property $ \x -> assert =<<
-        luaTest "type(x) == 'table'" ("x", x, pushVector)
-      it "can contain Bools and be round-tripped through the stack" $ property $
-        assertRoundtripEqual pushVector peekVector
+        luaTest "type(x) == 'table'" ("x", x, pushVector pushBool)
+      it "can contain Bools and be round-tripped" $ property $
+        assertRoundtripEqual (pushVector pushBool) (peekVector peekBool)
+      it "can contain Text and be round-tripped" $ property $
+        assertRoundtripEqual (pushVector pushText) (peekVector peekText)
+      it "can contain Aeson.Value and be round-tripped" $ property $
+        assertRoundtripEqual (pushVector pushValue)
+                             (peekVector peekValue)
     describe "HashMap" $ do
       it "is converted to a Lua table" $ property $ \x -> assert =<<
-        luaTest "type(x) == 'table'" ("x", x, pushTextMap)
-      it "can be round-tripped through the stack" $
-        property $ assertRoundtripEqual pushTextMap peekTextMap
+        luaTest "type(x) == 'table'" ("x", x, pushHashMap pushText pushText)
+      it "can be round-tripped with Bool values" $ property $
+        assertRoundtripEqual (pushHashMap pushText pushBool)
+                             (peekHashMap peekText peekBool)
+        . HashMap.fromList
+      it "can be round-tripped with Text values" $ property $
+        assertRoundtripEqual (pushHashMap pushText pushText)
+                             (peekHashMap peekText peekText)
+        . HashMap.fromList
+      it "can be round-tripped with Aeson.Value values" $ property $
+        assertRoundtripEqual (pushHashMap pushText pushValue)
+                             (peekHashMap peekText peekValue)
+        . HashMap.fromList
 
 assertRoundtripApprox :: Scientific -> IO ()
 assertRoundtripApprox x = do
@@ -106,7 +147,7 @@ luaNumberToScientific :: Lua.Number -> Scientific
 luaNumberToScientific = fromFloatDigits . (realToFrac :: Lua.Number -> Double)
 
 instance Arbitrary Aeson.Value where
-  arbitrary = arbitraryValue 7
+  arbitrary = arbitraryValue 5
 
 arbitraryValue :: Int -> Gen Aeson.Value
 arbitraryValue size = frequency
