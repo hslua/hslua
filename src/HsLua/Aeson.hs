@@ -49,10 +49,10 @@ import qualified Data.Vector as Vector
 import qualified HsLua.Core.Unsafe as Unsafe
 
 -- Scientific
-pushScientific :: LuaError e => Pusher e Scientific
+pushScientific :: Pusher e Scientific
 pushScientific = pushRealFloat @Double . toRealFloat
 
-peekScientific :: LuaError e => Peeker e Scientific
+peekScientific :: Peeker e Scientific
 peekScientific idx = fromFloatDigits <$!> peekRealFloat @Double idx
 
 -- | Hslua StackValue instance for the Aeson Value data type.
@@ -165,7 +165,7 @@ pushHashMap pushKey pushVal x =
     False -> failLua "stack overflow"
 
 -- | Retrieves an Aeson-valued HashMap from a Lua table.
-peekHashMap :: (LuaError e, Eq a, Hashable a)
+peekHashMap :: (Eq a, Hashable a)
             => Peeker e a -> Peeker e b
             -> Peeker e (HashMap a b)
 peekHashMap peekKey peekVal =
@@ -187,9 +187,8 @@ peekHashMap peekKey peekVal =
 --
 -- The key must be either nil or must exist in the table, or this
 -- function will crash with an unrecoverable error.
-nextPair :: LuaError e => Peeker e a -> Peeker e b -> Peeker e (Maybe (a, b))
+nextPair :: Peeker e a -> Peeker e b -> Peeker e (Maybe (a, b))
 nextPair peekKey peekVal idx = retrieving "key-value pair" $ do
-  -- liftLua (liftIO . print =<< gettop)
   liftLua (checkstack 1) >>= \case
     False -> failPeek "Lua stack overflow"
     True -> do
