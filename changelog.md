@@ -1,10 +1,18 @@
-# hslua-aeson
+# Changelog
 
-## v2.0.0
+`hslua-aeson` uses [PVP Versioning][].
 
-Release pending.
+## hslua-aeson-2.0.0
 
-- Changed module name from `Foreign.Lua.Aeson` to `HsLua.Aeson`.
+Released 2021-12-17.
+
+-   Changed module name from `Foreign.Lua.Aeson` to
+    `HsLua.Aeson`.
+
+-   The Peekable and Pushable instances have been removed. The
+    package no longer defines orphaned instances.
+
+-   Updated hslua and aeson to the respective 2.0 version.
 
 ## v1.0.3.1
 
@@ -63,3 +71,5 @@ Released 2020-04-03
 ## v0.1.0.4
 
 - Ensure compatibility with hslua 0.5.0.
+
+  [PVP Versioning]: https://pvp.haskell.org
