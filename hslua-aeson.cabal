@@ -8,10 +8,9 @@ homepage:            https://github.com/tarleb/hslua-aeson#readme
 license:             MIT
 license-file:        LICENSE
 author:              Albert Krewinkel
-maintainer:          albert+hslua@zeitkraut.de
+maintainer:          Albert Krewinkel <albert+hslua@zeitkraut.de>
 copyright:           © 2017–2021 Albert Krewinkel
 category:            Foreign
-build-type:          Simple
 extra-source-files:  README.md
                    , CHANGELOG.md
 tested-with:         GHC == 8.0.2
