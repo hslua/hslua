@@ -30,7 +30,7 @@ main = defaultMain tests
 
 -- | Aeson tests
 tests :: TestTree
-tests = testGroup "Aeson"
+tests = testGroup "hslua-aeson"
   [ testGroup "pushNull"
     [ testCase "pushes a value that is recognized as null when peeked" $ do
         val <- run @Lua.Exception (pushNull *> forcePeek (peekValue top))
@@ -54,22 +54,16 @@ tests = testGroup "Aeson"
             mkValue a = foldr go (Aeson.Bool a) [ (1::Int) .. 50]
         x <- QC.run . run @Lua.Exception $ do
           pushValue $ mkValue b
-          size <- gettop
-          when (size /= 1) $
-            failLua $ "elements on stack (should be 1): " ++ show size
-          forcePeek $! peekValue top
-        assert (x == mkValue b)
+          forcePeek $ peekValue top
+        return (x === mkValue b)
     , testProperty "can roundtrip a bool nested in 50 layers of objects" $
       \b -> QC.monadicIO $ do
         let go _ x = Aeson.Object $ KeyMap.fromList [("x", x)]
             mkValue a = foldr go (Aeson.Bool a) [ (1::Int) .. 50]
         x <- QC.run . run @Lua.Exception $ do
           pushValue $ mkValue b
-          size <- gettop
-          when (size /= 1) $
-            failLua $ "elements on stack (should be 1): " ++ show size
-          forcePeek $! peekValue top
-        assert (x == mkValue b)
+          forcePeek $ peekValue top
+        return (x === mkValue b)
     ]
 
   , testGroup "Value component"
