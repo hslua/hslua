@@ -7,6 +7,7 @@ Tests for Aeson–Lua glue.
 -}
 import Control.Monad (when)
 import Data.AEq ((~==))
+import Data.Aeson.Key (Key, fromText)
 import Data.ByteString (ByteString)
 import Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
 import HsLua.Core as Lua
@@ -19,7 +20,7 @@ import Test.Tasty.QuickCheck
 import Test.QuickCheck.Instances ()
 
 import qualified Data.Aeson as Aeson
-import qualified Data.HashMap.Lazy as HashMap
+import qualified Data.Aeson.KeyMap as KeyMap
 import qualified Data.Vector as Vector
 import qualified Test.QuickCheck.Monadic as QC
 
@@ -60,7 +61,7 @@ tests = testGroup "Aeson"
         assert (x == mkValue b)
     , testProperty "can roundtrip a bool nested in 50 layers of objects" $
       \b -> QC.monadicIO $ do
-        let go _ x = Aeson.Object $ HashMap.fromList [("x", x)]
+        let go _ x = Aeson.Object $ KeyMap.fromList [("x", x)]
             mkValue a = foldr go (Aeson.Bool a) [ (1::Int) .. 50]
         x <- QC.run . run @Lua.Exception $ do
           pushValue $ mkValue b
@@ -92,21 +93,21 @@ tests = testGroup "Aeson"
           assertRoundtripEqual (pushVector pushValue)
                                (peekVector peekValue)
       ]
-    , testGroup "HashMap"
+    , testGroup "KeyMap"
       [ testProperty "is converted to a Lua table"  $ \x ->
-        luaTest "type(x) == 'table'" ("x", x, pushHashMap pushText pushText)
+        luaTest "type(x) == 'table'" ("x", x, pushKeyMap pushText)
       , testProperty "can be round-tripped with Bool values" $
-          assertRoundtripEqual (pushHashMap pushText pushBool)
-                               (peekHashMap peekText peekBool)
-          . HashMap.fromList
+          assertRoundtripEqual (pushKeyMap pushBool)
+                               (peekKeyMap peekBool)
+          . KeyMap.fromList
       , testProperty "can be round-tripped with Text values" $
-          assertRoundtripEqual (pushHashMap pushText pushText)
-                               (peekHashMap peekText peekText)
-          . HashMap.fromList
+          assertRoundtripEqual (pushKeyMap pushText)
+                               (peekKeyMap peekText)
+          . KeyMap.fromList
       , testProperty "can be round-tripped with Aeson.Value values"  $
-          assertRoundtripEqual (pushHashMap pushText pushValue)
-                               (peekHashMap peekText peekValue)
-          . HashMap.fromList
+          assertRoundtripEqual (pushKeyMap pushValue)
+                               (peekKeyMap peekValue)
+          . KeyMap.fromList
       ]
     ]
   ]
@@ -157,6 +158,12 @@ luaNumberToScientific = fromFloatDigits . (realToFrac :: Lua.Number -> Double)
 
 instance Arbitrary Aeson.Value where
   arbitrary = arbitraryValue 5
+
+instance Arbitrary Key where
+  arbitrary = fmap fromText arbitrary
+
+instance Arbitrary a => Arbitrary (KeyMap.KeyMap a) where
+  arbitrary = fmap KeyMap.fromList arbitrary
 
 arbitraryValue :: Int -> Gen Aeson.Value
 arbitraryValue size = frequency
