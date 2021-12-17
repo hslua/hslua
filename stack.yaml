@@ -1,3 +1,16 @@
-resolver: lts-14.27
+resolver: lts-18.10
 packages: ['.']
 flags: {}
+extra-deps:
+- hslua-core-2.0.0.2
+- hslua-marshalling-2.0.1
+- lua-2.0.2
+# require by aeson 2.0
+- aeson-2.0.2.0
+- base-orphans-0.8.6
+- hashable-1.3.5.0
+- OneTuple-0.3.1
+- semialign-1.2.0.1
+- text-short-0.1.4
+- time-compat-1.9.6.1
+
