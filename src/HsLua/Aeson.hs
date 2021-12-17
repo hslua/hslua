@@ -1,8 +1,3 @@
-{-# OPTIONS_GHC -fno-warn-orphans #-}
-{-# LANGUAGE BangPatterns      #-}
-{-# LANGUAGE LambdaCase        #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications  #-}
 {-|
 Module      :  HsLua.Aeson
 Copyright   :  © 2017–2021 Albert Krewinkel

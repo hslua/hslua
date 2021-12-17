@@ -1,6 +1,4 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-{-# LANGUAGE OverloadedStrings    #-}
-{-# LANGUAGE TypeApplications     #-}
 {-|
 Copyright   :  © 2017–2021 Albert Krewinkel
 License     :  MIT
@@ -11,7 +9,8 @@ import Control.Monad (when)
 import Data.AEq ((~==))
 import Data.ByteString (ByteString)
 import Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
-import HsLua as Lua hiding (Property, property)
+import HsLua.Core as Lua
+import HsLua.Marshalling
 import HsLua.Aeson
 import Test.QuickCheck.Monadic (assert)
 import Test.Tasty (TestTree, defaultMain, testGroup)
@@ -123,7 +122,7 @@ assertRoundtripApprox x = QC.monadicIO $ do
   let ydouble = toRealFloat y :: Double
   assert (xdouble ~== ydouble)
 
-assertRoundtripEqual :: (Show a, Eq a)
+assertRoundtripEqual :: Eq a
                      => Pusher Lua.Exception a -> Peeker Lua.Exception a
                      -> a -> Property
 assertRoundtripEqual pushX peekX x = QC.monadicIO $ do
