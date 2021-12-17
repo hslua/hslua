@@ -16,7 +16,6 @@ import Test.QuickCheck.Monadic (assert)
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit ((@?=), (@?), testCase)
 import Test.Tasty.QuickCheck
--- import Test.QuickCheck
 import Test.QuickCheck.Instances ()
 
 import qualified Data.Aeson as Aeson

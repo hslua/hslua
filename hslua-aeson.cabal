@@ -63,10 +63,10 @@ library
   build-depends:       base                 >= 4.7    && < 5
   default-language:    Haskell2010
 
-test-suite hslua-aeson-test
+test-suite test-hslua-aeson
   import:              common-options
   type:                exitcode-stdio-1.0
-  main-is:             AesonSpec.hs
+  main-is:             test-hslua-aeson.hs
   hs-source-dirs:      test
   build-depends:       hslua-aeson
                      , QuickCheck
