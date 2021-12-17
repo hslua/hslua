@@ -47,7 +47,6 @@ test-suite hslua-aeson-test
   build-depends:       base
                      , aeson
                      , bytestring           >= 0.10.2 && < 0.12
-                     , hspec                >= 2.2
                      , HUnit
                      , QuickCheck
                      , quickcheck-instances
@@ -57,6 +56,9 @@ test-suite hslua-aeson-test
                      , ieee754
                      , scientific
                      , text
+                     , tasty                >= 0.11
+                     , tasty-hunit          >= 0.9
+                     , tasty-quickcheck     >= 0.8
                      , unordered-containers
                      , vector
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall

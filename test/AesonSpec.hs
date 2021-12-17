@@ -13,101 +13,110 @@ import Data.ByteString (ByteString)
 import Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
 import HsLua as Lua hiding (Property, property)
 import HsLua.Aeson
-import Test.Hspec
-import Test.Hspec.QuickCheck (modifyMaxSuccess)
-import Test.HUnit
-import Test.QuickCheck
+import Test.QuickCheck.Monadic (assert)
+import Test.Tasty (TestTree, defaultMain, testGroup)
+import Test.Tasty.HUnit ((@?=), (@?), testCase)
+import Test.Tasty.QuickCheck
+-- import Test.QuickCheck
 import Test.QuickCheck.Instances ()
 
 import qualified Data.Aeson as Aeson
 import qualified Data.HashMap.Lazy as HashMap
 import qualified Data.Vector as Vector
+import qualified Test.QuickCheck.Monadic as QC
 
 -- | Run this spec.
 main :: IO ()
-main = hspec spec
+main = defaultMain tests
 
--- | Specifications for Attributes parsing functions.
-spec :: Spec
-spec = modifyMaxSuccess (const 1000) $ do
-  describe "pushNull" $ do
-    it "pushes a value that is recognized as null when peeked" $ do
-      val <- run @Lua.Exception (pushNull *> forcePeek (peekValue top))
-      assert (val == Aeson.Null)
-    it "pushes a non-nil value" $ do
-      nil <- run @Lua.Exception (pushNull *> isnil top)
-      assert (not nil)
-    it "pushes a single value" $ do
-      diff <- run $ stackDiff pushNull
-      assert (diff == 1)
-    it "pushes two values when called twice" $ do
-      diff <- run $ stackDiff (pushNull *> pushNull)
-      assert (diff == 2)
-  describe "Value" $ do
-    it "can be round-tripped through the stack" . property $
+-- | Aeson tests
+tests :: TestTree
+tests = testGroup "Aeson"
+  [ testGroup "pushNull"
+    [ testCase "pushes a value that is recognized as null when peeked" $ do
+        val <- run @Lua.Exception (pushNull *> forcePeek (peekValue top))
+        val @?= Aeson.Null
+    , testCase "pushes a non-nil value" $ do
+        nil <- run @Lua.Exception (pushNull *> isnil top)
+        not nil @? "not of type `nil`"
+    , testCase "pushes a single value" $ do
+        diff <- run $ stackDiff pushNull
+        diff @?= 1
+    , testCase "pushes two values when called twice" $ do
+        diff <- run $ stackDiff (pushNull *> pushNull)
+        diff @?= 2
+    ]
+  , testGroup "Value"
+    [ testProperty "can be round-tripped through the stack" $
       assertRoundtripEqual pushValue peekValue
-    it "can roundtrip a bool nested in 50 layers of arrays" $
-      property $ \b -> do
+    , testProperty "can roundtrip a bool nested in 50 layers of arrays" $
+      \b -> QC.monadicIO $ do
         let go _ x = Aeson.Array $ Vector.fromList [x]
             mkValue a = foldr go (Aeson.Bool a) [ (1::Int) .. 50]
-        x <- run @Lua.Exception $ do
+        x <- QC.run . run @Lua.Exception $ do
           pushValue $ mkValue b
           size <- gettop
           when (size /= 1) $
             failLua $ "elements on stack (should be 1): " ++ show size
           forcePeek $! peekValue top
-        assert $! (x == mkValue b)
-    it "can roundtrip a bool nested in 50 layers of objects" $
-      property $ \b -> do
+        assert (x == mkValue b)
+    , testProperty "can roundtrip a bool nested in 50 layers of objects" $
+      \b -> QC.monadicIO $ do
         let go _ x = Aeson.Object $ HashMap.fromList [("x", x)]
             mkValue a = foldr go (Aeson.Bool a) [ (1::Int) .. 50]
-        x <- run @Lua.Exception $ do
+        x <- QC.run . run @Lua.Exception $ do
           pushValue $ mkValue b
           size <- gettop
           when (size /= 1) $
             failLua $ "elements on stack (should be 1): " ++ show size
           forcePeek $! peekValue top
-        assert $! (x == mkValue b)
+        assert (x == mkValue b)
+    ]
 
-  describe "Value component" $ do
-    describe "Scientific" $ do
-      it "is converted to a Lua number" $ property $ \x -> assert =<<
-        luaTest "type(x) == 'number'" ("x", x, pushScientific)
-      it "double precision numbers can be round-tripped" $
-        property $ \x ->
-        assertRoundtripEqual pushScientific peekScientific
-                             (luaNumberToScientific (Lua.Number x))
-      it "can be round-tripped and stays approximately equal" $
-        property assertRoundtripApprox
-    describe "Vector" $ do
-      it "is converted to a Lua table" $ property $ \x -> assert =<<
-        luaTest "type(x) == 'table'" ("x", x, pushVector pushBool)
-      it "can contain Bools and be round-tripped" $ property $
-        assertRoundtripEqual (pushVector pushBool) (peekVector peekBool)
-      it "can contain Text and be round-tripped" $ property $
-        assertRoundtripEqual (pushVector pushText) (peekVector peekText)
-      it "can contain Aeson.Value and be round-tripped" $ property $
-        assertRoundtripEqual (pushVector pushValue)
-                             (peekVector peekValue)
-    describe "HashMap" $ do
-      it "is converted to a Lua table" $ property $ \x -> assert =<<
+  , testGroup "Value component"
+    [ testGroup "Scientific"
+      [ testProperty "is converted to a Lua number" $ \x ->
+          luaTest "type(x) == 'number'" ("x", x, pushScientific)
+      , testProperty "double precision numbers can be round-tripped" $ \x ->
+          assertRoundtripEqual pushScientific peekScientific
+                               (luaNumberToScientific (Lua.Number x))
+      , testProperty "can be round-tripped and stays approximately equal"
+          assertRoundtripApprox
+      ]
+    , testGroup "Vector"
+      [ testProperty "is converted to a Lua table" $ \x ->
+          luaTest "type(x) == 'table'" ("x", x, pushVector pushBool)
+      , testProperty "can contain Bools and be round-tripped"  $
+          assertRoundtripEqual (pushVector pushBool) (peekVector peekBool)
+      , testProperty "can contain Text and be round-tripped" $
+          assertRoundtripEqual (pushVector pushText) (peekVector peekText)
+      , testProperty "can contain Aeson.Value and be round-tripped" $
+          assertRoundtripEqual (pushVector pushValue)
+                               (peekVector peekValue)
+      ]
+    , testGroup "HashMap"
+      [ testProperty "is converted to a Lua table"  $ \x ->
         luaTest "type(x) == 'table'" ("x", x, pushHashMap pushText pushText)
-      it "can be round-tripped with Bool values" $ property $
-        assertRoundtripEqual (pushHashMap pushText pushBool)
-                             (peekHashMap peekText peekBool)
-        . HashMap.fromList
-      it "can be round-tripped with Text values" $ property $
-        assertRoundtripEqual (pushHashMap pushText pushText)
-                             (peekHashMap peekText peekText)
-        . HashMap.fromList
-      it "can be round-tripped with Aeson.Value values" $ property $
-        assertRoundtripEqual (pushHashMap pushText pushValue)
-                             (peekHashMap peekText peekValue)
-        . HashMap.fromList
+      , testProperty "can be round-tripped with Bool values" $
+          assertRoundtripEqual (pushHashMap pushText pushBool)
+                               (peekHashMap peekText peekBool)
+          . HashMap.fromList
+      , testProperty "can be round-tripped with Text values" $
+          assertRoundtripEqual (pushHashMap pushText pushText)
+                               (peekHashMap peekText peekText)
+          . HashMap.fromList
+      , testProperty "can be round-tripped with Aeson.Value values"  $
+          assertRoundtripEqual (pushHashMap pushText pushValue)
+                               (peekHashMap peekText peekValue)
+          . HashMap.fromList
+      ]
+    ]
+  ]
 
-assertRoundtripApprox :: Scientific -> IO ()
-assertRoundtripApprox x = do
-  y <- roundtrip (pushScientific @Lua.Exception)
+assertRoundtripApprox :: Scientific -> Property
+assertRoundtripApprox x = QC.monadicIO $ do
+  y <- QC.run $
+       roundtrip (pushScientific @Lua.Exception)
                  (peekScientific @Lua.Exception)
                  x
   let xdouble = toRealFloat x :: Double
@@ -116,9 +125,9 @@ assertRoundtripApprox x = do
 
 assertRoundtripEqual :: (Show a, Eq a)
                      => Pusher Lua.Exception a -> Peeker Lua.Exception a
-                     -> a -> IO ()
-assertRoundtripEqual pushX peekX x = do
-  y <- roundtrip pushX peekX x
+                     -> a -> Property
+assertRoundtripEqual pushX peekX x = QC.monadicIO $ do
+  y <- QC.run $ roundtrip pushX peekX x
   assert (x == y)
 
 roundtrip :: Pusher Lua.Exception a -> Peeker Lua.Exception a -> a -> IO a
@@ -136,12 +145,14 @@ stackDiff op = do
   topAfter <- gettop
   return (topAfter - topBefore)
 
-luaTest :: ByteString -> (Name, a, Pusher Lua.Exception a) -> IO Bool
-luaTest luaProperty (var, val, pushVal) = run $ do
-  openlibs
-  pushVal val *> setglobal var
-  _ <- dostring $ "return (" <> luaProperty <> ")"
-  toboolean top
+luaTest :: ByteString -> (Name, a, Pusher Lua.Exception a) -> Property
+luaTest luaProperty (var, val, pushVal) = QC.monadicIO $ do
+  result <- QC.run . run $ do
+    openlibs
+    pushVal val *> setglobal var
+    _ <- dostring $ "return (" <> luaProperty <> ")"
+    toboolean top
+  assert result
 
 luaNumberToScientific :: Lua.Number -> Scientific
 luaNumberToScientific = fromFloatDigits . (realToFrac :: Lua.Number -> Double)
