@@ -35,8 +35,6 @@ module HsLua.Aeson
   ) where
 
 import Control.Monad ((<$!>), when)
-import Data.Aeson.Key (Key, toText, fromText)
-import Data.Aeson.KeyMap
 import Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
 import Data.String (IsString (fromString))
 import Data.Vector (Vector)
@@ -44,9 +42,23 @@ import HsLua.Core as Lua
 import HsLua.Marshalling as Lua
 
 import qualified Data.Aeson as Aeson
-import qualified Data.Aeson.KeyMap as KeyMap
 import qualified Data.Vector as Vector
 import qualified HsLua.Core.Unsafe as Unsafe
+
+#if MIN_VERSION_aeson(2,0,0)
+import Data.Aeson.Key (Key, toText, fromText)
+import qualified Data.Aeson.KeyMap as KeyMap
+type KeyMap = KeyMap.KeyMap
+#else
+import Data.Text (Text)
+import qualified Data.HashMap.Strict as KeyMap
+type Key = Text
+type KeyMap = KeyMap.HashMap Key
+toText :: Key -> Text
+toText = id
+fromText :: Text -> Key
+fromText = id
+#endif
 
 -- Scientific
 pushScientific :: Pusher e Scientific
