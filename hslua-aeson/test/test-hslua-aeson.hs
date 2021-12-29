@@ -14,7 +14,6 @@ import HsLua.Marshalling
 import HsLua.Aeson
 import Test.QuickCheck.Monadic (assert)
 import Test.Tasty (TestTree, defaultMain, testGroup)
-import Test.Tasty.HUnit ((@?=), (@?), testCase)
 import Test.Tasty.QuickCheck
 import Test.QuickCheck.Instances ()
 
@@ -37,21 +36,7 @@ main = defaultMain tests
 -- | Aeson tests
 tests :: TestTree
 tests = testGroup "hslua-aeson"
-  [ testGroup "pushNull"
-    [ testCase "pushes a value that is recognized as null when peeked" $ do
-        val <- run @Lua.Exception (pushNull *> forcePeek (peekValue top))
-        val @?= Aeson.Null
-    , testCase "pushes a non-nil value" $ do
-        nil <- run @Lua.Exception (pushNull *> isnil top)
-        not nil @? "not of type `nil`"
-    , testCase "pushes a single value" $ do
-        diff <- run $ stackDiff pushNull
-        diff @?= 1
-    , testCase "pushes two values when called twice" $ do
-        diff <- run $ stackDiff (pushNull *> pushNull)
-        diff @?= 2
-    ]
-  , testGroup "Value"
+  [ testGroup "Value"
     [ testProperty "can be round-tripped through the stack" $
       assertRoundtripEqual pushValue peekValue
     , testProperty "can roundtrip a bool nested in 50 layers of arrays" $
@@ -136,13 +121,6 @@ roundtrip pushX peekX x = run $ do
   when (size /= 1) $
     failLua $ "not the right amount of elements on the stack: " ++ show size
   forcePeek $ peekX top
-
-stackDiff :: Lua a -> Lua StackIndex
-stackDiff op = do
-  topBefore <- gettop
-  _ <- op
-  topAfter <- gettop
-  return (topAfter - topBefore)
 
 luaTest :: ByteString -> (Name, a, Pusher Lua.Exception a) -> Property
 luaTest luaProperty (var, val, pushVal) = QC.monadicIO $ do

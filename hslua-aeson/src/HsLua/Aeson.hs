@@ -24,7 +24,6 @@ module HsLua.Aeson
   , pushValue
   , peekVector
   , pushVector
-  , pushNull
   , peekScientific
   , pushScientific
   , peekKeyMap
@@ -34,6 +33,7 @@ module HsLua.Aeson
 import Control.Monad ((<$!>))
 import Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
 import Data.Vector (Vector)
+import Foreign.Ptr (nullPtr)
 import HsLua.Core as Lua
 import HsLua.Marshalling as Lua
 
@@ -80,16 +80,18 @@ pushValue val = do
     Aeson.String s -> pushText s
     Aeson.Array a  -> pushVector pushValue a
     Aeson.Bool b   -> pushBool b
-    Aeson.Null     -> pushNull
+    Aeson.Null     -> pushlightuserdata nullPtr
 
 peekValue :: LuaError e => Peeker e Aeson.Value
 peekValue idx = liftLua (ltype idx) >>= \case
   TypeBoolean -> Aeson.Bool  <$!> peekBool idx
   TypeNumber -> Aeson.Number <$!> peekScientific idx
   TypeString -> Aeson.String <$!> peekText idx
-  TypeTable -> liftLua (checkstack 1) >>= \case
-    False -> failPeek "stack overflow"
-    True -> do
+  TypeLightUserdata -> liftLua (touserdata idx) >>= \case
+    -- must be the null pointer
+    Nothing -> pure Aeson.Null
+    _       -> typeMismatchMessage "null" idx >>= failPeek
+  TypeTable -> do
       isInt <- liftLua $ rawgeti idx 0 *> isinteger top <* pop 1
       if isInt
         then Aeson.Array <$!> peekVector peekValue idx
@@ -97,54 +99,19 @@ peekValue idx = liftLua (ltype idx) >>= \case
           rawlen' <- liftLua $ rawlen idx
           if rawlen' > 0
             then Aeson.Array <$!> peekVector peekValue idx
-            else do
-              isNull' <- liftLua $ isNull idx
-              if isNull'
-                then return Aeson.Null
-                else Aeson.Object <$!> peekKeyMap peekValue idx
+            else Aeson.Object <$!> peekKeyMap peekValue idx
   TypeNil -> return Aeson.Null
   luaType -> fail ("Unexpected type: " ++ show luaType)
-
--- | Registry key containing the representation for JSON null values.
-nullRegistryField :: Name
-nullRegistryField = "HSLUA_AESON_NULL"
-
--- | Push the value which represents JSON null values to the stack (a specific
--- empty table by default). Internally, this uses the contents of the
--- @HSLUA_AESON_NULL@ registry field; modifying this field is possible, but it
--- must always be non-nil.
-pushNull :: LuaError e => LuaE e ()
-pushNull = checkstack 3 >>= \case
-  False -> failLua "stack overflow while pushing null"
-  True -> do
-    pushName nullRegistryField
-    rawget registryindex >>= \case
-      TypeNil -> do
-        -- null is uninitialized
-        pop 1 -- remove nil
-        newtable
-        pushvalue top
-        setfield registryindex nullRegistryField
-      _ -> pure ()
-
--- | Check if the value under the given index represents a @null@ value.
-isNull :: LuaError e => StackIndex -> LuaE e Bool
-isNull idx = do
-  idx' <- absindex idx
-  pushNull
-  rawequal idx' top <* pop 1
 
 -- | Push a vector onto the stack.
 pushVector :: LuaError e
            => Pusher e a
            -> Pusher e (Vector a)
 pushVector pushItem !v = do
-  checkstack 3 >>= \case
-    False -> failLua "stack overflow"
-    True -> do
-      pushList pushItem $ Vector.toList v
-      pushIntegral (Vector.length v)
-      rawseti (nth 2) 0
+  checkstack' 3 "HsLua.Aeson.pushVector"
+  pushList pushItem $ Vector.toList v
+  pushIntegral (Vector.length v)
+  rawseti (nth 2) 0
 
 -- | Try reading the value under the given index as a vector.
 peekVector :: LuaError e

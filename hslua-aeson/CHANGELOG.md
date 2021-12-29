@@ -8,6 +8,12 @@ Release pending.
 
 -   Update to hslua 2.1.
 
+-   Encode `null` as light userdata: The `NULL` pointer wrapped
+    into a light userdata is used to encode the JSON null value.
+
+    The `pushNull` function has been removed; use
+    `pushValue Null` instead.
+
 ## hslua-aeson-2.0.1
 
 Released 2021-12-28.
