@@ -135,9 +135,15 @@ peekBool = liftLua . toboolean
 -- not silently converted to a string, as would happen with numbers.
 toByteString :: StackIndex -> LuaE e (Maybe ByteString)
 toByteString idx = do
-  -- copy value, as tostring converts numbers to strings *in-place*.
-  pushvalue idx
-  tostring top <* pop 1
+  -- Do an explicit type check, as @tostring@ converts numbers strings
+  -- /in-place/, which we need to avoid.
+  ltype idx >>= \case
+    TypeString -> tostring idx
+    _          -> checkstack 1 >>= \case
+      False -> pure Nothing
+      True  ->  do
+        pushvalue idx
+        tostring top <* pop 1
 {-# INLINABLE toByteString #-}
 
 -- | Retrieves a 'ByteString' as a raw string.
