@@ -133,6 +133,9 @@ peekBool = liftLua . toboolean
 
 -- | Like 'tostring', but ensures that the value at the given index is
 -- not silently converted to a string, as would happen with numbers.
+-- Also returns 'Nothing' if the value is a number and there is no stack
+-- slot left on the Lua stack, which would be needed to convert the
+-- number to a string without changing the original slot.
 toByteString :: StackIndex -> LuaE e (Maybe ByteString)
 toByteString idx = do
   -- Do an explicit type check, as @tostring@ converts numbers strings

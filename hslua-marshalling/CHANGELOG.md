@@ -19,6 +19,11 @@ Release pending.
     stack space is available before pushing another value to the
     stack.
 
+-   The function `toByteString` now requires a slot on the stack
+    if the value at the given index is a number. It checks for
+    available space before pushing to the stack, returning
+    `Nothing` if no space is left on the stack.
+
 ## hslua-marshalling-2.0.1
 
 Released 2021-11-04.
