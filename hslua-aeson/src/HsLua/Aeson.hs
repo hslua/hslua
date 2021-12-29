@@ -4,23 +4,20 @@ Copyright   :  © 2017–2021 Albert Krewinkel
 License     :  MIT
 Maintainer  :  Albert Krewinkel <tarleb@zeitkraut.de>
 
-Glue to HsLua for aeson values.
+Pushes and retrieves aeson `Value`s to and from the Lua stack.
 
-This provides a @StackValue@ instance for aeson's @Value@ type. The following
-conventions are used:
+- `Null` values are encoded as a special value (stored in the
+  registry field `HSLUA_AESON_NULL`).
 
-- @Null@ values are encoded as a special value (stored in the registry field
-  @HSLUA_AESON_NULL@). Using @nil@ would cause problems with null-containing
-  arrays.
+- Objects are converted to string-indexed tables.
 
-- Objects are converted to tables in a straight-forward way.
+- Arrays are converted to sequence tables. Array-length is
+  included as the value at index 0. This makes it possible to
+  distinguish between empty arrays and empty objects.
 
-- Arrays are converted to Lua tables. Array-length is included as the value at
-  index 0. This makes it possible to distinguish between empty arrays and empty
-  objects.
-
-- JSON numbers are converted to Lua numbers (usually doubles), which can cause
-  a loss of precision.
+- JSON numbers are converted to Lua numbers, i.e., 'Lua.Number';
+  the exact C type may vary, depending on compile-time Lua
+  configuration.
 -}
 module HsLua.Aeson
   ( peekValue
@@ -34,28 +31,34 @@ module HsLua.Aeson
   , pushKeyMap
   ) where
 
-import Control.Monad ((<$!>), void)
+import Control.Monad ((<$!>))
 import Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
-import Data.String (IsString (fromString))
 import Data.Vector (Vector)
 import HsLua.Core as Lua
 import HsLua.Marshalling as Lua
 
 import qualified Data.Aeson as Aeson
 import qualified Data.Vector as Vector
-import qualified HsLua.Core.Unsafe as Unsafe
 
 #if MIN_VERSION_aeson(2,0,0)
 import Data.Aeson.Key (Key, toText, fromText)
+import Data.Aeson.KeyMap (KeyMap)
 import qualified Data.Aeson.KeyMap as KeyMap
-type KeyMap = KeyMap.KeyMap
 #else
 import Data.Text (Text)
 import qualified Data.HashMap.Strict as KeyMap
-type Key = Text
+
+-- | Type of the Aeson object map
 type KeyMap = KeyMap.HashMap Key
+
+-- | Type used to index values in an Aeson object map.
+type Key = Text
+
+-- | Converts a 'Key' to 'Text'.
 toText :: Key -> Text
 toText = id
+
+-- | Converts a 'Text' to 'Key'.
 fromText :: Text -> Key
 fromText = id
 #endif
@@ -151,46 +154,22 @@ pushVector pushItem !v = do
 peekVector :: LuaError e
            => Peeker e a
            -> Peeker e (Vector a)
-peekVector peekItem = fmap (retrieving "list") .
-  typeChecked "table" istable $ \idx -> do
-  let elementsAt [] = return []
-      elementsAt (i : is) = do
-        liftLua (checkstack 2) >>= \case
-          False -> failPeek "Lua stack overflow"
-          True  -> do
-            x  <- retrieving (fromString $ "index " ++ showInt i) $ do
-              liftLua $ void (rawgeti idx i)
-              peekItem top `lastly` pop 1
-            xs <- elementsAt is
-            return (x:xs)
-      showInt (Lua.Integer x) = show x
-  listLength <- liftLua (rawlen idx)
-  list <- elementsAt [1..fromIntegral listLength]
-  return $! Vector.fromList list
+peekVector peekItem idx = retrieving "vector" $!
+  (Vector.fromList <$!> peekList peekItem idx)
 
 -- | Pushes a 'KeyMap' onto the stack.
 pushKeyMap :: LuaError e
            => Pusher e a
            -> Pusher e (KeyMap a)
-pushKeyMap pushVal x =
-  checkstack 3 >>= \case
-    True -> pushKeyValuePairs pushKey pushVal $ KeyMap.toList x
-    False -> failLua "stack overflow"
+pushKeyMap pushVal =
+  pushKeyValuePairs pushKey pushVal . KeyMap.toList
 
 -- | Retrieves a 'KeyMap' from a Lua table.
-peekKeyMap :: Peeker e a
+peekKeyMap :: LuaError e
+           => Peeker e a
            -> Peeker e (KeyMap a)
-peekKeyMap peekVal =
-  typeChecked "table" istable $ \idx -> cleanup $ do
-  liftLua (checkstack 1) >>= \case
-    False -> failPeek "Lua stack overflow"
-    True -> do
-      idx' <- liftLua $ absindex idx
-      let remainingPairs = nextPair peekVal idx' >>= \case
-            Nothing -> return []
-            Just a  -> (a:) <$!> remainingPairs
-      liftLua pushnil
-      KeyMap.fromList <$!> remainingPairs
+peekKeyMap peekVal idx = KeyMap.fromList <$!>
+  peekKeyValuePairs peekKey peekVal idx
 
 -- | Pushes a JSON key to the stack.
 pushKey :: Pusher e Key
@@ -199,24 +178,3 @@ pushKey = pushText . toText
 -- | Retrieves a JSON key from the stack.
 peekKey :: Peeker e Key
 peekKey = fmap fromText . peekText
-
--- | Get the next key-value pair from a table. Assumes the last
--- key to be on the top of the stack and the table at the given
--- index @idx@. The next key, if it exists, is left at the top of
--- the stack.
---
--- The key must be either nil or must exist in the table, or this
--- function will crash with an unrecoverable error.
-nextPair :: Peeker e b -> Peeker e (Maybe (Key, b))
-nextPair peekVal idx = retrieving "key-value pair" $ do
-  liftLua (checkstack 1) >>= \case
-    False -> failPeek "Lua stack overflow"
-    True -> do
-      hasNext <- liftLua $ Unsafe.next idx
-      if not hasNext
-        then return Nothing
-        else do
-        key   <- retrieving "key"   $! peekKey (nth 2)
-        value <- retrieving "value" $! peekVal (nth 1)
-        return (Just (key, value))
-          `lastly` pop 1  -- remove value, leave the key
