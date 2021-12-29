@@ -28,7 +28,7 @@ jobs:
   build:
     name: >-
       ${{ matrix.versions.ghc }}; ${{ matrix.versions.lua }};
-      ${{ matrix.versions.flags }}
+      ${{ matrix.versions.flags }}; aeson ${{ matrix.versions.aeson }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -37,34 +37,42 @@ jobs:
             cabal: '2.4'
             lua: 'bundled'
             flags: '+apicheck'
+            aeson: '< 2'
           - ghc: '8.2.2'
             cabal: '2.4'
             lua: 'bundled'
             flags: '-system-lua'
+            aeson: '> 2'
           - ghc: '8.4.4'
             cabal: '2.4'
             lua: 'bundled'
             flags: '-export-dynamic'
+            aeson: '> 2'
           - ghc: '8.6.5'
             cabal: '3.2'
             lua: 'bundled'
             flags: '-allow-unsafe-gc'
+            aeson: '> 2'
           - ghc: '8.8.4'
             cabal: '3.2'
             lua: 'bundled'
             flags: '+rely-on-shared-lpeg-library'
+            aeson: '> 2'
           - ghc: '8.10.4'
             cabal: '3.4'
             lua: '5.3.6'
             flags: '+hardcode-reg-keys +system-lua'
+            aeson: '< 2'
           - ghc: '9.0.1'
             cabal: '3.4'
             lua: '5.3.6'
             flags: '+hardcode-reg-keys'
+            aeson: '> 2'
           - ghc: '9.2.1'
             cabal: '3.4'
             lua: 'bundled'
             flags: ''
+            aeson: '> 2'
 
     steps:
     - name: Checkout
@@ -97,10 +105,11 @@ jobs:
       run: |
         cabal v2-configure \
           --flags "${{ matrix.versions.flags }}" \
+          --constraint="aeson ${{ matrix.versions.aeson }}" \
           --enable-tests \
           --disable-optimization \
           --extra-include-dirs=${HOME}/usr/include \
-          --extra-lib-dirs=${HOME}/usr/lib
+          --extra-lib-dirs=${HOME}/usr/lib \
 
     - name: Build all
       run: cabal v2-build all
