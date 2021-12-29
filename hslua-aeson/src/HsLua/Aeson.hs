@@ -72,19 +72,15 @@ peekScientific idx = fromFloatDigits <$!> peekRealFloat @Double idx
 
 -- | Hslua StackValue instance for the Aeson Value data type.
 pushValue :: LuaError e => Pusher e Aeson.Value
-pushValue = \case
-  Aeson.Object o -> pushKeyMap pushValue o
-  Aeson.Number n -> checkstack 1 >>= \case
-    True -> pushScientific n
-    False -> failLua "stack overflow"
-  Aeson.String s -> checkstack 1 >>= \case
-    True -> pushText s
-    False -> failLua "stack overflow"
-  Aeson.Array a  -> pushVector pushValue a
-  Aeson.Bool b   -> checkstack 1 >>= \case
-    True -> pushBool b
-    False -> failLua "stack overflow"
-  Aeson.Null     -> pushNull
+pushValue val = do
+  checkstack' 1 "HsLua.Aeson.pushValue"
+  case val of
+    Aeson.Object o -> pushKeyMap pushValue o
+    Aeson.Number n -> pushScientific n
+    Aeson.String s -> pushText s
+    Aeson.Array a  -> pushVector pushValue a
+    Aeson.Bool b   -> pushBool b
+    Aeson.Null     -> pushNull
 
 peekValue :: LuaError e => Peeker e Aeson.Value
 peekValue idx = liftLua (ltype idx) >>= \case
