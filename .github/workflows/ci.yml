@@ -71,7 +71,7 @@ jobs:
           - ghc: '9.2.1'
             cabal: '3.4'
             lua: 'bundled'
-            flags: ''
+            flags: '+apicheck'
             aeson: '>= 2'
 
     steps:
