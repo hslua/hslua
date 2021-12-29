@@ -32,8 +32,8 @@ common common-options
                      , bytestring           >= 0.10.2 && < 0.12
                      , containers           >= 0.5.9  && < 0.7
                      , hashable             >= 1.2    && < 1.5
-                     , hslua-core           >= 2.0    && < 2.1
-                     , hslua-marshalling    >= 2.0    && < 2.1
+                     , hslua-core           >= 2.0    && < 2.2
+                     , hslua-marshalling    >= 2.1    && < 2.2
                      , mtl                  >= 2.2    && < 2.3
                      , scientific           >= 0.3    && < 0.4
                      , unordered-containers >= 0.2    && < 0.3

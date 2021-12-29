@@ -34,7 +34,7 @@ module HsLua.Aeson
   , pushKeyMap
   ) where
 
-import Control.Monad ((<$!>), when)
+import Control.Monad ((<$!>), void)
 import Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
 import Data.String (IsString (fromString))
 import Data.Vector (Vector)
@@ -119,13 +119,14 @@ pushNull = checkstack 3 >>= \case
   False -> failLua "stack overflow while pushing null"
   True -> do
     pushName nullRegistryField
-    rawget registryindex
-    uninitialized <- isnil top
-    when uninitialized $ do
-      pop 1 -- remove nil
-      newtable
-      pushvalue top
-      setfield registryindex nullRegistryField
+    rawget registryindex >>= \case
+      TypeNil -> do
+        -- null is uninitialized
+        pop 1 -- remove nil
+        newtable
+        pushvalue top
+        setfield registryindex nullRegistryField
+      _ -> pure ()
 
 -- | Check if the value under the given index represents a @null@ value.
 isNull :: LuaError e => StackIndex -> LuaE e Bool
@@ -158,7 +159,7 @@ peekVector peekItem = fmap (retrieving "list") .
           False -> failPeek "Lua stack overflow"
           True  -> do
             x  <- retrieving ("index " <> showInt i) $ do
-              liftLua (rawgeti idx i)
+              liftLua $ void (rawgeti idx i)
               peekItem top `lastly` pop 1
             xs <- elementsAt is
             return (x:xs)
