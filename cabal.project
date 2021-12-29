@@ -2,6 +2,7 @@ packages: lpeg/lpeg.cabal
           lua/lua.cabal
           lua-arbitrary/lua-arbitrary.cabal
           hslua/hslua.cabal
+          hslua-aeson/hslua-aeson.cabal
           hslua-core/hslua-core.cabal
           hslua-classes/hslua-classes.cabal
           hslua-examples/hslua-examples.cabal

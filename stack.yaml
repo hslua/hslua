@@ -1,6 +1,7 @@
 flags: {}
 packages:
 - 'hslua'
+- 'hslua-aeson'
 - 'hslua-core'
 - 'hslua-classes'
 - 'hslua-marshalling'
