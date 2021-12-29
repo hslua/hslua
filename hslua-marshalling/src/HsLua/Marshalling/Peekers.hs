@@ -291,6 +291,7 @@ peekFieldRaw :: LuaError e => Peeker e a -> Name -> Peeker e a
 peekFieldRaw peeker name idx =
   retrieving ("raw field '" <> name <> "'") $! do
     liftLua $ do
+      checkstack' 1 "peekFieldRaw"
       absidx <- Lua.absindex idx
       pushstring $ fromName name
       void (rawget absidx)
