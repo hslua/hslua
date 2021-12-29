@@ -107,7 +107,6 @@ jobs:
           --flags "${{ matrix.versions.flags }}" \
           --constraint="aeson ${{ matrix.versions.aeson }}" \
           --enable-tests \
-          --disable-optimization \
           --extra-include-dirs=${HOME}/usr/include \
           --extra-lib-dirs=${HOME}/usr/lib \
 
