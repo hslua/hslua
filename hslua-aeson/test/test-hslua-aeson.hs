@@ -7,7 +7,7 @@ Tests for Aeson–Lua glue.
 -}
 import Control.Monad (when)
 import Data.AEq ((~==))
-import Data.ByteString (ByteString)
+import Data.ByteString (ByteString, append)
 import Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
 import HsLua.Core as Lua
 import HsLua.Marshalling
@@ -149,7 +149,7 @@ luaTest luaProperty (var, val, pushVal) = QC.monadicIO $ do
   result <- QC.run . run $ do
     openlibs
     pushVal val *> setglobal var
-    _ <- dostring $ "return (" <> luaProperty <> ")"
+    _ <- dostring $ "return (" `append` luaProperty `append` ")"
     toboolean top
   assert result
 

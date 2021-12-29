@@ -158,12 +158,12 @@ peekVector peekItem = fmap (retrieving "list") .
         liftLua (checkstack 2) >>= \case
           False -> failPeek "Lua stack overflow"
           True  -> do
-            x  <- retrieving ("index " <> showInt i) $ do
+            x  <- retrieving (fromString $ "index " ++ showInt i) $ do
               liftLua $ void (rawgeti idx i)
               peekItem top `lastly` pop 1
             xs <- elementsAt is
             return (x:xs)
-      showInt (Lua.Integer x) = fromString $ show x
+      showInt (Lua.Integer x) = show x
   listLength <- liftLua (rawlen idx)
   list <- elementsAt [1..fromIntegral listLength]
   return $! Vector.fromList list
