@@ -157,7 +157,7 @@ luaNumberToScientific :: Lua.Number -> Scientific
 luaNumberToScientific = fromFloatDigits . (realToFrac :: Lua.Number -> Double)
 
 instance Arbitrary Aeson.Value where
-  arbitrary = arbitraryValue 9
+  arbitrary = arbitraryValue 5
 
 #if MIN_VERSION_aeson(2,0,0)
 instance Arbitrary Key where
