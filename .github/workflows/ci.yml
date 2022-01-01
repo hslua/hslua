@@ -62,7 +62,7 @@ jobs:
             cabal: '3.4'
             lua: '5.3.6'
             flags: '+hardcode-reg-keys +system-lua'
-            aeson: '< 2'
+            aeson: '== 2.0.2.0'
           - ghc: '9.0.1'
             cabal: '3.4'
             lua: '5.3.6'
