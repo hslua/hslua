@@ -28,17 +28,17 @@ import HsLua.Class.Pushable
 import HsLua.Class.Util (popValue)
 
 -- | Helper class used to make Lua functions useable from Haskell.
-class PeekError e => Invokable e a where
+class LuaError e => Invokable e a where
   addArg :: Name -> LuaE e () -> NumArgs -> a
 
-instance (PeekError e, Peekable a) => Invokable e (LuaE e a) where
+instance (LuaError e, Peekable a) => Invokable e (LuaE e a) where
   addArg fnName pushArgs nargs = do
     _ <- dostring $ "return " `append` Lua.fromName fnName
     pushArgs
     call nargs 1
     popValue
 
-instance (Pushable a, PeekError e, Invokable e b) => Invokable e (a -> b) where
+instance (Pushable a, LuaError e, Invokable e b) => Invokable e (a -> b) where
   addArg fnName pushArgs nargs x =
     addArg fnName (pushArgs *> push x) (nargs + 1)
 

@@ -8,6 +8,26 @@ Release pending.
 
 -   Updated to hslua-core 2.1 and hslua-marshalling 2.1.
 
+-   The Peekable class has been remodeled:
+
+    -   Peekable now contains `safepeek`, which is a `Peeker`
+        function for the type.
+
+    -   `peek` is no longer part of Peekable, but a normal
+        function defined as `forcePeek . safepeek`.
+
+-   HsLua.Class no longer exports `peekList` and
+    `peekKeyValuePairs`. Use the functions from HsLua.Marshalling
+    instead.
+
+-   The Exposable class is changed to use the `Peek` monad
+    instead of `LuaE`, thereby unifying the way errors are
+    reported in HsLua.
+
+-   PeekError has been removed; it is now sufficient for
+    exception types used with Peekable, Exposable, and Invokable
+    to be instances of LuaError.
+
 ## hslua-classes-2.0.0
 
 Released 2021-10-21.

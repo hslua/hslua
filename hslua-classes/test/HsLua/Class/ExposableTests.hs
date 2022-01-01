@@ -45,13 +45,14 @@ tests =
       Lua.peek (-1) <* Lua.pop 1
 
   , "argument type errors are propagated" =:
-     ("Error during function call:\n\tcould not read argument 2:\n\t"
-      ++ "integer expected, got boolean") `shouldBeErrorMessageOf` do
+     ("integer expected, got boolean" ++
+      "\n\twhile retrieving argument 2" ++
+      "\n\twhile executing function call") `shouldBeErrorMessageOf` do
           Lua.registerHaskellFunction "integerOp" integerOperation
           pushLuaExpr "integerOp(23, true)"
 
   , "Error in Haskell function is converted into Lua error" =:
-    (False, "Error during function call:\n\tfoo") `shouldBeResultOf` do
+    (False, "foo") `shouldBeResultOf` do
       Lua.openlibs
       Lua.pushHaskellFunction $
         toHaskellFunction (Lua.failLua "foo" :: Lua ())

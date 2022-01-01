@@ -66,8 +66,9 @@ tests = testGroup "Utilities"
         peekEither top
 
     , "return error message on failure" =:
-      let msg = "Could not read list:\n"
-             <> "\tinteger expected, got boolean"
+      let msg = "integer expected, got boolean"
+            <> "\n\twhile retrieving index 2"
+            <> "\n\twhile retrieving list"
       in
       Left (Lua.Exception msg)
       `shouldBeResultOf` do

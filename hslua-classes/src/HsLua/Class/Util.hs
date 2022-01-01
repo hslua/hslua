@@ -19,15 +19,16 @@ module HsLua.Class.Util
   , popValue
   ) where
 
-import HsLua.Core (LuaE, NumResults, StackIndex, top)
-import HsLua.Class.Peekable (Peekable (peek), PeekError)
+import Control.Applicative ((<|>))
+import HsLua.Core (LuaE, LuaError, NumResults, StackIndex, top)
+import HsLua.Class.Peekable (Peekable (safepeek), peek)
 import HsLua.Class.Pushable (Pushable (push))
 
-import qualified Control.Monad.Catch as Catch
 import qualified HsLua.Core as Lua
+import qualified HsLua.Marshalling as Lua
 
 -- | Raise a Lua error, using the given value as the error object.
-raiseError :: (PeekError e, Pushable a) => a -> LuaE e NumResults
+raiseError :: (LuaError e, Pushable a) => a -> LuaE e NumResults
 raiseError e = do
   push e
   Lua.error
@@ -40,11 +41,8 @@ raiseError e = do
 newtype Optional a = Optional { fromOptional :: Maybe a }
 
 instance Peekable a => Peekable (Optional a) where
-  peek idx = do
-    noValue <- Lua.isnoneornil idx
-    if noValue
-      then return $ Optional Nothing
-      else Optional . Just <$> peek idx
+  safepeek idx = (Optional Nothing <$ Lua.peekNoneOrNil idx)
+             <|> (Optional . Just <$> safepeek idx)
 
 instance Pushable a => Pushable (Optional a) where
   push (Optional Nothing)  = Lua.pushnil
@@ -57,12 +55,12 @@ instance Pushable a => Pushable (Optional a) where
 
 -- | Try to convert the value at the given stack index to a Haskell value.
 -- Returns 'Left' with the error on failure.
-peekEither :: (PeekError e, Peekable a)
+peekEither :: (LuaError e, Peekable a)
            => StackIndex -> LuaE e (Either e a)
 peekEither = Lua.try . peek
 
 -- | Get, then pop the value at the top of the stack. The pop operation is
 -- executed even if the retrieval operation failed.
-popValue :: (PeekError e, Peekable a) => LuaE e a
-popValue = peek top `Catch.finally` Lua.pop 1
+popValue :: (LuaError e, Peekable a) => LuaE e a
+popValue = Lua.forcePeek $ safepeek top `Lua.lastly` Lua.pop 1
 {-# INLINABLE popValue #-}

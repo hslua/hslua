@@ -20,8 +20,6 @@ import Test.Tasty.HsLua ( (=:), (?:), pushLuaExpr, shouldBeResultOf
                        , shouldBeErrorMessageOf )
 import Test.Tasty (TestTree, testGroup)
 
-import qualified Data.Set as Set
-
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
 tests = testGroup "Peekable"
@@ -58,27 +56,6 @@ tests = testGroup "Peekable"
         peek top
     ]
 
-  , testGroup "peekKeyValuePairs"
-    [ "`next` is not confused when peeking at number keys as strings" =:
-      -- list of numbers can be retrieved as pair of strings
-      [("1", "2"), ("2", "4"), ("3", "8"), ("4", "16")] `shouldBeResultOf` do
-        pushLuaExpr "{2, 4, 8, 16}"
-        peekKeyValuePairs top :: Lua [(String, String)]
-
-    , "peek string pairs" =:
-      Set.fromList [("foo", "bar"), ("qux", "quux")] `shouldBeResultOf` do
-        pushLuaExpr "{foo = 'bar', qux = 'quux'}"
-        Set.fromList <$> (peekKeyValuePairs top :: Lua [(String, String)])
-
-    , "stack is left unchanged" =:
-      0 `shouldBeResultOf` do
-        pushLuaExpr "{foo = 'bar', qux = 'quux'}"
-        topBefore <- gettop
-        _ <- peekKeyValuePairs top :: Lua [(String, String)]
-        topAfter <- gettop
-        return (topAfter - topBefore)
-    ]
-
   , testGroup "error handling"
     [ "error is thrown if boolean is given instead of stringy value" =:
       "string expected, got boolean" `shouldBeErrorMessageOf` do
@@ -96,7 +73,9 @@ tests = testGroup "Peekable"
         peek top :: Lua Lua.Number
 
     , "list cannot be read if a peeking at list element fails" =:
-      "Could not read list:\n\tnumber expected, got boolean"
+      ("number expected, got boolean" ++
+       "\n\twhile retrieving index 4" ++
+       "\n\twhile retrieving list")
       `shouldBeErrorMessageOf` do
         pushLuaExpr "{1, 5, 23, true, 42}"
         peek top :: Lua [Lua.Number]
@@ -105,7 +84,7 @@ tests = testGroup "Peekable"
       0 `shouldBeResultOf` do
         pushLuaExpr "{true, 1, 1, 2, 3, 5, 8}"
         topBefore <- gettop
-        _ <- peekList top :: Lua [Bool]
+        _ <- peek top :: Lua [Bool]
         topAfter <- gettop
         return (topAfter - topBefore)
 
@@ -113,7 +92,7 @@ tests = testGroup "Peekable"
       0 `shouldBeResultOf` do
         pushLuaExpr "{foo = 'bar', baz = false}"
         topBefore <- gettop
-        _ <- try (peekKeyValuePairs top :: Lua [(String, String)])
+        _ <- try (peek top :: Lua [(String, String)])
         topAfter <- gettop
         return (topAfter - topBefore)
     ]
