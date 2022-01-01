@@ -34,6 +34,7 @@ import HsLua.Core as Lua
 import HsLua.Marshalling as Lua
 
 import qualified Data.Aeson as Aeson
+import qualified Data.ByteString as B
 import qualified Data.Vector as Vector
 import qualified HsLua.Core.Utf8 as UTF8
 
@@ -106,7 +107,7 @@ peekViaJSON idx = do
   value <- peekValue idx
   case Aeson.fromJSON value of
     Aeson.Success x -> pure x
-    Aeson.Error msg -> failPeek $ "failed to decode: " <>
+    Aeson.Error msg -> failPeek $ "failed to decode: " `B.append`
                        UTF8.fromString msg
 
 -- | Pushes a value to the Lua stack as a JSON-like value.
