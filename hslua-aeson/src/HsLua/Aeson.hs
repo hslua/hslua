@@ -64,7 +64,7 @@ pushValue val = do
  where
   pushKey = pushText . toText
   pushArray x = do
-    checkstack' 3 "HsLua.Aeson.pushVector"
+    checkstack' 4 "HsLua.Aeson.pushVector"
     pushList pushValue $ Vector.toList x
     void $ newmetatable jsonarray
     setmetatable (nth 2)
