@@ -23,6 +23,13 @@ Release pending.
     considered an implementation detail and are no longer
     exported.
 
+-   Array elements are now marked with a metatable. This avoids
+    the need for an extra `0` element in the table and offers
+    flexibility for users who want to give special behavior to
+    lists. The newly exported value `jsonarray` contains the name
+    of the registry slot under which the metatable is stored. The
+    table can be modified or replaced as required.
+
 ## hslua-aeson-2.0.1
 
 Released 2021-12-28.

@@ -11,9 +11,10 @@ Pushes and retrieves aeson `Value`s to and from the Lua stack.
 
 - Objects are converted to string-indexed tables.
 
-- Arrays are converted to sequence tables. Array-length is
-  included as the value at index 0. This makes it possible to
-  distinguish between empty arrays and empty objects.
+- Arrays are converted to sequence tables and are given a
+  metatable. This makes it possible to distinguish between empty
+  arrays and empty objects. The metatable is stored in the
+  registry under key `HsLua JSON array` (see also 'jsonarray').
 
 - JSON numbers are converted to Lua numbers, i.e., 'Lua.Number';
   the exact C type may vary, depending on compile-time Lua
@@ -26,9 +27,8 @@ module HsLua.Aeson
   , pushViaJSON
   ) where
 
-import Control.Monad ((<$!>))
+import Control.Monad ((<$!>), void)
 import Data.Scientific (toRealFloat, fromFloatDigits)
-import Data.Vector (Vector)
 import Foreign.Ptr (nullPtr)
 import HsLua.Core as Lua
 import HsLua.Marshalling as Lua
@@ -57,11 +57,22 @@ pushValue val = do
     Aeson.Object o -> pushKeyValuePairs pushKey pushValue $ KeyMap.toList o
     Aeson.Number n -> pushRealFloat @Double $ toRealFloat n
     Aeson.String s -> pushText s
-    Aeson.Array a  -> pushVector pushValue a
+    Aeson.Array a  -> pushArray a
     Aeson.Bool b   -> pushBool b
     Aeson.Null     -> pushlightuserdata nullPtr
  where
   pushKey = pushText . toText
+  pushArray x = do
+    checkstack' 3 "HsLua.Aeson.pushVector"
+    pushList pushValue $ Vector.toList x
+    void $ newmetatable jsonarray
+    setmetatable (nth 2)
+
+-- | Name of the registry slot holding the metatable given to
+-- array tables. The registry entry can be replaced with a
+-- different table if needed.
+jsonarray :: Name
+jsonarray = "HsLua JSON array"
 
 peekValue :: LuaError e => Peeker e Aeson.Value
 peekValue idx = liftLua (ltype idx) >>= \case
@@ -72,31 +83,22 @@ peekValue idx = liftLua (ltype idx) >>= \case
     -- must be the null pointer
     Nothing -> pure Aeson.Null
     _       -> typeMismatchMessage "null" idx >>= failPeek
+  TypeNil -> return Aeson.Null
   TypeTable -> do
+      liftLua $ checkstack' 2 "HsLua.Aeson.peekValue"
       let peekKey = fmap fromText . peekText
           peekArray = Aeson.Array . Vector.fromList <$!>
             (retrieving "vector" $! peekList peekValue idx)
-      isInt <- liftLua $ rawgeti idx 0 *> isinteger top <* pop 1
-      if isInt
-        then peekArray
-        else do
-          rawlen' <- liftLua $ rawlen idx
-          if rawlen' > 0
-            then peekArray
-            else Aeson.Object . KeyMap.fromList <$!>
+          isarray = getmetatable idx >>= \case
+            False -> (> 0) <$> rawlen idx -- nonempty sequence
+            True  -> getmetatable' jsonarray >>= \case
+              TypeTable -> rawequal (nth 1) (nth 2) <* pop 2
+              _         -> pure False
+      liftLua isarray >>= \case
+        True  -> peekArray
+        False -> Aeson.Object . KeyMap.fromList <$!>
                  peekKeyValuePairs peekKey peekValue idx
-  TypeNil -> return Aeson.Null
   luaType -> fail ("Unexpected type: " ++ show luaType)
-
--- | Push a vector onto the stack.
-pushVector :: LuaError e
-           => Pusher e a
-           -> Pusher e (Vector a)
-pushVector pushItem !v = do
-  checkstack' 3 "HsLua.Aeson.pushVector"
-  pushList pushItem $ Vector.toList v
-  pushIntegral (Vector.length v)
-  rawseti (nth 2) 0
 
 -- | Retrieves a value from the Lua stack via JSON.
 peekViaJSON :: (Aeson.FromJSON a, LuaError e) => Peeker e a
