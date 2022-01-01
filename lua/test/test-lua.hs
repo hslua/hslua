@@ -2,7 +2,7 @@
 {-# LANGUAGE CPP #-}
 {-|
 Module      : Main
-Copyright   : © 2021 Albert Krewinkel
+Copyright   : © 2021-2022 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta

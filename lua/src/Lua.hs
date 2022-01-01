@@ -2,7 +2,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-|
 Module      : Lua
-Copyright   : © 2021 Albert Krewinkel
+Copyright   : © 2021-2022 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : beta

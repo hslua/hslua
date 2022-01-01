@@ -1,6 +1,6 @@
 {-|
 Module      : HsLua.Packaging
-Copyright   : © 2019-2021 Albert Krewinkel
+Copyright   : © 2019-2022 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 

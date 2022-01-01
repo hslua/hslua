@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wno-warnings-deprecations #-}
 {-|
 Module      : HsLua.Core.Unsafe
-Copyright   : © 2019-2021 Albert Krewinkel
+Copyright   : © 2019-2022 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
 

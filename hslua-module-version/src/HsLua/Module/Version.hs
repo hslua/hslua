@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : HsLua.Module.Version
-Copyright   : © 2019-2021 Albert Krewinkel
+Copyright   : © 2019-2022 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
 

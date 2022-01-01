@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeApplications  #-}
 {-|
 Module      :  HsLua.Class.PushableTests
-Copyright   :  © 2017-2021 Albert Krewinkel
+Copyright   :  © 2017-2022 Albert Krewinkel
 License     :  MIT
 
 Maintainer  :  Albert Krewinkel <tarleb+hslua@zeitkraut.de>
