@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
 {-|
 Module      : HsLua.Class.InvokableTests
 Copyright   : © 2017-2022 Albert Krewinkel
@@ -24,25 +23,25 @@ tests = testGroup "Invokable"
   [ "test equality within lua" =:
     True `shouldBeResultOf` do
       openlibs
-      invoke @Lua.Exception "rawequal" (5 :: Lua.Integer) (5.0 :: Lua.Number)
+      invoke "rawequal" (5 :: Lua.Integer) (5.0 :: Lua.Number)
 
   , "failing lua function call" =:
     "foo" `shouldBeErrorMessageOf` do
       openlibs
-      invoke @Lua.Exception "assert" False (Char8.pack "foo") :: Lua Bool
+      invoke "assert" False (Char8.pack "foo") :: Lua Bool
 
   , "pack table via lua procedure" =:
     (True, 23 :: Lua.Integer, "moin" :: ByteString) `shouldBeResultOf` do
       openlibs
-      invoke @Lua.Exception "table.pack" True (23 :: Lua.Integer) (Char8.pack "moin")
+      invoke "table.pack" True (23 :: Lua.Integer) (Char8.pack "moin")
 
   , "failing lua procedure call" =:
     "foo" `shouldBeErrorMessageOf` do
       openlibs
-      invoke @Lua.Exception "error" (Char8.pack "foo") :: Lua ()
+      invoke "error" (Char8.pack "foo") :: Lua ()
 
   , "Error when Lua-to-Haskell result conversion fails" =:
     "string expected, got boolean" `shouldBeErrorMessageOf` do
       openlibs
-      invoke @Lua.Exception "rawequal" (Char8.pack "a") () :: Lua String
+      invoke "rawequal" (Char8.pack "a") () :: Lua String
   ]

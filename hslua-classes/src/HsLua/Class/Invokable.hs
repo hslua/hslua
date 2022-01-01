@@ -1,9 +1,5 @@
-{-# LANGUAGE AllowAmbiguousTypes   #-}
-{-# LANGUAGE FlexibleInstances     #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
-{-# LANGUAGE ScopedTypeVariables   #-}
-{-# LANGUAGE TypeApplications      #-}
+{-# LANGUAGE RankNTypes            #-}
 {-|
 Module      : HsLua.Class.Invokable
 Copyright   : © 2007–2012 Gracjan Polak,
@@ -28,22 +24,22 @@ import HsLua.Class.Pushable
 import HsLua.Class.Util (popValue)
 
 -- | Helper class used to make Lua functions useable from Haskell.
-class LuaError e => Invokable e a where
-  addArg :: Name -> LuaE e () -> NumArgs -> a
+class Invokable a where
+  addArg :: Name -> (forall e. LuaError e => LuaE e ()) -> NumArgs -> a
 
-instance (LuaError e, Peekable a) => Invokable e (LuaE e a) where
+instance (LuaError e, Peekable a) => Invokable (LuaE e a) where
   addArg fnName pushArgs nargs = do
     _ <- dostring $ "return " `append` Lua.fromName fnName
     pushArgs
     call nargs 1
     popValue
 
-instance (Pushable a, LuaError e, Invokable e b) => Invokable e (a -> b) where
+instance (Pushable a, Invokable b) => Invokable (a -> b) where
   addArg fnName pushArgs nargs x =
     addArg fnName (pushArgs *> push x) (nargs + 1)
 
 -- | Invoke a Lua function. Use as:
 --
 -- > v <- invoke "proc" "abc" (1::Int) (5.0::Double)
-invoke :: forall e a. Invokable e a => Name -> a
-invoke fname = addArg @e fname (return ()) 0
+invoke :: Invokable a => Name -> a
+invoke fname = addArg fname (return ()) 0

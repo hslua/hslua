@@ -28,6 +28,11 @@ Release pending.
     exception types used with Peekable, Exposable, and Invokable
     to be instances of LuaError.
 
+-   The Invokable type class now has a single parameter. This
+    removes the need for the AllowAmbiguousTypes extension and
+    makes using `invoke` much more convenient, as the proper error
+    type can now be inferred automatically.
+
 ## hslua-classes-2.0.0
 
 Released 2021-10-21.
