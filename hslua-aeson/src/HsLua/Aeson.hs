@@ -91,7 +91,9 @@ peekValue idx = liftLua (ltype idx) >>= \case
           peekArray = Aeson.Array . Vector.fromList <$!>
             (retrieving "vector" $! peekList peekValue idx)
           isarray = getmetatable idx >>= \case
-            False -> (> 0) <$> rawlen idx -- nonempty sequence
+            False ->
+              -- check for nonempty sequence
+              (/= TypeNil) <$> rawgeti idx 1 <* pop 1
             True  -> getmetatable' jsonarray >>= \case
               TypeTable -> rawequal (nth 1) (nth 2) <* pop 2
               _         -> pure False
