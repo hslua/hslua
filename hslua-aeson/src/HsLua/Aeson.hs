@@ -6,15 +6,16 @@ Maintainer  :  Albert Krewinkel <tarleb@zeitkraut.de>
 
 Pushes and retrieves aeson `Value`s to and from the Lua stack.
 
-- `Null` values are encoded as a special value (stored in the
-  registry field `HSLUA_AESON_NULL`).
+- JSON @null@ values are encoded as light userdata containing the
+  @NULL@ pointer.
 
 - Objects are converted to string-indexed tables.
 
 - Arrays are converted to sequence tables and are given a
   metatable. This makes it possible to distinguish between empty
   arrays and empty objects. The metatable is stored in the
-  registry under key `HsLua JSON array` (see also 'jsonarray').
+  registry under key @\'HsLua JSON array\'@' (see also
+  'jsonarray').
 
 - JSON numbers are converted to Lua numbers, i.e., 'Lua.Number';
   the exact C type may vary, depending on compile-time Lua
@@ -75,6 +76,7 @@ pushValue val = do
 jsonarray :: Name
 jsonarray = "HsLua JSON array"
 
+-- | Retrieves an Aeson 'Aeson.Value' from the Lua stack.
 peekValue :: LuaError e => Peeker e Aeson.Value
 peekValue idx = liftLua (ltype idx) >>= \case
   TypeBoolean -> Aeson.Bool  <$!> peekBool idx
