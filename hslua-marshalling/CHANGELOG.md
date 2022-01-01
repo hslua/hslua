@@ -24,6 +24,11 @@ Release pending.
     available space before pushing to the stack, returning
     `Nothing` if no space is left on the stack.
 
+-   The `withContext` function is made more useful and now
+    differs from `retrieving`. The string “retrieving” is added
+    to the error context by `retrieving`, so `withContext` allows
+    to define contexts without this prefix.
+
 ## hslua-marshalling-2.0.1
 
 Released 2021-11-04.

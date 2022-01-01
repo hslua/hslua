@@ -40,6 +40,9 @@ import HsLua.Core as Lua
 #if !MIN_VERSION_base(4,13,0)
 import Control.Monad.Fail (MonadFail (..))
 #endif
+#if !MIN_VERSION_base(4,12,0)
+import Data.Semigroup (Semigroup)
+#endif
 import qualified HsLua.Core.Utf8 as Utf8
 
 -- | Record to keep track of failure contexts while retrieving objects
@@ -155,7 +158,7 @@ isFailure _          = False
 -- | Combines the peek failure components into a reportable string.
 formatPeekFailure :: ByteString -> [Name] -> String
 formatPeekFailure msg stack =
-  intercalate "\n\twhile retrieving " $
+  intercalate "\n\twhile " $
   map Utf8.toString (msg : map fromName (reverse stack))
 
 -- | Function to retrieve a value from Lua's stack.
@@ -180,7 +183,7 @@ addFailureContext name = \case
 retrieving :: Name
            -> Peek e a
            -> Peek e a
-retrieving = withContext
+retrieving = withContext . ("retrieving " <>)
 {-# INLINE retrieving #-}
 
 -- | Force creation of an unwrapped result, throwing an exception if
