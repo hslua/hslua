@@ -22,18 +22,12 @@ Pushes and retrieves aeson `Value`s to and from the Lua stack.
 module HsLua.Aeson
   ( peekValue
   , pushValue
-  , peekVector
-  , pushVector
-  , peekScientific
-  , pushScientific
-  , peekKeyMap
-  , pushKeyMap
   , peekViaJSON
   , pushViaJSON
   ) where
 
 import Control.Monad ((<$!>))
-import Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
+import Data.Scientific (toRealFloat, fromFloatDigits)
 import Data.Vector (Vector)
 import Foreign.Ptr (nullPtr)
 import HsLua.Core as Lua
@@ -44,65 +38,53 @@ import qualified Data.Vector as Vector
 import qualified HsLua.Core.Utf8 as UTF8
 
 #if MIN_VERSION_aeson(2,0,0)
-import Data.Aeson.Key (Key, toText, fromText)
-import Data.Aeson.KeyMap (KeyMap)
+import Data.Aeson.Key (toText, fromText)
 import qualified Data.Aeson.KeyMap as KeyMap
 #else
 import Data.Text (Text)
 import qualified Data.HashMap.Strict as KeyMap
 
--- | Type of the Aeson object map
-type KeyMap = KeyMap.HashMap Key
-
--- | Type used to index values in an Aeson object map.
-type Key = Text
-
--- | Converts a 'Key' to 'Text'.
-toText :: Key -> Text
+toText, fromText :: Text -> Text
 toText = id
-
--- | Converts a 'Text' to 'Key'.
-fromText :: Text -> Key
 fromText = id
 #endif
-
--- Scientific
-pushScientific :: Pusher e Scientific
-pushScientific = pushRealFloat @Double . toRealFloat
-
-peekScientific :: Peeker e Scientific
-peekScientific idx = fromFloatDigits <$!> peekRealFloat @Double idx
 
 -- | Hslua StackValue instance for the Aeson Value data type.
 pushValue :: LuaError e => Pusher e Aeson.Value
 pushValue val = do
   checkstack' 1 "HsLua.Aeson.pushValue"
   case val of
-    Aeson.Object o -> pushKeyMap pushValue o
-    Aeson.Number n -> pushScientific n
+    Aeson.Object o -> pushKeyValuePairs pushKey pushValue $ KeyMap.toList o
+    Aeson.Number n -> pushRealFloat @Double $ toRealFloat n
     Aeson.String s -> pushText s
     Aeson.Array a  -> pushVector pushValue a
     Aeson.Bool b   -> pushBool b
     Aeson.Null     -> pushlightuserdata nullPtr
+ where
+  pushKey = pushText . toText
 
 peekValue :: LuaError e => Peeker e Aeson.Value
 peekValue idx = liftLua (ltype idx) >>= \case
   TypeBoolean -> Aeson.Bool  <$!> peekBool idx
-  TypeNumber -> Aeson.Number <$!> peekScientific idx
+  TypeNumber -> Aeson.Number . fromFloatDigits <$!> peekRealFloat @Double idx
   TypeString -> Aeson.String <$!> peekText idx
   TypeLightUserdata -> liftLua (touserdata idx) >>= \case
     -- must be the null pointer
     Nothing -> pure Aeson.Null
     _       -> typeMismatchMessage "null" idx >>= failPeek
   TypeTable -> do
+      let peekKey = fmap fromText . peekText
+          peekArray = Aeson.Array . Vector.fromList <$!>
+            (retrieving "vector" $! peekList peekValue idx)
       isInt <- liftLua $ rawgeti idx 0 *> isinteger top <* pop 1
       if isInt
-        then Aeson.Array <$!> peekVector peekValue idx
+        then peekArray
         else do
           rawlen' <- liftLua $ rawlen idx
           if rawlen' > 0
-            then Aeson.Array <$!> peekVector peekValue idx
-            else Aeson.Object <$!> peekKeyMap peekValue idx
+            then peekArray
+            else Aeson.Object . KeyMap.fromList <$!>
+                 peekKeyValuePairs peekKey peekValue idx
   TypeNil -> return Aeson.Null
   luaType -> fail ("Unexpected type: " ++ show luaType)
 
@@ -115,35 +97,6 @@ pushVector pushItem !v = do
   pushList pushItem $ Vector.toList v
   pushIntegral (Vector.length v)
   rawseti (nth 2) 0
-
--- | Try reading the value under the given index as a vector.
-peekVector :: LuaError e
-           => Peeker e a
-           -> Peeker e (Vector a)
-peekVector peekItem idx = retrieving "vector" $!
-  (Vector.fromList <$!> peekList peekItem idx)
-
--- | Pushes a 'KeyMap' onto the stack.
-pushKeyMap :: LuaError e
-           => Pusher e a
-           -> Pusher e (KeyMap a)
-pushKeyMap pushVal =
-  pushKeyValuePairs pushKey pushVal . KeyMap.toList
-
--- | Retrieves a 'KeyMap' from a Lua table.
-peekKeyMap :: LuaError e
-           => Peeker e a
-           -> Peeker e (KeyMap a)
-peekKeyMap peekVal idx = KeyMap.fromList <$!>
-  peekKeyValuePairs peekKey peekVal idx
-
--- | Pushes a JSON key to the stack.
-pushKey :: Pusher e Key
-pushKey = pushText . toText
-
--- | Retrieves a JSON key from the stack.
-peekKey :: Peeker e Key
-peekKey = fmap fromText . peekText
 
 -- | Retrieves a value from the Lua stack via JSON.
 peekViaJSON :: (Aeson.FromJSON a, LuaError e) => Peeker e a

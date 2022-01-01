@@ -6,9 +6,7 @@ License     :  MIT
 Tests for Aeson–Lua glue.
 -}
 import Control.Monad (when)
-import Data.AEq ((~==))
-import Data.ByteString (ByteString, append)
-import Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
+import Data.Scientific (Scientific, fromFloatDigits)
 import Data.Text (Text)
 import HsLua.Core as Lua
 import HsLua.Marshalling
@@ -43,7 +41,7 @@ tests = testGroup "hslua-aeson"
     , testProperty "can roundtrip a bool nested in 50 layers of arrays" $
       \b -> QC.monadicIO $ do
         let go _ x = Aeson.Array $ Vector.fromList [x]
-            mkValue a = foldr go (Aeson.Bool a) [ (1::Int) .. 50]
+            mkValue a = foldr go (Aeson.Bool a) [(1::Int) .. 50]
         x <- QC.run . run @Lua.Exception $ do
           pushValue $ mkValue b
           forcePeek $ peekValue top
@@ -51,11 +49,19 @@ tests = testGroup "hslua-aeson"
     , testProperty "can roundtrip a bool nested in 50 layers of objects" $
       \b -> QC.monadicIO $ do
         let go _ x = Aeson.Object $ KeyMap.fromList [("x", x)]
-            mkValue a = foldr go (Aeson.Bool a) [ (1::Int) .. 50]
+            mkValue a = foldr go (Aeson.Bool a) [(1::Int) .. 50]
         x <- QC.run . run @Lua.Exception $ do
           pushValue $ mkValue b
           forcePeek $ peekValue top
         return (x === mkValue b)
+    , testProperty "can roundtrip a null nested in 50 layers of objects" $
+      \() -> QC.monadicIO $ do
+        let go _ x = Aeson.Object $ KeyMap.fromList [("x", x)]
+            mkValue = foldr go Aeson.Null [(1::Int) .. 50]
+        x <- QC.run . run @Lua.Exception $ do
+          pushValue mkValue
+          forcePeek $ peekValue top
+        return (x === mkValue)
     ]
 
   , testGroup "via JSON"
@@ -66,56 +72,7 @@ tests = testGroup "hslua-aeson"
     , testProperty "can roundtrip 'Either Bool Text' via JSON" $
       assertRoundtripEqual @(Either Bool Text) pushViaJSON peekViaJSON
     ]
-
-  , testGroup "Value component"
-    [ testGroup "Scientific"
-      [ testProperty "is converted to a Lua number" $ \x ->
-          luaTest "type(x) == 'number'" ("x", x, pushScientific)
-      , testProperty "double precision numbers can be round-tripped" $ \x ->
-          assertRoundtripEqual pushScientific peekScientific
-                               (luaNumberToScientific (Lua.Number x))
-      , testProperty "can be round-tripped and stays approximately equal"
-          assertRoundtripApprox
-      ]
-    , testGroup "Vector"
-      [ testProperty "is converted to a Lua table" $ \x ->
-          luaTest "type(x) == 'table'" ("x", x, pushVector pushBool)
-      , testProperty "can contain Bools and be round-tripped"  $
-          assertRoundtripEqual (pushVector pushBool) (peekVector peekBool)
-      , testProperty "can contain Text and be round-tripped" $
-          assertRoundtripEqual (pushVector pushText) (peekVector peekText)
-      , testProperty "can contain Aeson.Value and be round-tripped" $
-          assertRoundtripEqual (pushVector pushValue)
-                               (peekVector peekValue)
-      ]
-    , testGroup "KeyMap"
-      [ testProperty "is converted to a Lua table"  $ \x ->
-        luaTest "type(x) == 'table'" ("x", x, pushKeyMap pushText)
-      , testProperty "can be round-tripped with Bool values" $
-          assertRoundtripEqual (pushKeyMap pushBool)
-                               (peekKeyMap peekBool)
-          . KeyMap.fromList
-      , testProperty "can be round-tripped with Text values" $
-          assertRoundtripEqual (pushKeyMap pushText)
-                               (peekKeyMap peekText)
-          . KeyMap.fromList
-      , testProperty "can be round-tripped with Aeson.Value values"  $
-          assertRoundtripEqual (pushKeyMap pushValue)
-                               (peekKeyMap peekValue)
-          . KeyMap.fromList
-      ]
-    ]
   ]
-
-assertRoundtripApprox :: Scientific -> Property
-assertRoundtripApprox x = QC.monadicIO $ do
-  y <- QC.run $
-       roundtrip (pushScientific @Lua.Exception)
-                 (peekScientific @Lua.Exception)
-                 x
-  let xdouble = toRealFloat x :: Double
-  let ydouble = toRealFloat y :: Double
-  assert (xdouble ~== ydouble)
 
 assertRoundtripEqual :: Eq a
                      => Pusher Lua.Exception a -> Peeker Lua.Exception a
@@ -135,15 +92,6 @@ roundtrip pushX peekX x = run $ do
   when (afterPeekSize /= 1) $
     failLua $ "peeking modified the stack: " ++ show afterPeekSize
   return result
-
-luaTest :: ByteString -> (Name, a, Pusher Lua.Exception a) -> Property
-luaTest luaProperty (var, val, pushVal) = QC.monadicIO $ do
-  result <- QC.run . run $ do
-    openlibs
-    pushVal val *> setglobal var
-    _ <- dostring $ "return (" `append` luaProperty `append` ")"
-    toboolean top
-  assert result
 
 luaNumberToScientific :: Lua.Number -> Scientific
 luaNumberToScientific = fromFloatDigits . (realToFrac :: Lua.Number -> Double)

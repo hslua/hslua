@@ -14,6 +14,15 @@ Release pending.
     The `pushNull` function has been removed; use
     `pushValue Null` instead.
 
+-   Types that are instances of `ToJSON` and `FromJSON` can be
+    marshalled/unmarshalled by using the new functions
+    `pushViaJSON` and `peekViaJSON`, respectively.
+
+-   The functions `peekVector`, `pushVector`, `peekScientific`,
+    `pushScientific`, `peekKeyMap`, and `pushKeyMap` are
+    considered an implementation detail and are no longer
+    exported.
+
 ## hslua-aeson-2.0.1
 
 Released 2021-12-28.
