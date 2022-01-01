@@ -25,8 +25,12 @@ tests :: TestTree
 tests = testGroup "Peek"
   [ testGroup "helper"
     [ "retrieving" =:
-      Failure @() "message" ["context"] `shouldBeResultOf`
+      Failure @() "message" ["retrieving context"] `shouldBeResultOf`
       runPeek (retrieving "context" $ failPeek "message")
+
+    , "withContext" =:
+      Failure @() "message" ["context"] `shouldBeResultOf`
+      runPeek (withContext "context" $ failPeek "message")
 
     , let firstindex idx = do
             Lua.rawgeti idx 1

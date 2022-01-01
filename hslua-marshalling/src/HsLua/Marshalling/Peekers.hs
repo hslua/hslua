@@ -281,7 +281,7 @@ nextPair keyPeeker valuePeeker idx = retrieving "key-value pair" $ do
 -- set in Lua is idiomatically represented as a table with the
 -- elements as keys. Elements with falsy values are omitted.
 peekSet :: (LuaError e, Ord a) => Peeker e a -> Peeker e (Set a)
-peekSet elementPeeker = withContext "Set"
+peekSet elementPeeker = retrieving "Set"
   . fmap (Set.fromList . map fst . filter snd)
   . peekKeyValuePairs elementPeeker peekBool
 

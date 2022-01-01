@@ -300,7 +300,10 @@ tests = testGroup "Peekers"
           runPeek $ peekSet (peekIntegral @Int) Lua.top
 
       , "fails if element peeker fails" =:
-        let errorStack = [ "Set", "key-value pair", "key"]
+        let errorStack = [ "retrieving Set"
+                         , "retrieving key-value pair"
+                         , "retrieving key"
+                         ]
             errorMsg = "string expected, got boolean"
         in Failure errorMsg errorStack `shouldBeResultOf` do
           pushLuaExpr "{ NaN = true, [true] = false }"
@@ -319,14 +322,20 @@ tests = testGroup "Peekers"
           runPeek $ peekMap peekText (peekIntegral @Int) Lua.top
 
       , "fails if key peeker fails" =:
-        let errorStack = [ "Map", "key-value pair" , "key" ]
+        let errorStack = [ "retrieving Map"
+                         , "retrieving key-value pair"
+                         , "retrieving key"
+                         ]
             errorMsg = "Integral expected, got string"
         in Failure errorMsg errorStack `shouldBeResultOf` do
           pushLuaExpr "{ NaN = true }"
           runPeek $ peekMap (peekIntegral @Int) peekBool Lua.top
 
       , "fails if value peeker fails" =:
-        let errorStack = [ "Map", "key-value pair", "value" ]
+        let errorStack = [ "retrieving Map"
+                         , "retrieving key-value pair"
+                         , "retrieving value"
+                         ]
             errorMsg = "string expected, got boolean"
         in Failure errorMsg errorStack `shouldBeResultOf` do
           pushLuaExpr "{ [42] = true }"

@@ -166,7 +166,7 @@ applyParameter bldr param = do
   let i = hsFnMaxParameterIdx bldr + 1
   let context = Name . Utf8.fromText $ "function argument " <>
         (parameterName . parameterDoc) param
-  let nextAction f = withContext context $ do
+  let nextAction f = retrieving context $ do
         !x <- parameterPeeker param i
         return $ f x
   bldr
