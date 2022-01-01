@@ -28,6 +28,8 @@ module HsLua.Aeson
   , pushScientific
   , peekKeyMap
   , pushKeyMap
+  , peekViaJSON
+  , pushViaJSON
   ) where
 
 import Control.Monad ((<$!>))
@@ -39,6 +41,7 @@ import HsLua.Marshalling as Lua
 
 import qualified Data.Aeson as Aeson
 import qualified Data.Vector as Vector
+import qualified HsLua.Core.Utf8 as UTF8
 
 #if MIN_VERSION_aeson(2,0,0)
 import Data.Aeson.Key (Key, toText, fromText)
@@ -141,3 +144,16 @@ pushKey = pushText . toText
 -- | Retrieves a JSON key from the stack.
 peekKey :: Peeker e Key
 peekKey = fmap fromText . peekText
+
+-- | Retrieves a value from the Lua stack via JSON.
+peekViaJSON :: (Aeson.FromJSON a, LuaError e) => Peeker e a
+peekViaJSON idx = do
+  value <- peekValue idx
+  case Aeson.fromJSON value of
+    Aeson.Success x -> pure x
+    Aeson.Error msg -> failPeek $ "failed to decode: " <>
+                       UTF8.fromString msg
+
+-- | Pushes a value to the Lua stack as a JSON-like value.
+pushViaJSON :: (Aeson.ToJSON a, LuaError e) => Pusher e a
+pushViaJSON = pushValue . Aeson.toJSON

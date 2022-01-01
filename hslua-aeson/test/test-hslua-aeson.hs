@@ -9,6 +9,7 @@ import Control.Monad (when)
 import Data.AEq ((~==))
 import Data.ByteString (ByteString, append)
 import Data.Scientific (Scientific, toRealFloat, fromFloatDigits)
+import Data.Text (Text)
 import HsLua.Core as Lua
 import HsLua.Marshalling
 import HsLua.Aeson
@@ -55,6 +56,15 @@ tests = testGroup "hslua-aeson"
           pushValue $ mkValue b
           forcePeek $ peekValue top
         return (x === mkValue b)
+    ]
+
+  , testGroup "via JSON"
+    [ testProperty "can roundtrip 'Maybe Text' via JSON" $
+      assertRoundtripEqual @(Maybe Int) pushViaJSON peekViaJSON
+    , testProperty "can roundtrip '(Int, Float)' via JSON" $
+      assertRoundtripEqual @(Int, Float) pushViaJSON peekViaJSON
+    , testProperty "can roundtrip 'Either Bool Text' via JSON" $
+      assertRoundtripEqual @(Either Bool Text) pushViaJSON peekViaJSON
     ]
 
   , testGroup "Value component"
@@ -120,7 +130,11 @@ roundtrip pushX peekX x = run $ do
   size <- gettop
   when (size /= 1) $
     failLua $ "not the right amount of elements on the stack: " ++ show size
-  forcePeek $ peekX top
+  result <- forcePeek $ peekX top
+  afterPeekSize <- gettop
+  when (afterPeekSize /= 1) $
+    failLua $ "peeking modified the stack: " ++ show afterPeekSize
+  return result
 
 luaTest :: ByteString -> (Name, a, Pusher Lua.Exception a) -> Property
 luaTest luaProperty (var, val, pushVal) = QC.monadicIO $ do
