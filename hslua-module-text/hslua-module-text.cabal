@@ -14,8 +14,8 @@ author:              Albert Krewinkel
 maintainer:          albert+hslua@zeitkraut.de
 copyright:           © 2017–2021 Albert Krewinkel
 category:            Foreign
-extra-source-files:  ChangeLog.md
-                     test/test-text.lua
+extra-source-files:  CHANGELOG.md
+                   , test/test-text.lua
 tested-with:         GHC == 8.0.2
                    , GHC == 8.2.2
                    , GHC == 8.4.4
