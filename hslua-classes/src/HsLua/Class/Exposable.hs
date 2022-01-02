@@ -9,8 +9,6 @@ Copyright   : © 2007–2012 Gracjan Polak,
                 2017-2022 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
-Stability   : beta
-Portability : FlexibleInstances, ForeignFunctionInterface, ScopedTypeVariables
 
 Call Haskell functions from Lua.
 -}
@@ -56,22 +54,20 @@ instance (Peekable a, Exposable e b) => Exposable e (a -> b) where
 -- Lua. Any Haskell function can be converted provided that:
 --
 --   * all arguments are instances of @'Peekable'@
---   * return type is @Lua a@, where @a@ is an instance of
+--   * return type is @LuaE e a@, where @a@ is an instance of
 --     @'Pushable'@
 --
--- Any @'Lua.Exception'@ will be converted to a string and returned
--- as Lua error.
+-- Any exception of type @e@ will be caught.
 --
--- /Important/: this does __not__ catch exceptions other than
--- @'Lua.Exception'@; exception handling must be done by the converted
--- Haskell function. Failure to do so will cause the program to crash.
+-- /Important/: this does __not__ catch exceptions other than @e@;
+-- exception handling must be done by the Haskell function. Failure to
+-- do so will cause the program to crash.
 --
 -- E.g., the following code could be used to handle an Exception
 -- of type FooException, if that type is an instance of
 -- 'Control.Monad.Catch.MonadCatch' and 'Pushable':
 --
 -- > toHaskellFunction (myFun `catchM` (\e -> raiseError (e :: FooException)))
---
 toHaskellFunction :: forall e a. Exposable e a => a -> HaskellFunction e
 toHaskellFunction a = forcePeek $ do
   withContext "executing function call" $ partialApply 1 a
