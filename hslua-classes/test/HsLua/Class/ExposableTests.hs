@@ -34,7 +34,7 @@ tests =
             i1 <- Lua.peek (-1)
             i2 <- Lua.peek (-2)
             return (i1 + i2)
-      Lua.registerHaskellFunction "add" $ toHaskellFunction @Lua.Exception add
+      Lua.registerHaskellFunction "add" add
       Lua.loadstring "return add(23, 5)" *> Lua.call 0 1
       Lua.peek Lua.top <* Lua.pop 1
 
@@ -54,8 +54,7 @@ tests =
   , "Error in Haskell function is converted into Lua error" =:
     (False, "foo") `shouldBeResultOf` do
       Lua.openlibs
-      Lua.pushHaskellFunction $
-        toHaskellFunction (Lua.failLua "foo" :: Lua ())
+      Lua.pushAsHaskellFunction (Lua.failLua "foo" :: Lua ())
       Lua.setglobal "throw_foo"
       Lua.loadstring "return pcall(throw_foo)" *> Lua.call 0 2
       (,) <$> Lua.peek (Lua.nth 2) <*> Lua.peek @String (Lua.nth 1)

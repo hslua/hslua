@@ -15,6 +15,7 @@ Call Haskell functions from Lua.
 module HsLua.Class.Exposable
   ( Exposable (..)
   , toHaskellFunction
+  , pushAsHaskellFunction
   , registerHaskellFunction
   ) where
 
@@ -72,9 +73,15 @@ toHaskellFunction :: forall e a. Exposable e a => a -> HaskellFunction e
 toHaskellFunction a = forcePeek $ do
   withContext "executing function call" $ partialApply 1 a
 
+-- | Pushes the given value as a function to the Lua stack.
+--
+-- See 'toHaskellFunction' for details.
+pushAsHaskellFunction :: forall e a. Exposable e a => a -> LuaE e ()
+pushAsHaskellFunction = pushHaskellFunction . toHaskellFunction
+
 -- | Imports a Haskell function and registers it at global name.
 registerHaskellFunction :: Exposable e a
                         => Name -> a -> LuaE e ()
 registerHaskellFunction n f = do
-  pushHaskellFunction $ toHaskellFunction f
+  pushAsHaskellFunction f
   setglobal n

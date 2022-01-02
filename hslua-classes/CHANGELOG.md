@@ -33,6 +33,9 @@ Release pending.
     makes using `invoke` much more convenient, as the proper error
     type can now be inferred automatically.
 
+-   Added function `pushAsHaskellFunction` to make it even easier
+    to use Haskell functions in Lua.
+
 ## hslua-classes-2.0.0
 
 Released 2021-10-21.
