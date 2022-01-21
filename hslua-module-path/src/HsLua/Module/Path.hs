@@ -43,8 +43,7 @@ import Data.Version (Version, makeVersion)
 import HsLua.Core
   ( LuaError, getglobal, getmetatable, nth, pop, rawset, remove, top )
 import HsLua.Marshalling
-  ( Peeker, peekBool, peekList, peekString
-  , pushBool, pushList, pushName, pushString )
+  ( Peeker, peekList, peekString, pushList, pushName, pushString )
 import HsLua.Packaging
 
 import qualified Data.Text as T
@@ -112,7 +111,7 @@ directory :: DocumentedFunction e
 directory = defun "directory"
   ### liftPure Path.takeDirectory
   <#> filepathParam
-  =#> [filepathResult "The filepath up to the last directory separator."]
+  =#> filepathResult "The filepath up to the last directory separator."
   #? ("Gets the directory name, i.e., removes the last directory " <>
       "separator and everything after from the given path.")
   `since` initialVersion
@@ -122,7 +121,7 @@ filename :: DocumentedFunction e
 filename = defun "filename"
   ### liftPure Path.takeFileName
   <#> filepathParam
-  =#> [filepathResult "File name part of the input path."]
+  =#> filepathResult "File name part of the input path."
   #? "Get the file name."
   `since` initialVersion
 
@@ -131,8 +130,8 @@ is_absolute :: DocumentedFunction e
 is_absolute = defun "is_absolute"
   ### liftPure Path.isAbsolute
   <#> filepathParam
-  =#> [booleanResult ("`true` iff `filepath` is an absolute path, " <>
-                      "`false` otherwise.")]
+  =#> boolResult ("`true` iff `filepath` is an absolute path, " <>
+                  "`false` otherwise.")
   #? "Checks whether a path is absolute, i.e. not fixed to a root."
   `since` initialVersion
 
@@ -141,8 +140,8 @@ is_relative :: DocumentedFunction e
 is_relative = defun "is_relative"
   ### liftPure Path.isRelative
   <#> filepathParam
-  =#> [booleanResult ("`true` iff `filepath` is a relative path, " <>
-                      "`false` otherwise.")]
+  =#> boolResult ("`true` iff `filepath` is a relative path, " <>
+                  "`false` otherwise.")
   #? "Checks whether a path is relative or fixed to a root."
   `since` initialVersion
 
@@ -150,16 +149,9 @@ is_relative = defun "is_relative"
 join :: LuaError e => DocumentedFunction e
 join = defun "join"
   ### liftPure Path.joinPath
-  <#> Parameter
-      { parameterPeeker = peekList peekFilePath
-      , parameterDoc = ParameterDoc
-        { parameterName = "filepaths"
-        , parameterType = "list of strings"
-        , parameterDescription = "path components"
-        , parameterIsOptional = False
-        }
-      }
-  =#> [filepathResult "The joined path."]
+  <#> parameter (peekList peekFilePath) "{string,...}"
+         "filepaths" "path components"
+  =#> filepathResult "The joined path."
   #? "Join path elements back together by the directory separator."
   `since` initialVersion
 
@@ -176,12 +168,8 @@ make_relative = defun "make_relative"
         "string"
         "root"
         "root path"
-  <#> optionalParameter
-        peekBool
-        "boolean"
-        "unsafe"
-        "whether to allow `..` in the result."
-  =#> [filepathResult "contracted filename"]
+  <#> opt (boolParam "unsafe" "whether to allow `..` in the result.")
+  =#> filepathResult "contracted filename"
   #? mconcat
      [ "Contract a filename, based on a relative path. Note that the "
      , "resulting path will never introduce `..` paths, as the "
@@ -197,7 +185,7 @@ normalize :: DocumentedFunction e
 normalize = defun "normalize"
   ### liftPure Path.normalise
   <#> filepathParam
-  =#> [filepathResult "The normalized path."]
+  =#> filepathResult "The normalized path."
   #? T.unlines
      [ "Normalizes a path."
      , ""
@@ -218,7 +206,7 @@ split :: LuaError e => DocumentedFunction e
 split = defun "split"
   ### liftPure Path.splitDirectories
   <#> filepathParam
-  =#> [filepathListResult "List of all path components."]
+  =#> filepathListResult "List of all path components."
   #? "Splits a path by the directory separator."
   `since` initialVersion
 
@@ -227,21 +215,9 @@ split_extension :: DocumentedFunction e
 split_extension = defun "split_extension"
   ### liftPure Path.splitExtension
   <#> filepathParam
-  =#> [ FunctionResult
-        { fnResultPusher = pushString . fst
-        , fnResultDoc = ResultValueDoc
-          { resultValueType = "string"
-          , resultValueDescription = "filepath without extension"
-          }
-        },
-        FunctionResult
-        { fnResultPusher = pushString . snd
-        , fnResultDoc = ResultValueDoc
-          { resultValueType = "string"
-          , resultValueDescription = "extension or empty string"
-          }
-        }
-      ]
+  =#> (functionResult (pushString . fst) "string" "filepath without extension"
+       ++
+       functionResult (pushString . snd) "string" "extension or empty string")
   #? ("Splits the last extension from a file path and returns the parts. "
       <> "The extension, if present, includes the leading separator; "
       <> "if the path has no extension, then the empty string is returned "
@@ -261,7 +237,7 @@ split_search_path = defun "split_search_path"
         , parameterIsOptional = False
         }
       }
-  =#> [filepathListResult "list of directories in search path"]
+  =#> filepathListResult "list of directories in search path"
   #? ("Takes a string and splits it on the `search_path_separator` "
       <> "character. Blank items are ignored on Windows, "
       <> "and converted to `.` on Posix. "
@@ -274,7 +250,7 @@ combine = defun "combine"
   ### liftPure2 Path.combine
   <#> filepathParam
   <#> filepathParam
-  =#> [filepathResult "combined paths"]
+  =#> filepathResult "combined paths"
   #? "Combine two paths with a path separator."
 
 -- | Adds an extension to a file path. Wraps @'Path.addExtension'@.
@@ -291,7 +267,7 @@ add_extension = defun "add_extension"
         , parameterIsOptional = False
         }
       }
-  =#> [filepathResult "filepath with extension"]
+  =#> filepathResult "filepath with extension"
   #? "Adds an extension, even if there is already one."
   `since` initialVersion
 
@@ -339,49 +315,18 @@ peekFilePath = peekString
 
 -- | Filepath function parameter.
 filepathParam :: Parameter e FilePath
-filepathParam = Parameter
-  { parameterPeeker = peekFilePath
-  , parameterDoc = ParameterDoc
-    { parameterName = "filepath"
-    , parameterType = "string"
-    , parameterDescription = "path"
-    , parameterIsOptional = False
-    }
-  }
+filepathParam = parameter peekFilePath "string" "filepath" "path"
 
 -- | Result of a function returning a file path.
 filepathResult :: Text -- ^ Description
-               -> FunctionResult e FilePath
-filepathResult desc = FunctionResult
-  { fnResultPusher = pushString
-  , fnResultDoc = ResultValueDoc
-    { resultValueType = "string"
-    , resultValueDescription = desc
-    }
-  }
+               -> FunctionResults e FilePath
+filepathResult = stringResult
 
 -- | List of filepaths function result.
 filepathListResult :: LuaError e
                    => Text -- ^ Description
-                   -> FunctionResult e [FilePath]
-filepathListResult desc = FunctionResult
-  { fnResultPusher = pushList pushString
-  , fnResultDoc = ResultValueDoc
-    { resultValueType = "list of strings"
-    , resultValueDescription = desc
-    }
-  }
-
--- | Boolean function result.
-booleanResult :: Text -- ^ Description
-              -> FunctionResult e Bool
-booleanResult desc = FunctionResult
-  { fnResultPusher = pushBool
-  , fnResultDoc = ResultValueDoc
-    { resultValueType = "boolean"
-    , resultValueDescription = desc
-    }
-  }
+                   -> FunctionResults e [FilePath]
+filepathListResult = functionResult (pushList pushString) "{string,...}"
 
 --
 -- Helpers
