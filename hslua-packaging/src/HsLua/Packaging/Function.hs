@@ -47,6 +47,7 @@ module HsLua.Packaging.Function
   , pushDocumentation
     -- * Convenience functions
   , parameter
+  , opt
   , optionalParameter
   , functionResult
     -- * Internal
@@ -343,22 +344,26 @@ parameter peeker type_ name desc = Parameter
     }
   }
 
+-- | Makes a parameter optional.
+opt :: Parameter e a -> Parameter e (Maybe a)
+opt p = Parameter
+  { parameterPeeker = \idx ->
+      (Nothing <$ peekNoneOrNil idx) <|>
+      (Just <$!> parameterPeeker p idx)
+  , parameterDoc = (parameterDoc p){ parameterIsOptional = True }
+  }
+
 -- | Creates an optional parameter.
+--
+-- DEPRECATED: Use @opt (parameter ...)@ instead.
 optionalParameter :: Peeker e a   -- ^ method to retrieve the value from Lua
                   -> Text         -- ^ expected Lua type
                   -> Text         -- ^ parameter name
                   -> Text         -- ^ parameter description
                   -> Parameter e (Maybe a)
-optionalParameter peeker type_ name desc = Parameter
-  { parameterPeeker = \idx -> (Nothing <$ peekNoneOrNil idx)
-                          <|> (Just <$!> peeker idx)
-  , parameterDoc = ParameterDoc
-    { parameterName = name
-    , parameterDescription = desc
-    , parameterType = type_
-    , parameterIsOptional = True
-    }
-  }
+optionalParameter peeker type_ name desc = opt $
+  parameter peeker type_ name desc
+{-# DEPRECATED optionalParameter "Use `opt (parameter ...)` instead." #-}
 
 -- | Creates a function result.
 functionResult :: Pusher e a      -- ^ method to push the Haskell result to Lua

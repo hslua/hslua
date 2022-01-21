@@ -14,6 +14,10 @@ Release pending.
     This replaces `pushDocumentationFunction`, which has been
     removed from the module.
 
+-   Provide function `opt` to make a parameter optional. The
+    function `optionalParameter` is deprecated, use `opt
+    (parameter ...)` instead.
+
 -   Added module `Convenience`, which defines many functions to
     make the definition of parameters and results easier for
     the most common types.

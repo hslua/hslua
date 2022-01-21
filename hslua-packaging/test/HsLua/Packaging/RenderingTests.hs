@@ -12,6 +12,7 @@ module HsLua.Packaging.RenderingTests (tests) where
 
 import Data.Maybe (fromMaybe)
 import Data.Version (makeVersion)
+import HsLua.Packaging.Convenience
 import HsLua.Packaging.Function
 import HsLua.Packaging.Module
 import HsLua.Packaging.Rendering
@@ -91,7 +92,7 @@ tests = testGroup "Rendering" $
 nroot :: DocumentedFunction Lua.Exception
 nroot = defun "nroot" (liftPure2 nroot')
   <#> parameter (peekRealFloat @Double) "number" "x" ""
-  <#> optionalParameter (peekIntegral @Int) "integer" "n" ""
+  <#> opt (integralParam @Int "n" "")
   =#> functionResult pushRealFloat "number" "nth root"
   where
     nroot' :: Double -> Maybe Int -> Double

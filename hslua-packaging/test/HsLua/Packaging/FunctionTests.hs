@@ -13,6 +13,7 @@ module HsLua.Packaging.FunctionTests (tests) where
 import Data.Maybe (fromMaybe)
 import Data.Version (makeVersion)
 import HsLua.Core (StackIndex, top)
+import HsLua.Packaging.Convenience
 import HsLua.Packaging.Function
 import HsLua.Packaging.Types
 import HsLua.Marshalling
@@ -112,7 +113,7 @@ tests = testGroup "Call"
         parameterDoc
           (parameter @Lua.Exception peekText "string" "test" "test param")
       )
-    , "optionalParameter doc" =:
+    , "optional parameter doc" =:
       ( ParameterDoc
         { parameterName = "test"
         , parameterDescription = "test param"
@@ -121,7 +122,7 @@ tests = testGroup "Call"
         }
         @=?
         parameterDoc
-          (optionalParameter @Lua.Exception peekText "string" "test" "test param")
+          (opt (textParam @Lua.Exception "test" "test param"))
       )
     , "functionResult doc" =:
       ( [ ResultValueDoc
@@ -169,7 +170,7 @@ nroot :: DocumentedFunction Lua.Exception
 nroot = defun "nroot"
   ### liftPure2 nroot'
   <#> parameter (peekRealFloat @Double) "number" "x" ""
-  <#> optionalParameter (peekIntegral @Int) "integer" "n" ""
+  <#> opt (integralParam @Int "n" "")
   =#> functionResult pushRealFloat "number" "nth root"
   where
     nroot' :: Double -> Maybe Int -> Double
