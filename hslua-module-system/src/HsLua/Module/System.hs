@@ -161,9 +161,9 @@ getenv = defun "getenv"
 ls :: LuaError e => DocumentedFunction e
 ls = defun "ls"
   ### ioToLua . Directory.listDirectory . fromMaybe "."
-  <#> optionalParameter peekFilePath "string" "directory"
-        ("Path of the directory whose contents should be listed. "
-         `T.append` "Defaults to `.`.")
+  <#> opt (stringParam "directory"
+           ("Path of the directory whose contents should be listed. "
+            `T.append` "Defaults to `.`."))
   =#> functionResult (pushList pushString) "table"
         ("A table of all entries in `directory`, except for the "
           `T.append` "special entries (`.`  and `..`).")
@@ -182,10 +182,8 @@ mkdir = defun "mkdir"
          if createParent == Just True
          then ioToLua (Directory.createDirectoryIfMissing True fp)
          else ioToLua (Directory.createDirectory fp))
-  <#> parameter peekFilePath "string" "dirname"
-        "name of the new directory"
-  <#> optionalParameter peekBool "boolean" "create_parent"
-        "create parent directory if necessary"
+  <#> filepathParam "dirname" "name of the new directory"
+  <#> opt (boolParam "create_parent" "create parent directory if necessary")
   =#> []
   #? T.concat
        [ "Create a new directory which is initially empty, or as near "
@@ -207,8 +205,7 @@ rmdir = defun "rmdir"
          then ioToLua (Directory.removeDirectoryRecursive fp)
          else ioToLua (Directory.removeDirectory fp))
   <#> filepathParam "dirname" "name of the directory to delete"
-  <#> optionalParameter peekBool "boolean" "recursive"
-        "delete content recursively"
+  <#> opt (boolParam "recursive" "delete content recursively")
   =#> []
   #?("Remove an existing, empty directory. If `recursive` is given, "
      `T.append` "then delete the directory and its contents recursively.")
@@ -322,7 +319,7 @@ with_tmpdir = defun "with_tmpdir"
          , "parameter is omitted, the system's canonical temporary "
          , "directory is used."
          ])
-  <#> parameter peekString "string" "templ" "Directory name template."
+  <#> stringParam "templ" "Directory name template."
   <#> parameter peekCallback "function" "callback"
         ("Function which takes the name of the temporary directory as "
          `T.append` "its first argument.")
@@ -344,23 +341,11 @@ with_tmpdir = defun "with_tmpdir"
 -- Parameters
 --
 
--- | Retrieves a file path from the stack.
-peekFilePath :: Peeker e FilePath
-peekFilePath = peekString
-
 -- | Filepath function parameter.
 filepathParam :: Text  -- ^ name
               -> Text  -- ^ description
               -> Parameter e FilePath
-filepathParam name description = Parameter
-  { parameterPeeker = peekFilePath
-  , parameterDoc = ParameterDoc
-    { parameterName = name
-    , parameterType = "string"
-    , parameterDescription = description
-    , parameterIsOptional = False
-    }
-  }
+filepathParam = stringParam
 
 -- | Result of a function returning a file path.
 filepathResult :: Text -- ^ Description
