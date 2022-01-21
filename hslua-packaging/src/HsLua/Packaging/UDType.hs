@@ -25,6 +25,7 @@ module HsLua.Packaging.UDType
   , peekUD
   , pushUD
   , udparam
+  , udresult
     -- * Helper types for building
   , Member
   , Operation (..)
@@ -87,3 +88,10 @@ udparam :: LuaError e
         -> Text            -- ^ parameter description
         -> Parameter e a
 udparam ty = parameter (peekUD ty) (Utf8.toText . fromName $ udName ty)
+
+-- | Defines a function result of the given type.
+udresult :: LuaError e
+         => DocumentedTypeWithList e a itemtype -- ^ result type
+         -> Text           -- ^ result description
+         -> FunctionResults e a
+udresult ty = functionResult (pushUD ty) (Utf8.toText . fromName $ udName ty)

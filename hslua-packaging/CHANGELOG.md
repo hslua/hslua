@@ -18,6 +18,9 @@ Release pending.
     function `optionalParameter` is deprecated, use `opt
     (parameter ...)` instead.
 
+-   Added function `udresult`; it defines a function result and is
+    analogous to the existing `udparam` function.
+
 -   Added module `Convenience`, which defines many functions to
     make the definition of parameters and results easier for
     the most common types.
