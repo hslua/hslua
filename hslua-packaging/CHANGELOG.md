@@ -14,6 +14,10 @@ Release pending.
     This replaces `pushDocumentationFunction`, which has been
     removed from the module.
 
+-   Added module `Convenience`, which defines many functions to
+    make the definition of parameters and results easier for
+    the most common types.
+
 -   Update to hslua-objectorientation-2.1.0. Lists are now
     writable. This entails a change to `deftype'`. See the
     changelog of hslua-objectorientation for details.

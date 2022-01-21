@@ -10,6 +10,7 @@ module HsLua.Packaging
   ( -- * Modules
     module HsLua.Packaging.Module
   , module HsLua.Packaging.Function
+  , module HsLua.Packaging.Convenience
     -- * Object oriented marshalling
   , module HsLua.Packaging.UDType
     -- * Create documentation
@@ -20,6 +21,7 @@ module HsLua.Packaging
   , module HsLua.Packaging.Types
   ) where
 
+import HsLua.Packaging.Convenience
 import HsLua.Packaging.Documentation
 import HsLua.Packaging.Function
 import HsLua.Packaging.Module
