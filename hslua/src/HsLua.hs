@@ -39,8 +39,7 @@ import Prelude hiding (compare, concat)
 import HsLua.Core
 import HsLua.Class.Exposable
 import HsLua.Class.Invokable
-import HsLua.Class.Peekable hiding ( PeekError, reportValueOnFailure
-                                   , peekList, peekKeyValuePairs)
+import HsLua.Class.Peekable
 import HsLua.Class.Pushable hiding (pushList)
 import HsLua.Class.Util
 import HsLua.Packaging
