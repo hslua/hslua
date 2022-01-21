@@ -33,7 +33,7 @@ import HsLua.Core
   ( LuaError, Type (..) , call, dostring, error, ltype )
 import HsLua.Marshalling
   ( Peeker, Pusher, failPeek, liftLua, peekIntegral, peekList, peekString
-  , pushBool, pushIntegral, pushIterator, pushString, retrieving )
+  , pushIntegral, pushIterator, pushString, retrieving )
 import HsLua.Packaging
 import Text.ParserCombinators.ReadP (readP_to_S)
 
@@ -51,7 +51,7 @@ documentedModule = Module
       ### liftPure2 (\_ v -> v)
       <#> parameter (const $ pure ()) "table" "module table" "ignored"
       <#> versionParam "version" "version-like object"
-      =#> functionResult (pushUD typeVersion) "Version" "new Version object"
+      =#> udresult typeVersion "new Version object"
     ]
   }
 
@@ -64,7 +64,7 @@ typeVersion = deftype' "Version"
   , operation Len $ lambda
     ### liftPure (length . versionBranch)
     <#> versionParam "version" ""
-    =#> functionResult pushIntegral "integer" "number of version components"
+    =#> integralResult "number of version components"
   , operation Pairs $ lambda
     ### pushIterator (\(i, n) -> 2 <$ pushIntegral i <* pushIntegral n)
           . zip [(1 :: Int) ..] . versionBranch
@@ -73,7 +73,7 @@ typeVersion = deftype' "Version"
   , operation Tostring $ lambda
     ### liftPure showVersion
     <#> versionParam "version" ""
-    =#> functionResult pushString "string" "stringified version"
+    =#> stringResult "stringified version"
   ]
   [ method must_be_at_least ]
   (Just ( (pushIntegral, versionBranch)
@@ -83,7 +83,7 @@ typeVersion = deftype' "Version"
       ### liftPure2 f
       <#> versionParam "v1" ""
       <#> versionParam "v2" ""
-      =#> functionResult pushBool "boolean" descr
+      =#> boolResult descr
 
 -- | Push a @'Version'@ element to the Lua stack.
 pushVersion :: LuaError e => Pusher e Version
@@ -150,7 +150,7 @@ must_be_at_least =
               error)
     <#> versionParam "self" "version to check"
     <#> versionParam "reference" "minimum version"
-    <#> optionalParameter peekString "string" "msg" "alternative message"
+    <#> opt (stringParam "msg" "alternative message")
     =?> mconcat [ "Returns no result, and throws an error if this "
                 , "version is older than `reference`."
                 ]
