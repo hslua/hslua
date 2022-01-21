@@ -30,14 +30,14 @@ tests = testGroup "Documentation"
       renderFunction factorial `shouldBeResultOf` do
         pushDocumentedFunction factorial
         Lua.setglobal (functionName factorial)
-        pushDocumentationFunction
+        pushDocumentedFunction documentation
         Lua.setglobal "documentation"
         OK <- Lua.dostring "return documentation(factorial)"
         forcePeek $ peekText top
 
     , "returns nil for undocumented function" =:
       TypeNil `shouldBeResultOf` do
-        pushDocumentationFunction
+        pushDocumentedFunction documentation
         Lua.setglobal "documentation"
         OK <- Lua.dostring "return documentation(function () return 1 end)"
         Lua.ltype top

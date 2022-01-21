@@ -6,6 +6,14 @@
 
 Release pending.
 
+-   Added function `documentation`: The documented function
+    `documentation` is added and exported from module
+    `HsLua.Packaging.Documentation`. It allows to retrieve the
+    documentation of a given Lua object.
+
+    This replaces `pushDocumentationFunction`, which has been
+    removed from the module.
+
 -   Update to hslua-objectorientation-2.1.0. Lists are now
     writable. This entails a change to `deftype'`. See the
     changelog of hslua-objectorientation for details.

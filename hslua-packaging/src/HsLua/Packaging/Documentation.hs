@@ -8,24 +8,50 @@ Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Provides a function to print documentation if available.
 -}
 module HsLua.Packaging.Documentation
-  ( pushDocumentationFunction
+  ( documentation
   , registerDocumentation
   ) where
 
 import Data.Text (Text)
 import HsLua.Core as Lua
 import HsLua.Marshalling (pushText)
+import HsLua.Packaging.Types
 
--- | Pushes a function to the stack that returns the documentation
--- string of objects for which such is available.
-pushDocumentationFunction :: LuaError e => LuaE e ()
-pushDocumentationFunction = pushHaskellFunction $ do
-  settop 1 -- allow just one argument
-  -- retrieve documentation
-  pushDocumentationTable
-  pushvalue (nthBottom 1)
-  _ <- rawget (nth 2)
-  return (NumResults 1)
+-- | Function that retrieves documentation.
+documentation :: LuaError e => DocumentedFunction e
+documentation =
+  DocumentedFunction
+  { callFunction = documentationHaskellFunction
+  , functionName = "documentation"
+  , functionDoc = FunctionDoc
+    { functionDescription =
+      "Retrieves the documentation of the given object."
+    , parameterDocs =
+      [ ParameterDoc
+        { parameterName = "value"
+        , parameterType = "any"
+        , parameterDescription = "documented object"
+        , parameterIsOptional = False
+        }
+      ]
+    , functionResultsDocs =  ResultsDocList
+      [ ResultValueDoc "string|nil" "docstring" ]
+    , functionSince = Nothing
+    }
+  }
+
+-- | Function that returns the documentation of a given object, or @nil@
+-- if no documentation is available.
+documentationHaskellFunction :: LuaError e => LuaE e NumResults
+documentationHaskellFunction = isnoneornil (nthBottom 1) >>= \case
+  True -> failLua "expected a non-nil value as argument 1"
+  _ -> do
+    settop 1 -- allow just one argument
+    -- retrieve documentation
+    pushDocumentationTable
+    pushvalue (nthBottom 1)
+    _ <- rawget (nth 2)
+    return (NumResults 1)
 
 -- | Registers text as documentation for the object at the stack index
 -- @idx@.
