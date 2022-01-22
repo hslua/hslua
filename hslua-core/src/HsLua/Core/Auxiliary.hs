@@ -84,7 +84,7 @@ dostring s = do
 {-# INLINABLE dostring #-}
 
 -- | Loads and runs the given file. Note that the filepath is
--- interpreted by Haskell, not Lua. The resulting chunk is named using
+-- interpreted by Lua, not Haskell. The resulting chunk is named using
 -- the UTF8 encoded filepath.
 dofile :: FilePath -> LuaE e Status
 dofile fp = do
@@ -173,8 +173,6 @@ loadbuffer bs (Name name) = liftLua $ \l ->
 --
 -- As @'Lua.load'@, this function only loads the chunk; it does not run
 -- it.
---
--- Note that the file is opened by Haskell, not Lua.
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadfile luaL_loadfile>.
 loadfile :: FilePath -- ^ filename
