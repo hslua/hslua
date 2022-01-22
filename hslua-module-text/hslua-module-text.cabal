@@ -8,11 +8,12 @@ description:         UTF-8 aware subset of Lua's `string` module.
                      built around the embeddable scripting language
                      <https://lua.org Lua>.
 homepage:            https://github.com/hslua/hslua
+bug-reports:         https://github.com/hslua/hslua/issues
 license:             MIT
 license-file:        LICENSE
 author:              Albert Krewinkel
 maintainer:          albert+hslua@zeitkraut.de
-copyright:           © 2017–2021 Albert Krewinkel
+copyright:           © 2017–2022 Albert Krewinkel
 category:            Foreign
 extra-source-files:  CHANGELOG.md
                    , test/test-text.lua

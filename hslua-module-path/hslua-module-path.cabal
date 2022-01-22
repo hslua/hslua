@@ -4,8 +4,8 @@ version:             1.0.1
 synopsis:            Lua module to work with file paths.
 description:         Lua module to work with file paths in a platform
                      independent way.
-homepage:            https://github.com/hslua/hslua-module-path
-bug-reports:         https://github.com/hslua/hslua-module-path/issues
+homepage:            https://hslua.org/
+bug-reports:         https://github.com/hslua/hslua/issues
 license:             MIT
 license-file:        LICENSE
 author:              Albert Krewinkel
@@ -27,7 +27,8 @@ tested-with:         GHC == 8.0.2
 
 source-repository head
   type:                git
-  location:            https://github.com/hslua/hslua-module-path.git
+  location:            https://github.com/hslua/hslua
+  subdir:              hslua-module-path
 
 common common-options
   build-depends:       base              >= 4.9.1  && < 5
