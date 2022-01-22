@@ -43,7 +43,7 @@ tests = testGroup "HsLua tasty module"
 
   , testCase "can be loaded as tasty" . Lua.run $ do
       Lua.openlibs
-      Lua.requirehs "tasty" (void pushModule)
+      Lua.requirehs "tasty" (const $ void pushModule)
       assertEqual' "loading the module fails " Lua.OK =<<
         Lua.dostring "require 'tasty'"
 

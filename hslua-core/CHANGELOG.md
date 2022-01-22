@@ -15,6 +15,20 @@ Release pending.
     accommodate a given number of elements; it is similar to
     `luaL_checkstack`.
 
+-   Package helper `requirehs` signature changed to
+
+    ``` haskell
+    requirehs :: LuaError e
+              => Name                 -- ^ modname
+              -> (Name -> LuaE e ())  -- ^ openf
+              -> LuaE e ()
+    ```
+
+    The function creating and pushing the module value now takes
+    the module name as an argument. It also behaves more like
+    `luaL_requiref` in that it reloads the module if the value in
+    the LOADED table is falsy.
+
 ## hslua-core-2.0.0.2
 
 Released 2021-11-03.

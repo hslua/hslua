@@ -36,7 +36,7 @@ create = newtable
 -- the stack.
 registerModule :: LuaError e => Module e -> LuaE e ()
 registerModule mdl =
-  requirehs (moduleName mdl) (pushModule mdl)
+  requirehs (moduleName mdl) (const (pushModule mdl))
 
 -- | Add the module under a different name to the table of preloaded
 -- packages.

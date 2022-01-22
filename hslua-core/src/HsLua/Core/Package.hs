@@ -25,32 +25,32 @@ import HsLua.Core.Types
 -- | Load a module, defined by a Haskell action, under the given
 -- name.
 --
--- Similar to @luaL_required@: After checking "loaded" table,
--- calls @pushMod@ to push a module to the stack, and registers
--- the result in @package.loaded@ table.
---
--- The @pushMod@ function must push exactly one element to the top
--- of the stack. This is not checked, but failure to do so will
--- lead to problems. Lua's @package@ module must have been loaded
--- by the time this function is invoked.
+-- Similar to @luaL_requiref@: If @modname@ is not already present in
+-- @package.loaded@, calls function @openf@ with string @modname@ as an
+-- argument and sets the call result in @package.loaded[modname]@, as if
+-- that function has been called through
+-- <https://www.lua.org/manual/5.3/manual.html#pdf-require require>.
 --
 -- Leaves a copy of the module on the stack.
-requirehs :: LuaError e => Name -> LuaE e () -> LuaE e ()
-requirehs modname pushMod = do
-  -- get table of loaded modules
-  void $ getfield registryindex loaded
-
-  -- Check whether module has already been loaded.
-  getfield top modname >>= \case -- LOADED[modname]
-    TypeNil -> do    -- not loaded yet, load now
-      pop 1          -- remove LOADED[modname], i.e., nil
-      pushMod        -- push module
-      pushvalue top  -- make copy of module
-      -- add module under the given name (LOADED[modname] = module)
+requirehs :: LuaError e
+          => Name                 -- ^ modname
+          -> (Name -> LuaE e ())  -- ^ openf
+          -> LuaE e ()
+requirehs modname openf = do
+  void $ getsubtable registryindex loaded
+  void $ getfield top modname
+  toboolean top >>= \case
+    True -> pure ()       -- package already loaded
+    False -> do
+      -- package not loaded, load it now
+      pop 1  -- remove field
+      oldtop <- gettop
+      openf modname
+      settop (oldtop + 1)
+      pushvalue top  -- make copy of module (call result)
       setfield (nth 3) modname
-    _ -> return ()
 
-  remove (nth 2)  -- remove table of loaded modules
+  remove (nth 2)  -- remove LOADED table
 
 -- | Registers a preloading function. Takes an module name and the
 -- Lua operation which produces the package.

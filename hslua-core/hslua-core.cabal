@@ -89,6 +89,7 @@ test-suite test-hslua-core
                      , HsLua.Core.AuxiliaryTests
                      , HsLua.Core.ClosuresTests
                      , HsLua.Core.ErrorTests
+                     , HsLua.Core.PackageTests
                      , HsLua.Core.RunTests
                      , HsLua.Core.UnsafeTests
                      , HsLua.Core.UserdataTests

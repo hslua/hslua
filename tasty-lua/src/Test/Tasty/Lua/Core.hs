@@ -36,7 +36,7 @@ import qualified Test.Tasty as Tasty
 runTastyFile :: LuaError e => FilePath -> LuaE e (Either String [ResultTree])
 runTastyFile fp = do
   Lua.openlibs
-  Lua.requirehs "tasty" (void pushModule)
+  Lua.requirehs "tasty" (const . void $ pushModule)
   res <- Lua.dofile fp
   if res /= Lua.OK
     then Left . toString <$> Lua.tostring' top
