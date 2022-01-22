@@ -26,6 +26,7 @@ module HsLua.Core.Auxiliary
   , loadstring
   , newmetatable
   , newstate
+  , requiref
   , tostring'
   , traceback
   , where'
@@ -41,7 +42,7 @@ module HsLua.Core.Auxiliary
 import Control.Monad ((<$!>))
 import Data.ByteString (ByteString)
 import Data.String (IsString (fromString))
-import HsLua.Core.Error (LuaError, failLua, throwErrorAsException)
+import HsLua.Core.Error
 import HsLua.Core.Types
   (LuaE, Name (Name), Status, StackIndex, liftLua, multret, runWith)
 import Lua (top)
@@ -52,6 +53,7 @@ import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Unsafe as B
 import qualified HsLua.Core.Primary as Lua
 import qualified HsLua.Core.Types as Lua
 import qualified Foreign.Storable as Storable
@@ -240,6 +242,27 @@ newstate = hsluaL_newstate
 ref :: StackIndex -> LuaE e Reference
 ref t = liftLua $ \l -> Lua.toReference <$> luaL_ref l t
 {-# INLINABLE ref #-}
+
+-- | If @modname@ is not already present in @package.loaded@. calls
+-- function @openf@ with string @modname@ as an argument and sets the
+-- call result in @package.loaded[modname]@, as if that function has
+-- been called through
+-- <https://www.lua.org/manual/5.3/manual.html#pdf-require require>.
+--
+-- If @glb@ is true, also stores the module into global @modname@.
+--
+-- Leaves a copy of the module on the stack.
+--
+-- See 'requirehs' for a version intended to be used with Haskell
+-- actions.
+requiref :: LuaError e
+         => Name          -- ^ modname
+         -> Lua.CFunction -- ^ openf
+         -> Bool          -- ^ glb
+         -> LuaE e ()
+requiref (Name name) openf glb = liftLuaThrow $ \l status' ->
+  B.unsafeUseAsCString name $ \namePtr ->
+    hsluaL_requiref l namePtr openf (Lua.toLuaBool glb) status'
 
 -- | Converts any Lua value at the given index to a 'ByteString' in a
 -- reasonable format. The resulting string is pushed onto the stack and

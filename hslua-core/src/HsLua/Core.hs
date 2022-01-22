@@ -161,6 +161,7 @@ module HsLua.Core
   , getmetatable'
   , getsubtable
   , newmetatable
+  , requiref
   , tostring'
   , traceback
   , where'

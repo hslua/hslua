@@ -7,10 +7,12 @@ module HsLua.Core.AuxiliaryTests (tests) where
 import Data.ByteString (ByteString)
 import Data.Maybe (fromMaybe)
 import HsLua.Core (nth)
-import Test.Tasty.HsLua ((?:), (=:), pushLuaExpr, shouldBeResultOf)
+import Test.Tasty.HsLua ( (?:), (=:), pushLuaExpr, shouldBeResultOf
+                        , shouldBeErrorMessageOf)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit ((@=?))
 
+import qualified Lua
 import qualified HsLua.Core as Lua
 
 -- | Specifications for Attributes parsing functions.
@@ -89,6 +91,34 @@ tests = testGroup "Auxiliary"
       Lua.TypeTable `shouldBeResultOf` do
         _ <- Lua.newmetatable "yep"
         Lua.getmetatable' "yep"
+    ]
+
+  , testGroup "requiref"
+    [ "can load a module" =: do
+        Lua.TypeTable `shouldBeResultOf` do
+          Lua.openlibs
+          Lua.requiref "mathematics" Lua.luaopen_math False
+          Lua.ltype Lua.top
+
+    , "returns () on success" =: do
+        () `shouldBeResultOf` do
+          Lua.openlibs
+          -- already loaded
+          Lua.requiref "math" Lua.luaopen_math False
+
+    , "sets global if flag is set" =: do
+        Lua.TypeTable `shouldBeResultOf` do
+          Lua.openlibs
+          Lua.requiref "foo" Lua.luaopen_math True
+          Lua.pop 1
+          Lua.getglobal "foo"
+
+    , "catches errors" =: do
+        "attempt to index a nil value" `shouldBeErrorMessageOf` do
+          -- unset registry
+          Lua.pushnil
+          Lua.copy Lua.top Lua.registryindex
+          Lua.requiref "math" Lua.luaopen_package False
     ]
 
   , testGroup "where'"

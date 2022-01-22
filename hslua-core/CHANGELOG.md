@@ -15,6 +15,9 @@ Release pending.
     accommodate a given number of elements; it is similar to
     `luaL_checkstack`.
 
+-   Added function `requiref`, which safely wraps the unsafe
+    `luaL_requiref` function.
+
 -   Package helper `requirehs` signature changed to
 
     ``` haskell
