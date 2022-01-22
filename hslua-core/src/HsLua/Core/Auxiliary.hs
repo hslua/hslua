@@ -76,22 +76,18 @@ checkstack' sz msg =
 -- Returns 'Lua.OK' on success, or an error if either loading of the
 -- string or calling of the thunk failed.
 dostring :: ByteString -> LuaE e Status
-dostring s = do
-  loadRes <- loadstring s
-  if loadRes == Lua.OK
-    then Lua.pcall 0 multret Nothing
-    else return loadRes
+dostring s = loadstring s >>= \case
+  Lua.OK -> Lua.pcall 0 multret Nothing
+  err    -> return err
 {-# INLINABLE dostring #-}
 
 -- | Loads and runs the given file. Note that the filepath is
 -- interpreted by Lua, not Haskell. The resulting chunk is named using
 -- the UTF8 encoded filepath.
 dofile :: FilePath -> LuaE e Status
-dofile fp = do
-  loadRes <- loadfile fp
-  if loadRes == Lua.OK
-    then Lua.pcall 0 multret Nothing
-    else return loadRes
+dofile fp = loadfile fp >>= \case
+  Lua.OK -> Lua.pcall 0 multret Nothing
+  err    -> return err
 {-# INLINABLE dofile #-}
 
 -- | Pushes onto the stack the field @e@ from the metatable of the
