@@ -1,5 +1,0 @@
-resolver: lts-17.0
-
-extra-deps:
-  - git: https://github.com/hslua/hslua
-    commit: 446acc19ae634f9db8ddf3bd6d47835937ed8950

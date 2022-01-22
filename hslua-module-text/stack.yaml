@@ -1,6 +1,0 @@
-resolver: lts-16.9
-packages: ['.']
-flags: {}
-extra-deps:
-  - hslua-1.2.0
-  - tasty-lua-0.2.3
