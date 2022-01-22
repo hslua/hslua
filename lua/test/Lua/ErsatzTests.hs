@@ -131,12 +131,10 @@ tests = testGroup "ersatz"
 
       , "sets global if flag is set" =: do
         LUA_TTABLE `shouldBeResultOf` \l -> do
-          lua_pushcfunction l luaopen_package
-          LUA_OK <- lua_pcall l 0 0 0
-          withCString "math" $ \s ->
-            hsluaL_requiref l s luaopen_package TRUE nullPtr
-          lua_pop l 1
-          withCStringLen "math" $ \(name, len) ->
+          luaL_openlibs l
+          withCString "mathematics" $ \s ->
+            hsluaL_requiref l s luaopen_math TRUE nullPtr
+          withCStringLen "mathematics" $ \(name, len) ->
             hslua_getglobal l name (fromIntegral len) nullPtr
 
       , "catches errors" =: do

@@ -53,7 +53,6 @@ import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 
 import qualified Data.ByteString as B
-import qualified Data.ByteString.Unsafe as B
 import qualified HsLua.Core.Primary as Lua
 import qualified HsLua.Core.Types as Lua
 import qualified Foreign.Storable as Storable
@@ -261,7 +260,7 @@ requiref :: LuaError e
          -> Bool          -- ^ glb
          -> LuaE e ()
 requiref (Name name) openf glb = liftLuaThrow $ \l status' ->
-  B.unsafeUseAsCString name $ \namePtr ->
+  B.useAsCString name $ \namePtr ->
     hsluaL_requiref l namePtr openf (Lua.toLuaBool glb) status'
 
 -- | Converts any Lua value at the given index to a 'ByteString' in a
