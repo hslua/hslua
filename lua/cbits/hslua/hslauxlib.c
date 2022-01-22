@@ -50,3 +50,27 @@ const char *hsluaL_tolstring(lua_State *L, int index, size_t *len)
   }
   return lua_tolstring(L, -1, len);
 }
+
+static int auxrequiref(lua_State *L)
+{
+  const char *modname = lua_tolstring(L, 1, NULL);
+  lua_CFunction openf = lua_tocfunction(L, 2);
+  int glb = lua_toboolean(L, 3);
+  luaL_requiref(L, modname, openf, glb);
+  return 1;
+}
+
+/*
+** Simple version of `require` used to load modules from a C function.
+*/
+void hsluaL_requiref (lua_State *L, const char *modname,
+                      lua_CFunction openf, int glb, int *status)
+{
+  lua_pushcfunction(L, &auxrequiref);
+  lua_pushstring(L, modname);
+  lua_pushcfunction(L, openf);
+  lua_pushboolean(L, glb);
+  int pstatus = lua_pcall(L, 3, 1, 0);
+  if (status != NULL)
+    *status = pstatus;
+}

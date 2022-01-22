@@ -28,8 +28,9 @@ Release pending.
     -   LUA_OPSHL
     -   LUA_OPSHR
 
--   Added an ersatz function `hslua_arith` that wraps `lua_arith`
-    and catches errors that occur in metamethods.
+-   Added ersatz functions `hslua_arith` and `hsluaL_requiref`,
+    wrapping `lua_artih` and `luaL_requiref`, respectively. Both
+    functions catch any error resulting from the call.
 
 -   Made types `OPCode`, `StatusCode`, and `GCCode` instances of
     type class `Show`.

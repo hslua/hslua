@@ -10,7 +10,7 @@ Tests for Lua bindings.
 module Lua.ErsatzTests (tests) where
 
 import Control.Monad (void)
-import Foreign.C.String (withCStringLen)
+import Foreign.C.String (withCString, withCStringLen)
 import Foreign.Marshal (alloca)
 import Foreign.Ptr (nullPtr)
 import Foreign.Storable (peek)
@@ -108,6 +108,47 @@ tests = testGroup "ersatz"
           ty <- hslua_gettable l (nth 2) nullPtr
           i  <- lua_tointegerx l top nullPtr
           return (i, ty)
+    ]
+
+  , testGroup "Auxiliary"
+    [ testGroup "hslua_requiref"
+      [ "can load a module" =: do
+        LUA_TTABLE `shouldBeResultOf` \l -> do
+          lua_pushcfunction l luaopen_package
+          LUA_OK <- lua_pcall l 0 0 0
+          withCString "math" $ \s ->
+            hsluaL_requiref l s luaopen_math FALSE nullPtr
+          lua_type l (-1)
+
+      , "returns LUA_OK on success" =: do
+        LUA_OK `shouldBeResultOf` \l -> do
+          lua_pushcfunction l luaopen_package
+          LUA_OK <- lua_pcall l 0 0 0
+          alloca $ \status -> do
+            withCString "math" $ \s ->
+              hsluaL_requiref l s luaopen_package FALSE status
+            peek status
+
+      , "sets global if flag is set" =: do
+        LUA_TTABLE `shouldBeResultOf` \l -> do
+          lua_pushcfunction l luaopen_package
+          LUA_OK <- lua_pcall l 0 0 0
+          withCString "math" $ \s ->
+            hsluaL_requiref l s luaopen_package TRUE nullPtr
+          lua_pop l 1
+          withCStringLen "math" $ \(name, len) ->
+            hslua_getglobal l name (fromIntegral len) nullPtr
+
+      , "catches errors" =: do
+        LUA_ERRRUN `shouldBeResultOf` \l -> do
+          -- unset registry
+          lua_pushnil l
+          lua_copy l (-1) LUA_REGISTRYINDEX
+          alloca $ \status -> do
+            withCString "math" $ \s ->
+              hsluaL_requiref l s luaopen_package FALSE status
+            peek status
+      ]
     ]
   ]
 

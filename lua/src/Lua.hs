@@ -223,6 +223,7 @@ module Lua
     -- * Ersatz functions
   , hsluaL_newstate
   , hsluaL_tolstring
+  , hsluaL_requiref
     -- ** Get functions (Lua → stack)
   , hslua_gettable
   , hslua_getglobal
