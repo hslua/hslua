@@ -38,7 +38,7 @@ common common-options
   build-depends:       base                 >= 4.8    && < 5
                      , hslua-core           >= 2.0    && < 2.2
                      , hslua-packaging      >= 2.0    && < 2.2
-                     , text                 >= 1.0    && < 1.3
+                     , text                 >= 1.2    && < 2.1
   default-extensions:  LambdaCase
                      , OverloadedStrings
   ghc-options:         -Wall
@@ -60,7 +60,6 @@ library
                      , exceptions           >= 0.8    && < 0.11
                      , hslua-marshalling    >= 2.0    && < 2.2
                      , temporary            >= 1.2    && < 1.4
-                     , text                 >= 1.0    && < 1.3
   exposed-modules:     HsLua.Module.System
   other-modules:       HsLua.Module.SystemUtils
   hs-source-dirs:      src
