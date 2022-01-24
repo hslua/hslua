@@ -62,6 +62,7 @@ library
                      , HsLua.Core.Error
                      , HsLua.Core.Package
                      , HsLua.Core.Run
+                     , HsLua.Core.Trace
                      , HsLua.Core.Types
                      , HsLua.Core.Unsafe
                      , HsLua.Core.Userdata
@@ -91,6 +92,7 @@ test-suite test-hslua-core
                      , HsLua.Core.ErrorTests
                      , HsLua.Core.PackageTests
                      , HsLua.Core.RunTests
+                     , HsLua.Core.TraceTests
                      , HsLua.Core.UnsafeTests
                      , HsLua.Core.UserdataTests
                      , Test.Tasty.HsLua

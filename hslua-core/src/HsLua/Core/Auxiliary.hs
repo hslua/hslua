@@ -285,7 +285,7 @@ tostring' n = do
 {-# INLINABLE tostring' #-}
 
 -- | Creates and pushes a traceback of the stack L1. If a message is
--- given it appended at the beginning of the traceback. The level
+-- given it is appended at the beginning of the traceback. The level
 -- parameter tells at which level to start the traceback.
 --
 -- Wraps 'luaL_traceback'.

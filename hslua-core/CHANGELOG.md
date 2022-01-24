@@ -18,6 +18,10 @@ Release pending.
 -   Added function `requiref`, which safely wraps the unsafe
     `luaL_requiref` function.
 
+-   New functions `pcallTrace`, `callTrace`, and `dofileTrace`:
+    behaves like the respective unsuffixed functions, but use a
+    message handler that creates a stack traceback on error.
+
 -   Package helper `requirehs` signature changed to
 
     ``` haskell

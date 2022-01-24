@@ -177,6 +177,10 @@ module HsLua.Core
   -- ** Registry fields
   , loaded
   , preload
+  -- ** Running with tracebacks
+  , pcallTrace
+  , callTrace
+  , dofileTrace
   -- * Haskell userdata values
   --
   -- | Push arbitrary Haskell values to the Lua stack.
@@ -212,5 +216,6 @@ import HsLua.Core.Error
 import HsLua.Core.Package
 import HsLua.Core.Primary
 import HsLua.Core.Run
+import HsLua.Core.Trace
 import HsLua.Core.Types as Lua
 import HsLua.Core.Userdata

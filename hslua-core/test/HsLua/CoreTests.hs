@@ -37,6 +37,7 @@ import qualified HsLua.Core.ClosuresTests
 import qualified HsLua.Core.ErrorTests
 import qualified HsLua.Core.PackageTests
 import qualified HsLua.Core.RunTests
+import qualified HsLua.Core.TraceTests
 import qualified HsLua.Core.UnsafeTests
 import qualified HsLua.Core.UserdataTests
 import qualified Foreign.Marshal as Foreign
@@ -448,6 +449,7 @@ tests = testGroup "Core module"
   , HsLua.Core.ClosuresTests.tests
   , HsLua.Core.PackageTests.tests
   , HsLua.Core.RunTests.tests
+  , HsLua.Core.TraceTests.tests
   , HsLua.Core.UnsafeTests.tests
   , HsLua.Core.UserdataTests.tests
   ]

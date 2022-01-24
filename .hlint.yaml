@@ -19,6 +19,7 @@
       - "Lua.Call"
       - "Lua.LPeg"
       - "Lua.Userdata"
+      - "HsLua.Core.Trace"
       - "HsLua.Module.Path"
       - "HsLua.Module.System"
       - "HsLua.Module.Version"
