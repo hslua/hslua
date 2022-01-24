@@ -33,6 +33,7 @@ import Test.Tasty.QuickCheck (testProperty)
 import qualified Prelude
 import qualified Data.ByteString as B
 import qualified HsLua.Core.AuxiliaryTests
+import qualified HsLua.Core.ClosuresTests
 import qualified HsLua.Core.ErrorTests
 import qualified HsLua.Core.PackageTests
 import qualified HsLua.Core.RunTests
@@ -444,6 +445,7 @@ tests = testGroup "Core module"
       res <- run @Lua.Exception luaOp
       assertEqual "error handling leaks values to the stack" 0 res
 
+  , HsLua.Core.ClosuresTests.tests
   , HsLua.Core.PackageTests.tests
   , HsLua.Core.RunTests.tests
   , HsLua.Core.UnsafeTests.tests
