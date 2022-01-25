@@ -64,7 +64,7 @@ peekUnnamedTree idx = liftLua (Lua.ltype idx) >>= \case
 data Outcome = Success | Failure String
 
 -- | Unmarshal a test outcome
-peekOutcome :: LuaError e => Peeker e Outcome
+peekOutcome :: Peeker e Outcome
 peekOutcome idx = retrieving "test result" $ do
   liftLua (Lua.ltype idx) >>= \case
     Lua.TypeString  -> Failure <$!> peekString idx
