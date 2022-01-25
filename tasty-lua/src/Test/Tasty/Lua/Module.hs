@@ -4,8 +4,6 @@ Module      : Test.Tasty.Lua.Module
 Copyright   : © 2019–2022 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
-Stability   : alpha
-Portability : Requires TemplateHaskell
 
 Tasty Lua module, providing the functions necessary to write tasty tests
 in Lua scripts.
@@ -17,17 +15,16 @@ where
 import Data.ByteString (ByteString)
 import Data.FileEmbed
 import HsLua.Core
-  (LuaE, LuaError, NumResults, Status (OK), dostring, throwErrorAsException)
+  ( HaskellFunction, LuaError, Status (OK)
+  , dostringTrace, throwErrorAsException )
 
 -- | Tasty Lua script
 tastyScript :: ByteString
 tastyScript = $(embedFile "tasty.lua")
 
--- | Push the Aeson module on the Lua stack.
-pushModule :: LuaError e => LuaE e NumResults
-pushModule = do
-  result <- dostring tastyScript
-  if result == OK
-    then return 1
-    else throwErrorAsException
+-- | Push the tasty module on the Lua stack.
+pushModule :: LuaError e => HaskellFunction e
+pushModule = dostringTrace tastyScript >>= \case
+  OK -> pure 1
+  _  -> throwErrorAsException
 {-# INLINABLE pushModule #-}

@@ -21,11 +21,9 @@ import qualified Test.Tasty.Providers as Tasty
 -- | Run tasty.lua tests from the given file and translate the result
 -- into a mock Tasty @'TestTree'@.
 translateResultsFromFile :: LuaError e => FilePath -> LuaE e Tasty.TestTree
-translateResultsFromFile fp = do
-  result <- runTastyFile fp
-  case result of
-    Left errMsg -> return $ pathFailure fp errMsg
-    Right tree  -> return $ Tasty.testGroup fp (map testTree tree)
+translateResultsFromFile fp = runTastyFile fp >>= \case
+  Left errMsg -> return $ pathFailure fp errMsg
+  Right tree  -> return $ Tasty.testGroup fp (map testTree tree)
 
 -- | Report failure of testing a path.
 pathFailure :: FilePath -> String -> Tasty.TestTree

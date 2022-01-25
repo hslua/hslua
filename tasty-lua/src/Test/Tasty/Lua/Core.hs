@@ -1,4 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
@@ -18,15 +17,13 @@ module Test.Tasty.Lua.Core
 where
 
 import Control.Monad ((<$!>), void)
-import Data.ByteString (ByteString)
-import HsLua.Core (LuaE, LuaError, absindex, pop, toboolean, top)
+import HsLua.Core (LuaE, LuaError, toboolean, top)
 import HsLua.Marshalling
   ( Peeker, failPeek, liftLua, resultToEither, retrieving
-  , peekList, peekString, runPeek, typeMismatchMessage)
+  , peekFieldRaw, peekList, peekString, runPeek, typeMismatchMessage)
 import Test.Tasty.Lua.Module (pushModule)
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as T.Encoding
 import qualified HsLua.Core as Lua
+import qualified HsLua.Core.Utf8 as Utf8
 import qualified Test.Tasty as Tasty
 
 -- | Run a tasty Lua script from a file and return either the resulting
@@ -37,13 +34,8 @@ runTastyFile fp = do
   Lua.requirehs "tasty" (const . void $ pushModule)
   res <- Lua.dofileTrace fp
   if res /= Lua.OK
-    then Left . toString <$> Lua.tostring' top
+    then Left . Utf8.toString <$> Lua.tostring' top
     else resultToEither <$> runPeek (peekList peekResultTree top)
-
--- | Convert UTF8-encoded @'ByteString'@ to a @'String'@.
-toString :: ByteString -> String
-toString = T.unpack . T.Encoding.decodeUtf8
-
 
 -- | Tree of test results returned by tasty Lua scripts. This is
 -- similar to tasty's @'TestTree'@, with the important difference that
@@ -52,12 +44,9 @@ data ResultTree = ResultTree Tasty.TestName UnnamedTree
 
 peekResultTree :: LuaError e => Peeker e ResultTree
 peekResultTree idx = do
-  idx'   <- liftLua $ absindex idx
-  name   <- liftLua (Lua.getfield idx' "name")   *> peekString top
-  result <- liftLua (Lua.getfield idx' "result") *> peekUnnamedTree top
-  liftLua $ pop 2
+  name   <- peekFieldRaw peekString "name" idx
+  result <- peekFieldRaw peekUnnamedTree "result" idx
   return $! ResultTree name result
-
 
 -- | Either a raw test outcome, or a nested @'Tree'@.
 data UnnamedTree
