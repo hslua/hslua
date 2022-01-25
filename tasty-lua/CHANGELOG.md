@@ -11,6 +11,8 @@ Release pending.
     `assert.is.x` or `assert.are.x` is an acceptable alternative
     to `assert.is_x` and `assert.are_x`, respectively.
 
+-   Added new assertion functions `is_true` and `is_false`.
+
 -   Relaxed upper bound for hslua-core, hslua-marshalling.
 
 ## tasty-lua-0.2.3.2

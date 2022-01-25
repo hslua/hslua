@@ -30,6 +30,22 @@ return {
       test('nil is falsy', function() assert.is_falsy(nil) end),
     },
 
+    group 'is_true' {
+      test('succeeds on `true`', function() assert.is_true(true) end),
+      test('fails on 1', function()
+        local success = pcall(assert.is_true, 1)
+        assert.is_true(not success)
+      end),
+    },
+
+    group 'is_false' {
+      test('succeeds on `false`', function() assert.is_false(false) end),
+      test('fails on nil', function()
+        local success = pcall(assert.is_false, nil)
+        assert.is_false(success)
+      end),
+    },
+
     group 'is_nil' {
       test('nil is nil', function () assert.is_nil(nil) end)
     },

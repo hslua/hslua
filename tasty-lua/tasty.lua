@@ -62,6 +62,22 @@ assert.is_falsy = make_assertion(
   end
 )
 
+--- Value is true
+assert.is_true = make_assertion(
+  "expected true, got %s",
+  function (x)
+    return x == true
+  end
+)
+
+--- Value is false
+assert.is_false = make_assertion(
+  "expected false, got %s",
+  function (x)
+    return x == false
+  end
+)
+
 --- Value is nil
 assert.is_nil = make_assertion(
   "expected nil, got %s",
