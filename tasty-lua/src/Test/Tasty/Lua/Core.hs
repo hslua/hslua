@@ -3,11 +3,9 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
 Module      : Test.Tasty.Lua.Core
-Copyright   : © 2019–2021 Albert Krewinkel
+Copyright   : © 2019–2022 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
-Stability   : alpha
-Portability : not portable, requires GHC or later
 
 Core types and functions for tasty Lua tests.
 -}

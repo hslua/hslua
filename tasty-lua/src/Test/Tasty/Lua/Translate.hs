@@ -1,10 +1,8 @@
 {-|
 Module      : Test.Tasty.Lua.Translate
-Copyright   : © 2019–2021 Albert Krewinkel
+Copyright   : © 2019–2022 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
-Stability   : alpha
-Portability : Requires GHC
 
 Translate test results from Lua into a Tasty @'TestTree'@.
 -}
