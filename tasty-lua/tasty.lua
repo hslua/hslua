@@ -23,6 +23,13 @@ assert.are = setmetatable({}, {
     end
 })
 
+--- Special table allowing to use `assert.error.matches` instead of
+--- `assert.error_matches.`
+assert.error = setmetatable({}, {
+    __index = function (t, k)
+      return assert['error_' .. k]
+    end
+})
 
 --- Create a new assertion function.
 local function make_assertion (error_message, callback)
@@ -135,6 +142,35 @@ assert.are_same = make_assertion(
   end
 )
 
+--- Checks that a error is raised and that the error satisfies the given
+-- assertion.
+assert.error_satisfies = make_assertion(
+  function (actual)
+    return ('assertion did not hold for error object:%s')
+      :format(actual)
+  end,
+  function (fn, assertion)
+    local success, err = pcall(fn)
+    if success then
+      return false
+    end
+    return pcall(assertion, err)
+  end
+)
+
+--- Checks that a error is raised and that the error equals an expected value.
+assert.error_equals = make_assertion(
+  function (actual, fun, expected)
+    return ('expected error to equal %s, got: %s'):format(expected, actual)
+  end,
+  function (fn, expected)
+    local success, err = pcall(fn)
+    return not success and expected == err, err
+  end
+)
+
+--- Checks that a error is raised and that the message matches the given
+--- pattern.
 assert.error_matches = make_assertion(
   function (actual, fun, expected)
     return ('expected error to match pattern \'%s\' but got: %s')

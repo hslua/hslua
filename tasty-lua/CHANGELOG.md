@@ -11,7 +11,8 @@ Release pending.
     `assert.is.x` or `assert.are.x` is an acceptable alternative
     to `assert.is_x` and `assert.are_x`, respectively.
 
--   Added new assertion functions `is_true` and `is_false`.
+-   Added new assertion functions `is_true` and `is_false`,
+    `error_equals`, and `error_satifies`.
 
 -   Improved info message of `assert.error_matches`; the message
     now includes the expected pattern as well as the actual error.

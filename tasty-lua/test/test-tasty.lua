@@ -19,6 +19,32 @@ return {
       end)
     },
 
+    group 'error_satisfies' {
+      test('succeeds if error satisfies the assertion', function ()
+        assert.error_satisfies(
+          function () error(true) end,
+          assert.is_true
+        )
+      end),
+      test('fails if function succeeds', function ()
+        local success = pcall(assert.error_satifies, function () end, assert)
+        assert.is_falsy(success)
+      end)
+    },
+
+    group 'error_equals' {
+      test('succeeds if error is equal', function ()
+        assert.error_equals(
+          function () error(42) end,
+          42
+        )
+      end),
+      test('fails if function succeeds', function ()
+        local success = pcall(assert.error_equals, function () end, '')
+        assert.is_falsy(success)
+      end)
+    },
+
     group 'is_truthy' {
       test('zero is truthy', function() assert.is_truthy(0) end),
       test('true is truthy', function() assert.is_truthy(true) end),
@@ -84,6 +110,9 @@ return {
     end),
     test('assert.are.equal', function ()
       assert(assert.are.equal == assert.are_equal)
+    end),
+    test('assert.error.matches', function ()
+      assert(assert.error.matches == assert.error_matches)
     end),
   },
 }
