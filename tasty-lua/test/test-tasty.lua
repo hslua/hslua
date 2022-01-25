@@ -10,7 +10,7 @@ return {
       test('succeeds if error matches', function ()
         assert.error_matches(
           function () error 'Futurama' end,
-          'tura'
+          'Futura'
         )
       end),
       test('fails if function succeeds', function ()

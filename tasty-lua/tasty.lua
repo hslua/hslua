@@ -15,8 +15,8 @@ assert.is = setmetatable({}, {
     end
 })
 
---- Special table allowing to use `assert.is.truthy` instead of
---- `assert.is_truthy.`
+--- Special table allowing to use `assert.are.same` instead of
+--- `assert.are_same.`
 assert.are = setmetatable({}, {
     __index = function (t, k)
       return assert['are_' .. k]
@@ -27,20 +27,24 @@ assert.are = setmetatable({}, {
 --- Create a new assertion function.
 local function make_assertion (error_message, callback)
   return function (...)
-    local success, assertion_result = pcall(callback, ...)
+    local assertion_holds, info = callback(...)
     -- Calling the assertion function produced an error, report it.
-    if not success then
-      error(assertion_result)
-    end
-
-    if assertion_result then
+    if assertion_holds then
       return
     end
 
     -- Assertion failed, format and throw the error message
-    local success, message = pcall(string.format, error_message, ...)
+    local success, message
+    if type(error_message) == 'function' then
+      success, message = pcall(error_message, info, ...)
+    elseif type(error_message) == 'string' then
+      success, message = pcall(string.format, error_message, ...)
+    else
+      success, message = false, error_message
+    end
     if not success then
-      error('assertion failed: ' .. tostring(message), 1)
+      error('assertion failed, but error could not be formatted:\n' ..
+            tostring(message), 1)
     end
     error('\n' .. message or 'assertion failed!', 2)
   end
@@ -132,13 +136,16 @@ assert.are_same = make_assertion(
 )
 
 assert.error_matches = make_assertion(
-  'no error matching the given pattern was raised',
+  function (actual, fun, expected)
+    return ('expected error to match pattern \'%s\' but got: %s')
+      :format(expected, actual)
+  end,
   function (fn, pattern)
     local success, msg = pcall(fn)
     if success then
       return false
     end
-    return tostring(msg):match(pattern)
+    return tostring(msg):match(pattern), msg
   end
 )
 
