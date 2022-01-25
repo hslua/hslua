@@ -62,4 +62,12 @@ return {
       end),
     },
   },
+  group 'access via subtable' {
+    test('assert.is.truthy', function ()
+      assert(assert.is.truthy == assert.is_truthy)
+    end),
+    test('assert.are.equal', function ()
+      assert(assert.are.equal == assert.are_equal)
+    end),
+  },
 }

@@ -6,6 +6,11 @@
 
 Release pending.
 
+-   Allow dot instead of underscore in assertion functions: It's
+    often easier to type dot than an underscore, so writing
+    `assert.is.x` or `assert.are.x` is an acceptable alternative
+    to `assert.is_x` and `assert.are_x`, respectively.
+
 -   Relaxed upper bound for hslua-core, hslua-marshalling.
 
 ## tasty-lua-0.2.3.2

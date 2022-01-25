@@ -7,6 +7,23 @@ local assert = setmetatable({}, {
   __call = _G.assert,  -- use global assert when called.
 })
 
+--- Special table allowing to use `assert.is.truthy` instead of
+--- `assert.is_truthy.`
+assert.is = setmetatable({}, {
+    __index = function (t, k)
+      return assert['is_' .. k]
+    end
+})
+
+--- Special table allowing to use `assert.is.truthy` instead of
+--- `assert.is_truthy.`
+assert.are = setmetatable({}, {
+    __index = function (t, k)
+      return assert['are_' .. k]
+    end
+})
+
+
 --- Create a new assertion function.
 local function make_assertion (error_message, callback)
   return function (...)
