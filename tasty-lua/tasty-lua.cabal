@@ -44,6 +44,9 @@ library
   ghc-options:         -Wall
   default-extensions:  LambdaCase
                      , StrictData
+  other-extensions:    OverloadedStrings
+                     , ScopedTypeVariables
+                     , TemplateHaskell
 
 test-suite test-tasty-lua
   default-language:    Haskell2010
