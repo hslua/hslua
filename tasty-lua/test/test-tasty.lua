@@ -115,4 +115,11 @@ return {
       assert(assert.error.matches == assert.error_matches)
     end),
   },
+  group 'test currying' {
+    test 'test name' (
+      function ()
+        return
+      end
+    )
+  }
 }

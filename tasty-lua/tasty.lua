@@ -207,6 +207,12 @@ end
 -- Test definitions
 
 local function test_case (name, callback)
+  if callback == nil then
+    -- let's try currying
+    return function (callback_)
+      return callback_ and test_case(name, callback_) or error('no test')
+    end
+  end
   local success, err_msg = pcall(callback)
   return success
     and test_success(name)
