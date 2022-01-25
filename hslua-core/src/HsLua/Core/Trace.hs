@@ -11,10 +11,12 @@ module HsLua.Core.Trace
   ( pcallTrace
   , callTrace
   , dofileTrace
+  , dostringTrace
   ) where
 
+import Data.ByteString (ByteString)
 import Foreign.C.Types
-import HsLua.Core.Auxiliary (loadfile, tostring', traceback)
+import HsLua.Core.Auxiliary (loadfile, loadstring, tostring', traceback)
 import HsLua.Core.Error (Exception, LuaError, throwErrorAsException)
 import HsLua.Core.Primary (gettop, insert, pcall, pushcfunction, remove)
 import HsLua.Core.Run (runWith)
@@ -46,6 +48,11 @@ dofileTrace :: FilePath -> LuaE e Status
 dofileTrace fp = loadfile fp >>= \case
   OK -> pcallTrace 0 multret
   s  -> pure s
+
+dostringTrace :: ByteString -> LuaE e Status
+dostringTrace s = loadstring s >>= \case
+  OK  -> pcallTrace 0 multret
+  err -> pure err
 
 -- | Helper function used as message handler if the function given to
 -- pcall fails.

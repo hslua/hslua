@@ -181,6 +181,7 @@ module HsLua.Core
   , pcallTrace
   , callTrace
   , dofileTrace
+  , dostringTrace
   -- * Haskell userdata values
   --
   -- | Push arbitrary Haskell values to the Lua stack.
