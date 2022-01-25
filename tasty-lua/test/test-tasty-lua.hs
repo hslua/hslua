@@ -31,8 +31,9 @@ main = do
 -- | HSpec tests for the Lua 'system' module
 tests :: TestTree
 tests = testGroup "HsLua tasty module"
-  [ testCase "can be pushed to the stack" $
-      Lua.run (void pushModule :: Lua ())
+  [ testCase "can be pushed to the stack" . Lua.run $ do
+      Lua.openlibs
+      void pushModule :: Lua ()
 
   , testCase "can be added to the preloader" . Lua.run $ do
       Lua.openlibs
