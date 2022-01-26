@@ -102,6 +102,8 @@ newtype Integer = Integer #{type LUA_INTEGER}
 -- support for GHC 8.0
 instance Show Integer where
   show (Integer i) = show i
+instance Read Integer where
+  readsPrec i = map (first Integer) . readsPrec i
 
 -- |  The type of floats in Lua.
 --
@@ -116,6 +118,8 @@ newtype Number = Number #{type LUA_NUMBER}
 -- support for GHC 8.0
 instance Show Number where
   show (Number n) = show n
+instance Read Number where
+  readsPrec i = map (first Number) . readsPrec i
 
 -- | Boolean value returned by a Lua C API function. This is a @'CInt'@
 -- and should be interpreted as @'False'@ iff the value is @0@, @'True'@

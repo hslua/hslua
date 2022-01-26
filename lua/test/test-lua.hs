@@ -117,7 +117,9 @@ tests = testGroup "lua"
           lua_type l top
 
     , "show Integer" =: ("23" @=? show (23 :: Lua.Integer))
+    , "read Integer" =: ((23 :: Lua.Integer) @=? read "23")
     , "show Number" =: ("23.5" @=? show (23.5 :: Lua.Number))
+    , "read Number" =: ((23.5 :: Lua.Number) @=? read "23.5")
     ]
 
   , testGroup "nil"

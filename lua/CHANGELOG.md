@@ -35,6 +35,10 @@ Release pending.
 -   Made types `OPCode`, `StatusCode`, and `GCCode` instances of
     type class `Show`.
 
+-   The `Show` instances of Integer and Number now behave like
+    those of the wrapped types. Both types are now also instance
+    of `Read`.
+
 -   Removed `hslua_userdata_gc` from `hslua.h`.
 
 ## lua-2.0.2
