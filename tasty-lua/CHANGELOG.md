@@ -6,6 +6,18 @@
 
 Release pending.
 
+-   Support for property testing: the new functions `forall` and a
+    set of generators are provided for property testing. The table
+    `tasty.arbitrary` holds default generators for basic types:
+
+    -    `tasty.arbitrary.boolean`
+    -    `tasty.arbitrary.integer`
+    -    `tasty.arbitrary.number`
+    -    `tasty.arbitrary.string`
+
+    Additional generators can be added via the Haskell function
+    `registerArbitrary`.
+
 -   Allow dot instead of underscore in assertion functions: It's
     often easier to type dot than an underscore, so writing
     `assert.is.x` or `assert.are.x` is an acceptable alternative

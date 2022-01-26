@@ -5,26 +5,28 @@ Module      : Main
 Copyright   : © 2019-2022 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
-Stability   : alpha
-Portability : Requires language extensions ForeignFunctionInterface,
-              OverloadedStrings.
 
 Tests for the @tasty@ Lua module.
 -}
 
 import Control.Monad (void)
 import HsLua.Core (Lua)
+import Lua.Arbitrary ()
 import System.Directory (withCurrentDirectory)
 import System.FilePath ((</>))
+import Test.QuickCheck (Arbitrary (arbitrary))
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit (assertEqual, testCase)
-import Test.Tasty.Lua (pushModule, testLuaFile, translateResultsFromFile)
+import Test.Tasty.Lua
+  (pushModule, registerArbitrary, testLuaFile, translateResultsFromFile)
 
 import qualified HsLua.Core as Lua
+import qualified HsLua.Marshalling as Lua
 
 main :: IO ()
 main = do
-  luaTest <- withCurrentDirectory "test" . Lua.run @Lua.Exception $
+  luaTest <- withCurrentDirectory "test" . Lua.run @Lua.Exception $ do
+    registerArbitrary "custom" pushCustom
     translateResultsFromFile "test-tasty.lua"
   defaultMain $ testGroup "tasty-hslua" [luaTest, tests]
 
@@ -49,10 +51,26 @@ tests = testGroup "HsLua tasty module"
         Lua.dostring "require 'tasty'"
 
   , testGroup "testFileWith"
-    [ testLuaFile (Lua.run @Lua.Exception)
+    [ testLuaFile
+      (\x -> Lua.run @Lua.Exception $ do
+        registerArbitrary "custom" pushCustom
+        x)
       "test-tasty.lua" ("test" </> "test-tasty.lua")
     ]
   ]
 
 assertEqual' :: (Show a, Eq a) => String -> a -> a -> Lua ()
 assertEqual' msg expected = Lua.liftIO . assertEqual msg expected
+
+-- | Custom type used for to check property testing.
+newtype Custom = Custom Lua.Integer
+
+instance Arbitrary Custom where
+  arbitrary = Custom <$> arbitrary
+
+pushCustom :: Lua.LuaError e => Lua.Pusher e Custom
+pushCustom (Custom i) = do
+  Lua.newtable
+  Lua.pushName "int"
+  Lua.pushinteger i
+  Lua.rawset (Lua.nth 3)

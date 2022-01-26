@@ -20,6 +20,7 @@ module Test.Tasty.Lua
   , translateResultsFromFile
     -- * Helpers
   , pathFailure
+  , registerArbitrary
   )
 where
 
@@ -29,6 +30,7 @@ import Data.List (intercalate)
 import HsLua.Core (LuaE, LuaError)
 import Test.Tasty (TestName, TestTree)
 import Test.Tasty.Providers (IsTest (..), singleTest, testFailed, testPassed)
+import Test.Tasty.Lua.Arbitrary (registerArbitrary)
 import Test.Tasty.Lua.Module (pushModule)
 import Test.Tasty.Lua.Core (Outcome (..), ResultTree (..), UnnamedTree (..),
                             runTastyFile)

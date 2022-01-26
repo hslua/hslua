@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-|
 Module      : Test.Tasty.Lua.Module
@@ -15,8 +16,10 @@ where
 import Data.ByteString (ByteString)
 import Data.FileEmbed
 import HsLua.Core
-  ( HaskellFunction, LuaError, Status (OK)
-  , dostringTrace, throwErrorAsException )
+  ( HaskellFunction, LuaError, NumResults (..), Status (OK)
+  , dostringTrace, nth, rawset, throwErrorAsException )
+import HsLua.Marshalling (pushName)
+import Test.Tasty.Lua.Arbitrary
 
 -- | Tasty Lua script
 tastyScript :: ByteString
@@ -25,6 +28,11 @@ tastyScript = $(embedFile "tasty.lua")
 -- | Push the tasty module on the Lua stack.
 pushModule :: LuaError e => HaskellFunction e
 pushModule = dostringTrace tastyScript >>= \case
-  OK -> pure 1
+  OK -> NumResults 1 <$ do
+    -- add `arbitrary` table
+    pushName "arbitrary"
+    pushArbitraryTable
+    rawset (nth 3)
+    registerDefaultGenerators
   _  -> throwErrorAsException
 {-# INLINABLE pushModule #-}

@@ -30,11 +30,13 @@ source-repository head
 
 common common-options
   default-language:    Haskell2010
-  build-depends:       base          >= 4.8    && < 5
-                     , bytestring    >= 0.10.2 && < 0.12
+  build-depends:       base              >= 4.8    && < 5
+                     , bytestring        >= 0.10.2 && < 0.12
                      , hslua-core        >= 2.0    && < 2.2
                      , hslua-marshalling >= 2.0    && < 2.2
+                     , lua-arbitrary     >= 1.0    && < 1.1
                      , tasty             >= 1.2    && < 1.5
+                     , QuickCheck        >= 2.9    && < 2.15
   default-extensions:  LambdaCase
                      , StrictData
   ghc-options:         -Wall
@@ -55,6 +57,7 @@ library
   build-depends:       file-embed        >= 0.0    && < 0.1
                      , text              >= 1.2    && < 2.1
   exposed-modules:     Test.Tasty.Lua
+                     , Test.Tasty.Lua.Arbitrary
                      , Test.Tasty.Lua.Core
                      , Test.Tasty.Lua.Module
                      , Test.Tasty.Lua.Translate

@@ -232,8 +232,25 @@ local function test_group (name, tests)
   }
 end
 
+------------------------------------------------------------------------
+-- Property tests
+local function forall (generator, property)
+  return function ()
+    local i = 0
+    for value in generator() do
+      i = i + 1
+      if not property(value) then
+        error(('falsifiable after %d steps; property fails for %s')
+          :format(i, value))
+      end
+    end
+    return string.format("%d tests succeeded", i)
+  end
+end
+
 return {
   assert = assert,
+  forall = forall,
   ok = ok,
   test_case = test_case,
   test_group = test_group

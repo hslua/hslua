@@ -1,6 +1,8 @@
 local tasty = require 'tasty'
 
+local arbitrary = tasty.arbitrary
 local assert = tasty.assert
+local forall = tasty.forall
 local test = tasty.test_case
 local group = tasty.test_group
 
@@ -121,5 +123,45 @@ return {
         return
       end
     )
+  },
+  group 'property testing'
+  {
+    test(
+      'booleans',
+      forall(
+        arbitrary.boolean,
+        function (b) return type(b) == 'boolean' end
+      )
+    ),
+    test(
+      'numbers',
+      forall(
+        arbitrary.number,
+        function (n) return type(n) == 'number' end
+      )
+    ),
+    test(
+      'integers',
+      forall(
+        arbitrary.integer,
+        function (i) return type(i) == 'number' and math.floor(i) == i end
+      )
+    ),
+    test(
+      'strings',
+      forall(
+        arbitrary.string,
+        function (s) return type(s) == 'string' end
+      )
+    ),
+    test(
+      'custom',
+      forall(
+        arbitrary.custom,
+        function (t)
+          return type(t) == 'table' and type(t.int) == 'number'
+        end
+      )
+    ),
   }
 }
