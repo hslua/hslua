@@ -37,6 +37,7 @@ where
 
 import Prelude hiding (Integer)
 
+import Data.Bifunctor (first)
 import Data.Int (#{type LUA_INTEGER})
 import Foreign.C (CChar, CInt, CSize)
 import Foreign.Ptr (FunPtr, Ptr)
@@ -96,7 +97,11 @@ type Reader = FunPtr (State -> Ptr () -> Ptr CSize -> IO (Ptr CChar))
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_Integer lua_Integer>.
 newtype Integer = Integer #{type LUA_INTEGER}
-  deriving (Bounded, Enum, Eq, Integral, Num, Ord, Real, Show)
+  deriving (Bounded, Enum, Eq, Integral, Num, Ord, Real)
+-- we should be able to use deriving strategies if we decide to drop
+-- support for GHC 8.0
+instance Show Integer where
+  show (Integer i) = show i
 
 -- |  The type of floats in Lua.
 --
@@ -106,7 +111,11 @@ newtype Integer = Integer #{type LUA_INTEGER}
 --
 -- See <https://www.lua.org/manual/5.3/manual.html#lua_Number lua_Number>.
 newtype Number = Number #{type LUA_NUMBER}
-  deriving (Eq, Floating, Fractional, Num, Ord, Real, RealFloat, RealFrac, Show)
+  deriving (Eq, Floating, Fractional, Num, Ord, Real, RealFloat, RealFrac)
+-- we should be able to use deriving strategies if we decide to drop
+-- support for GHC 8.0
+instance Show Number where
+  show (Number n) = show n
 
 -- | Boolean value returned by a Lua C API function. This is a @'CInt'@
 -- and should be interpreted as @'False'@ iff the value is @0@, @'True'@

@@ -115,6 +115,9 @@ tests = testGroup "lua"
         LUA_TNUMBER `shouldBeResultOf` \l -> do
           lua_pushinteger l 0
           lua_type l top
+
+    , "show Integer" =: ("23" @=? show (23 :: Lua.Integer))
+    , "show Number" =: ("23.5" @=? show (23.5 :: Lua.Number))
     ]
 
   , testGroup "nil"
