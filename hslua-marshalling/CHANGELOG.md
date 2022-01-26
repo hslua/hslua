@@ -29,6 +29,9 @@ Release pending.
     to the error context by `retrieving`, so `withContext` allows
     to define contexts without this prefix.
 
+-   New convenience function `pushAsTable`, making it easier to
+    define a pusher function for values marshaled as tables.
+
 ## hslua-marshalling-2.0.1
 
 Released 2021-11-04.

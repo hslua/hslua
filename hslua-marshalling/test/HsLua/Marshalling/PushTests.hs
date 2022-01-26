@@ -234,6 +234,17 @@ tests = testGroup "Push"
           mc <- Lua.rawgeti Lua.top 3 *> Lua.tonumber Lua.top  <* Lua.pop 1
           return $ (,,) <$> ma <*> mb <*> mc
         assert (mpair == Just (a, b, c))
+
+    , testProperty "pushAsTable" $ \(a, b) -> monadicIO $ do
+        mpair <- run $ Lua.run @Lua.Exception $ do
+          let fields = [ ("int", Lua.pushinteger . fst)
+                       , ("str", Lua.pushstring . snd)
+                       ]
+          pushAsTable fields (a, b)
+          ma <- Lua.getfield Lua.top "int" *> Lua.tointeger Lua.top <* Lua.pop 1
+          mb <- Lua.getfield Lua.top "str" *> Lua.tostring Lua.top  <* Lua.pop 1
+          return $ (,) <$> ma <*> mb
+        assert (mpair == Just (a, b))
     ]
   ]
 

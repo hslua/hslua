@@ -28,9 +28,10 @@ module HsLua.Marshalling.Push
   -- * Combinators
   , pushPair
   , pushTriple
+  , pushAsTable
   ) where
 
-import Control.Monad (zipWithM_)
+import Control.Monad (forM_, zipWithM_)
 import Data.ByteString (ByteString)
 import Data.Map (Map, toList)
 import Data.Set (Set)
@@ -130,6 +131,17 @@ pushSet pushElement set = checkstack 3 >>= \case
 --
 -- Combinators
 --
+-- | Pushes an object as a table, defined by a list of
+-- field-names/push-function pairs.
+pushAsTable :: LuaError e
+            => [(Name, a -> LuaE e ())]
+            -> a -> LuaE e ()
+pushAsTable props obj = do
+  createtable 0 (length props)
+  forM_ props $ \(name, pushValue) -> do
+    pushName name
+    pushValue obj
+    rawset (nth 3)
 
 -- | Pushes a pair of values as a two element list.
 pushPair :: LuaError e
