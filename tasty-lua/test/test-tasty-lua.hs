@@ -26,7 +26,7 @@ import qualified HsLua.Marshalling as Lua
 main :: IO ()
 main = do
   luaTest <- withCurrentDirectory "test" . Lua.run @Lua.Exception $ do
-    registerArbitrary "custom" pushCustom
+    registerCustom
     translateResultsFromFile "test-tasty.lua"
   defaultMain $ testGroup "tasty-hslua" [luaTest, tests]
 
@@ -53,7 +53,7 @@ tests = testGroup "HsLua tasty module"
   , testGroup "testFileWith"
     [ testLuaFile
       (\x -> Lua.run @Lua.Exception $ do
-        registerArbitrary "custom" pushCustom
+        registerCustom
         x)
       "test-tasty.lua" ("test" </> "test-tasty.lua")
     ]
@@ -61,6 +61,12 @@ tests = testGroup "HsLua tasty module"
 
 assertEqual' :: (Show a, Eq a) => String -> a -> a -> Lua ()
 assertEqual' msg expected = Lua.liftIO . assertEqual msg expected
+
+registerCustom :: Lua ()
+registerCustom = do
+  registerArbitrary "custom" pushCustom nopeek
+  registerArbitrary @[Integer] "integer_list"
+    (Lua.pushList Lua.pushIntegral) (Lua.peekList Lua.peekIntegral)
 
 -- | Custom type used for to check property testing.
 newtype Custom = Custom Lua.Integer
@@ -74,3 +80,6 @@ pushCustom (Custom i) = do
   Lua.pushName "int"
   Lua.pushinteger i
   Lua.rawset (Lua.nth 3)
+
+nopeek :: Lua.Peeker e a
+nopeek = const $ Lua.failPeek "nope"  -- do not allow peeking

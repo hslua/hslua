@@ -17,24 +17,36 @@ module Test.Tasty.Lua.Arbitrary
 where
 
 import HsLua.Core
-  ( LuaE, LuaError, Name
-  , liftIO, newmetatable, nth, pop, pushHaskellFunction, pushboolean
-  , pushinteger, pushnumber, pushvalue, rawset, setmetatable, top )
-import HsLua.Marshalling ( Pusher, pushIterator, pushName, pushString )
+import HsLua.Marshalling
 import Lua.Arbitrary ()
 import Test.QuickCheck (Arbitrary (..), generate, vectorOf)
 
 -- | Register a Lua value generator.
 registerArbitrary :: forall a e. (Arbitrary a, LuaError e)
-                  => Name -> Pusher e a -> LuaE e ()
-registerArbitrary name push = do
+                  => Name
+                  -> Pusher e a
+                  -> Peeker e a
+                  -> LuaE e ()
+registerArbitrary name push peek = do
   pushArbitraryTable
   pushName name
+  newtable
+  pushName "generator"
   pushHaskellFunction $ do
     samples <- liftIO (generate $ vectorOf 30 (arbitrary @a))
-    pushIterator (\x -> 1 <$ push x) samples
+    pushIterator (\x -> NumResults 1 <$ push x) samples
+  rawset (nth 3)
+  pushName "shrink"
+  pushHaskellFunction $
+    runPeeker peek (nthBottom 1) >>= \case
+      Success x -> do
+        pushList push (shrink x)
+        pure (NumResults 1)
+      _ -> pure (NumResults 0)
+  rawset (nth 3)
   rawset (nth 3)
   pop 1  -- remove `tasty.arbitrary` table
+
 
 -- | Pushes the table holding all arbitrary generators to the stack.
 pushArbitraryTable :: LuaE e ()
@@ -49,7 +61,7 @@ pushArbitraryTable =
 
 registerDefaultGenerators :: LuaError e => LuaE e ()
 registerDefaultGenerators = do
-  registerArbitrary "boolean" pushboolean
-  registerArbitrary "integer" pushinteger
-  registerArbitrary "number" pushnumber
-  registerArbitrary "string" pushString
+  registerArbitrary "boolean" pushboolean peekBool
+  registerArbitrary "integer" pushinteger (reportValueOnFailure "integer" tointeger)
+  registerArbitrary "number" pushnumber (reportValueOnFailure "number" tonumber)
+  registerArbitrary "string" pushString peekString

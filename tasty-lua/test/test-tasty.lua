@@ -163,5 +163,20 @@ return {
         end
       )
     ),
+    test(
+      'list of integers',
+      forall(
+        arbitrary.integer_list,
+        function (nums)
+          if type(nums) ~= 'table' then return false end
+          for _, i in ipairs(nums) do
+            if type(i) ~= 'number' then
+              return false
+            end
+          end
+          return true
+        end
+      )
+    )
   }
 }

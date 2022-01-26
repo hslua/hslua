@@ -234,14 +234,52 @@ end
 
 ------------------------------------------------------------------------
 -- Property tests
-local function forall (generator, property)
+
+local maxshrinks = 10
+
+local function doshrink(property, value, shrink)
+  local shrunken = value
+  local numshrinks = 0
+  while numshrinks < maxshrinks do
+    local candidates = shrink(shrunken)
+    -- abort if shrinking failed, e.g., because the value could not be
+    -- peeked.
+    if candidates == nil then
+      break
+    end
+    for i, cand in ipairs(candidates) do
+      if not property(cand) then
+        numshrinks = numshrinks + 1
+        shrunken = cand
+        goto continue
+      end
+    end
+    -- no successful shrink happened, we are done
+    break
+    ::continue::
+  end
+  return shrunken, numshrinks
+end
+
+local function forall (arbitrary, property)
+  if type(arbitrary) ~= 'table' then
+    local msg =string.format(
+      'Unknown or invalid arbitrary generator: %s',
+      tostring(arbitrary)
+    )
+    error(msg, 2)
+  end
+  local generator = arbitrary.generator
+  local shrink = arbitrary.shrink
   return function ()
     local i = 0
     for value in generator() do
       i = i + 1
       if not property(value) then
-        error(('falsifiable after %d steps; property fails for %s')
-          :format(i, value))
+        local shrunken, steps = doshrink(property, value, shrink)
+        error(('falsifiable after %d steps; %d shrinking steps; ' ..
+               'property fails for %s')
+          :format(i, steps, shrunken))
       end
     end
     return string.format("%d tests succeeded", i)
