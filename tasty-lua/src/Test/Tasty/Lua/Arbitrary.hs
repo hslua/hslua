@@ -62,6 +62,6 @@ pushArbitraryTable =
 registerDefaultGenerators :: LuaError e => LuaE e ()
 registerDefaultGenerators = do
   registerArbitrary "boolean" pushboolean peekBool
-  registerArbitrary "integer" pushinteger (reportValueOnFailure "integer" tointeger)
-  registerArbitrary "number" pushnumber (reportValueOnFailure "number" tonumber)
-  registerArbitrary "string" pushString peekString
+  registerArbitrary "integer" pushinteger peekIntegral
+  registerArbitrary "number"  pushnumber  peekRealFloat
+  registerArbitrary "string"  pushString  peekString
