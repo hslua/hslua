@@ -14,6 +14,13 @@ Release pending.
     This replaces `pushDocumentationFunction`, which has been
     removed from the module.
 
+-   Function `registerDocumentation` was changed: the documentation
+    is no longer passed in but must be at the top of the stack.
+
+-   New functions `pushModuleDoc`, and `pushFunctionDoc`, pushing
+    structured documentation objects for models and functions,
+    respectively.
+
 -   Provide function `opt` to make a parameter optional. The
     function `optionalParameter` is deprecated, use `opt
     (parameter ...)` instead.

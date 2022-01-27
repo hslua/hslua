@@ -10,9 +10,13 @@ Provides a function to print documentation if available.
 module HsLua.Packaging.Documentation
   ( documentation
   , registerDocumentation
+  , pushModuleDoc
+  , pushFunctionDoc
   ) where
 
+import Data.Version (showVersion)
 import HsLua.Core as Lua
+import HsLua.Marshalling
 import HsLua.Packaging.Types
 
 -- | Function that retrieves documentation.
@@ -86,3 +90,59 @@ pushDocumentationTable = Lua.getfield registryindex docsField >>= \case
 -- | Name of the registry field holding the documentation table.
 docsField :: Name
 docsField = "HsLua docs"
+
+-- | Pushes the documentation of a module as a table with string fields
+-- @name@ and @description@.
+pushModuleDoc :: LuaError e => Pusher e (Module e)
+pushModuleDoc = pushAsTable
+  [ ("name", pushName . moduleName)
+  , ("description", pushText . moduleDescription)
+  , ("fields", pushList pushFieldDoc . moduleFields)
+  , ("functions", pushList pushFunctionDoc . moduleFunctions)
+  ]
+
+-- | Pushes the documentation of a field as a table with string fields
+-- @name@ and @description@.
+pushFieldDoc :: LuaError e => Pusher e (Field e)
+pushFieldDoc = pushAsTable
+  [ ("name", pushText . fieldName)
+  , ("description", pushText . fieldDescription)
+  ]
+
+-- | Pushes the documentation of a function as a table with string
+-- fields, @name@, @description@, and @since@, sequence field
+-- @parameters@, and sequence or string field @results@.
+pushFunctionDoc :: LuaError e => Pusher e (DocumentedFunction e)
+pushFunctionDoc fun = pushAsTable
+  [ ("name", pushName . const (functionName fun))
+  , ("description", pushText . functionDescription)
+  , ("parameters", pushList pushParameterDoc . parameterDocs)
+  , ("results", pushResultsDoc . functionResultsDocs)
+  , ("since", maybe pushnil (pushString . showVersion) . functionSince)
+  ] (functionDoc fun)
+
+-- | Pushes the documentation of a parameter as a table with boolean
+-- field @optional@ and string fields @name@, @type@, and @description.
+pushParameterDoc :: LuaError e => Pusher e ParameterDoc
+pushParameterDoc = pushAsTable
+  [ ("name", pushText . parameterName)
+  , ("type", pushText . parameterType)
+  , ("description", pushText . parameterDescription)
+  , ("optional", pushBool . parameterIsOptional)
+  ]
+
+-- | Pushes a the documentation for a function's return values as either
+-- a simple string, or as a sequence of tables with @type@ and
+-- @description@ fields.
+pushResultsDoc :: LuaError e => Pusher e ResultsDoc
+pushResultsDoc = \case
+  ResultsDocMult desc -> pushText desc
+  ResultsDocList resultDocs -> pushList pushResultValueDoc resultDocs
+
+-- | Pushes the documentation of a single result value as a table with
+-- fields @type@ and @description@.
+pushResultValueDoc :: LuaError e => Pusher e ResultValueDoc
+pushResultValueDoc = pushAsTable
+  [ ("type", pushText . resultValueType)
+  , ("description", pushText . resultValueDescription)
+  ]

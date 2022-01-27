@@ -61,8 +61,7 @@ import Data.Text (Text)
 import Data.Version (Version)
 import HsLua.Core
 import HsLua.Marshalling
-import HsLua.Packaging.Documentation (registerDocumentation)
-import HsLua.Packaging.Rendering (renderFunction)
+import HsLua.Packaging.Documentation
 import HsLua.Packaging.Types
 import qualified HsLua.Core as Lua
 import qualified HsLua.Core.Utf8 as Utf8
@@ -308,7 +307,7 @@ pushDocumentedFunction :: LuaError e
                        => DocumentedFunction e -> LuaE e ()
 pushDocumentedFunction fn = do
   Lua.pushHaskellFunction $ callFunction fn  -- push function
-  pushText (renderFunction fn)               -- function documentation
+  pushFunctionDoc fn                         -- function documentation
   registerDocumentation (Lua.nth 2)          -- store documentation
 
 -- | Pushes the documentation of the object at the given index to the
