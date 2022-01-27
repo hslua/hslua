@@ -12,9 +12,7 @@ module HsLua.Packaging.Documentation
   , registerDocumentation
   ) where
 
-import Data.Text (Text)
 import HsLua.Core as Lua
-import HsLua.Marshalling (pushText)
 import HsLua.Packaging.Types
 
 -- | Function that retrieves documentation.
@@ -53,19 +51,19 @@ documentationHaskellFunction = isnoneornil (nthBottom 1) >>= \case
     _ <- rawget (nth 2)
     return (NumResults 1)
 
--- | Registers text as documentation for the object at the stack index
--- @idx@.
+-- | Registers the object at the top of the stack as documentation for
+-- the object at index @idx@. Pops the documentation of the stack.
 registerDocumentation :: LuaError e
                       => StackIndex  -- ^ @idx@
-                      -> Text        -- ^ documentation string
                       -> LuaE e ()
-registerDocumentation idx docs = do
+registerDocumentation idx = do
+  checkstack' 10 "registerDocumentation"  -- keep some buffer
   idx' <- absindex idx
   pushDocumentationTable
-  pushvalue idx'  -- the documented object
-  pushText docs   -- documentation string
-  rawset (nth 3)  -- add to docs table
-  pop 1           -- pop docs table
+  pushvalue idx'    -- the documented object
+  pushvalue (nth 3) -- documentation object
+  rawset (nth 3)    -- add to docs table
+  pop 2             -- docs table and documentation object
 
 -- | Pushes the documentation table that's stored in the registry to the
 -- top of the stack, creating it if necessary. The documentation table

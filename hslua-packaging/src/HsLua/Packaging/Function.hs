@@ -308,7 +308,8 @@ pushDocumentedFunction :: LuaError e
                        => DocumentedFunction e -> LuaE e ()
 pushDocumentedFunction fn = do
   Lua.pushHaskellFunction $ callFunction fn  -- push function
-  registerDocumentation Lua.top $ renderFunction fn  -- store documentation
+  pushText (renderFunction fn)               -- function documentation
+  registerDocumentation (Lua.nth 2)          -- store documentation
 
 -- | Pushes the documentation of the object at the given index to the
 -- stack, or just *nil* if no documentation is available.
