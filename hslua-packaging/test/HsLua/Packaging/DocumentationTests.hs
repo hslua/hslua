@@ -11,12 +11,10 @@ Tests for calling exposed Haskell functions.
 module HsLua.Packaging.DocumentationTests (tests) where
 
 import Data.Version (makeVersion)
-import HsLua.Core (top, Status (OK), Type (TypeNil))
+import HsLua.Core (top, Status (OK), Type (TypeNil, TypeString))
 import HsLua.Packaging.Documentation
 import HsLua.Packaging.Function
-import HsLua.Packaging.Rendering
-import HsLua.Marshalling
-  ( forcePeek, peekIntegral, peekText, pushIntegral)
+import HsLua.Marshalling (forcePeek, peekIntegral, pushIntegral, peekText)
 import Test.Tasty.HsLua ((=:), shouldBeResultOf)
 import Test.Tasty (TestTree, testGroup)
 
@@ -27,12 +25,13 @@ tests :: TestTree
 tests = testGroup "Documentation"
   [ testGroup "Function docs"
     [ "retrieves function docs" =:
-      renderFunction factorial `shouldBeResultOf` do
+      "factorial" `shouldBeResultOf` do
         pushDocumentedFunction factorial
         Lua.setglobal (functionName factorial)
         pushDocumentedFunction documentation
         Lua.setglobal "documentation"
         OK <- Lua.dostring "return documentation(factorial)"
+        TypeString <- Lua.getfield top "name"
         forcePeek $ peekText top
 
     , "returns nil for undocumented function" =:

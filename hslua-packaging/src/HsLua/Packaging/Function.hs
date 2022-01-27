@@ -42,9 +42,6 @@ module HsLua.Packaging.Function
   , since
     -- * Pushing to Lua
   , pushDocumentedFunction
-    -- * Accessing documentation in Lua
-  , docsField
-  , pushDocumentation
     -- * Convenience functions
   , parameter
   , opt
@@ -291,15 +288,6 @@ infixl 8 ###, <#>, =#>, =?>, #?, `since`
 -- Push to Lua
 --
 
--- | Name of the registry field holding the documentation table. The
--- documentation table is indexed by the documented objects, like module
--- tables and functions, and contains documentation strings as values.
---
--- The table is an ephemeron table, i.e., an entry gets garbage
--- collected if the key is no longer reachable.
-docsField :: Name
-docsField = "HsLua docs"
-
 -- | Pushes a documented Haskell function to the Lua stack, making it
 -- usable as a normal function in Lua. At the same time, the function
 -- docs are registered in the documentation table.
@@ -309,20 +297,6 @@ pushDocumentedFunction fn = do
   Lua.pushHaskellFunction $ callFunction fn  -- push function
   pushFunctionDoc fn                         -- function documentation
   registerDocumentation (Lua.nth 2)          -- store documentation
-
--- | Pushes the documentation of the object at the given index to the
--- stack, or just *nil* if no documentation is available.
-pushDocumentation :: LuaError e => StackIndex -> LuaE e NumResults
-pushDocumentation idx = do
-  idx' <- Lua.absindex idx
-  Lua.getfield registryindex docsField >>= \case
-    TypeTable -> do
-      Lua.pushvalue idx'
-      void (Lua.rawget (nth 2))
-    _ -> do -- no documentation table available
-      Lua.pop 1    -- pop contents of docsField
-      Lua.pushnil
-  return (NumResults 1)
 
 --
 -- Convenience functions

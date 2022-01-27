@@ -11,8 +11,14 @@ Release pending.
     `HsLua.Packaging.Documentation`. It allows to retrieve the
     documentation of a given Lua object.
 
-    This replaces `pushDocumentationFunction`, which has been
-    removed from the module.
+    This replaces `pushDocumentationFunction`, which was removed.
+
+-   Cleanup of Function module:
+
+    -   `docsField` was moved to module Documentation.
+    -   `pushDocumentation` is renamed to `getdocumentation` and
+        moved to the Documentation module. It now returns the Lua
+        type of the retrieved documentation value.
 
 -   Function `registerDocumentation` was changed: the documentation
     is no longer passed in but must be at the top of the stack.

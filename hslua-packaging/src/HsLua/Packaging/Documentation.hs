@@ -9,9 +9,11 @@ Provides a function to print documentation if available.
 -}
 module HsLua.Packaging.Documentation
   ( documentation
+  , getdocumentation
   , registerDocumentation
   , pushModuleDoc
   , pushFunctionDoc
+  , docsField
   ) where
 
 import Data.Version (showVersion)
@@ -47,13 +49,16 @@ documentation =
 documentationHaskellFunction :: LuaError e => LuaE e NumResults
 documentationHaskellFunction = isnoneornil (nthBottom 1) >>= \case
   True -> failLua "expected a non-nil value as argument 1"
-  _ -> do
-    settop 1 -- allow just one argument
-    -- retrieve documentation
-    pushDocumentationTable
-    pushvalue (nthBottom 1)
-    _ <- rawget (nth 2)
-    return (NumResults 1)
+  _ -> NumResults 1 <$ getdocumentation top
+
+-- | Pushes the documentation for the element at the given stack index.
+-- Returns the type of the documentation object.
+getdocumentation :: LuaError e => StackIndex -> LuaE e Lua.Type
+getdocumentation idx = do
+  idx' <- absindex idx
+  pushDocumentationTable
+  pushvalue idx'
+  rawget (nth 2) <* Lua.remove (nth 2)  -- remove documentation table
 
 -- | Registers the object at the top of the stack as documentation for
 -- the object at index @idx@. Pops the documentation of the stack.
@@ -87,7 +92,12 @@ pushDocumentationTable = Lua.getfield registryindex docsField >>= \case
     pushvalue top    -- add copy of table to registry
     setfield registryindex docsField
 
--- | Name of the registry field holding the documentation table.
+-- | Name of the registry field holding the documentation table. The
+-- documentation table is indexed by the documented objects, like module
+-- tables and functions, and contains documentation strings as values.
+--
+-- The table is an ephemeron table, i.e., an entry gets garbage
+-- collected if the key is no longer reachable.
 docsField :: Name
 docsField = "HsLua docs"
 
