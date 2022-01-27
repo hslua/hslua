@@ -23,10 +23,11 @@ where
 
 import Control.Monad (forM_)
 import HsLua.Core
-import HsLua.Marshalling (pushName, pushText)
+import HsLua.Marshalling (pushAsTable, pushList, pushName, pushText)
 import HsLua.ObjectOrientation.Operation (Operation (..), metamethodName)
+import HsLua.Packaging.Documentation
 import HsLua.Packaging.Types
-import qualified HsLua.Packaging.Function as Call
+import qualified HsLua.Packaging.Function as Fun
 
 -- | Create a new module (i.e., a Lua table).
 create :: LuaE e ()
@@ -54,11 +55,43 @@ preloadModule mdl =
 -- | Pushes a documented module to the Lua stack.
 pushModule :: LuaError e => Module e -> LuaE e ()
 pushModule mdl = do
-  create
-  forM_ (moduleFunctions mdl) $ \fn -> do
+  checkstack' 10 "pushModule"
+  pushAsTable
+    [ ("name", pushName . moduleName)
+    , ("description", pushText . moduleDescription)
+    , ("fields", pushList pushFieldDoc . moduleFields)
+    ] mdl
+  create        -- module table
+  pushvalue (nth 2)              -- push documentation object
+  registerDocumentation (nth 2)  -- set and pop doc
+
+  -- # Functions
+  --
+  -- module table now on top
+  -- documentation table in pos 2
+  newtable -- function documention
+  pushName "functions"
+  pushvalue (nth 2)
+  rawset (nth 5)
+  -- function documentation table now on top
+  -- module table in position 2
+  -- module documentation table in pos 3
+  forM_ (zip [1..] (moduleFunctions mdl)) $ \(i, fn) -> do
+    -- push documented function, thereby registering the function docs
+    Fun.pushDocumentedFunction fn
+    -- add function to module
     pushName (functionName fn)
-    Call.pushDocumentedFunction fn
-    rawset (nth 3)
+    pushvalue (nth 2) -- C function
+    rawset (nth 5)    -- module table
+    -- set documentation
+    _ <- getdocumentation top
+    rawseti (nth 3) i
+    pop 1 -- C Function
+  pop 1 -- function documentation table
+  remove (nth 2) -- module documentation table
+
+  -- # Fields
+  --
   forM_ (moduleFields mdl) $ \field -> do
     pushText (fieldName field)
     fieldPushValue field
@@ -70,6 +103,6 @@ pushModule mdl = do
       newtable
       forM_ ops $ \(op, fn) -> do
         pushName $ metamethodName op
-        Call.pushDocumentedFunction $ Call.setName "" fn
+        Fun.pushDocumentedFunction $ Fun.setName "" fn
         rawset (nth 3)
       setmetatable (nth 2)

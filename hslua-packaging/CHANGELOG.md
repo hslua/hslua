@@ -38,6 +38,9 @@ Release pending.
     make the definition of parameters and results easier for
     the most common types.
 
+-   Pushing a documented module now also registers the module's
+    documentation.
+
 -   Update to hslua-objectorientation-2.1.0. Lists are now
     writable. This entails a change to `deftype'`. See the
     changelog of hslua-objectorientation for details.

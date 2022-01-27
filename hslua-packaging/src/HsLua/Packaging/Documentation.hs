@@ -13,6 +13,7 @@ module HsLua.Packaging.Documentation
   , registerDocumentation
   , pushModuleDoc
   , pushFunctionDoc
+  , pushFieldDoc
   , docsField
   ) where
 
