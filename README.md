@@ -149,8 +149,9 @@ HsLua. Each module depends on the ones above it.
     system-wide installation instead. Serves as the basis for all
     other packages here.
 
--   **hslua-core**: Wrappers and types that make working with Lua
-    less C-like and more idiomatic – from a Haskell point of view.
+-   **[hslua-core][]**: Wrappers and types that make working with
+    Lua less C-like and more idiomatic – from a Haskell point of
+    view.
 
 -   **hslua-marshalling**: Functions and types to marshal and
     unmarshal basic Haskell values from and to Lua.
@@ -168,6 +169,8 @@ HsLua. Each module depends on the ones above it.
 -   **hslua**: Bundle of all base packages, re-exporting all of
     the most important modules.
 
+  [hslua-core]: https://hslua.org/hslua-core
+
 ### Testing packages
 
 -   **lua-arbitrary**: Make it easier to check Lua functions by
@@ -177,9 +180,11 @@ HsLua. Each module depends on the ones above it.
 -   **tasty-hslua**: Helper functions for writing tasty tests to
     check Lua operations.
 
--   **tasty-lua**: Build test suites for Lua modules; provides a
-    very basic Lua-testing framework that can be run and presented
-    with other tasty tests.
+-   **[tasty-lua][]**: Build test suites for Lua modules; provides
+    a very basic Lua-testing framework that can be run and
+    presented with other tasty tests.
+
+  [tasty-lua]: https://hslua.org/tasty-lua
 
 ### Module packages
 

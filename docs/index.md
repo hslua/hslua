@@ -150,8 +150,8 @@ HsLua. Each module depends on the ones above it.
     system-wide installation instead. Serves as the basis for all
     other packages here.
 
-  - **hslua-core**: Wrappers and types that make working with Lua
-    less C-like and more idiomatic -- from a Haskell point of
+  - **[hslua-core][]**: Wrappers and types that make working with
+    Lua less C-like and more idiomatic -- from a Haskell point of
     view.
 
   - **hslua-marshalling**: Functions and types to marshal and
@@ -169,6 +169,8 @@ HsLua. Each module depends on the ones above it.
 
   - **hslua**: Bundle of all base packages, re-exporting all of
     the most important modules.
+
+[hslua-core]: https://hslua.org/hslua-core
 
 ### Testing packages
 

@@ -1,39 +1,38 @@
-hslua-core
-==========
+---
+layout: default
+author: Albert Krewinkel
+title: hslua-core
+date: 2022-01-28
+---
 
-[![Build status][]][1] [![AppVeyor Status][]][2] [![Hackage][]][3]
+[![Hackage][]](https://hackage.haskell.org/package/hslua-core)
 
 Basic building blocks to interface Haskell and Lua in a
 Haskell-idiomatic style.
 
-  [Build status]: https://img.shields.io/github/workflow/status/hslua/hslua/CI.svg?logo=github
-  [1]: https://github.com/hslua/hslua/actions
-  [AppVeyor Status]: https://ci.appveyor.com/api/projects/status/ldutrilgxhpcau94/branch/main?svg=true
-  [2]: https://ci.appveyor.com/project/tarleb/hslua-r2y18
   [Hackage]: https://img.shields.io/hackage/v/hslua-core.svg
-  [3]: https://hackage.haskell.org/package/hslua-core
 
 Overview
 --------
 
-[Lua][] is a small, well-designed, embeddable scripting language.
-It has become the de-facto default to make programs extensible and
-is widely used everywhere from servers over games and desktop
+[Lua] is a small, well-designed, embeddable scripting language. It
+has become the de-facto default to make programs extensible and is
+widely used everywhere from servers over games and desktop
 applications up to security software and embedded devices. This
 package provides the basic building blocks for coders to embed Lua
 into their programs.
 
-This package is part of [HsLua][], a Haskell framework built
-around the embeddable scripting language [Lua][].
+This package is part of [HsLua], a Haskell framework built around
+the embeddable scripting language [Lua].
 
-  [Lua]: https://lua.org/
-  [HsLua]: https://hslua.org/
+[HsLua]: https://hslua.org/
+[Lua]: https://lua.org/
 
 Interacting with Lua
 --------------------
 
 HsLua core provides the `Lua` type to define Lua operations. The
-operations are executed by calling `run`. A simple “Hello, World”
+operations are executed by calling `run`. A simple "Hello, World"
 program, using the Lua `print` function, is given below:
 
 ``` haskell
@@ -55,7 +54,7 @@ main = Lua.run prog
 
 ### The Lua stack
 
-Lua’s API is stack-centered: most operations involve pushing
+Lua's API is stack-centered: most operations involve pushing
 values to the stack or receiving items from the stack. E.g.,
 calling a function is performed by pushing the function onto the
 stack, followed by the function arguments in the order they should
@@ -77,8 +76,9 @@ and parameters off the stack, and pushes the results.
     |          |                  |          |
 
 This package provides all basic building blocks to interact with
-the Lua stack. If you’d like more comfort, please consider using
+the Lua stack. If you'd like more comfort, please consider using
 the `hslua-packaging` and `hslua-classes` packages.
+
 
 Error handling
 --------------
