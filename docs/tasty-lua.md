@@ -32,7 +32,7 @@ local tasty = require 'tasty'
 local assert = tasty.assert
 
 return {
-  tasty.group 'examples  {
+  tasty.group 'examples'  {
     tasty.test('multiplication', function() assert.are_equal(6, 2 * 3) end),
     tasty.test('truthyness', function() assert.is_truthy(0) end),
     tasty.group 'nil' {
