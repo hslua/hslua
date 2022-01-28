@@ -58,6 +58,7 @@ module HsLua.Core
   , pushvalue
   , copy
   , insert
+  , rotate
   , pop
   , remove
   , replace

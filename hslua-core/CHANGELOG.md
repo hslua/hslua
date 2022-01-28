@@ -23,6 +23,8 @@ Release pending.
     functions, but use a message handler that creates a stack
     traceback on error.
 
+-   Added function `rotate`, wrapping `lua_rotate`.
+
 -   Package helper `requirehs` signature changed to
 
     ``` haskell

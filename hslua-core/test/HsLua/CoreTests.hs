@@ -36,6 +36,7 @@ import qualified HsLua.Core.AuxiliaryTests
 import qualified HsLua.Core.ClosuresTests
 import qualified HsLua.Core.ErrorTests
 import qualified HsLua.Core.PackageTests
+import qualified HsLua.Core.PrimaryTests
 import qualified HsLua.Core.RunTests
 import qualified HsLua.Core.TraceTests
 import qualified HsLua.Core.UnsafeTests
@@ -446,6 +447,7 @@ tests = testGroup "Core module"
       res <- run @Lua.Exception luaOp
       assertEqual "error handling leaks values to the stack" 0 res
 
+  , HsLua.Core.PrimaryTests.tests
   , HsLua.Core.ClosuresTests.tests
   , HsLua.Core.PackageTests.tests
   , HsLua.Core.RunTests.tests
