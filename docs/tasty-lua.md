@@ -1,14 +1,14 @@
-Tasty Lua
-=========
+---
+layout: default
+author: Albert Krewinkel
+title: tasty-lua
+subtitle: Write tests in Lua, integrate into tasty.
+date: 2021-06-16
+---
 
-[![Build status][]][1] [![Hackage][]][2]
+[![Hackage]](https://hackage.haskell.org/package/tasty-lua)
 
-Write tests in Lua, integrate into tasty.
-
-  [Build status]: https://img.shields.io/github/workflow/status/hslua/hslua/CI.svg?logo=github
-  [1]: https://hackage.haskell.org/package/tasty-lua
-  [Hackage]: https://img.shields.io/hackage/v/tasty-lua.svg
-  [2]: https://github.com/hslua/hslua/actions
+[Hackage]: https://img.shields.io/hackage/v/tasty-lua.svg
 
 Overview
 --------
@@ -18,8 +18,6 @@ tests are not run in Haskell. Instead, this package allows to
 write and run tests in [Lua][]; the results are then converted
 into a format that allows to process the test results with Tasty.
 A basic Lua test-suite is provided with the `tasty` Lua module.
-
-  [Lua]: https://lua.org/
 
 Example
 -------
@@ -50,7 +48,7 @@ into the test output are supported.
 
 ### One test per file
 
-This method is closest to Tasty’s intended way of running tests. A
+This method is closest to Tasty's intended way of running tests. A
 script is run as a single test case. On success, the number of
 passing Lua tests is included in the output. In the case of a
 failure, all failure information is collected and presented to the
@@ -86,3 +84,6 @@ main = do
     -- more tasty tests go here
     ]
 ```
+
+
+[Lua]: https://lua.org/
