@@ -176,9 +176,11 @@ HsLua. Each module depends on the ones above it.
   - **tasty-hslua**: Helper functions for writing tasty tests to
     check Lua operations.
 
-  - **tasty-lua**: Build test suites for Lua modules; provides a
-    very basic Lua-testing framework that can be run and presented
-    with other tasty tests.
+  - **[tasty-lua][]**: Build test suites for Lua modules; provides
+    a very basic Lua-testing framework that can be run and
+    presented with other tasty tests.
+
+[tasty-lua]: https://hslua.org/tasty-lua
 
 ### Module packages
 
