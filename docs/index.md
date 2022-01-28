@@ -7,6 +7,9 @@ date: 2021-06-16
 
 [![Hackage]](https://hackage.haskell.org/package/hslua)
 
+HsLua provides bindings, wrappers, types, and helper functions to
+bridge Haskell and Lua.
+
 [Hackage]: https://img.shields.io/hackage/v/hslua.svg
 
 

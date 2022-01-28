@@ -7,10 +7,11 @@ end
 function Pandoc (doc)
   local blocks = pandoc.List()
   for k, blk in ipairs(doc.blocks) do
-    if blk.t == 'Header' and blk.level > 1 then
+    if (blk.t == 'Header' and blk.level == 1) or is_badges_para(blk) then
+      blocks:insert(blk)
+    else
       break
     end
-    blocks:insert(blk)
   end
   local fh = io.open(tostring(doc.meta.bodyfile))
   local new_body = pandoc.read(fh:read('a')).blocks

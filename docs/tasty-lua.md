@@ -2,11 +2,12 @@
 layout: default
 author: Albert Krewinkel
 title: tasty-lua
-subtitle: Write tests in Lua, integrate into tasty.
 date: 2021-06-16
 ---
 
 [![Hackage]](https://hackage.haskell.org/package/tasty-lua)
+
+Write tests in Lua, integrate into tasty.
 
 [Hackage]: https://img.shields.io/hackage/v/tasty-lua.svg
 
