@@ -4,7 +4,7 @@
 
 ## lpeg-1.0.2
 
-Release pending.
+Released 29-01-2022.
 
 -   Allow lua-2.1.0.
 

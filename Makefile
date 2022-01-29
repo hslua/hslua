@@ -21,3 +21,11 @@ README.md: docs/index.md tools/replace-readme-body.lua
 		--reference-location=section \
 		--columns=66 \
 		--output=$@
+
+.PHONY: release-date
+release-date:
+	find . \
+	    -name CHANGELOG.md \
+	    -exec sed -i'' \
+                -e "s/^Release pending/Released $$(date '+%d-%m-%Y')/" \
+            '{}' ';'

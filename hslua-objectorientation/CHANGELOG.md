@@ -4,7 +4,7 @@
 
 ## hslua-objectorientation-2.1.0
 
-Release pending.
+Released 29-01-2022.
 
 -   Allow integers as aliases: Aliases can now be of type
     `AliasIndex`, so integers can now be defined as aliases for

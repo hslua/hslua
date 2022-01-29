@@ -4,7 +4,7 @@
 
 ## hslua-examples-2.0.1
 
-Release pending.
+Released 29-01-2022.
 
 -   Allowed hslua-2.1, hslua-marshalling-2.1.
 

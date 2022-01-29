@@ -4,7 +4,7 @@
 
 ## tasty-lua-0.2.4
 
-Release pending.
+Released 29-01-2022.
 
 -   Support for property testing: the new functions `forall` and a
     set of generators are provided for property testing. The table

@@ -4,7 +4,7 @@
 
 ## hslua-packaging-2.1.0
 
-Release pending.
+Released 29-01-2022.
 
 -   Added function `documentation`: The documented function
     `documentation` is added and exported from module

@@ -4,7 +4,7 @@
 
 ## lua-arbitrary-1.0.0
 
-Release pending.
+Released 29-01-2022.
 
 Extracted from hslua-1.3.0.
 

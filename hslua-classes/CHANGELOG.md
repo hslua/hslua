@@ -4,7 +4,7 @@
 
 ## hslua-classes-2.1.0
 
-Release pending.
+Released 29-01-2022.
 
 -   Updated to hslua-core 2.1 and hslua-marshalling 2.1.
 

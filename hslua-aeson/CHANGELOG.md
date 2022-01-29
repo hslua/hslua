@@ -4,7 +4,7 @@
 
 ## hslua-aeson-2.1.0
 
-Release pending.
+Released 29-01-2022.
 
 -   Update to hslua 2.1.
 

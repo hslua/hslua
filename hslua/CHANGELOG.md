@@ -4,7 +4,7 @@
 
 ## hslua-2.1.0
 
-Release pending.
+Released 29-01-2022.
 
 -   Update to hslua-objectorientation 2.1.0. This entails changes
     to `deftype'` and `deftypeGeneric`, switching the order of

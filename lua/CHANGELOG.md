@@ -4,7 +4,7 @@
 
 ## lua-2.1.0
 
-Release pending.
+Released 29-01-2022.
 
 -   The functions `lua_rawget` and `lua_rawgeti` now return the
     type of the value that was pushed to the stack.

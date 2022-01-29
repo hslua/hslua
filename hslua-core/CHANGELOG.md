@@ -4,7 +4,7 @@
 
 ## hslua-core-2.1.0
 
-Release pending.
+Released 29-01-2022.
 
 -   The functions `rawget`, `rawgeti`, and `getref` now return the
     type of the value that was pushed to the stack.
