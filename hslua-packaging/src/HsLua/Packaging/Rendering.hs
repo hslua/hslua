@@ -12,6 +12,7 @@ Portability : Portable
 Render function and module documentation.
 -}
 module HsLua.Packaging.Rendering
+  {-# DEPRECATED "Use getdocumentation with a custom renderer." #-}
   ( -- * Documentation
     render
   , renderModule

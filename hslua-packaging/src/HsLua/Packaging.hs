@@ -13,8 +13,6 @@ module HsLua.Packaging
   , module HsLua.Packaging.Convenience
     -- * Object oriented marshalling
   , module HsLua.Packaging.UDType
-    -- * Create documentation
-  , module HsLua.Packaging.Rendering
     -- * Register and access docs in Lua
   , module HsLua.Packaging.Documentation
     -- * Types
@@ -25,6 +23,5 @@ import HsLua.Packaging.Convenience
 import HsLua.Packaging.Documentation
 import HsLua.Packaging.Function
 import HsLua.Packaging.Module
-import HsLua.Packaging.Rendering
 import HsLua.Packaging.UDType
 import HsLua.Packaging.Types

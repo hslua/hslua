@@ -41,6 +41,12 @@ Release pending.
 -   Pushing a documented module now also registers the module's
     documentation.
 
+-   The module HsLua.Packaging.Rendering has been deprecated. It
+    is no longer exported as part of HsLua.Packaging and must be
+    imported explicitly if needed. It may be removed in the
+    future. Use Lua objects retrievable with `getdocumentation`
+    together with a custom renderer instead.
+
 -   Update to hslua-objectorientation-2.1.0. Lists are now
     writable. This entails a change to `deftype'`. See the
     changelog of hslua-objectorientation for details.
