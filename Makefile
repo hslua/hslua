@@ -29,3 +29,9 @@ release-date:
 	    -exec sed -i'' \
                 -e "s/^Release pending/Released $$(date '+%d-%m-%Y')/" \
             '{}' ';'
+
+.PHONY: publish
+publish:
+	for archive in $$(cabal sdist all | grep -v '^Wrote tarball sdist to'); do \
+	    cabal upload "$$archive" --publish; \
+	done
