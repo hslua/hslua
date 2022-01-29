@@ -2,7 +2,7 @@
 
 `tasty-lua` uses [PVP Versioning][].
 
-## tasty-lua-0.2.4
+## tasty-lua-1.0.1
 
 Released 29-01-2022.
 
