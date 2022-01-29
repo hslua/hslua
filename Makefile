@@ -34,4 +34,6 @@ release-date:
 publish:
 	for archive in $$(cabal sdist all | grep -v '^Wrote tarball sdist to'); do \
 	    cabal upload "$$archive" --publish; \
+			tagname=$$(basename "$$archive" | sed -e 's/\.tar\.gz//'); \
+	    git tag -s -m "$$tagname" $$tagname; \
 	done
