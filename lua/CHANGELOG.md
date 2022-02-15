@@ -6,7 +6,7 @@
 
 Release pending.
 
--   Upgrade to Lua 5.4.4.
+-   Update to Lua 5.4, include Lua 5.4.4 by default.
 
 ## lua-2.1.0
 

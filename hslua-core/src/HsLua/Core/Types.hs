@@ -204,7 +204,9 @@ data Status
   | ErrSyntax -- ^ syntax error during precompilation
   | ErrMem    -- ^ memory allocation (out-of-memory) error.
   | ErrErr    -- ^ error while running the message handler.
+#if !MIN_VERSION_lua(2,2,0)
   | ErrGcmm   -- ^ error while running a @__gc@ metamethod.
+#endif
   | ErrFile   -- ^ opening or reading a file failed.
   deriving (Eq, Show)
 
@@ -216,7 +218,9 @@ toStatus = \case
   LUA_ERRRUN    -> ErrRun
   LUA_ERRSYNTAX -> ErrSyntax
   LUA_ERRMEM    -> ErrMem
+#if !MIN_VERSION_lua(2,2,0)
   LUA_ERRGCMM   -> ErrGcmm
+#endif
   LUA_ERRERR    -> ErrErr
   LUA_ERRFILE   -> ErrFile
   StatusCode n  -> error $ "Cannot convert (" ++ show n ++ ") to Status"

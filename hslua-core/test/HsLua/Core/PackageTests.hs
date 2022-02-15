@@ -67,8 +67,9 @@ tests = testGroup "Package"
       in Just testModule `shouldBeResultOf` do
         Lua.openlibs
         Lua.preloadhs "test.module" (1 <$ Lua.pushstring testModule)
+        oldtop <- gettop
         pushLuaExpr "require 'test.module'"
-        Lua.tostring Lua.top
+        Lua.tostring (oldtop + 1)
     ]
 
   ]
