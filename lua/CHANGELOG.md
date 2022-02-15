@@ -2,6 +2,12 @@
 
 `lua` uses [PVP Versioning][].
 
+## lua-2.2.0
+
+Release pending.
+
+-   Upgrade to Lua 5.4.4.
+
 ## lua-2.1.0
 
 Released 29-01-2022.

@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                hslua-marshalling
-version:             2.1.0
+version:             2.2.0
 synopsis:            Marshalling of values between Haskell and Lua.
 description:         Provides functions to marshal values from Haskell
                      to Lua, and /vice versa/.
@@ -39,7 +39,7 @@ common common-options
   build-depends:       base              >= 4.8    && < 5
                      , bytestring        >= 0.10.2 && < 0.12
                      , containers        >= 0.5.9  && < 0.7
-                     , hslua-core        >= 2.0    && < 2.2
+                     , hslua-core        >= 2.0    && < 2.3
                      , mtl               >= 2.2    && < 2.3
                      , text              >= 1.2    && < 2.1
   ghc-options:         -Wall

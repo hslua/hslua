@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                hslua-objectorientation
-version:             2.1.0
+version:             2.2.0
 synopsis:            Object orientation tools for HsLua
 description:         Expose Haskell objects to Lua with an object oriented
                      interface.
@@ -35,8 +35,8 @@ common common-options
                      , bytestring        >= 0.10.2 && < 0.12
                      , containers        >= 0.5.9  && < 0.7
                      , exceptions        >= 0.8    && < 0.11
-                     , hslua-core        >= 2.1    && < 2.2
-                     , hslua-marshalling >= 2.1    && < 2.2
+                     , hslua-core        >= 2.1    && < 2.3
+                     , hslua-marshalling >= 2.1    && < 2.3
                      , mtl               >= 2.2    && < 2.3
                      , text              >= 1.2    && < 2.1
   ghc-options:         -Wall
