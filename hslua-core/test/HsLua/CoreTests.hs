@@ -294,12 +294,12 @@ tests = testGroup "Core module"
         Just "Berlin" `shouldBeResultOf` do
           Lua.pushstring "Berlin"
           cityref <- Lua.ref Lua.registryindex
-          Lua.pushnil -- dummy op
+          Lua.settop 0 -- remove all elements from stack
           Lua.getref Lua.registryindex cityref
           Lua.tostring Lua.top
 
       , "references become invalid after unref" =:
-        Nothing `shouldBeResultOf` do
+        (Just "Heidelberg" /=) `shouldHoldForResultOf` do
           Lua.pushstring "Heidelberg"
           cityref <- Lua.ref Lua.registryindex
           Lua.unref Lua.registryindex cityref
