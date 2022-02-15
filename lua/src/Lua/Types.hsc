@@ -50,7 +50,7 @@ import GHC.Generics (Generic)
 -- accessible through this structure.
 --
 -- Synonym for @lua_State *@. See
--- <https://www.lua.org/manual/5.3/#lua_State lua_State>.
+-- <https://www.lua.org/manual/5.4/#lua_State lua_State>.
 newtype State = State (Ptr ()) deriving (Eq, Generic)
 
 -- |  Type for C functions.
@@ -70,7 +70,7 @@ newtype State = State (Ptr ()) deriving (Eq, Generic)
 -- many results.
 --
 -- See
--- <https://www.lua.org/manual/5.3/manual.html#lua_CFunction lua_CFunction>.
+-- <https://www.lua.org/manual/5.4/manual.html#lua_CFunction lua_CFunction>.
 type CFunction = FunPtr PreCFunction
 
 -- | Type of Haskell functions that can be turned into C functions.
@@ -87,7 +87,7 @@ type PreCFunction = State -> IO NumResults
 -- must return @NULL@ or set size to zero. The reader function may
 -- return pieces of any size greater than zero.
 --
--- See <https://www.lua.org/manual/5.3/manual.html#lua_Reader lua_Reader>.
+-- See <https://www.lua.org/manual/5.4/manual.html#lua_Reader lua_Reader>.
 type Reader = FunPtr (State -> Ptr () -> Ptr CSize -> IO (Ptr CChar))
 
 -- |  The type of integers in Lua.
@@ -95,7 +95,7 @@ type Reader = FunPtr (State -> Ptr () -> Ptr CSize -> IO (Ptr CChar))
 -- By default this type is @'Int64'@, but that can be changed to
 -- different values in Lua. (See @LUA_INT_TYPE@ in @luaconf.h@.)
 --
--- See <https://www.lua.org/manual/5.3/manual.html#lua_Integer lua_Integer>.
+-- See <https://www.lua.org/manual/5.4/manual.html#lua_Integer lua_Integer>.
 newtype Integer = Integer #{type LUA_INTEGER}
   deriving (Bounded, Enum, Eq, Integral, Num, Ord, Real)
 -- we should be able to use deriving strategies if we decide to drop
@@ -111,7 +111,7 @@ instance Read Integer where
 -- a single float or a long double. (See @LUA_FLOAT_TYPE@ in
 -- @luaconf.h@.)
 --
--- See <https://www.lua.org/manual/5.3/manual.html#lua_Number lua_Number>.
+-- See <https://www.lua.org/manual/5.4/manual.html#lua_Number lua_Number>.
 newtype Number = Number #{type LUA_NUMBER}
   deriving (Eq, Floating, Fractional, Num, Ord, Real, RealFloat, RealFrac)
 -- we should be able to use deriving strategies if we decide to drop

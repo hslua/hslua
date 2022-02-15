@@ -138,19 +138,19 @@ foreign import ccall safe "hslua.h hslua_setglobal"
 --
 
 -- | Replacement for
--- <https://lua.org/manual/5.3/manual.html#lua_error lua_error>; it uses
+-- <https://lua.org/manual/5.4/manual.html#lua_error lua_error>; it uses
 -- the HsLua error signaling convention instead of raw Lua errors.
 foreign import ccall SAFTY "hslua.h hslua_error"
   hslua_error :: Lua.State -> IO NumResults
 
 -- | Wrapper around
--- <https://lua.org/manual/5.3/manual.html#lua_next lua_next> which
+-- <https://lua.org/manual/5.4/manual.html#lua_next lua_next> which
 -- catches any Lua errors.
 foreign import ccall safe "hslua.h hslua_next"
   hslua_next :: Lua.State -> StackIndex -> Ptr StatusCode -> IO LuaBool
 
 -- | Wrapper around
--- <https://lua.org/manual/5.3/manual.html#lua_concat lua_concat>
+-- <https://lua.org/manual/5.4/manual.html#lua_concat lua_concat>
 -- which catches any Lua errors.
 foreign import ccall safe "hslua.h hslua_concat"
   hslua_concat :: Lua.State -> NumArgs -> Ptr StatusCode -> IO ()

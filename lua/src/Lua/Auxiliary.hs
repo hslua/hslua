@@ -143,7 +143,7 @@ foreign import capi SAFTY "lauxlib.h luaL_newmetatable"
 
 -- | Opens all standard Lua libraries into the given state.
 --
--- <https://www.lua.org/manual/5.3/manual.html#luaL_openlibs>
+-- <https://www.lua.org/manual/5.4/manual.html#luaL_openlibs>
 foreign import capi unsafe "lualib.h luaL_openlibs"
   luaL_openlibs :: Lua.State -> IO ()
 
@@ -185,7 +185,7 @@ foreign import capi SAFTY "lauxlib.h luaL_unref"
 -- address (see @'Lua.lua_touserdata'@). Returns @NULL@ if the
 -- test fails.
 --
--- <https://www.lua.org/manual/5.3/manual.html#luaL_testudata>
+-- <https://www.lua.org/manual/5.4/manual.html#luaL_testudata>
 foreign import capi SAFTY "lauxlib.h luaL_testudata"
   luaL_testudata :: Lua.State   -- ^ l
                  -> StackIndex  -- ^ arg

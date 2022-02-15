@@ -31,7 +31,7 @@ foreign import ccall unsafe "hslauxlib.h hsluaL_newstate"
 -- function @openf@ with string @modname@ as an argument and sets the
 -- call result in @package.loaded[modname]@, as if that function has
 -- been called through
--- <https://www.lua.org/manual/5.3/manual.html#pdf-require require>.
+-- <https://www.lua.org/manual/5.4/manual.html#pdf-require require>.
 --
 -- If @glb@ is true, also stores the module into global @modname@.
 --
