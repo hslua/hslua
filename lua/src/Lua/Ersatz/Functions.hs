@@ -97,14 +97,14 @@ foreign import capi safe "hslua.h hslua_compare"
 -- Get functions (Lua -> stack)
 --
 
--- | Behaves like @'Lua.Functions.lua_gettable'@, but prevents
+-- | Behaves like @'Lua.Primary.lua_gettable'@, but prevents
 -- unrecoverable program crashes by calling that function through
 -- @'Lua.lua_pcall'@. Takes an additional status code pointer
 -- that is set to the status returned by @lua_pcall@.
 foreign import ccall safe "hslua.h hslua_gettable"
   hslua_gettable :: Lua.State -> StackIndex -> Ptr StatusCode -> IO TypeCode
 
--- | Behaves like @'Lua.Functions.lua_getglobal'@, but prevents
+-- | Behaves like @'Lua.Primary.lua_getglobal'@, but prevents
 -- unrecoverable program crashes by calling that function through
 -- @'Lua.lua_pcall'@. Takes an additional status code pointer
 -- that is set to the status returned by @lua_pcall@.
@@ -119,14 +119,14 @@ foreign import ccall safe "hslua.h hslua_getglobal"
 -- Set functions (stack -> Lua)
 --
 
--- | Behaves like @'Lua.Functions.lua_settable'@, but prevents
+-- | Behaves like @'Lua.Primary.lua_settable'@, but prevents
 -- unrecoverable program crashes by calling that function through
 -- @'Lua.lua_pcall'@. Takes an additional status code pointer
 -- that is set to the status returned by @lua_pcall@.
 foreign import ccall safe "hslua.h hslua_settable"
   hslua_settable :: Lua.State -> StackIndex -> Ptr StatusCode -> IO ()
 
--- | Behaves like @'Lua.Functions.lua_setglobal'@, but prevents
+-- | Behaves like @'Lua.Primary.lua_setglobal'@, but prevents
 -- unrecoverable program crashes by calling that function through
 -- @'Lua.lua_pcall'@. Takes an additional status code pointer
 -- that is set to the status returned by @lua_pcall@.
