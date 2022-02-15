@@ -98,7 +98,7 @@ absindex = liftLua1 lua_absindex
 -- to its original configuration. This is considered good programming
 -- practice.
 --
--- See <https://www.lua.org/manual/5.3/manual.html#lua_call lua_call>.
+-- See <https://www.lua.org/manual/5.4/manual.html#lua_call lua_call>.
 call :: LuaError e => NumArgs -> NumResults -> LuaE e ()
 call nargs nresults = do
   res <- pcall nargs nresults Nothing
@@ -145,7 +145,7 @@ close = lua_close
 --    LE: compares for less or equal (<=)
 --
 -- Wraps 'hslua_compare'. See also
--- <https://www.lua.org/manual/5.3/manual.html#lua_compare lua_compare>.
+-- <https://www.lua.org/manual/5.4/manual.html#lua_compare lua_compare>.
 compare :: LuaError e
         => StackIndex         -- ^ idx1
         -> StackIndex         -- ^ idx2
@@ -160,11 +160,11 @@ compare idx1 idx2 relOp = fromLuaBool <$!> liftLuaThrow
 -- value on the stack (that is, the function does nothing); if @n@ is 0,
 -- the result is the empty string. Concatenation is performed following
 -- the usual semantics of Lua (see
--- <https://www.lua.org/manual/5.3/manual.html#3.4.6 §3.4.6> of the Lua
+-- <https://www.lua.org/manual/5.4/manual.html#3.4.6 §3.4.6> of the Lua
 -- manual).
 --
 -- Wraps 'hslua_concat'. See also
--- <https://www.lua.org/manual/5.3/manual.html#lua_concat lua_concat>.
+-- <https://www.lua.org/manual/5.4/manual.html#lua_concat lua_concat>.
 concat :: LuaError e => NumArgs -> LuaE e ()
 concat n = liftLuaThrow (`hslua_concat` n)
 {-# INLINABLE concat #-}
@@ -226,13 +226,13 @@ gc what = liftLua $ \l ->
 -- | Pushes onto the stack the value @t[k]@, where @t@ is the value at
 -- the given stack index. As in Lua, this function may trigger a
 -- metamethod for the "index" event (see
--- <https://www.lua.org/manual/5.3/manual.html#2.4 §2.4> of Lua's
+-- <https://www.lua.org/manual/5.4/manual.html#2.4 §2.4> of Lua's
 -- manual).
 --
 -- Errors on the Lua side are propagated.
 --
 -- See also
--- <https://www.lua.org/manual/5.3/manual.html#lua_getfield lua_getfield>.
+-- <https://www.lua.org/manual/5.4/manual.html#lua_getfield lua_getfield>.
 getfield :: LuaError e => StackIndex -> Name -> LuaE e Type
 getfield i (Name s) = do
   absidx <- absindex i
@@ -267,13 +267,13 @@ getmetatable n = liftLua $ \l ->
 -- This function pops the key from the stack, pushing the resulting
 -- value in its place. As in Lua, this function may trigger a metamethod
 -- for the "index" event (see
--- <https://www.lua.org/manual/5.3/manual.html#2.4 §2.4> of Lua's
+-- <https://www.lua.org/manual/5.4/manual.html#2.4 §2.4> of Lua's
 -- manual).
 --
 -- Errors on the Lua side are caught and rethrown.
 --
 -- Wraps 'hslua_gettable'. See also:
--- <https://www.lua.org/manual/5.3/manual.html#lua_gettable lua_gettable>.
+-- <https://www.lua.org/manual/5.4/manual.html#lua_gettable lua_gettable>.
 gettable :: LuaError e => StackIndex -> LuaE e Type
 gettable n = liftLuaThrow (\l -> fmap toType . hslua_gettable l n)
 {-# INLINABLE gettable #-}
@@ -442,7 +442,7 @@ lessthan index1 index2 = compare index1 index2 LT
 --
 -- The @chunkname@ argument gives a name to the chunk, which is used for
 -- error messages and in debug information (see
--- <https://www.lua.org/manual/5.3/manual.html#4.9 §4.9>). Note that the
+-- <https://www.lua.org/manual/5.4/manual.html#4.7 §4.7>). Note that the
 -- @chunkname@ is used as a C string, so it may not contain null-bytes.
 --
 -- This is a wrapper of 'lua_load'.
@@ -464,7 +464,7 @@ ltype idx = toType <$!> liftLua (`lua_type` idx)
 -- equivalent to @createtable 0 0@.
 --
 -- See also:
--- <https://www.lua.org/manual/5.3/manual.html#lua_newtable lua_newtable>.
+-- <https://www.lua.org/manual/5.4/manual.html#lua_newtable lua_newtable>.
 newtable :: LuaE e ()
 newtable = createtable 0 0
 {-# INLINABLE newtable #-}
@@ -487,7 +487,7 @@ newuserdata = liftLua1 lua_newuserdata . fromIntegral
 --
 -- This function wraps 'hslua_next'.
 -- See also:
--- <https://www.lua.org/manual/5.3/manual.html#lua_next lua_next>.
+-- <https://www.lua.org/manual/5.4/manual.html#lua_next lua_next>.
 next :: LuaError e => StackIndex -> LuaE e Bool
 next idx = fromLuaBool <$!> liftLuaThrow (\l -> hslua_next l idx)
 {-# INLINABLE next #-}
@@ -585,7 +585,7 @@ pcall nargs nresults msgh = liftLua $ \l ->
 
 -- | Pops @n@ elements from the stack.
 --
--- See also: <https://www.lua.org/manual/5.3/manual.html#lua_pop lua_pop>.
+-- See also: <https://www.lua.org/manual/5.4/manual.html#lua_pop lua_pop>.
 pop :: Int -> LuaE e ()
 pop n = liftLua $ \l -> lua_pop l (fromIntegral n)
 {-# INLINABLE pop #-}
@@ -625,7 +625,7 @@ pushcclosure f n = liftLua $ \l -> lua_pushcclosure l f n
 -- to receive its parameters and return its results (see @'CFunction'@)
 --
 -- Same as @flip 'pushcclosure' 0@.
--- <https://www.lua.org/manual/5.3/manual.html#lua_pushcfunction lua_pushcfunction>.
+-- <https://www.lua.org/manual/5.4/manual.html#lua_pushcfunction lua_pushcfunction>.
 pushcfunction :: CFunction -> LuaE e ()
 pushcfunction f = pushcclosure f 0
 {-# INLINABLE pushcfunction #-}
@@ -790,7 +790,7 @@ replace n = liftLua $ \l ->  lua_replace l n
 -- This function cannot be called with a pseudo-index, because a
 -- pseudo-index is not an actual stack position.
 --
--- <https://www.lua.org/manual/5.3/manual.html#lua_rotate>
+-- <https://www.lua.org/manual/5.4/manual.html#lua_rotate>
 rotate :: StackIndex  -- ^ @idx@
        -> Int         -- ^ @n@
        -> LuaE e ()
@@ -802,13 +802,13 @@ rotate idx n = liftLua $ \l -> lua_rotate l idx (fromIntegral n)
 --
 -- This function pops the value from the stack. As in Lua, this function
 -- may trigger a metamethod for the "newindex" event (see
--- <https://www.lua.org/manual/5.3/manual.html#2.4 §2.4> of the Lua 5.3
+-- <https://www.lua.org/manual/5.4/manual.html#2.4 §2.4> of the Lua 5.4
 -- Reference Manual).
 --
 -- Errors on the Lua side are caught and rethrown as a @'Exception'@.
 --
 -- See also:
--- <https://www.lua.org/manual/5.3/manual.html#lua_setfield lua_setfield>.
+-- <https://www.lua.org/manual/5.4/manual.html#lua_setfield lua_setfield>.
 setfield :: LuaError e => StackIndex -> Name -> LuaE e ()
 setfield i (Name s) = do
   absidx <- absindex i
@@ -823,7 +823,7 @@ setfield i (Name s) = do
 -- Errors on the Lua side are caught and rethrown as 'Exception'.
 --
 -- Wraps 'hslua_setglobal'. See also:
--- <https://www.lua.org/manual/5.3/manual.html#lua_setglobal lua_setglobal>.
+-- <https://www.lua.org/manual/5.4/manual.html#lua_setglobal lua_setglobal>.
 setglobal :: LuaError e => Name {- ^ name -} -> LuaE e ()
 setglobal (Name name) = liftLuaThrow $ \l status' ->
   B.unsafeUseAsCStringLen name $ \(namePtr, nameLen) ->
@@ -844,8 +844,8 @@ setmetatable idx = liftLua $ \l -> lua_setmetatable l idx
 --
 -- This function pops both the key and the value from the stack. As in
 -- Lua, this function may trigger a metamethod for the "newindex" event
--- (see <https://www.lua.org/manual/5.3/manual.html#2.4 §2.4> of the Lua
--- 5.3 Reference Manual).
+-- (see <https://www.lua.org/manual/5.4/manual.html#2.4 §2.4> of the Lua
+-- 5.4 Reference Manual).
 --
 -- Errors on the Lua side are caught and rethrown.
 --
@@ -866,7 +866,7 @@ settop = liftLua1 lua_settop
 -- | Pops a value from the stack and sets it as the new value associated
 -- to the full userdata at the given index.
 --
--- <https://www.lua.org/manual/5.3/manual.html#lua_setuservalue>
+-- <https://www.lua.org/manual/5.4/manual.html#lua_setuservalue>
 setuservalue :: StackIndex -> LuaE e ()
 setuservalue idx = liftLua (`lua_setuservalue` idx)
 
@@ -909,14 +909,14 @@ tocfunction n = liftLua $ \l -> do
 -- | Converts the Lua value at the given acceptable index to the signed
 -- integral type 'Lua.Integer'. The Lua value must be an integer, a
 -- number or a string convertible to an integer (see
--- <https://www.lua.org/manual/5.3/manual.html#3.4.3 §3.4.3> of the Lua
--- 5.3 Reference Manual); otherwise, @tointeger@ returns @Nothing@.
+-- <https://www.lua.org/manual/5.4/manual.html#3.4.3 §3.4.3> of the Lua
+-- 5.4 Reference Manual); otherwise, @tointeger@ returns @Nothing@.
 --
 -- If the number is not an integer, it is truncated in some
 -- non-specified way.
 --
 -- Wraps 'lua_tointegerx'. See also:
--- <https://www.lua.org/manual/5.3/manual.html#lua_tointeger lua_tointeger>.
+-- <https://www.lua.org/manual/5.4/manual.html#lua_tointeger lua_tointeger>.
 tointeger :: StackIndex -> LuaE e (Maybe Lua.Integer)
 tointeger n = liftLua $ \l -> alloca $ \boolPtr -> do
   res <- lua_tointegerx l n boolPtr
@@ -929,7 +929,7 @@ tointeger n = liftLua $ \l -> alloca $ \boolPtr -> do
 -- otherwise, @tonumber@ returns @'Nothing'@.
 --
 -- Wraps 'lua_tonumberx'. See also
--- <https://www.lua.org/manual/5.3/manual.html#lua_tonumber lua_tonumber>.
+-- <https://www.lua.org/manual/5.4/manual.html#lua_tonumber lua_tonumber>.
 tonumber :: StackIndex -> LuaE e (Maybe Lua.Number)
 tonumber n = liftLua $ \l -> alloca $ \bptr -> do
   res <- lua_tonumberx l n bptr
@@ -1006,11 +1006,11 @@ typename tp = liftLua $ \l ->
 {-# INLINABLE typename #-}
 
 -- | Returns the pseudo-index that represents the @i@-th upvalue of the
--- running function (see <https://www.lua.org/manual/5.3/manual.html#4.4
--- §4.4> of the Lua 5.3 reference manual).
+-- running function (see <https://www.lua.org/manual/5.4/manual.html#4.2
+-- §4.2> of the Lua 5.4 reference manual).
 --
 -- See also:
--- <https://www.lua.org/manual/5.3/manual.html#lua_upvalueindex lua_upvalueindex>.
+-- <https://www.lua.org/manual/5.4/manual.html#lua_upvalueindex lua_upvalueindex>.
 upvalueindex :: StackIndex -> StackIndex
 upvalueindex i = registryindex - i
 {-# INLINABLE upvalueindex #-}

@@ -141,7 +141,7 @@ type HaskellFunction e = LuaE e NumResults
 --
 
 -- | Enumeration used as type tag.
--- See <https://www.lua.org/manual/5.3/manual.html#lua_type lua_type>.
+-- See <https://www.lua.org/manual/5.4/manual.html#lua_type lua_type>.
 data Type
   = TypeNone           -- ^ non-valid stack index
   | TypeNil            -- ^ type of Lua's @nil@ value
@@ -278,12 +278,12 @@ data GCControl
                       -- collection.
   | GCSetPause CInt   -- ^ sets data as the new value for the pause of
                       -- the collector (see
-                      -- <https://www.lua.org/manual/5.3/manual.html#2.5
+                      -- <https://www.lua.org/manual/5.4/manual.html#2.5
                       -- §2.5> of the Lua reference manual) and returns
                       -- the previous value of the pause.
   | GCSetStepMul CInt -- ^ sets data as the new value for the step
                       -- multiplier of the collector (see
-                      -- <https://www.lua.org/manual/5.3/manual.html#2.5
+                      -- <https://www.lua.org/manual/5.4/manual.html#2.5
                       -- §2.5> of the Lua reference manual) and returns
                       -- the previous value of the step multiplier.
   | GCIsRunning       -- ^ returns a boolean that tells whether the

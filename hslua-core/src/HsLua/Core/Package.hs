@@ -29,7 +29,7 @@ import HsLua.Core.Types
 -- @package.loaded@, calls function @openf@ with string @modname@ as an
 -- argument and sets the call result in @package.loaded[modname]@, as if
 -- that function has been called through
--- <https://www.lua.org/manual/5.3/manual.html#pdf-require require>.
+-- <https://www.lua.org/manual/5.4/manual.html#pdf-require require>.
 --
 -- Leaves a copy of the module on the stack.
 requirehs :: LuaError e

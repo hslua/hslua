@@ -171,7 +171,7 @@ loadbuffer bs (Name name) = liftLua $ \l ->
 -- As @'Lua.load'@, this function only loads the chunk; it does not run
 -- it.
 --
--- See <https://www.lua.org/manual/5.3/manual.html#luaL_loadfile luaL_loadfile>.
+-- See <https://www.lua.org/manual/5.4/manual.html#luaL_loadfile luaL_loadfile>.
 loadfile :: FilePath -- ^ filename
          -> LuaE e Status
 loadfile fp = liftLua $ \l ->
@@ -189,7 +189,7 @@ loadfile fp = liftLua $ \l ->
 -- run it.
 --
 -- See
--- <https://www.lua.org/manual/5.3/manual.html#luaL_loadstring luaL_loadstring>.
+-- <https://www.lua.org/manual/5.4/manual.html#luaL_loadstring luaL_loadstring>.
 loadstring :: ByteString -> LuaE e Status
 loadstring s = loadbuffer s (Name s)
 {-# INLINE loadstring #-}
@@ -214,12 +214,12 @@ newmetatable (Name tname) = liftLua $ \l ->
 
 -- | Creates a new Lua state. It calls @lua_newstate@ with an allocator
 -- based on the standard C @realloc@ function and then sets a panic
--- function (see <https://www.lua.org/manual/5.3/manual.html#4.6 §4.6>
--- of the Lua 5.3 Reference Manual) that prints an error message to the
+-- function (see <https://www.lua.org/manual/5.4/manual.html#4.4 §4.4>
+-- of the Lua 5.4 Reference Manual) that prints an error message to the
 -- standard error output in case of fatal errors.
 --
 -- Wraps 'hsluaL_newstate'. See also:
--- <https://www.lua.org/manual/5.3/manual.html#luaL_newstate luaL_newstate>.
+-- <https://www.lua.org/manual/5.4/manual.html#luaL_newstate luaL_newstate>.
 newstate :: IO Lua.State
 newstate = hsluaL_newstate
 {-# INLINE newstate #-}
@@ -246,7 +246,7 @@ ref t = liftLua $ \l -> Lua.toReference <$> luaL_ref l t
 -- function @openf@ with string @modname@ as an argument and sets the
 -- call result in @package.loaded[modname]@, as if that function has
 -- been called through
--- <https://www.lua.org/manual/5.3/manual.html#pdf-require require>.
+-- <https://www.lua.org/manual/5.4/manual.html#pdf-require require>.
 --
 -- If @glb@ is true, also stores the module into global @modname@.
 --
@@ -303,7 +303,7 @@ traceback l1 msg level = liftLua $ \l ->
 -- used again.
 --
 -- Wraps 'luaL_unref'. See also:
--- <https://www.lua.org/manual/5.3/manual.html#luaL_unref luaL_unref>.
+-- <https://www.lua.org/manual/5.4/manual.html#luaL_unref luaL_unref>.
 unref :: StackIndex -- ^ idx
       -> Reference  -- ^ ref
       -> LuaE e ()
