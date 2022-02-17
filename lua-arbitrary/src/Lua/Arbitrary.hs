@@ -8,9 +8,11 @@ import Test.QuickCheck
 
 instance Arbitrary Lua.Integer where
   arbitrary = arbitrarySizedIntegral
+  shrink = shrinkIntegral
 
 instance Arbitrary Lua.Number where
   arbitrary = Lua.Number <$> arbitrary
+  shrink = shrinkRealFrac
 
 instance Arbitrary Lua.TypeCode where
   arbitrary = elements

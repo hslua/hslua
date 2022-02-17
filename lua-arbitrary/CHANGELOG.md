@@ -2,6 +2,14 @@
 
 `lua-arbitrary` uses [PVP Versioning][].
 
+## lua-arbitrary-1.0.1
+
+Release pending.
+
+-   Allow lua-2.2.0 (includes Lua 5.4).
+
+-   Implemented `shrink` for Lua integers and numbers.
+
 ## lua-arbitrary-1.0.0
 
 Released 29-01-2022.
