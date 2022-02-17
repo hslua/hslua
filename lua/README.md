@@ -59,14 +59,6 @@ The following cabal build flags are supported:
   disabling this will make it possible to create fully static
   binaries, but renders loading of dynamic C libraries impossible.
 
-- `hardcode-reg-keys`: Don't use CAPI to determine the names of
-  certain registry key names but use hard coded values instead.
-  This flag is required when compiling against Lua 5.3.3 or
-  earlier, as those versions do not expose the necessary
-  information in the @lauxlib.h@ header file. Setting this flag
-  should usually be unproblematic, except if the used Lua version
-  has been patched heavily.
-
 ### Example: using a different Lua version
 
 To use a system-wide installed Lua when linking *lua* as a

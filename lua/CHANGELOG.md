@@ -8,6 +8,9 @@ Release pending.
 
 -   Update to Lua 5.4, include Lua 5.4.4 by default.
 
+-   Removed `hardcode-reg-keys` flag: this is no longer required
+    for Lua 5.4.
+
 ## lua-2.1.0
 
 Released 29-01-2022.

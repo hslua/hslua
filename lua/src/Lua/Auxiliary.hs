@@ -37,11 +37,8 @@ module Lua.Auxiliary
 import Foreign.C (CChar, CInt (CInt), CSize (CSize), CString)
 import Lua.Types as Lua
 import Foreign.Ptr
-
-#ifndef HARDCODE_REG_KEYS
 import System.IO.Unsafe (unsafePerformIO)
 import qualified Foreign.C as C
-#endif
 
 #ifdef ALLOW_UNSAFE_GC
 #define SAFTY unsafe
@@ -53,27 +50,19 @@ import qualified Foreign.C as C
 
 -- | Key, in the registry, for table of loaded modules.
 loadedTableRegistryField :: String
-#ifdef HARDCODE_REG_KEYS
-loadedTableRegistryField = "_LOADED"
-#else
 loadedTableRegistryField = unsafePerformIO (C.peekCString c_loaded_table)
 {-# NOINLINE loadedTableRegistryField #-}
 
 foreign import capi unsafe "lauxlib.h value LUA_LOADED_TABLE"
   c_loaded_table :: CString
-#endif
 
 -- | Key, in the registry, for table of preloaded loaders.
 preloadTableRegistryField :: String
-#ifdef HARDCODE_REG_KEYS
-preloadTableRegistryField = "_PRELOAD"
-#else
 preloadTableRegistryField = unsafePerformIO (C.peekCString c_preload_table)
 {-# NOINLINE preloadTableRegistryField #-}
 
 foreign import capi unsafe "lauxlib.h value LUA_PRELOAD_TABLE"
   c_preload_table :: CString
-#endif
 
 -- | Pushes onto the stack the field @e@ from the metatable of the
 -- object at index @obj@ and returns the type of the pushed value. If
