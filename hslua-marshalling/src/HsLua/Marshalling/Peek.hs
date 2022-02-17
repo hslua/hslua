@@ -33,7 +33,7 @@ module HsLua.Marshalling.Peek
   ) where
 
 import Control.Applicative (Alternative (..))
-import Control.Monad ((<$!>), (<=<))
+import Control.Monad ((<$!>), (<=<), MonadPlus)
 import Data.ByteString (ByteString)
 import Data.List (intercalate)
 import HsLua.Core as Lua
@@ -70,6 +70,8 @@ instance Alternative Result where
     Failure {} -> y
     _          -> x
   {-# INLINE (<|>) #-}
+
+instance MonadPlus Result
 
 --
 -- Peek
@@ -123,6 +125,8 @@ instance Alternative (Peek e) where
     Success ra -> return (pure ra)
     _          -> runPeek b
   {-# INLINE (<|>) #-}
+
+instance MonadPlus (Peek e)
 
 instance MonadFail (Peek e) where
   fail = Peek . return . failure . Utf8.fromString
