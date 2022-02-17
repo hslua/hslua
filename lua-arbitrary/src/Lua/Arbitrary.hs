@@ -27,6 +27,7 @@ instance Arbitrary Lua.TypeCode where
     , LUA_TUSERDATA
     , LUA_TTHREAD
     ]
+  shrink = shrinkNothing
 
 instance Arbitrary Lua.StatusCode where
   arbitrary = elements
@@ -41,6 +42,7 @@ instance Arbitrary Lua.StatusCode where
     , LUA_ERRERR
     , LUA_ERRFILE
     ]
+  shrink = shrinkNothing
 
 instance Arbitrary Lua.OPCode where
   arbitrary = elements
@@ -48,3 +50,4 @@ instance Arbitrary Lua.OPCode where
     , LUA_OPLT
     , LUA_OPLE
     ]
+  shrink = shrinkNothing

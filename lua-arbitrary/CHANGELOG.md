@@ -10,6 +10,9 @@ Release pending.
 
 -   Implemented `shrink` for Lua integers and numbers.
 
+-   Explicitly disable shrinking for TypeCode, StatusCode, and
+    OPCode.
+
 ## lua-arbitrary-1.0.0
 
 Released 29-01-2022.
