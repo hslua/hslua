@@ -189,7 +189,7 @@ double chocolate chip cookie of which he felt very deserving now.
 [Lua]: https://lua.org/
 [HsLua]: https://github.com/hslua/hslua
 [pandoc]: https://pandoc.org/lua-filters.html
-[API]: https://www.lua.org/manual/5.3/manual.html#4
+[API]: https://www.lua.org/manual/5.4/manual.html#4
 [`dofile`]: https://hackage.haskell.org/package/hslua/docs/Foreign-Lua-Core.html#v:dofile
 [`filterM`]: https://hackage.haskell.org/package/base/docs/Control-Monad.html#v:filterM
 
