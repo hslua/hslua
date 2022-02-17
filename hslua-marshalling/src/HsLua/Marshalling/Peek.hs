@@ -1,5 +1,5 @@
 {-# LANGUAGE CPP                 #-}
-{-# LANGUAGE DeriveFunctor       #-}
+{-# LANGUAGE DeriveTraversable   #-}
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
@@ -50,7 +50,7 @@ import qualified HsLua.Core.Utf8 as Utf8
 data Result a
   = Success !a
   | Failure ByteString [Name]       -- ^ Error message and stack of contexts
-  deriving (Show, Eq, Functor)
+  deriving (Show, Eq, Foldable, Functor, Traversable)
 
 instance Applicative Result where
   pure = Success

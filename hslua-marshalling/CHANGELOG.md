@@ -2,6 +2,14 @@
 
 `hslua-marshalling` uses [PVP Versioning][].
 
+## hslua-marshalling-2.2.0
+
+Release pending.
+
+-   `Result` is now an instance of Foldable and Traversable.
+
+-   Require hslua-core-2.2.0.
+
 ## hslua-marshalling-2.1.0
 
 Released 29-01-2022.
