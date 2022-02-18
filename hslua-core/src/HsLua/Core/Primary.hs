@@ -469,14 +469,24 @@ newtable :: LuaE e ()
 newtable = createtable 0 0
 {-# INLINABLE newtable #-}
 
--- | This function allocates a new block of memory with the given size,
--- pushes onto the stack a new full userdata with the block address, and
--- returns this address. The host program can freely use this memory.
+-- | This function creates and pushes on the stack a new full userdata,
+-- with @nuvalue@ associated Lua values, called @user values@, plus an
+-- associated block of raw memory with @size@ bytes. (The user values
+-- can be set and read with the functions 'lua_setiuservalue' and
+-- 'lua_getiuservalue'.)
 --
--- This function wraps 'lua_newuserdata'.
-newuserdata :: Int -> LuaE e (Ptr ())
-newuserdata size = liftLua $ \l -> lua_newuserdatauv l (fromIntegral size) 1
-{-# INLINABLE newuserdata #-}
+-- The function returns the address of the block of memory. Lua ensures
+-- that this address is valid as long as the corresponding userdata is
+-- alive (see <https://www.lua.org/manual/5.4/manual.html#2.5 §2.5>).
+-- Moreover, if the userdata is marked for finalization (see
+-- <https://www.lua.org/manual/5.4/manual.html#2.5.3 §2.5.3>), its
+-- address is valid at least until the call to its finalizer.
+--
+-- This function wraps 'lua_newuserdatauv'.
+newuserdatauv :: Int {- ^ size -} -> Int {- ^ nuvalue -} -> LuaE e (Ptr ())
+newuserdatauv size nuvalue =
+  liftLua $ \l -> lua_newuserdatauv l (fromIntegral size) (fromIntegral nuvalue)
+{-# INLINABLE newuserdatauv #-}
 
 -- | Pops a key from the stack, and pushes a key–value pair from the
 -- table at the given index (the "next" pair after the given key). If

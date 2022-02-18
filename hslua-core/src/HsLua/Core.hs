@@ -114,7 +114,7 @@ module HsLua.Core
   , rawgeti
   , createtable
   , newtable
-  , newuserdata
+  , newuserdatauv
   , getmetatable
   , getuservalue
   -- ** set functions (stack → Lua)

@@ -2,6 +2,15 @@
 
 `hslua-core` uses [PVP Versioning][].
 
+## hslua-core-2.2.0
+
+Release pending.
+
+-    Use lua-2.2.0, which requires Lua 5.4.
+
+-    Rename `newuserdata` to `newuserdatauv` and let it take the
+     number of associated uservalues as an additional argument.
+
 ## hslua-core-2.1.0
 
 Released 29-01-2022.
