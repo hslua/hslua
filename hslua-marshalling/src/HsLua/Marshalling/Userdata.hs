@@ -58,6 +58,6 @@ pushIterator pushValues xs = do
 
     pushInitialState :: LuaE e ()
     pushInitialState = do
-      newhsuserdata @[a] xs
+      newhsuserdatauv @[a] xs 0
       void (newudmetatable statename)
       setmetatable (nth 2)

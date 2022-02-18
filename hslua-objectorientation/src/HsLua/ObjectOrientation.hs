@@ -385,7 +385,7 @@ lazyListStateName = "HsLua unevalled lazy list"
 -- | Pushes a userdata value of the given type.
 pushUD :: LuaError e => UDTypeWithList e fn a itemtype -> a -> LuaE e ()
 pushUD ty x = do
-  newhsuserdata x
+  newhsuserdatauv x 1
   pushUDMetatable ty
   setmetatable (nth 2)
   -- add list as value in caching table
@@ -394,7 +394,7 @@ pushUD ty x = do
     Just ((_, toList), _) -> do
       newtable
       pushName "__lazylist"
-      newhsuserdata (toList x)
+      newhsuserdatauv (toList x) 1
       void (newudmetatable lazyListStateName)
       setmetatable (nth 2)
       rawset (nth 3)

@@ -52,11 +52,11 @@ tests = testGroup "Error"
         throwTypeMismatchError "number" Lua.top :: Lua ()
     , "got unnamed userdata" =:
       "number expected, got userdata" `shouldBeErrorMessageOf` do
-        Lua.newhsuserdata ()
+        Lua.newhsuserdatauv () 0
         throwTypeMismatchError "number" Lua.top :: Lua ()
     , "named userdata" =:
       "Bar expected, got Foo" `shouldBeErrorMessageOf` do
-        Lua.newhsuserdata ()
+        Lua.newhsuserdatauv () 0
         Lua.newudmetatable "Foo"
         Lua.setmetatable (Lua.nth 2)
         throwTypeMismatchError "Bar" Lua.top :: Lua ()

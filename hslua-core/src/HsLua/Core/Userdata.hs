@@ -12,7 +12,7 @@ Portability : non-portable (depends on GHC)
 Convenience functions to convert Haskell values into Lua userdata.
 -}
 module HsLua.Core.Userdata
-  ( newhsuserdata
+  ( newhsuserdatauv
   , newudmetatable
   , fromuserdata
   , putuserdata
@@ -29,9 +29,10 @@ import qualified Data.ByteString as B
 
 -- | Creates a new userdata wrapping the given Haskell object. The
 -- userdata is pushed to the top of the stack.
-newhsuserdata :: forall a e. a -> LuaE e ()
-newhsuserdata x = liftLua $ \l -> hslua_newhsuserdatauv l x 1
-{-# INLINABLE newhsuserdata #-}
+newhsuserdatauv :: forall a e. a -> Int -> LuaE e ()
+newhsuserdatauv x nuvalue = liftLua $ \l ->
+  hslua_newhsuserdatauv l x (fromIntegral nuvalue)
+{-# INLINABLE newhsuserdatauv #-}
 
 -- | Creates and registers a new metatable for a userdata-wrapped
 -- Haskell value; checks whether a metatable of that name has been

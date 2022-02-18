@@ -12,7 +12,7 @@ module HsLua.Core.UserdataTests (tests) where
 
 import HsLua.Core (getfield, pushboolean, setmetatable, tostring)
 import HsLua.Core.Userdata
-  (fromuserdata, newhsuserdata, newudmetatable, putuserdata)
+  (fromuserdata, newhsuserdatauv, newudmetatable, putuserdata)
 import HsLua.Core.Types (nth, top)
 import Test.Tasty.HsLua ((=:), shouldBeResultOf)
 import Test.Tasty (TestTree, testGroup)
@@ -28,7 +28,7 @@ tests = testGroup "Userdata"
 
   , "get back pushed value" =:
     Just (Sample 0 "zero") `shouldBeResultOf` do
-      newhsuserdata (Sample 0 "zero")
+      newhsuserdatauv (Sample 0 "zero") 0
       newudmetatable "Sample"
       setmetatable (nth 2)
       fromuserdata top "Sample"
@@ -40,14 +40,14 @@ tests = testGroup "Userdata"
 
   , "fail on wrong userdata" =:
     (Nothing :: Maybe Sample) `shouldBeResultOf` do
-      newhsuserdata (5 :: Integer)
+      newhsuserdatauv (5 :: Integer) 0
       newudmetatable "Integer"
       setmetatable (nth 2)
       fromuserdata top "Sample"
 
   , "change wrapped value" =:
     Just (Sample 1 "a") `shouldBeResultOf` do
-      newhsuserdata (Sample 5 "five")
+      newhsuserdatauv (Sample 5 "five") 0
       newudmetatable "Sample"
       setmetatable (nth 2)
       True <- putuserdata top "Sample" (Sample 1 "a")
@@ -55,7 +55,7 @@ tests = testGroup "Userdata"
 
   , "change fails on wrong name" =:
     Just (Sample 2 "b") `shouldBeResultOf` do
-      newhsuserdata (Sample 2 "b")
+      newhsuserdatauv (Sample 2 "b") 0
       newudmetatable "Sample"
       setmetatable (nth 2)
       False <- putuserdata top "WRONG" (Sample 3 "c")

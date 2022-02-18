@@ -186,7 +186,7 @@ module HsLua.Core
   -- * Haskell userdata values
   --
   -- | Push arbitrary Haskell values to the Lua stack.
-  , newhsuserdata
+  , newhsuserdatauv
   , newudmetatable
   , fromuserdata
   , putuserdata

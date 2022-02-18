@@ -11,6 +11,8 @@ Release pending.
 -    Rename `newuserdata` to `newuserdatauv` and let it take the
      number of associated uservalues as an additional argument.
 
+     Similarly, `newhsuserdata` is now `newhsuserdatauv`.
+
 ## hslua-core-2.1.0
 
 Released 29-01-2022.

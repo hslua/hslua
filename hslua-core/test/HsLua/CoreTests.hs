@@ -193,7 +193,7 @@ tests = testGroup "Core module"
 
   , "setting and getting a global works" =:
     Just "Fisch" `shouldBeResultOf` do
-      newhsuserdata ()
+      newhsuserdatauv () 1
       pushstring "Fisch"
       setuservalue (nth 2)
 
