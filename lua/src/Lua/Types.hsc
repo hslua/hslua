@@ -19,6 +19,7 @@ module Lua.Types
   , TypeCode (..)
   , CFunction
   , PreCFunction
+  , WarnFunction
   , LuaBool (..)
   , Integer (..)
   , Number (..)
@@ -39,7 +40,7 @@ import Prelude hiding (Integer)
 
 import Data.Bifunctor (first)
 import Data.Int (#{type LUA_INTEGER})
-import Foreign.C (CChar, CInt, CSize)
+import Foreign.C (CChar, CInt, CSize, CString)
 import Foreign.Ptr (FunPtr, Ptr)
 import Foreign.Storable (Storable)
 import GHC.Generics (Generic)
@@ -89,6 +90,17 @@ type PreCFunction = State -> IO NumResults
 --
 -- See <https://www.lua.org/manual/5.4/manual.html#lua_Reader lua_Reader>.
 type Reader = FunPtr (State -> Ptr () -> Ptr CSize -> IO (Ptr CChar))
+
+-- | The type of warning functions, called by Lua to emit warnings. The
+-- first parameter is an opaque pointer set by
+-- <https://www.lua.org/manual/5.4/manual.html#lua_setwarnf
+-- lua_setwarnf>. The second parameter is the warning message. The third
+-- parameter is a boolean that indicates whether the message is to be
+-- continued by the message in the next call.
+--
+-- See <https://www.lua.org/manual/5.4/manual.html#pdf-warn warn> for
+-- more details about warnings.
+type WarnFunction = FunPtr (Ptr () -> CString -> LuaBool -> IO ())
 
 -- |  The type of integers in Lua.
 --
