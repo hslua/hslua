@@ -198,6 +198,8 @@ module Lua
   , pattern LUA_GCISRUNNING
   , pattern LUA_GCGEN
   , pattern LUA_GCINC
+    -- ** Warning-related functions
+  , lua_warning
     -- ** Miscellaneous functions
   , lua_pushglobaltable
 

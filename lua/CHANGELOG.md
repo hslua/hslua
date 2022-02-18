@@ -22,6 +22,9 @@ Release pending.
     `hslua_newhsuserdatauv` and takes the number of associated
     uservalues as an additional argument.
 
+-   Support for the new warnings system: export binding to
+    `lua_warning`.
+
 -   The function `lua_gc` now takes three data arguments of type
     CInt. This is a workaround for the fact that the C function
     has become variadic.

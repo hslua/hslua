@@ -98,6 +98,7 @@ module Lua.Primary
   , lua_type
   , lua_typename
   , lua_version
+  , lua_warning
   , module Lua.Ersatz.Functions
   , module Lua.Ersatz.Auxiliary
   )
@@ -1015,3 +1016,16 @@ foreign import ccall unsafe "lua.h lua_typename"
 -- <https://www.lua.org/manual/5.4/manual.html#lua_version>
 foreign import ccall unsafe "lua.h lua_version"
   lua_version :: Lua.State -> IO (Ptr Lua.Number)
+
+-- | Emits a warning with the given message. A message in a call with
+-- @tocont@ true should be continued in another call to this function.
+--
+-- See <https://www.lua.org/manual/5.4/manual.html#pdf-warn warn> for
+-- more details about warnings.
+--
+-- <https://www.lua.org/manual/5.4/manual.html#lua_warning>
+foreign import capi safe "lua.h lua_warning"
+  lua_warning :: Lua.State
+              -> CString   -- ^ message
+              -> LuaBool   -- ^ tocont
+              -> IO ()
