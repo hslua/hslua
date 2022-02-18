@@ -200,6 +200,7 @@ module Lua
   , pattern LUA_GCINC
     -- ** Warning-related functions
   , lua_warning
+  , lua_setwarnf
   , WarnFunction
     -- ** Miscellaneous functions
   , lua_pushglobaltable

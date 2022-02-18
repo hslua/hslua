@@ -85,6 +85,7 @@ module Lua.Primary
   , lua_settable
   , lua_settop
   , lua_setiuservalue
+  , lua_setwarnf
   , lua_status
   , lua_stringtonumber
   , lua_toboolean
@@ -861,6 +862,15 @@ foreign import capi unsafe "lua.h lua_setiuservalue"
                     -> StackIndex  -- ^ index
                     -> CInt        -- ^ n
                     -> IO LuaBool
+
+-- | Sets the warning function to be used by Lua to emit warnings (see
+-- 'WarnFunction'). The @ud@ parameter sets the value @ud@ passed to the
+-- warning function.
+foreign import capi unsafe "lua.h lua_setwarnf"
+  lua_setwarnf :: Lua.State
+               -> Lua.WarnFunction -- ^ f
+               -> Ptr ()           -- ^ ud
+               -> IO ()
 
 -- |  Returns the status of this Lua thread.
 --
