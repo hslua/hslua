@@ -11,6 +11,17 @@ Release pending.
 -   Removed `hardcode-reg-keys` flag: this is no longer required
     for Lua 5.4.
 
+-   Support arbitrary number of uservalues: Lua 5.4 allows an
+    arbitrary number of uservalues to be associated with userdata
+    objects. The functions `lua_newuserdata`, `lua_getuservalue`,
+    and `lua_setuservalue` are replaced with the new functions
+    `lua_newuserdatauv`, `lua_getiuservalue`, and
+    `lua_setiuservalue`, respectively.
+
+    The function `hslua_newhsuserdata` is renamed to
+    `hslua_newhsuserdatauv` and takes the number of associated
+    uservalues as an additional argument.
+
 ## lua-2.1.0
 
 Released 29-01-2022.

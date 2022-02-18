@@ -21,7 +21,7 @@ module HsLua.Core.Userdata
 import HsLua.Core.Types (LuaE, Name (..), StackIndex, liftLua, fromLuaBool)
 import Lua.Userdata
   ( hslua_fromuserdata
-  , hslua_newhsuserdata
+  , hslua_newhsuserdatauv
   , hslua_newudmetatable
   , hslua_putuserdata
   )
@@ -30,7 +30,7 @@ import qualified Data.ByteString as B
 -- | Creates a new userdata wrapping the given Haskell object. The
 -- userdata is pushed to the top of the stack.
 newhsuserdata :: forall a e. a -> LuaE e ()
-newhsuserdata = liftLua . flip hslua_newhsuserdata
+newhsuserdata x = liftLua $ \l -> hslua_newhsuserdatauv l x 1
 {-# INLINABLE newhsuserdata #-}
 
 -- | Creates and registers a new metatable for a userdata-wrapped

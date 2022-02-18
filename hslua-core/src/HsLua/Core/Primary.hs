@@ -294,7 +294,7 @@ gettop = liftLua lua_gettop
 --
 -- Wraps 'lua_getuservalue'.
 getuservalue :: StackIndex -> LuaE e Type
-getuservalue idx = toType <$> liftLua (`lua_getuservalue` idx)
+getuservalue idx = toType <$> liftLua (\l -> lua_getiuservalue l idx 1)
 
 -- | Moves the top element into the given valid index, shifting up the
 -- elements above this index to open space. This function cannot be
@@ -475,7 +475,7 @@ newtable = createtable 0 0
 --
 -- This function wraps 'lua_newuserdata'.
 newuserdata :: Int -> LuaE e (Ptr ())
-newuserdata = liftLua1 lua_newuserdata . fromIntegral
+newuserdata size = liftLua $ \l -> lua_newuserdatauv l (fromIntegral size) 1
 {-# INLINABLE newuserdata #-}
 
 -- | Pops a key from the stack, and pushes a key–value pair from the
@@ -868,7 +868,7 @@ settop = liftLua1 lua_settop
 --
 -- <https://www.lua.org/manual/5.4/manual.html#lua_setuservalue>
 setuservalue :: StackIndex -> LuaE e ()
-setuservalue idx = liftLua (`lua_setuservalue` idx)
+setuservalue idx = void $ liftLua (\l -> lua_setiuservalue l idx 1)
 
 -- |  Returns the status of this Lua thread.
 --

@@ -161,16 +161,16 @@ module Lua
   , lua_rawget
   , lua_rawgeti
   , lua_createtable
-  , lua_newuserdata
+  , lua_newuserdatauv
   , lua_getmetatable
-  , lua_getuservalue
+  , lua_getiuservalue
   , lua_getglobal
   , lua_gettable
     -- ** Set functions (stack → Lua)
   , lua_rawset
   , lua_rawseti
   , lua_setmetatable
-  , lua_setuservalue
+  , lua_setiuservalue
   , lua_setglobal
   , lua_settable
     -- ** Misc (safe)

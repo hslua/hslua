@@ -12,14 +12,14 @@ as userdata.
 -}
 module Lua.Userdata
   ( hslua_fromuserdata
-  , hslua_newhsuserdata
+  , hslua_newhsuserdatauv
   , hslua_newudmetatable
   , hslua_putuserdata
   ) where
 
 import Foreign.C (CInt (CInt), CString)
 import Lua.Auxiliary (luaL_testudata)
-import Lua.Primary (lua_newuserdata)
+import Lua.Primary (lua_newuserdatauv)
 import Lua.Types
   ( LuaBool (..)
   , StackIndex (..)
@@ -44,13 +44,17 @@ foreign import ccall SAFTY "hsludata.h hslua_newudmetatable"
                        -> IO LuaBool  -- ^ True iff new metatable
                                       --   was created.
 
--- | Creates a new userdata wrapping the given Haskell object.
-hslua_newhsuserdata :: State -> a -> IO ()
-hslua_newhsuserdata l x = do
+-- | Creates a new userdata wrapping the given Haskell object, with
+-- @nuvalue@ associated Lua values (uservalues).
+hslua_newhsuserdatauv :: State
+                      -> a      -- ^ value to be wrapped
+                      -> CInt   -- ^ nuvalue
+                      -> IO ()
+hslua_newhsuserdatauv l x nuvalue = do
   xPtr <- newStablePtr x
-  udPtr <- lua_newuserdata l (fromIntegral $ sizeOf xPtr)
+  udPtr <- lua_newuserdatauv l (fromIntegral $ sizeOf xPtr) nuvalue
   poke (castPtr udPtr) xPtr
-{-# INLINABLE hslua_newhsuserdata #-}
+{-# INLINABLE hslua_newhsuserdatauv #-}
 
 -- | Retrieves a Haskell object from userdata at the given index.
 -- The userdata /must/ have the given name.

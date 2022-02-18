@@ -38,7 +38,7 @@ module Lua.Primary
   , lua_getmetatable
   , lua_gettable
   , lua_gettop
-  , lua_getuservalue
+  , lua_getiuservalue
   , lua_insert
   , lua_isboolean
   , lua_iscfunction
@@ -55,7 +55,7 @@ module Lua.Primary
   , lua_isuserdata
   , lua_load
   , lua_newthread
-  , lua_newuserdata
+  , lua_newuserdatauv
   , lua_next
   , lua_pcall
   , lua_pop
@@ -84,7 +84,7 @@ module Lua.Primary
   , lua_setmetatable
   , lua_settable
   , lua_settop
-  , lua_setuservalue
+  , lua_setiuservalue
   , lua_status
   , lua_stringtonumber
   , lua_toboolean
@@ -299,14 +299,19 @@ foreign import capi SAFTY "lua.h lua_gettable"
 foreign import capi unsafe "lua.h lua_gettop"
   lua_gettop :: Lua.State -> IO StackIndex
 
--- | Pushes onto the stack the Lua value associated with the full
--- userdata at the given index.
+-- | Pushes onto the stack the @n@-th user value associated with the
+-- full userdata at the given index and returns the type of the pushed
+-- value.
 --
--- Returns the type of the pushed value.
+-- If the userdata does not have that value, pushes __nil__ and returns
+-- 'LUA_TNONE'.
 --
--- <https://www.lua.org/manual/5.4/manual.html#lua_getuservalue>
-foreign import capi unsafe "lua.h lua_getuservalue"
-  lua_getuservalue :: Lua.State -> StackIndex -> IO TypeCode
+-- <https://www.lua.org/manual/5.4/manual.html#lua_getiuservalue>
+foreign import capi unsafe "lua.h lua_getiuservalue"
+  lua_getiuservalue :: Lua.State
+                    -> StackIndex   -- ^ index
+                    -> CInt         -- ^ n
+                    -> IO TypeCode
 
 -- | Moves the top element into the given valid index, shifting up the
 -- elements above this index to open space. This function cannot be
@@ -467,14 +472,25 @@ foreign import capi safe "lua.h lua_load"
 foreign import capi SAFTY "lua.h lua_newthread"
   lua_newthread :: Lua.State -> IO Lua.State
 
--- | This function allocates a new block of memory with the given size,
--- pushes onto the stack a new full userdata with the block address, and
--- returns this address. The host program can freely use this memory.
+-- | This function creates and pushes on the stack a new full userdata,
+-- with @nuvalue@ associated Lua values, called @user values@, plus an
+-- associated block of raw memory with @size@ bytes. (The user values
+-- can be set and read with the functions 'lua_setiuservalue' and
+-- 'lua_getiuservalue'.)
 --
--- <https://www.lua.org/manual/5.4/manual.html#lua_newuserdata>.
-foreign import capi SAFTY "lua.h lua_newuserdata"
-  lua_newuserdata :: Lua.State -> CSize -> IO (Ptr ())
-
+-- The function returns the address of the block of memory. Lua ensures
+-- that this address is valid as long as the corresponding userdata is
+-- alive (see <https://www.lua.org/manual/5.4/manual.html#2.5 §2.5>).
+-- Moreover, if the userdata is marked for finalization (see
+-- <https://www.lua.org/manual/5.4/manual.html#2.5.3 §2.5.3>), its
+-- address is valid at least until the call to its finalizer.
+--
+-- <https://www.lua.org/manual/5.4/manual.html#lua_newuserdatauv>.
+foreign import capi SAFTY "lua.h lua_newuserdatauv"
+  lua_newuserdatauv :: Lua.State
+                    -> CSize       -- ^ size
+                    -> CInt        -- ^ nuvalue
+                    -> IO (Ptr ())
 
 -- | Pops a key from the stack, and pushes a key–value pair from the
 -- table at the given index (the \"next\" pair after the given key). If
@@ -828,12 +844,16 @@ foreign import capi SAFTY "lua.h lua_settable"
 foreign import capi unsafe "lua.h lua_settop"
   lua_settop :: Lua.State -> StackIndex {- ^ index -} -> IO ()
 
--- | Pops a value from the stack and sets it as the new value associated
--- to the full userdata at the given index.
+-- | Pops a value from the stack and sets it as the new @n@-th user
+-- value associated to the full userdata at the given index. Returns 0
+-- if the userdata does not have that value.
 --
--- <https://www.lua.org/manual/5.4/manual.html#lua_setuservalue>
-foreign import capi unsafe "lua.h lua_setuservalue"
-  lua_setuservalue :: Lua.State -> StackIndex -> IO ()
+-- <https://www.lua.org/manual/5.4/manual.html#lua_setiuservalue>
+foreign import capi unsafe "lua.h lua_setiuservalue"
+  lua_setiuservalue :: Lua.State
+                    -> StackIndex  -- ^ index
+                    -> CInt        -- ^ n
+                    -> IO LuaBool
 
 -- |  Returns the status of this Lua thread.
 --
