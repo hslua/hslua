@@ -5,7 +5,7 @@ synopsis:            Lua, an embeddable scripting language
 description:         This package provides bindings and types to bridge
                      Haskell and <https://www.lua.org/ Lua>.
                      .
-                     The full Lua interpreter version 5.4.2 is included.
+                     The full Lua interpreter version 5.4.4 is included.
                      Alternatively, a system-wide Lua installation can be
                      linked instead.
 homepage:            https://hslua.org/
@@ -19,7 +19,7 @@ copyright:           © 2007–2012 Gracjan Polak;
                      © 2017-2022 Albert Krewinkel
 category:            Foreign
 build-type:          Simple
-extra-source-files:  cbits/lua-5.4.2/*.h
+extra-source-files:  cbits/lua-5.4.4/*.h
                    , cbits/hslua/*.h
                    , README.md
                    , CHANGELOG.md
