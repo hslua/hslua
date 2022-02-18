@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase                 #-}
 {-# OPTIONS_GHC -Wno-unused-do-bind        #-}
 {-|
 Module      : Lua.PrimaryTests
@@ -9,8 +10,8 @@ Tests for bindings to primary API functions.
 -}
 module Lua.PrimaryTests (tests) where
 
-import Foreign.C.String (withCString)
-import Foreign.Ptr (nullPtr)
+import Foreign.C (CInt (..), CString, peekCString, withCString)
+import Foreign.Ptr (Ptr, nullPtr)
 import Lua
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (Assertion, HasCallStack, assertBool, testCase, (@=?) )
@@ -65,6 +66,20 @@ tests = testGroup "Primary"
         0 `shouldBeResultOf` \l -> do
           withCString "NaN" $ lua_stringtonumber l
     ]
+
+  , testGroup "warnings"
+    [ "collect warnings" =:
+        "my warning" `shouldBeResultOf` \l -> do
+          warnf <- makeWarnFunction warn
+          let State ud = l
+          lua_setwarnf l warnf ud
+          withCString "my warning" $ \w -> lua_warning l w FALSE
+          withCString "previous-warning" $ lua_pushstring l
+          lua_rawget l LUA_REGISTRYINDEX
+          lua_type l top >>= \case
+            LUA_TSTRING -> peekCString =<< lua_tolstring l top nullPtr
+            _ -> pure ""
+    ]
   ]
 
 infix  3 =:
@@ -82,3 +97,14 @@ shouldHoldForResultOf :: HasCallStack
 shouldHoldForResultOf predicate luaOp = do
   result <- withNewState luaOp
   assertBool "predicate does not hold" (predicate result)
+
+warn :: Ptr () -> CString -> LuaBool -> IO ()
+warn udPtr msg _cont = do
+  let l = State udPtr
+  withCString "previous-warning" $ lua_pushstring l
+  lua_pushstring l msg
+  lua_rawset l LUA_REGISTRYINDEX
+
+foreign import ccall "wrapper"
+  makeWarnFunction :: (Ptr () -> CString -> LuaBool -> IO ())
+                   -> IO WarnFunction
