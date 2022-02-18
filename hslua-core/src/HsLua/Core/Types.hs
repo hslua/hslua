@@ -261,25 +261,27 @@ toLuaBool False = FALSE
 
 -- | Commands to control the garbage collector.
 data GCControl
-  = GCStop            -- ^ stops the garbage collector.
-  | GCRestart         -- ^ restarts the garbage collector
-  | GCCollect         -- ^ performs a full garbage-collection cycle.
-  | GCCount           -- ^ returns the current amount of memory (in
-                      -- Kbytes) in use by Lua.
-  | GCCountb          -- ^ returns the remainder of dividing the current
-                      -- amount of bytes of memory in use by Lua by 1024.
-  | GCStep            -- ^ performs an incremental step of garbage
-                      -- collection.
-  | GCSetPause CInt   -- ^ sets data as the new value for the pause of
-                      -- the collector (see
-                      -- <https://www.lua.org/manual/5.4/manual.html#2.5
-                      -- §2.5> of the Lua reference manual) and returns
-                      -- the previous value of the pause.
-  | GCSetStepMul CInt -- ^ sets data as the new value for the step
-                      -- multiplier of the collector (see
-                      -- <https://www.lua.org/manual/5.4/manual.html#2.5
-                      -- §2.5> of the Lua reference manual) and returns
-                      -- the previous value of the step multiplier.
+  = GCStop               -- ^ stops the garbage collector.
+  | GCRestart            -- ^ restarts the garbage collector
+  | GCCollect            -- ^ performs a full garbage-collection cycle.
+  | GCCount              -- ^ returns the current amount of memory (in
+                         -- Kbytes) in use by Lua.
+  | GCCountb             -- ^ returns the remainder of dividing the current
+                         -- amount of bytes of memory in use by Lua by 1024.
+  | GCStep CInt          -- ^ performs an incremental step of garbage
+                         -- collection, corresponding to the allocation of
+                         -- @stepsize@ Kbytes.
+  | GCInc CInt CInt CInt -- ^ Changes the collector to incremental mode
+                         -- with the given parameters (see
+                         -- <https://www.lua.org/manual/5.4/manual.html#2.5.1
+                         -- §2.5.1>). Returns the previous mode
+                         -- (@LUA_GCGEN@ or @LUA_GCINC@).
+                         -- Parameters: pause, stepmul, and stepsize.
+  | GCGen CInt CInt      -- ^ Changes the collector to generational mode
+                         -- with the given parameters (see
+                         -- <https://www.lua.org/manual/5.4/manual.html#2.5.2
+                         -- §2.5.2>). Returns the previous mode
+                         -- (@LUA_GCGEN@ or @LUA_GCINC@).
   | GCIsRunning       -- ^ returns a boolean that tells whether the
                       -- collector is running (i.e., not stopped).
   deriving (Eq, Ord, Show)
@@ -292,18 +294,19 @@ toGCcode = \case
   GCCollect       -> LUA_GCCOLLECT
   GCCount         -> LUA_GCCOUNT
   GCCountb        -> LUA_GCCOUNTB
-  GCStep          -> LUA_GCSTEP
-  GCSetPause {}   -> LUA_GCSETPAUSE
-  GCSetStepMul {} -> LUA_GCSETSTEPMUL
+  GCStep _        -> LUA_GCSTEP
   GCIsRunning     -> LUA_GCISRUNNING
+  GCGen {}        -> LUA_GCGEN
+  GCInc {}        -> LUA_GCINC
 {-# INLINABLE toGCcode #-}
 
 -- | Returns the data value associated with a GCControl command.
-toGCdata :: GCControl -> CInt
+toGCdata :: GCControl -> (CInt, CInt, CInt)
 toGCdata = \case
-  GCSetPause p   -> p
-  GCSetStepMul m -> m
-  _              -> 0
+  GCStep stepsize         -> (stepsize, 0, 0)
+  GCGen minormul majormul -> (minormul, majormul, 0)
+  GCInc pause mul size    -> (pause, mul, size)
+  _                       -> (0, 0, 0)
 {-# INLINABLE toGCdata #-}
 
 --

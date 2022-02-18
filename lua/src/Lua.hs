@@ -196,6 +196,8 @@ module Lua
   , pattern LUA_GCSETPAUSE
   , pattern LUA_GCSETSTEPMUL
   , pattern LUA_GCISRUNNING
+  , pattern LUA_GCGEN
+  , pattern LUA_GCINC
     -- ** Miscellaneous functions
   , lua_pushglobaltable
 

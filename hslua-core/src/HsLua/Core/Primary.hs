@@ -219,8 +219,9 @@ error = liftLua hslua_error
 --
 -- Wraps 'lua_gc'.
 gc :: GCControl -> LuaE e Int
-gc what = liftLua $ \l ->
-  fromIntegral <$!> lua_gc l (toGCcode what) (toGCdata what)
+gc what = liftLua $ \l -> do
+  let (data1, data2, data3) = toGCdata what
+  fromIntegral <$!> lua_gc l (toGCcode what) data1 data2 data3
 {-# INLINABLE gc #-}
 
 -- | Pushes onto the stack the value @t[k]@, where @t@ is the value at

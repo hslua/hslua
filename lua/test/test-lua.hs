@@ -251,26 +251,6 @@ tests = testGroup "lua"
           lua_pcall l (NumArgs 1) (NumResults 1) 0
     ]
 
-  , testGroup "garbage-collection"
-    [ "stop, restart GC"  =: do
-        counts <- withNewState $ \l -> do
-          lua_createtable l 0 0
-          _  <- lua_gc l LUA_GCSTOP 0
-          lua_pop l 1
-          kb1 <- lua_gc l LUA_GCCOUNT 0
-          b1  <- lua_gc l LUA_GCCOUNTB 0
-          _   <- lua_gc l LUA_GCCOLLECT 0
-          kb2 <- lua_gc l LUA_GCCOUNT 0
-          b2  <- lua_gc l LUA_GCCOUNTB 0
-          return (b1 + 1024 * kb1, b2 + 1024 * kb2)
-        assertBool "first count should be larger" (uncurry (>) counts)
-    , "count memory" =: do
-        count <- withNewState $ \l -> do
-          lua_gc l LUA_GCCOUNT 0
-        assertBool "memory consumption not between 0 and 10 kB"
-                   (count > 0 && count < 10)
-    ]
-
   , testGroup "ersatz functions"
     [ testGroup "globals"
       [ "get global from base library" =:

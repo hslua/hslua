@@ -21,6 +21,13 @@ Release pending.
      It is now possible for `setiuservalue` to fail, so it returns
      a boolean to indicate whether the action was successful.
 
+-    The `GCControl` type has been updated to match the new gc
+     control:
+
+     -   The GCStep constructor takes an argument "stepsize";
+     -   constructors GCGen and GCInc have been added;
+     -   constructors GCSetPause and GCSetStepMul have been removed.
+
 ## hslua-core-2.1.0
 
 Released 29-01-2022.

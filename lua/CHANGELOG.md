@@ -22,6 +22,14 @@ Release pending.
     `hslua_newhsuserdatauv` and takes the number of associated
     uservalues as an additional argument.
 
+-   The function `lua_gc` now takes three data arguments of type
+    CInt. This is a workaround for the fact that the C function
+    has become variadic.
+
+-   The new patterns `LUA_GCGEN` and `LUA_GCINC` are usable with
+    `lua_gc` to switch to generational and incremental garbage
+    collection, respectively.
+
 ## lua-2.1.0
 
 Released 29-01-2022.

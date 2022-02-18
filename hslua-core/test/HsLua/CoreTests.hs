@@ -401,7 +401,7 @@ tests = testGroup "Core module"
   , testCase "garbage collection" . run $
       -- test that gc can be called with all constructors of type GCControl.
       mapM_ gc [ GCStop, GCRestart, GCCollect, GCCollect, GCCountb
-               , GCStep, GCSetPause 23, GCSetStepMul 5, GCIsRunning ]
+               , GCStep 12, GCInc 23 0 0, GCGen 5 10, GCIsRunning ]
 
   , testGroup "compare"
     [ testProperty "identifies strictly smaller values" $ compareWith (<) Lua.LT

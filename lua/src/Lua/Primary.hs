@@ -237,8 +237,14 @@ foreign import capi SAFTY "lua.h lua_createtable"
 --
 -- See the Lua docs at
 -- <https://www.lua.org/manual/5.4/manual.html#lua_gc>.
+-- Unused dataN values should be set to 0, but can be anything.
 foreign import capi safe "lua.h lua_gc"
-  lua_gc :: Lua.State -> GCCode {- ^ what -} -> CInt {- ^ data -} -> IO CInt
+  lua_gc :: Lua.State
+         -> GCCode    -- ^ what
+         -> CInt      -- ^ data1
+         -> CInt      -- ^ data2
+         -> CInt      -- ^ data3
+         -> IO CInt
 
 -- | Pushes onto the stack the value of the global name. Returns the
 -- type of that value.

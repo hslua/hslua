@@ -64,6 +64,8 @@ module Lua.Constants
   , pattern LUA_GCSETPAUSE
   , pattern LUA_GCSETSTEPMUL
   , pattern LUA_GCISRUNNING
+  , pattern LUA_GCGEN
+  , pattern LUA_GCINC
     -- * Predefined references
   , pattern LUA_REFNIL
   , pattern LUA_NOREF
@@ -285,6 +287,14 @@ pattern LUA_GCSETSTEPMUL = GCCode #{const LUA_GCSETSTEPMUL}
 -- (i.e., not stopped).
 pattern LUA_GCISRUNNING :: GCCode
 pattern LUA_GCISRUNNING = GCCode #{const LUA_GCISRUNNING}
+
+-- | Changes the collector to generational mode.
+pattern LUA_GCGEN :: GCCode
+pattern LUA_GCGEN = GCCode #{const LUA_GCGEN}
+
+-- | Changes the collector to incremental mode.
+pattern LUA_GCINC :: GCCode
+pattern LUA_GCINC = GCCode #{const LUA_GCINC}
 
 --
 -- Special registry values
