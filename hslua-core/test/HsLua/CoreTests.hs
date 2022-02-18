@@ -195,10 +195,10 @@ tests = testGroup "Core module"
     Just "Fisch" `shouldBeResultOf` do
       newhsuserdatauv () 1
       pushstring "Fisch"
-      setuservalue (nth 2)
+      setiuservalue (nth 2) 1
 
       -- get uservalue again
-      TypeString <- getuservalue top
+      TypeString <- getiuservalue top 1
       tostring top
 
   , "can push and receive a thread" ?: do

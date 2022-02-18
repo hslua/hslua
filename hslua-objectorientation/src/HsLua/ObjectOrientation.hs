@@ -398,14 +398,14 @@ pushUD ty x = do
       void (newudmetatable lazyListStateName)
       setmetatable (nth 2)
       rawset (nth 3)
-      setuservalue (nth 2)
+      void (setiuservalue (nth 2) 1)
 
 -- | Retrieves a userdata value of the given type.
 peekUD :: LuaError e => UDTypeWithList e fn a itemtype -> Peeker e a
 peekUD ty idx = do
   let name = udName ty
   x <- reportValueOnFailure name (`fromuserdata` name) idx
-  (`lastly` pop 1) $ liftLua (getuservalue idx) >>= \case
+  (`lastly` pop 1) $ liftLua (getiuservalue idx 1) >>= \case
     TypeTable -> do
       -- set list
       xWithList <- maybe pure setList (udListSpec ty) x

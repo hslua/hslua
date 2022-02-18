@@ -287,14 +287,19 @@ gettop :: LuaE e StackIndex
 gettop = liftLua lua_gettop
 {-# INLINABLE gettop #-}
 
--- | Pushes onto the stack the Lua value associated with the full
--- userdata at the given index.
+-- | Pushes onto the stack the @n@-th user value associated with the
+-- full userdata at the given index and returns the type of the pushed
+-- value.
 --
--- Returns the type of the pushed value.
+-- If the userdata does not have that value, pushes __nil__ and returns
+-- 'LUA_TNONE'.
 --
--- Wraps 'lua_getuservalue'.
-getuservalue :: StackIndex -> LuaE e Type
-getuservalue idx = toType <$> liftLua (\l -> lua_getiuservalue l idx 1)
+-- Wraps 'lua_getiuservalue'.
+getiuservalue :: StackIndex  -- ^ index
+             -> Int         -- ^ n
+             -> LuaE e Type
+getiuservalue idx n = liftLua $ \l ->
+  toType <$!> lua_getiuservalue l idx (fromIntegral n)
 
 -- | Moves the top element into the given valid index, shifting up the
 -- elements above this index to open space. This function cannot be
@@ -873,12 +878,14 @@ settop :: StackIndex -> LuaE e ()
 settop = liftLua1 lua_settop
 {-# INLINABLE settop #-}
 
--- | Pops a value from the stack and sets it as the new value associated
--- to the full userdata at the given index.
+-- | Pops a value from the stack and sets it as the new @n@-th user
+-- value associated to the full userdata at the given index. Returns 0
+-- if the userdata does not have that value.
 --
--- <https://www.lua.org/manual/5.4/manual.html#lua_setuservalue>
-setuservalue :: StackIndex -> LuaE e ()
-setuservalue idx = void $ liftLua (\l -> lua_setiuservalue l idx 1)
+-- Wraps 'lua_setiuservalue'.
+setiuservalue :: StackIndex {- ^ index -} -> Int {- ^ n -} -> LuaE e Bool
+setiuservalue idx n = liftLua $ \l ->
+  fromLuaBool <$!> lua_setiuservalue l idx (fromIntegral n)
 
 -- |  Returns the status of this Lua thread.
 --

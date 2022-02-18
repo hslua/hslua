@@ -13,6 +13,14 @@ Release pending.
 
      Similarly, `newhsuserdata` is now `newhsuserdatauv`.
 
+-    Rename `getuservalue` and `setuservalue` to `getiuservalue`
+     and `setiuservalue`, respectively. Like both functions now
+     take an extra argument specifying the number of the uservalue
+     that should be retrieved or set.
+
+     It is now possible for `setiuservalue` to fail, so it returns
+     a boolean to indicate whether the action was successful.
+
 ## hslua-core-2.1.0
 
 Released 29-01-2022.
