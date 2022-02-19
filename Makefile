@@ -27,7 +27,7 @@ release-date:
 	find . \
 	    -name CHANGELOG.md \
 	    -exec sed -i'' \
-                -e "s/^Release pending/Released $$(date '+%d-%m-%Y')/" \
+                -e "s/^Release pending/Released $$(date '+%Y-%m-%d')/" \
             '{}' ';'
 
 .PHONY: publish
