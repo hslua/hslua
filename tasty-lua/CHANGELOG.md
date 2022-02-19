@@ -2,9 +2,16 @@
 
 `tasty-lua` uses [PVP Versioning][].
 
+## tasty-lua-1.0.2
+
+Released 2022-02-19.
+
+-   Relaxed upper bound for hslua-\* packages to allow 2.2
+    versions.
+
 ## tasty-lua-1.0.1
 
-Released 29-01-2022.
+Released 2022-01-29.
 
 -   Support for property testing: the new functions `forall` and a
     set of generators are provided for property testing. The table
