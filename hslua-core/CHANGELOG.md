@@ -4,7 +4,7 @@
 
 ## hslua-core-2.2.0
 
-Release pending.
+Released 2022-02-19.
 
 -    Use lua-2.2.0, which requires Lua 5.4.
 

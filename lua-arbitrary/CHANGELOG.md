@@ -4,7 +4,7 @@
 
 ## lua-arbitrary-1.0.1
 
-Release pending.
+Released 2022-02-19.
 
 -   Allow lua-2.2.0 (includes Lua 5.4).
 

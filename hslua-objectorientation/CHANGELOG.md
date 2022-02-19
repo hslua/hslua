@@ -4,7 +4,7 @@
 
 ## hslua-objectorientation-2.2.0
 
-Release pending.
+Released 2022-02-19.
 
 -   Require version 2.2 of hslua-core and hslua-marshalling.
 

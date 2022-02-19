@@ -4,7 +4,7 @@
 
 ## lua-2.2.0
 
-Release pending.
+Released 2022-02-19.
 
 -   Update to Lua 5.4, include Lua 5.4.4 by default.
 

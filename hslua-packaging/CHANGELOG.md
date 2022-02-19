@@ -4,7 +4,7 @@
 
 ## hslua-packaging-2.2.0
 
-Release pending.
+Released 2022-02-19.
 
 -   Require versions 2.2 for hslua-core, hslua-marshalling,
     hslua-objectorientation.

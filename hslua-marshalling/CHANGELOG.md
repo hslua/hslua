@@ -4,7 +4,7 @@
 
 ## hslua-marshalling-2.2.0
 
-Release pending.
+Released 2022-02-19.
 
 -   `Result` is now an instance of Foldable and Traversable.
     Both `Result` and `Peek` are made instances of `MonadPlus`.
