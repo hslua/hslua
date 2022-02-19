@@ -7,6 +7,7 @@
 Release pending.
 
 -   `Result` is now an instance of Foldable and Traversable.
+    Both `Result` and `Peek` are made instances of `MonadPlus`.
 
 -   Require hslua-core-2.2.0.
 
