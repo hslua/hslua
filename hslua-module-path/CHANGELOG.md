@@ -2,6 +2,13 @@
 
 `hslua-module-paths` uses [PVP Versioning][].
 
+## hslua-module-path-1.0.2
+
+Released 2022-02-19.
+
+-   Adjusted package bounds, for hslua-core, hslua-marshalling,
+    and hslua-packaging.
+
 ## hslua-module-path-1.0.1
 
 -   Bumped upper bound of hslua-core and hslua-marshalling to
