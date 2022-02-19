@@ -2,9 +2,15 @@
 
 `hslua` uses [PVP Versioning][].
 
+## hslua-2.2.0
+
+Released 2022-02-19.
+
+-   Require version 2.2.* of all hslua-* packages.
+
 ## hslua-2.1.0
 
-Released 29-01-2022.
+Released 2022-01-29.
 
 -   Update to hslua-objectorientation 2.1.0. This entails changes
     to `deftype'` and `deftypeGeneric`, switching the order of
