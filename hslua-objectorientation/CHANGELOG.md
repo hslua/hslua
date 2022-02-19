@@ -2,6 +2,12 @@
 
 `hslua-objectorientation` uses [PVP Versioning][].
 
+## hslua-objectorientation-2.2.0
+
+Release pending.
+
+-   Require version 2.2 of hslua-core and hslua-marshalling.
+
 ## hslua-objectorientation-2.1.0
 
 Released 29-01-2022.
