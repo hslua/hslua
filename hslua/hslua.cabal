@@ -8,8 +8,9 @@ description:         HsLua provides wrappers and helpers
                      It builds upon the /lua/ package, which allows to bundle
                      a Lua interpreter with a Haskell program.
                      .
-                     <https://github.com/hslua/hslua-examples Example programs>
-                     are available in a separate repository.
+                     Example programs are can be found in the @hslua-examples@
+                     subdir of the project
+                     <https://github.com/hslua/hslua repository>.
 homepage:            https://hslua.org/
 bug-reports:         https://github.com/hslua/hslua/issues
 license:             MIT
