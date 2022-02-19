@@ -2,6 +2,12 @@
 
 `hslua-module-system` uses [PVP Versioning][].
 
+## hslua-module-system-1.0.2
+
+Released 2022-02-19.
+
+-   Adjusted package bounds, for hslua-core and hslua-packaging.
+
 ## hslua-module-system-1.0.1
 
 Released 29-01-2022.
