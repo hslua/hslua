@@ -2,9 +2,16 @@
 
 `hslua-classes` uses [PVP Versioning][].
 
+## hslua-classes-2.2.0
+
+Released 2022-02-19.
+
+-   Relaxed upper bounds, allowing hslua-core-2.2.0 and
+    hslua-marshalling-2.2.0.
+
 ## hslua-classes-2.1.0
 
-Released 29-01-2022.
+Released 2022-01-29.
 
 -   Updated to hslua-core 2.1 and hslua-marshalling 2.1.
 
