@@ -8,6 +8,8 @@ Released 2022-02-19.
 
 -   Require version 2.2.* of all hslua-* packages.
 
+-   Include hslua-aeson, and re-export `HsLua.Aeson` from `HsLua`.
+
 ## hslua-2.1.0
 
 Released 2022-01-29.

@@ -28,6 +28,8 @@ module HsLua (
   , module HsLua.Class.Invokable
   , module HsLua.Class.Peekable
   , module HsLua.Class.Pushable
+    -- * Marshal to and from JSON-like structures
+  , module HsLua.Aeson
     -- * Utility functions
   , getglobal'
   , setglobal'
@@ -36,6 +38,7 @@ module HsLua (
 
 import Prelude hiding (compare, concat)
 
+import HsLua.Aeson
 import HsLua.Core
 import HsLua.Class.Exposable
 import HsLua.Class.Invokable

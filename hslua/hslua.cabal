@@ -44,6 +44,7 @@ common common-options
                      , bytestring              >= 0.10.2 && < 0.12
                      , containers              >= 0.5.9  && < 0.7
                      , exceptions              >= 0.8    && < 0.11
+                     , hslua-aeson             >= 2.2    && < 2.3
                      , hslua-core              >= 2.2    && < 2.3
                      , hslua-classes           >= 2.2    && < 2.3
                      , hslua-marshalling       >= 2.2    && < 2.3
@@ -68,7 +69,8 @@ library
   import:              common-options
   exposed-modules:     HsLua
                      , HsLua.Util
-  reexported-modules:  HsLua.Core
+  reexported-modules:  HsLua.Aeson
+                     , HsLua.Core
                      , HsLua.Core.Error
                      , HsLua.Core.Types
                      , HsLua.Core.Utf8
