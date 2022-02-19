@@ -2,6 +2,13 @@
 
 `hslua-module-version` uses [PVP Versioning][].
 
+## hslua-module-version-1.0.2
+
+Released 2022-02-19.
+
+-   Relax upper bounds, allowing hslua-core-2.2.*,
+    hslua-marshalling-2.2.\* and hslua-packaging-2.2.\*.
+
 ## hslua-module-version-1.0.1
 
 -   Relaxed upper bound of hslua-core, hslua-marshalling, and
