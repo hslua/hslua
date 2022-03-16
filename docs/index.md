@@ -204,3 +204,9 @@ registered in Lua.
 
   - **hslua-module-version**: module to handle software versions;
     wrapper around the `Data.Version.Version` data type.
+
+Talks
+-----
+
+HsLua was the topic of a talk presented at BOBKonf 2022
+([Slides](assets/bobkonf-2022.html)).

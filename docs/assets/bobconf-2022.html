@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Albert Krewinkel">
+  <title>Haskell 💖 Lua</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js@^4//dist/reset.css">
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js@^4//dist/reveal.css">
+  <style>
+    .reveal .sourceCode {  /* see #7635 */
+      overflow: visible;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js@^4//dist/theme/serif.css" id="theme">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide">
+  <h1 class="title">Haskell<br />
+💖<br />
+Lua</h1>
+  <p class="subtitle">Come together over FFI</p>
+  <p class="author">Albert Krewinkel</p>
+</section>
+
+<section>
+<section id="whats-this-about" class="title-slide slide level1">
+<h1>What’s this about?</h1>
+
+</section>
+<section id="whoami" class="slide level2">
+<h2>whoami</h2>
+<ul>
+<li>Scientific publishing</li>
+<li>Pandoc contrib</li>
+<li>HsLua</li>
+</ul>
+<aside class="notes">
+<ul>
+<li><p>In my 8th year of contributing to pandoc.</p></li>
+<li><p>On a quest to improve scientific writing and publishing.</p></li>
+<li><p>HsLua was created by Gracjan Polak in 2007; I took it over from
+Ömer Sinan Ağacan in 2016.</p></li>
+<li><p>When I took it over: 680 loc</p></li>
+<li><p>Now: ~3600 loc</p></li>
+</ul>
+</aside>
+</section>
+<section id="language-overview" class="slide level2">
+<h2>Language overview</h2>
+<div class="columns">
+<div class="column">
+<h3 id="haskell">Haskell</h3>
+<ul>
+<li>static typing</li>
+<li>compiled</li>
+<li>lazy evaluation</li>
+</ul>
+</div><div class="column">
+<h3 id="lua">Lua</h3>
+<ul>
+<li>dynamic typing</li>
+<li>interpreted</li>
+<li>strict evaluation</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="use-cases" class="slide level2">
+<h2>Use-cases</h2>
+<div class="columns">
+<div class="column">
+<h3 id="haskell-1">Haskell</h3>
+<ul>
+<li><p>web gateway</p>
+<p>(PostgREST, Hasura)</p></li>
+<li><p>window manager</p>
+<p>(XMonad)</p></li>
+</ul>
+</div><div class="column">
+<h3 id="lua-1">Lua</h3>
+<ul>
+<li><p>web gateway</p>
+<p>(Kong)</p></li>
+<li><p>window manager</p>
+<p>(Awesome)</p></li>
+</ul>
+</div>
+</div>
+<aside class="notes">
+<h4 id="haskell-examples">Haskell examples</h4>
+<dl>
+<dt>PostgREST</dt>
+<dd>
+REST API for PostgreSQL databases
+</dd>
+<dt>Hasura GraphQL engine</dt>
+<dd>
+GraphQL frontend for databases
+</dd>
+<dt>XMonad</dt>
+<dd>
+Haskell window manager
+</dd>
+</dl>
+<h4 id="lua-examples">Lua examples</h4>
+<dl>
+<dt>Kong</dt>
+<dd>
+Cloud-native API gateway
+</dd>
+<dt>Awesome</dt>
+<dd>
+Lua window manager
+</dd>
+</dl>
+</aside>
+</section>
+<section id="use-cases-1" class="slide level2">
+<h2>Use-cases</h2>
+<div class="columns">
+<div class="column">
+<h3 id="haskell-2">Haskell</h3>
+<p>Complex systems</p>
+</div><div class="column">
+<h3 id="lua-2">Lua</h3>
+<p>Scriptable systems</p>
+</div>
+</div>
+<aside class="notes">
+<p>“Scriptable” here means that a program can be extended through short
+Lua scripts.</p>
+<h3 id="haskell-3">Haskell</h3>
+<dl>
+<dt>ShellCheck</dt>
+<dd>
+Static analyzer / linter for Shell scripts
+</dd>
+<dt>Semantic</dt>
+<dd>
+Code analyzer
+</dd>
+<dt>Pandoc</dt>
+<dd>
+Universal document converter
+</dd>
+</dl>
+<h3 id="lua-3">Lua</h3>
+<dl>
+<dt>neovim</dt>
+<dd>
+Lua-focused rewrite of vim
+</dd>
+<dt>hammerspoon</dt>
+<dd>
+making OS X scriptable
+</dd>
+</dl>
+</aside>
+</section>
+<section id="example-pandoc" class="slide level2">
+<h2>Example: pandoc</h2>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Inline</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="ot">=</span> <span class="dt">Str</span> <span class="dt">Text</span>           <span class="co">-- ^ Text (string)</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="dt">Emph</span> [<span class="dt">Inline</span>]      <span class="co">-- ^ Emphasized text</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="dt">SmallCaps</span> [<span class="dt">Inline</span>] <span class="co">-- ^ Small caps text</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">-- ⋮</span></span></code></pre></div>
+<div style="font-size:0.75em;">
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Markdown</th>
+<th style="text-align: left;">Pandoc AST</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><code>*Hello*</code></td>
+<td style="text-align: left;"><code>Emph [Str "Hello"]</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><code>_Hello_</code></td>
+<td style="text-align: left;"><code>Emph [Str "Hello"]</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;"><code>_*Hello*_</code></td>
+<td
+style="text-align: left;"><code>Emph [Emph [Str "Hello"]]</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">?</td>
+<td style="text-align: left;"><code>SmallCaps [Str "Hello"]]</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<aside class="notes">
+<p>Pandoc is a universal document converter, parses documents into an
+internal AST.</p>
+<p>Markdown allows to write emphasized text either as
+<code>_hello_</code> or <code>*hello*</code>, so using both gives nested
+Emph.</p>
+</aside>
+</section>
+<section id="pandoc-lua-filter" class="slide level2">
+<h2>Pandoc Lua filter</h2>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> Emph <span class="op">(</span>em<span class="op">)</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">local</span> nested <span class="op">=</span> em<span class="op">.</span>content<span class="op">[</span><span class="dv">1</span><span class="op">]</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> nested <span class="kw">and</span> nested<span class="op">.</span>t <span class="op">==</span> <span class="st">&#39;Emph&#39;</span> <span class="cf">then</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pandoc<span class="op">.</span>SmallCaps<span class="op">(</span>nested<span class="op">.</span>content<span class="op">)</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">end</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div>
+<p>In action</p>
+<pre><code>% echo &#39;_*Hello*_&#39; | pandoc --to=latex
+⇒ \emph{\emph{Hello}}
+
+% echo &#39;_*Hello*_&#39; | pandoc --to=latex --lua-filter=sc.lua
+⇒ \textsc{Hello}</code></pre>
+</section>
+<section id="language-overview-1" class="slide level2">
+<h2>Language overview</h2>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th>Haskell</th>
+<th>Lua</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>typing</td>
+<td>static</td>
+<td>dynamic</td>
+</tr>
+<tr class="even">
+<td>programs</td>
+<td>compiled</td>
+<td>interpreted</td>
+</tr>
+<tr class="odd">
+<td>FP</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td>GC</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td>C API</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+</tbody>
+</table>
+<aside class="notes">
+<p>The languages are different in many key aspects, but they share some
+common properties.</p>
+<dl>
+<dt>FP</dt>
+<dd>
+Haskell is a pure functional programming language, while Lua is
+imperative with good functional programming support (functions are
+first-class citizens).
+</dd>
+<dt>GC</dt>
+<dd>
+bit of a problem, because we must be careful that the GCs don’t get in
+each others way.
+</dd>
+<dt>C API</dt>
+<dd>
+Both have excellent C interoperability; we can use that to make them
+work together.
+</dd>
+</dl>
+</aside>
+</section></section>
+<section>
+<section id="ffi" class="title-slide slide level1">
+<h1>FFI</h1>
+
+</section>
+<section id="foreign-function-interface" class="slide level2">
+<h2>Foreign Function Interface</h2>
+<ul>
+<li>Connects programs written in different languages</li>
+<li>Must support the relevant types</li>
+<li>Builds bridges from the runtime system.</li>
+</ul>
+</section>
+<section id="function-imports" class="slide level2">
+<h2>Function imports</h2>
+<p>C header</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> <span class="op">(</span>lua_pushboolean<span class="op">)</span> <span class="op">(</span>lua_State <span class="op">*</span>L<span class="op">,</span> <span class="dt">int</span> b<span class="op">);</span></span></code></pre></div>
+<p>Import</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>foreign <span class="kw">import</span> capi &quot;lua.h lua_pushboolean&quot;</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ot">  lua_pushboolean ::</span> <span class="dt">Ptr</span> () <span class="ot">-&gt;</span> <span class="dt">CInt</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span></code></pre></div>
+<aside class="notes">
+<p>Importing is straight-forward; the C function becomes usable as a
+Haskell function.</p>
+</aside>
+</section>
+<section id="types" class="slide level2">
+<h2>Types</h2>
+<p>Simple in C</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> <span class="op">(</span>lua_setiuservalue<span class="op">)</span> <span class="op">(</span>lua_State <span class="op">*</span>L<span class="op">,</span> <span class="dt">int</span> idx<span class="op">,</span> <span class="dt">int</span> n<span class="op">);</span></span></code></pre></div>
+<p>Expressive in Haskell</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">newtype</span> <span class="dt">LuaBool</span>    <span class="ot">=</span> <span class="dt">LuaBool</span> <span class="dt">CInt</span>    <span class="kw">deriving</span> (<span class="dt">Storable</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">newtype</span> <span class="dt">StackIndex</span> <span class="ot">=</span> <span class="dt">StackIndex</span> <span class="dt">CInt</span> <span class="kw">deriving</span> (<span class="dt">Storable</span>, <span class="dt">Num</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>foreign <span class="kw">import</span> capi &quot;lua.h lua_setiuservalue&quot;</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="ot">  lua_setiuservalue ::</span> <span class="dt">Lua.State</span> <span class="ot">-&gt;</span> <span class="dt">StackIndex</span> <span class="ot">-&gt;</span> <span class="dt">CInt</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>                    <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">LuaBool</span></span></code></pre></div>
+<aside class="notes">
+<p>Types in C are nice and simple, while types in Haskell are expressive
+and fine-grained. Conversions work well, types must just be instances of
+<code>Storable</code>.</p>
+</aside>
+</section>
+<section id="package-lua" class="slide level2">
+<h2>package: lua</h2>
+<p>Basic bindings to Lua</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- | Retrieve content of field \&quot;age\&quot; from the registry.</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ot">getAge ::</span> <span class="dt">Lua.State</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">Lua.Integer</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>getAge l <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  withCString <span class="st">&quot;age&quot;</span> <span class="op">$</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    lua_getfield l <span class="dt">LUA_REGISTRYINDEX</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> lua_tointegerx l (<span class="op">-</span><span class="dv">1</span>) nullPtr</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  lua_pop l <span class="dv">1</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pure</span> result</span></code></pre></div>
+<aside class="notes">
+<p>The <code>lua</code> package provides bindings to all basic Lua
+functions. Writing C in Haskell is possible, but not pretty.</p>
+</aside>
+</section>
+<section id="hslua-familiar-haskell-feeling" class="slide level2">
+<h2>hslua: Familiar Haskell feeling</h2>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- | Get name field from registry table.</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ot">getAge ::</span> <span class="dt">Lua</span> (<span class="dt">Maybe</span> <span class="dt">Integer</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>getAge <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  getfield registryindex <span class="st">&quot;age&quot;</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  tointeger top <span class="op">&lt;*</span> pop <span class="dv">1</span></span></code></pre></div>
+<aside class="notes">
+<p>Nicer types, dedicated <code>Lua</code> monad.</p>
+</aside>
+</section>
+<section id="reader-monad" class="slide level2">
+<h2>Reader monad</h2>
+<p>Lua state as first argument</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ot">lua_getfield    ::</span> <span class="dt">State</span> <span class="ot">-&gt;</span> <span class="op">...</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ot">lua_pushboolean ::</span> <span class="dt">State</span> <span class="ot">-&gt;</span> <span class="op">...</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">newtype</span> <span class="dt">Lua</span> a <span class="ot">=</span> <span class="dt">Lua</span> {<span class="ot"> unLua ::</span> <span class="dt">ReaderT</span> <span class="dt">State</span> <span class="dt">IO</span> a }</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">deriving</span> (<span class="dt">Monad</span>, <span class="dt">MonadIO</span>, <span class="dt">MonadReader</span> <span class="dt">State</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>main <span class="ot">=</span> run <span class="op">$</span> <span class="kw">do</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  age <span class="ot">&lt;-</span> getAge</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="op">...</span></span></code></pre></div>
+<aside class="notes">
+<p>Lua’s C API functions typically take the Lua state as the first
+argument. This is the pattern of the Reader monad, which can be used to
+‘hide’ the Lua state so it doesn’t have to be dragged along
+manually.</p>
+<p>The <code>run</code> function just opens and closes a Lua state.</p>
+</aside>
+</section></section>
+<section>
+<section id="data" class="title-slide slide level1">
+<h1>Data</h1>
+
+</section>
+<section id="stack" class="slide level2">
+<h2>Stack</h2>
+<pre><code>        ,----------.
+        |  arg 3   |
+        +----------+
+        |  arg 2   |
+        +----------+
+        |  arg 1   |
+        +----------+                  ,----------.
+        | function |    call 3 1      | result 1 |
+        +----------+   ===========&gt;   +----------+
+        |          |                  |          |
+        |  stack   |                  |  stack   |
+        |          |                  |          |</code></pre>
+<aside class="notes">
+<p>Function calls work by pushing a function and its arguments to the
+stack. The function is then called with the given number of arguments,
+and the results are pushed back to the stack.</p>
+</aside>
+</section>
+<section id="marshal" class="slide level2">
+<h2>Marshal</h2>
+<pre><code>       &lt;----???--- Emph [Str &quot;a&quot;] :: Inline
+,----------.
+|     5    |
++----------+
+|   true   |
++----------+
+| &quot;banana&quot; |</code></pre>
+<aside class="notes">
+<p>The C API makes it easy to deal with simple values like numbers,
+booleans, and strings. However, how would we put a Haskell value on the
+stack?</p>
+</aside>
+</section>
+<section id="lua-tables" class="slide level2">
+<h2>Lua tables</h2>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>pushInline x <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  newtable</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">case</span> x <span class="kw">of</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">Str</span> txt <span class="ot">-&gt;</span> pushText txt <span class="op">*&gt;</span> setfield (nth <span class="dv">2</span>) <span class="st">&quot;text&quot;</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">Emph</span> xs <span class="ot">-&gt;</span> pushList pushInline xs <span class="op">*&gt;</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>               setfield (nth <span class="dv">2</span>) <span class="st">&quot;content&quot;</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">-- ...</span></span></code></pre></div>
+<p><code>Str "a"</code> becomes</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> <span class="op">{</span>text <span class="op">=</span> <span class="st">&#39;a&#39;</span><span class="op">}</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span><span class="op">(</span>x<span class="op">.</span>text<span class="op">)</span> <span class="co">-- prints: a</span></span></code></pre></div>
+</section>
+<section id="metatables" class="slide level2">
+<h2>Metatables</h2>
+<p>Metatables define object behavior.</p>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">local</span> mt <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">__add</span>   <span class="op">=</span> <span class="kw">function</span> <span class="op">(</span>a<span class="op">,</span> b<span class="op">)</span> <span class="cf">return</span> <span class="op">{</span>a<span class="op">,</span> b<span class="op">}</span> <span class="kw">end</span><span class="op">,</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="bu">__index</span> <span class="op">=</span> <span class="kw">function</span> <span class="op">(</span>t<span class="op">,</span> k<span class="op">)</span> <span class="cf">return</span> <span class="dv">42</span> <span class="kw">end</span><span class="op">,</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="bu">__gc</span>    <span class="op">=</span> <span class="kw">function</span> <span class="op">()</span> <span class="fu">print</span><span class="op">(</span><span class="st">&#39;collected&#39;</span><span class="op">)</span> <span class="kw">end</span><span class="op">,</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="kw">local</span> x <span class="op">=</span> <span class="fu">setmetatable</span><span class="op">({</span><span class="dv">1</span><span class="op">},</span> mt<span class="op">)</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="kw">local</span> nope  <span class="op">=</span> <span class="op">{</span><span class="dv">1</span><span class="op">}</span> <span class="op">+</span> <span class="dv">1</span> <span class="co">-- ⇒ ERROR!</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="kw">local</span> tuple <span class="op">=</span> x <span class="op">+</span> <span class="dv">2</span>   <span class="co">-- tuple == {x, 2}</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span><span class="op">(</span>x<span class="op">[</span><span class="dv">1</span><span class="op">],</span> x<span class="op">.</span>hello<span class="op">)</span>  <span class="co">-- prints: 1, 42</span></span></code></pre></div>
+<aside class="notes">
+<p>Metatables control how an object is used with operators, how it is
+printed, iterated, and indexed.</p>
+<p>This also allows for object-oriented programming; metatables can be
+treated as defining “classes”.</p>
+<p>Similar to special methods in Python.</p>
+</aside>
+</section>
+<section id="table-values" class="slide level2">
+<h2>Table values</h2>
+<ul>
+<li>Straight-forward</li>
+<li>Simple</li>
+<li>Strict</li>
+</ul>
+<aside class="notes">
+<p>Tables are Lua’s primary data structure, using them is very natural.
+This is what we used for the initial version of pandoc Lua filters.</p>
+<p>However, it also requires strict evaluation, which is not what we
+want when dealing with large (possibly infinite) objects.</p>
+</aside>
+</section>
+<section id="userdata" class="slide level2">
+<h2>Userdata</h2>
+<ul>
+<li>Wrapper for arbitrary data.</li>
+<li>Metatables define behavior.</li>
+<li>Frequently used with pointers.</li>
+<li>But pointers don’t work well with GC.</li>
+</ul>
+<pre><code>,---------.
+|  ??? ---|----&gt; data
+`---------&#39;</code></pre>
+<aside class="notes">
+<ul>
+<li>Garbage collection makes pointers difficult, because objects will
+often be moved around, breaking any pointer.</li>
+</ul>
+</aside>
+</section>
+<section id="stable-pointer" class="slide level2">
+<h2>Stable Pointer</h2>
+<ul>
+<li>Create stable pointer with <code>Foreign.StablePtr</code></li>
+<li>Not a pointer in the C sense</li>
+</ul>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>xptr <span class="ot">&lt;-</span> newStablePtr x</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co">-- ...</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>x&#39; <span class="ot">&lt;-</span> deRefStablePtr xptr</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>freeStablePtr xptr</span></code></pre></div>
+<aside class="notes">
+<p>Types of the invoked functions:</p>
+<ul>
+<li><code>newStablePtr    :: a -&gt; IO (StablePtr a)</code></li>
+<li><code>deRefStablePtr  :: StablePtr a -&gt; IO a</code></li>
+<li><code>freeStablePtr   :: StablePtr a -&gt; IO ()</code></li>
+</ul>
+</aside>
+</section>
+<section id="pointers-in-userdata" class="slide level2">
+<h2>Pointers in userdata</h2>
+<pre><code>,------------.
+| StablePtr -|----&gt; Haskell value
+`------------&#39;</code></pre>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>  xPtr <span class="ot">&lt;-</span> newStablePtr x</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  udPtr <span class="ot">&lt;-</span> lua_newuserdata l (<span class="fu">fromIntegral</span> <span class="op">$</span> sizeOf xPtr)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  poke (castPtr udPtr) xPtr</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">-- ??? freeStablePtr ???</span></span></code></pre></div>
+<aside class="notes">
+<p>Line-by-line</p>
+<ul>
+<li>create a new (stable) pointer</li>
+<li>create a new userdata object on the stack that can fit a stable
+pointer.</li>
+<li>Store the stable pointer in the userdata.</li>
+<li>When do we free it?</li>
+</ul>
+<p>Types of the invoked functions:</p>
+<ul>
+<li><code>newStablePtr    :: a -&gt; IO (StablePtr a)</code></li>
+<li><code>lua_newuserdata :: State -&gt; CSize -&gt; IO (Ptr ())</code></li>
+<li><code>poke            :: Storable a =&gt; Ptr a -&gt; a -&gt; IO ()</code></li>
+</ul>
+</aside>
+</section>
+<section id="free-pointer" class="slide level2">
+<h2>Free pointer</h2>
+<p>Set <code>__gc</code> metamethod on userdata.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;HsFFI.h&gt;</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">int</span> hslua_userdata_gc<span class="op">(</span>lua_State <span class="op">*</span>L<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  HsStablePtr <span class="op">*</span>userdata <span class="op">=</span> lua_touserdata<span class="op">(</span>L<span class="op">,</span> <span class="dv">1</span><span class="op">);</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="op">(</span>userdata<span class="op">)</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    hs_free_stable_ptr<span class="op">(*</span>userdata<span class="op">);</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<aside class="notes">
+<p>Userdata values are freed via a C function (for performance).
+<code>HsFFI.h</code> defines the types required for that.</p>
+<ul>
+<li><code>void *(lua_touserdata) (lua_State *L, int idx);</code></li>
+<li><code>void hs_free_stable_ptr (HsStablePtr)</code></li>
+</ul>
+</aside>
+</section></section>
+<section>
+<section id="in-action" class="title-slide slide level1">
+<h1>In action</h1>
+<aside class="notes">
+<p>We’ve seen that Haskell brings all the features necessary to work
+with Lua. This may all sound neat, but you may be asking “how am I
+supposed to use that?”</p>
+<p>The goal is to give pandoc contributors access to the Lua subsystem’s
+workings with relative ease.</p>
+</aside>
+</section>
+<section id="types-1" class="slide level2">
+<h2>Types</h2>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- | A table row.</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Row</span> <span class="ot">=</span> <span class="dt">Row</span> <span class="dt">Attr</span> [<span class="dt">Cell</span>]</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>typeRow <span class="ot">=</span> deftype <span class="st">&quot;Row&quot;</span> []</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>  [ property <span class="st">&quot;cells&quot;</span> <span class="st">&quot;row cells&quot;</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>      (pushList pushCell, \(<span class="dt">Row</span> _ cells) <span class="ot">-&gt;</span> cells)</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>      (peekList peekCell, \(<span class="dt">Row</span> attr _) cells <span class="ot">-&gt;</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>                             <span class="dt">Row</span> attr cells)</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>  ]</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- print first cell in row</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span><span class="op">(</span>row<span class="op">.</span>cells<span class="op">[</span><span class="dv">1</span><span class="op">])</span></span></code></pre></div>
+</section>
+<section id="functions" class="slide level2">
+<h2>Functions</h2>
+<div class="sourceCode" id="cb24"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>mkRow <span class="ot">=</span> defun <span class="st">&quot;Row&quot;</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="op">###</span> liftPure2 <span class="dt">Row</span> <span class="co">-- lift a pure Haskell function to Lua</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="op">&lt;#&gt;</span> udparam typeAttr <span class="st">&quot;attr&quot;</span> <span class="st">&quot;cell attributes&quot;</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="op">&lt;#&gt;</span> parameter (peekList peekCell) <span class="st">&quot;{Cell,...}&quot;</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;cells&quot;</span> <span class="st">&quot;row cells&quot;</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>  <span class="op">=#&gt;</span> udResult typeRow <span class="st">&quot;new Row object&quot;</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>registerDocumentedFunction mkRow</span></code></pre></div>
+<p>In Lua:</p>
+<div class="sourceCode" id="cb25"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>empty_row <span class="op">=</span> Row<span class="op">(</span>Attr<span class="op">(),</span> <span class="op">{})</span></span></code></pre></div>
+<aside class="notes">
+<p>Function <code>liftPure2</code> is defined as</p>
+<div class="sourceCode" id="cb26"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="ot">liftPure2 ::</span> (a <span class="ot">-&gt;</span> b <span class="ot">-&gt;</span> c)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>          <span class="ot">-&gt;</span> (a <span class="ot">-&gt;</span> b <span class="ot">-&gt;</span> <span class="dt">LuaE</span> e c)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>liftPure2 f <span class="op">!</span>a <span class="op">!</span>b <span class="ot">=</span> <span class="fu">return</span> <span class="op">$!</span> f a b</span></code></pre></div>
+<p>We don’t want lazy IO, hence the extra strictness.</p>
+</aside>
+</section>
+<section id="tests" class="slide level2">
+<h2>Tests</h2>
+<div class="sourceCode" id="cb27"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> <span class="op">{</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  group <span class="st">&#39;examples&#39;</span>  <span class="op">{</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    test<span class="op">(</span><span class="st">&#39;multiplication&#39;</span><span class="op">,</span> <span class="kw">function</span><span class="op">()</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>      assert<span class="op">.</span>are_equal<span class="op">(</span><span class="dv">6</span><span class="op">,</span> <span class="dv">2</span> <span class="op">*</span> <span class="dv">3</span><span class="op">)</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span><span class="op">),</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    test<span class="op">(</span><span class="st">&#39;empty var is nil&#39;</span><span class="op">,</span> <span class="kw">function</span> <span class="op">()</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>      assert<span class="op">.</span>is_nil<span class="op">(</span>var<span class="op">)</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span><span class="op">)</span></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+</section>
+<section id="tasty-integration" class="slide level2">
+<h2>Tasty integration</h2>
+<div class="sourceCode" id="cb28"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  luaTest <span class="ot">&lt;-</span> withCurrentDirectory <span class="st">&quot;test&quot;</span> <span class="op">.</span> run <span class="op">$</span> <span class="kw">do</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    translateResultsFromFile <span class="st">&quot;example-tests.lua&quot;</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  defaultMain <span class="op">.</span> testGroup <span class="st">&quot;Haskell and Lua tests&quot;</span> <span class="op">$</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>    [ luaTest <span class="co">{- more tasty tests go here -}</span> ]</span></code></pre></div>
+<pre><code>  test/example-tests.lua
+    constructor
+      has type `userdata`:       OK
+      accepts list of integers:  OK
+    comparison
+      equality:                  OK</code></pre>
+<aside class="notes">
+<p>Tasty is a popular Haskell testing framework. Lua tests can be
+integrated into a Tasty test-suite.</p>
+</aside>
+</section>
+<section id="property-tests" class="slide level2">
+<h2>Property tests</h2>
+<div class="sourceCode" id="cb30"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>    test<span class="op">(</span><span class="st">&#39;property test with integers&#39;</span><span class="op">,</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>      forall<span class="op">(</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>        arbitrary<span class="op">.</span>integer<span class="op">,</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>        <span class="kw">function</span> <span class="op">(</span>i<span class="op">)</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>          <span class="cf">return</span> <span class="fu">type</span><span class="op">(</span>i<span class="op">)</span> <span class="op">==</span> <span class="st">&#39;number&#39;</span> <span class="kw">and</span> <span class="fu">math.floor</span><span class="op">(</span>i<span class="op">)</span> <span class="op">==</span> i</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>      <span class="op">)</span></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">),</span></span></code></pre></div>
+</section></section>
+<section>
+<section id="section" class="title-slide slide level1">
+<h1>🧑‍💻🏢🧑‍💼</h1>
+
+</section>
+<section id="pandoc" class="slide level2">
+<h2>pandoc</h2>
+<figure>
+<img data-src="images/pandoc-lua-on-github.png"
+alt="Pandoc-related projects written in Lua on GitHub" />
+<figcaption aria-hidden="true">Pandoc-related projects written in Lua on
+GitHub</figcaption>
+</figure>
+</section>
+<section id="quarto" class="slide level2">
+<h2>quarto</h2>
+<figure>
+<img data-src="images/icon-quarto.svg" style="width:3em"
+alt="Scientific and technical publishing system" />
+<figcaption aria-hidden="true">Scientific and technical publishing
+system</figcaption>
+</figure>
+<aside class="notes">
+<p>RStudio is a large, successful software company. They are rebuilding
+a popular product, R Markdown, and base it on pandoc’s Lua
+interface.</p>
+</aside>
+</section></section>
+<section>
+<section id="end" class="title-slide slide level1">
+<h1>End</h1>
+
+</section>
+<section id="thanks" class="slide level2">
+<h2>Thanks</h2>
+<dl>
+<dt>HsLua</dt>
+<dd>
+<a href="https://hslua.org">hslua.org</a>
+</dd>
+<dt>Code</dt>
+<dd>
+<a href="https://github.com/hslua/hslua">github.com/hslua/hslua</a>
+</dd>
+<dt>Languages</dt>
+<dd>
+<a href="https://lua.org">lua.org</a>, <a
+href="https://haskell.org">haskell.org</a>
+</dd>
+<dt>pandoc Lua filters</dt>
+<dd>
+<a href="https://pandoc.org/lua-filters.html">pandoc.org/lua-filters</a>
+</dd>
+<dt>Quarto</dt>
+<dd>
+<a href="https://quarto.org">quarto.org</a>
+</dd>
+</dl>
+<aside class="notes">
+<ul>
+<li>Haskell and Lua are both excellent languages</li>
+<li>Together they are even stronger</li>
+<li>Integrating Lua into Haskell apps is easy</li>
+<li>HsLua is a ready-to-use framework</li>
+</ul>
+</aside>
+</section></section>
+<section>
+<section id="appendix" class="title-slide slide level1">
+<h1>Appendix</h1>
+
+</section>
+<section id="safety" class="slide level2">
+<h2>Safety</h2>
+<ul>
+<li>Callbacks into Haskell are allowed.</li>
+<li>Requires some runtime investment.</li>
+<li>Can be avoided by using <code>unsafe</code>.</li>
+</ul>
+<div class="sourceCode" id="cb31"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Improves performance by a third</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="co">--                  vvvvvv</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>foreign <span class="kw">import</span> capi unsafe &quot;lua.h lua_pushnumber&quot;</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="ot">  lua_pushnumber ::</span> <span class="dt">Lua.State</span> <span class="ot">-&gt;</span> <span class="dt">Lua.Number</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span></code></pre></div>
+</section>
+<section id="speed" class="slide level2">
+<h2>Speed</h2>
+<p>https://github.com/dyu/ffi-overhead</p>
+</section></section>
+<section>
+<section id="c-types" class="title-slide slide level1">
+<h1>C Types</h1>
+
+</section>
+<section id="free-stable-pointer" class="slide level2">
+<h2>Free stable pointer</h2>
+</section>
+<section id="setjmp-longjmp" class="slide level2">
+<h2><code>setjmp</code> &amp; <code>longjmp</code></h2>
+</section></section>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/reveal.js@^4//dist/reveal.js"></script>
+
+  <!-- reveal.js plugins -->
+  <script src="https://unpkg.com/reveal.js@^4//plugin/notes/notes.js"></script>
+  <script src="https://unpkg.com/reveal.js@^4//plugin/search/search.js"></script>
+  <script src="https://unpkg.com/reveal.js@^4//plugin/zoom/zoom.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+        // Display controls in the bottom right corner
+        controls: true,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: true,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'bottom-right',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: false,
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: false,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: true,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'default',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: true,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'slide',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'fade',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // reveal.js plugins
+        plugins: [
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    </body>
+</html>
