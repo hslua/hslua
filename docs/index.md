@@ -210,4 +210,4 @@ Talks
 -----
 
 HsLua was the topic of a talk presented at BOBKonf 2022
-([Slides](assets/bobkonf-2022.html)).
+([Slides](bobconf-2022.html)).
