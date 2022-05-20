@@ -2,6 +2,12 @@
 
 `hslua-objectorientation` uses [PVP Versioning][].
 
+## hslua-objectorientation-2.2.0.1
+
+Released 2022-05-20.
+
+-   Relax upper bound for mtl, allow mtl-2.3.
+
 ## hslua-objectorientation-2.2.0
 
 Released 2022-02-19.

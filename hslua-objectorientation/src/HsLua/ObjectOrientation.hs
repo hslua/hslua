@@ -38,8 +38,7 @@ module HsLua.ObjectOrientation
   , AliasIndex (..)
   ) where
 
-import Control.Monad.Except
-import Foreign.Ptr (FunPtr)
+import Control.Monad ((<$!>), forM_, void, when)
 import Data.Maybe (mapMaybe)
 import Data.Map (Map)
 #if !MIN_VERSION_base(4,12,0)
@@ -48,6 +47,7 @@ import Data.Semigroup (Semigroup ((<>)))
 import Data.String (IsString (..))
 import Data.Text (Text)
 import Data.Void (Void)
+import Foreign.Ptr (FunPtr)
 import HsLua.Core as Lua
 import HsLua.Marshalling
 import HsLua.ObjectOrientation.Operation

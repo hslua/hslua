@@ -2,6 +2,12 @@
 
 `hslua` uses [PVP Versioning][].
 
+## hslua-2.2.1
+
+Release pending.
+
+-   Relax upper bound for mtl, allow mtl-2.3.
+
 ## hslua-2.2.0
 
 Released 2022-02-19.

@@ -37,7 +37,7 @@ common common-options
                      , exceptions        >= 0.8    && < 0.11
                      , hslua-core        >= 2.2    && < 2.3
                      , hslua-marshalling >= 2.2    && < 2.3
-                     , mtl               >= 2.2    && < 2.3
+                     , mtl               >= 2.2    && < 2.4
                      , text              >= 1.2    && < 2.1
   ghc-options:         -Wall
                        -Wincomplete-record-updates

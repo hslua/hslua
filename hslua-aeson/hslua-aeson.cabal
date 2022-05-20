@@ -36,7 +36,7 @@ common common-options
                      , hashable             >= 1.2    && < 1.5
                      , hslua-core           >= 2.0    && < 2.3
                      , hslua-marshalling    >= 2.1    && < 2.3
-                     , mtl                  >= 2.2    && < 2.3
+                     , mtl                  >= 2.2    && < 2.4
                      , scientific           >= 0.3    && < 0.4
                      , unordered-containers >= 0.2    && < 0.3
                      , text                 >= 1.2    && < 2.1

@@ -50,7 +50,7 @@ common common-options
                      , hslua-marshalling       >= 2.2    && < 2.3
                      , hslua-objectorientation >= 2.2    && < 2.3
                      , hslua-packaging         >= 2.2    && < 2.3
-                     , mtl                     >= 2.2    && < 2.3
+                     , mtl                     >= 2.2    && < 2.4
                      , text                    >= 1.2    && < 2.1
   ghc-options:         -Wall
                        -Wincomplete-record-updates
