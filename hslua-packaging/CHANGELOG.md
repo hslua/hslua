@@ -2,9 +2,9 @@
 
 `hslua-packaging` uses [PVP Versioning][].
 
-## hslua-packaging-2.2.1
+## hslua-packaging-2.2.0.1
 
-Release pending.
+Released 2022-05-20.
 
 -   Relax upper bound for mtl, allow mtl-2.3.
 
