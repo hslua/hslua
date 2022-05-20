@@ -53,7 +53,7 @@ module HsLua.Packaging.Function
   ) where
 
 import Control.Applicative ((<|>))
-import Control.Monad.Except
+import Control.Monad ((<$!>), forM_)
 import Data.Text (Text)
 import Data.Version (Version)
 import HsLua.Core
