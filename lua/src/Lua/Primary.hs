@@ -30,6 +30,7 @@ module Lua.Primary
   , lua_arith
   , lua_checkstack
   , lua_close
+  , lua_close_ptr
   , lua_concat
   , lua_copy
   , lua_createtable
@@ -188,6 +189,11 @@ foreign import capi unsafe "lua.h lua_checkstack"
 -- <https://www.lua.org/manual/5.4/manual.html#lua_close>
 foreign import capi safe "lua.h lua_close"
   lua_close :: Lua.State -> IO ()
+
+-- | Function pointer to function 'lua_close'; intended to be used with
+-- 'Foreign.ForeignPtr.newForeignPtr'.
+foreign import ccall safe "lua.h &lua_close"
+  lua_close_ptr :: FunPtr (Ptr () -> IO ())
 
 -- | Concatenates the @n@ values at the top of the stack, pops them, and
 -- leaves the result at the top. If @n@ is 1, the result is the single

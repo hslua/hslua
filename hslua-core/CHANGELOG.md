@@ -6,6 +6,13 @@
 
 Release pending.
 
+-   GC managed Lua state: Add new type `GCManagedState` and
+    functions `newGCManagedState`, `closeGCManagedState`, and
+    `withGCManagedState`. These allow to create and use a Lua
+    state in flexible ways in that it does not require the state
+    to be closed explicitly. The state will be closed when the
+    respective variable is collected.
+
 -   Relax upper bound for mtl, allow mtl-2.3.
 
 ## hslua-core-2.2.0
