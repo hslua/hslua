@@ -2,11 +2,13 @@
 
 `hslua-aeson` uses [PVP Versioning][].
 
-## hslua-aeson-2.2.1
+## hslua-aeson-2.2.0.1
 
-Release pending.
+Released 2022-06-16.
 
--   Relax upper bound for mtl, allow mtl-2.3.
+-   Relaxed upper bound for mtl, allowing mtl-2.3.
+
+-   Relaxed upper bound for aeson, allowing aeson-2.1.
 
 ## hslua-aeson-2.2.0
 
