@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP                 #-}
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications    #-}
@@ -48,11 +49,12 @@ import HsLua.Core.Types
 import Lua (top)
 import Lua.Auxiliary
 import Lua.Ersatz.Auxiliary
-import Foreign.C (withCString)
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Ptr
 
 import qualified Data.ByteString as B
+import qualified GHC.Foreign as GHC
+import qualified GHC.IO.Encoding as GHC
 import qualified HsLua.Core.Primary as Lua
 import qualified HsLua.Core.Types as Lua
 import qualified Foreign.Storable as Storable
@@ -174,8 +176,13 @@ loadbuffer bs (Name name) = liftLua $ \l ->
 -- See <https://www.lua.org/manual/5.4/manual.html#luaL_loadfile luaL_loadfile>.
 loadfile :: FilePath -- ^ filename
          -> LuaE e Status
-loadfile fp = liftLua $ \l ->
-  withCString fp $! fmap Lua.toStatus . luaL_loadfile l
+loadfile fp = liftLua $ \l -> do
+#if defined(mingw32_HOST_OS)
+  fsEncoding <- GHC.mkTextEncoding "CP0"  -- a.k.a CP_ACP
+#else
+  fsEncoding <- GHC.getFileSystemEncoding
+#endif
+  GHC.withCString fsEncoding fp $! fmap Lua.toStatus . luaL_loadfile l
 {-# INLINABLE loadfile #-}
 
 -- | Loads a string as a Lua chunk. This function uses @lua_load@ to

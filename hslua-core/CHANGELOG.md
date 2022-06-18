@@ -6,6 +6,13 @@
 
 Release pending.
 
+-   Ensure that loadfile works with umlauts in filepath: The OS
+    does not necessarily expect filenames to be UTF-8 encoded,
+    especially Windows. On non-Windows systems, the current file
+    system encoding is now used to convert filenames to C
+    strings. On Windows, the `CP_ACP` codepage is used, as
+    required by the Windows API.
+
 -   GC managed Lua state: Add new type `GCManagedState` and
     functions `newGCManagedState`, `closeGCManagedState`, and
     `withGCManagedState`. These allow to create and use a Lua

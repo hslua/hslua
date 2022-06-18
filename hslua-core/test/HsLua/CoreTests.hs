@@ -353,6 +353,9 @@ tests = testGroup "Core module"
       , "loading a valid program should succeed" =:
         OK `shouldBeResultOf` loadfile "./test/lua/example.lua"
 
+      , "loading a file with umlauts in path" =:
+        OK `shouldBeResultOf` loadfile "./test/lua/umlauts-äöü.lua"
+
       , "example fib program should be loaded correctly" =:
         Just 8 `shouldBeResultOf` do
           loadfile "./test/lua/example.lua" *> call 0 0
