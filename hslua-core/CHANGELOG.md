@@ -20,6 +20,8 @@ Released 2022-06-19.
     to be closed explicitly. The state will be closed when the
     respective variable is collected.
 
+-   Require lua-2.2.1.
+
 -   Relax upper bound for mtl, allow mtl-2.3.
 
 ## hslua-core-2.2.0
