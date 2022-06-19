@@ -38,7 +38,8 @@ import Foreign.C (CChar, CInt (CInt), CSize (CSize), CString)
 import Lua.Types as Lua
 import Foreign.Ptr
 import System.IO.Unsafe (unsafePerformIO)
-import qualified Foreign.C as C
+import qualified GHC.Foreign as GHC
+import qualified GHC.IO.Encoding as GHC
 
 #ifdef ALLOW_UNSAFE_GC
 #define SAFTY unsafe
@@ -50,7 +51,8 @@ import qualified Foreign.C as C
 
 -- | Key, in the registry, for table of loaded modules.
 loadedTableRegistryField :: String
-loadedTableRegistryField = unsafePerformIO (C.peekCString c_loaded_table)
+loadedTableRegistryField = unsafePerformIO $ do
+  GHC.peekCString GHC.char8 c_loaded_table
 {-# NOINLINE loadedTableRegistryField #-}
 
 foreign import capi unsafe "lauxlib.h value LUA_LOADED_TABLE"
@@ -58,7 +60,8 @@ foreign import capi unsafe "lauxlib.h value LUA_LOADED_TABLE"
 
 -- | Key, in the registry, for table of preloaded loaders.
 preloadTableRegistryField :: String
-preloadTableRegistryField = unsafePerformIO (C.peekCString c_preload_table)
+preloadTableRegistryField = unsafePerformIO $ do
+  GHC.peekCString GHC.char8 c_preload_table
 {-# NOINLINE preloadTableRegistryField #-}
 
 foreign import capi unsafe "lauxlib.h value LUA_PRELOAD_TABLE"

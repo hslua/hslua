@@ -2,6 +2,14 @@
 
 `lua` uses [PVP Versioning][].
 
+## lua-2.2.1
+
+Release pending.
+
+-   Make string-peeking independent of the current foreign
+    encoding: always use char8 encoding to retrieve values of
+    `LUA_PRELOAD_TABLE` and `LUA_LOADED_TABLE`.
+
 ## lua-2.2.0
 
 Released 2022-02-19.
