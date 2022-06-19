@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                hslua-core
-version:             2.2.0
+version:             2.2.1
 synopsis:            Bindings to Lua, an embeddable scripting language
 description:         Wrappers and helpers to bridge Haskell and
                      <https://www.lua.org/ Lua>.

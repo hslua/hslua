@@ -4,7 +4,7 @@
 
 ## hslua-core-2.2.1
 
-Release pending.
+Released 2022-06-19.
 
 -   Ensure that loadfile works with umlauts in filepath: The OS
     does not necessarily expect filenames to be UTF-8 encoded,
