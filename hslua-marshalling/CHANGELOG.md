@@ -2,9 +2,9 @@
 
 `hslua-marshalling` uses [PVP Versioning][].
 
-## hslua-marshalling-2.2.1
+## hslua-marshalling-2.2.0.1
 
-Release pending.
+Released 2022-06-19.
 
 -   Relax upper bound for mtl, allow mtl-2.3.
 
