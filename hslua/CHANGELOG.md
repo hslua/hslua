@@ -6,6 +6,8 @@
 
 Release pending.
 
+-   Require hslua-core-2.2.1.
+
 -   Relax upper bound for mtl, allow mtl-2.3.
 
 ## hslua-2.2.0

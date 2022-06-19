@@ -45,7 +45,7 @@ common common-options
                      , containers              >= 0.5.9  && < 0.7
                      , exceptions              >= 0.8    && < 0.11
                      , hslua-aeson             >= 2.2    && < 2.3
-                     , hslua-core              >= 2.2    && < 2.3
+                     , hslua-core              >= 2.2.1  && < 2.3
                      , hslua-classes           >= 2.2    && < 2.3
                      , hslua-marshalling       >= 2.2    && < 2.3
                      , hslua-objectorientation >= 2.2    && < 2.3
