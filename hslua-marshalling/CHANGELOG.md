@@ -2,7 +2,7 @@
 
 `hslua-marshalling` uses [PVP Versioning][].
 
-## hslua-marshalling-2.2.0.1
+## hslua-marshalling-2.2.1
 
 Released 2022-06-19.
 
