@@ -6,6 +6,8 @@
 
 Released 2022-06-19.
 
+-   Require hslua-core-2.2.1.
+
 -   Relax upper bound for mtl, allow mtl-2.3.
 
 
