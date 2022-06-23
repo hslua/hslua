@@ -2,6 +2,15 @@
 
 `hslua-aeson` uses [PVP Versioning][].
 
+## hslua-aeson-2.2.1
+
+Released 2022-06-23.
+
+-   Export `jsonarray`, which is the name of the registry slot
+    holding the metatable given to array tables. Setting the
+    corresponding registry value will affect all newly created
+    array values.
+
 ## hslua-aeson-2.2.0.1
 
 Released 2022-06-16.

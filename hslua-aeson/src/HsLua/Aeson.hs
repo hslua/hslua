@@ -26,6 +26,7 @@ module HsLua.Aeson
   , pushValue
   , peekViaJSON
   , pushViaJSON
+  , jsonarray
   ) where
 
 import Control.Monad ((<$!>), void)
