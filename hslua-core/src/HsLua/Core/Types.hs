@@ -129,6 +129,9 @@ runWith l s = runReaderT (unLua s) (LuaEnvironment l)
 {-# INLINABLE runWith #-}
 
 -- | Run the given operation, but crash if any Haskell exceptions occur.
+--
+-- This function is identical to 'runWith'; it exists for backwards
+-- compatibility.
 unsafeRunWith :: State -> LuaE e a -> IO a
 unsafeRunWith = runWith
 
