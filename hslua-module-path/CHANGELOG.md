@@ -2,6 +2,15 @@
 
 `hslua-module-paths` uses [PVP Versioning][].
 
+## hslua-module-path-1.0.3
+
+Released 2022-08-19.
+
+-   Fixed `make_relative` for longer base paths: Ensure that the
+    function produces correct results in cases where the root
+    (base) path has more components than the path that should be
+    made relative.
+
 ## hslua-module-path-1.0.2
 
 Released 2022-02-19.
