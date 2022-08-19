@@ -145,29 +145,57 @@ return {
   },
 
   group 'make_relative' {
-    test('just the filename if file is within path', function()
-      assert.are_equal(
-        path.make_relative('/foo/bar/file.txt', '/foo/bar'),
-        'file.txt'
-      )
-    end),
-    test('no change if name outside of reference dir', function()
-      assert.are_equal(
-        path.make_relative('/foo/baz/file.txt', '/foo/bar'),
-        '/foo/baz/file.txt'
-      )
-    end),
-    test('use `..` when allowing unsafe operation', function()
-      assert.are_equal(
-        path.make_relative('/foo/baz/file.txt', '/foo/bar', true),
-        path.join{'..', 'baz', 'file.txt'}
-      )
-    end),
-    test('return dot if both paths are the same', function()
-      assert.are_equal(
-        path.make_relative('/one/two/three', '/one/two/three/'),
-        '.'
-      )
-    end)
+    group 'safe' {
+      test('just the filename if file is within path', function()
+        assert.are_equal(
+          path.make_relative('/foo/bar/file.txt', '/foo/bar'),
+          'file.txt'
+        )
+      end),
+      test('no change if name outside of reference dir', function()
+        assert.are_equal(
+          path.make_relative('/foo/baz/file.txt', '/foo/bar'),
+          '/foo/baz/file.txt'
+        )
+      end),
+      test('return dot if both paths are the same', function()
+        assert.are_equal(
+          path.make_relative('/one/two/three', '/one/two/three/'),
+          '.'
+        )
+      end),
+    },
+    group 'unsafe' {
+      test('just the filename if file is within path', function()
+        assert.are_equal(
+          path.make_relative('/foo/bar/file.txt', '/foo/bar', true),
+          'file.txt'
+        )
+      end),
+      test('use `..` to reach parent directory', function()
+        assert.are_equal(
+          path.make_relative('/foo/baz/file.txt', '/foo/bar', true),
+          path.join{'..', 'baz', 'file.txt'}
+        )
+      end),
+      test('no change if base differs', function()
+        assert.are_equal(
+          path.make_relative('foo/baz/file.txt', '/foo/bar', true),
+          'foo/baz/file.txt'
+        )
+      end),
+      test('long base path ', function()
+        assert.are_equal(
+          path.make_relative('a/d.png', 'a/b/c', true),
+          path.join{'..', '..', 'd.png'}
+        )
+      end),
+      test('return dot if both paths are the same', function()
+        assert.are_equal(
+          path.make_relative('/one/two/three', '/one/two/three/', true),
+          '.'
+        )
+      end)
+    }
   },
 }

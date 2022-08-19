@@ -1,5 +1,4 @@
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : HsLua.Module.Path
@@ -34,7 +33,6 @@ module HsLua.Module.Path (
   )
 where
 
-import Data.Char (toLower)
 #if !MIN_VERSION_base(4,11,0)
 import Data.Semigroup (Semigroup(..))  -- includes (<>)
 #endif
@@ -338,40 +336,17 @@ makeRelative :: FilePath      -- ^ path to be made relative
              -> FilePath      -- ^ root directory from which to start
              -> Maybe Bool    -- ^ whether to use unsafe relative paths.
              -> FilePath
-makeRelative path root unsafe
+makeRelative path root (Just True)
  | Path.equalFilePath root path = "."
- | takeAbs root /= takeAbs path = path
- | otherwise = go (dropAbs path) (dropAbs root)
-  where
-    go x "" = dropWhile Path.isPathSeparator x
-    go x y =
-      let (x1, x2) = breakPath x
-          (y1, y2) = breakPath y
-      in case () of
-        _ | Path.equalFilePath x1 y1 -> go x2 y2
-        _ | unsafe == Just True      -> Path.joinPath ["..", x1, go x2 y2]
-        _                            -> path
-
-    breakPath = both (dropWhile Path.isPathSeparator)
-              . break Path.isPathSeparator
-              . dropWhile Path.isPathSeparator
-
-    both f (a, b) = (f a, f b)
-
-    leadingPathSepOnWindows = \case
-      ""                  -> False
-      x | Path.hasDrive x -> False
-      c:_                 -> Path.isPathSeparator c
-
-    dropAbs x = if leadingPathSepOnWindows x then tail x else Path.dropDrive x
-
-    takeAbs x = if leadingPathSepOnWindows x
-                then [Path.pathSeparator]
-                else map (\y ->
-                            if Path.isPathSeparator y
-                            then Path.pathSeparator
-                            else toLower y)
-                         (Path.takeDrive x)
+ | Path.takeDrive root /= Path.takeDrive path = path
+ | otherwise =
+   let toParts = Path.splitDirectories . Path.normalise
+       go (pp:pps) (rp:rps)
+         | pp == rp = go pps rps
+       go pps rps
+         = Path.joinPath $ replicate (length rps) ".." ++ pps
+   in go (toParts path) (toParts root)
+makeRelative path root _unsafe = Path.makeRelative root path
 
 -- | First published version of this library.
 initialVersion :: Version
