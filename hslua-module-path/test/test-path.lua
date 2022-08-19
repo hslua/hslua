@@ -179,10 +179,18 @@ return {
         )
       end),
       test('no change if base differs', function()
-        assert.are_equal(
-          path.make_relative('foo/baz/file.txt', '/foo/bar', true),
-          'foo/baz/file.txt'
-        )
+        if path.separator == '\\' then
+          -- we're on windows
+          assert.are_equal(
+            path.make_relative('c:/foo/baz/file.txt', 'd:/foo/bar', true),
+            'c:/foo/baz/file.txt'
+          )
+        else
+          assert.are_equal(
+            path.make_relative('foo/baz/file.txt', '/foo/bar', true),
+            'foo/baz/file.txt'
+          )
+        end
       end),
       test('long base path ', function()
         assert.are_equal(
