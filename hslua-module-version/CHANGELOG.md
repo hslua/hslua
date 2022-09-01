@@ -2,6 +2,16 @@
 
 `hslua-module-version` uses [PVP Versioning][].
 
+## hslua-module-version-1.0.3
+
+Released 2022-09-01.
+
+-   Allow equality checks with non-version values: A *Version*
+    value can now be compared with any value. Previously,
+    comparing a version with a value that cannot be interpreted as
+    a Version would result in an error, violating the principle of
+    least surprise.
+
 ## hslua-module-version-1.0.2
 
 Released 2022-02-19.

@@ -53,6 +53,23 @@ return {
       assert.is_truthy(Version '8' < '9.1')
       assert.is_falsy(Version '8.8' < '8.7')
     end),
+    test('equality test works with value not usable as a version', function ()
+      assert.is_falsy(Version '8' == function() end)
+    end),
+    test('other comparisons fail if one value is not a version', function ()
+      assert.error_matches(
+        function () return Version '8' < (function() end) end,
+        'could not peek Version'
+      )
+      assert.error_matches(
+        function () return Version '8' <= (function() end) end,
+        'could not peek Version'
+      )
+      assert.error_matches(
+        function () return Version '8' > (function() end) end,
+        'could not peek Version'
+      )
+    end)
   },
 
   group 'conversion to string' {

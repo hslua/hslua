@@ -21,6 +21,7 @@ module HsLua.Module.Version (
 where
 
 import Prelude hiding (error)
+import Control.Applicative (optional)
 import Data.Maybe (fromMaybe)
 import Data.Version
   ( Version, makeVersion, parseVersion, showVersion, versionBranch )
@@ -58,7 +59,11 @@ documentedModule = Module
 -- | Type definition of Lua Version values.
 typeVersion :: LuaError e => DocumentedTypeWithList e Version Int
 typeVersion = deftype' "Version"
-  [ operation Eq $ versionComparison (==) "true iff v1 == v2"
+  [ operation Eq $ lambda
+      ### liftPure2 (\a b -> fromMaybe False ((==) <$> a <*> b))
+      <#> parameter (optional . peekVersionFuzzy) "Version" "a" ""
+      <#> parameter (optional . peekVersionFuzzy) "Version" "b" ""
+      =#> boolResult "true iff v1 == v2"
   , operation Le $ versionComparison (<=) "true iff v1 <= v2"
   , operation Lt $ versionComparison (<)  "true iff v1 < v2"
   , operation Len $ lambda
