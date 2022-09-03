@@ -59,7 +59,7 @@ documentedModule = Module
 
 -- | First published version of this library.
 initialVersion :: Version
-initialVersion = makeVersion [0,1,0]
+initialVersion = makeVersion [1,0,0]
 
 --
 -- Fields
