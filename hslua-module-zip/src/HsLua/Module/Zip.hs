@@ -51,7 +51,10 @@ import qualified Data.Text as T
 documentedModule :: LuaError e => Module e
 documentedModule = Module
   { moduleName = "zip"
-  , moduleDescription = "Module for zip archive handling."
+  , moduleDescription = T.unwords
+    [ "Function for creating, modifying, and extracting files from zip"
+    , "archives."
+    ]
   , moduleFields = fields
   , moduleFunctions = functions
   , moduleOperations = []
