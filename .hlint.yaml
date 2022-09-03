@@ -23,6 +23,7 @@
       - "HsLua.Module.Path"
       - "HsLua.Module.System"
       - "HsLua.Module.Version"
+      - "HsLua.Module.Zip"
       - "HsLua.Packaging.RenderingTests"
 
 - modules:

@@ -67,8 +67,8 @@ test-suite hslua-module-zip-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             test-hslua-module-zip.hs
-  build-depends:       base
-                     , hslua-module-zip
+  build-depends:       hslua-module-zip
+                     , hslua-module-system
                      , tasty
                      , tasty-hunit
                      , tasty-lua         >= 1.0    && < 1.1

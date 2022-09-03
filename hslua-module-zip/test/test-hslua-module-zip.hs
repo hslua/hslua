@@ -23,12 +23,14 @@ import Test.Tasty.HUnit (assertEqual, testCase)
 import Test.Tasty.Lua (translateResultsFromFile)
 
 import qualified HsLua.Core as Lua
+import qualified HsLua.Module.System as System
 
 main :: IO ()
 main = do
   luaTestResults <- Lua.run @Lua.Exception $ do
     Lua.openlibs
     registerModule documentedModule
+    registerModule System.documentedModule
     Lua.pop 1
     translateResultsFromFile "test/test-zip.lua"
   defaultMain $ testGroup "hslua-module-zip" [tests, luaTestResults]
