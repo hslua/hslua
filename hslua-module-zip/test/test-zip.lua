@@ -19,14 +19,16 @@ return {
 
     test('archive with file', function ()
       system.with_tmpdir('archive', function (tmpdir)
-        local filename = 'greetings.txt'
-        local fh = io.open(filename, 'w')
-        fh:write('Hi Mom!\n')
-        fh:close()
-        assert.are_equal(
-          type(zip.create(tmpdir .. '/' .. filename)),
-          'userdata'
-        )
+        system.with_wd(tmpdir, function ()
+          local filename = 'greetings.txt'
+          local fh = io.open(filename, 'w')
+          fh:write('Hi Mom!\n')
+          fh:close()
+          assert.are_equal(
+            type(zip.create{filename}),
+            'userdata'
+          )
+        end)
       end)
     end)
   },
