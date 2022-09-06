@@ -30,7 +30,8 @@ where
 
 import Control.Applicative (optional)
 import Control.Monad ((<$!>))
-import Codec.Archive.Zip (Archive, Entry)
+import Codec.Archive.Zip (Archive, Entry, ZipOption (..), emptyArchive)
+import Data.Maybe (catMaybes, fromMaybe)
 #if !MIN_VERSION_base(4,11,0)
 import Data.Semigroup (Semigroup(..))  -- includes (<>)
 #endif
@@ -38,7 +39,7 @@ import Data.Version (Version, makeVersion)
 import HsLua.Core
   ( LuaError, Type(..), failLua, liftIO, ltype )
 import HsLua.Marshalling
-  ( Peeker, failPeek, liftLua
+  ( Peeker, choice, failPeek, liftLua, peekBool
   , peekFieldRaw, peekIntegral, peekLazyByteString, peekList, peekString
   , pushLazyByteString, pushList, pushString
   , retrieving, typeMismatchMessage )
@@ -100,17 +101,28 @@ toarchive = defun "toarchive"
      ]
   `since` initialVersion
 
--- | Creates a new empty 'Archive'; wraps 'Zip.emptyArchive'.
+-- | Creates a new 'Archive'.
 create :: LuaError e => DocumentedFunction e
 create = defun "create"
-  ### (\case
-          Nothing -> return Zip.emptyArchive
-          Just fps -> liftIO $
-            Zip.addFilesToArchive [] Zip.emptyArchive fps)
-  <#> parameter (optional . peekList peekString) "{string,...}" "filepaths" ""
+  ### (\fpsOrEntries mopts ->
+         let opts = fromMaybe [] mopts
+         in case fpsOrEntries of
+              Nothing ->
+                return Zip.emptyArchive
+              Just (Left filepaths) ->
+                liftIO $! Zip.addFilesToArchive opts emptyArchive filepaths
+              Just (Right entries)  ->
+                return $! foldr Zip.addEntryToArchive emptyArchive entries)
+  <#> opt (parameter (choice [ fmap Left  . peekList peekString
+                             , fmap Right . peekList peekEntryFuzzy])
+           "{string,...}|{ZipEntry,...}" "entries_or_filepaths" "")
+  <#> opt (parameter peekZipOptions "table" "opts" "zip options")
   =#> udresult typeArchive "a new archive"
   #? T.unlines
-     [ "Creates a new, empty archive."
+     [ "Creates a new archive. If a list of ZipEntry objects is given, then a"
+     , "new archive with just these entries is created. For a list of file"
+     , "paths, this function reads these files and adds them to the"
+     , "repository."
      ]
   `since` initialVersion
 
@@ -124,6 +136,28 @@ entry_from_file = defun "entry_from_file"
      [ "Generates a Entry from a file or directory."
      ]
   `since` initialVersion
+
+--
+-- * Options
+--
+peekZipOptions :: LuaError e => Peeker e [ZipOption]
+peekZipOptions = retrieving "Zip options" . \idx -> catMaybes <$> sequence
+  [ optional (peekFieldRaw peekBool "recursive" idx) >>= \case
+      Just True -> pure (Just OptRecursive)
+      _         -> pure Nothing
+  , optional (peekFieldRaw peekBool "verbose" idx) >>= \case
+      Just True -> pure (Just OptVerbose)
+      _         -> pure Nothing
+  , optional (peekFieldRaw peekString "destination" idx) >>= \case
+      Just fp -> pure (Just $ OptDestination fp)
+      _       -> pure Nothing
+  , optional (peekFieldRaw peekString "location" idx) >>= \case
+      Just fp -> pure (Just $ OptLocation fp True)
+      _       -> pure Nothing
+  , optional (peekFieldRaw peekBool "preserve_symlinks" idx) >>= \case
+      Just True -> pure (Just OptPreserveSymbolicLinks)
+      _         -> pure Nothing
+  ]
 
 --
 -- * Archive

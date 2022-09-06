@@ -30,6 +30,25 @@ return {
           )
         end)
       end)
+    end),
+
+
+    test('recursive', function ()
+      system.with_tmpdir('archive', function (tmpdir)
+        system.with_wd(tmpdir, function ()
+          local dirname = 'greetings'
+          local filename = dirname .. '/' .. 'french.txt'
+          system.mkdir(dirname)
+          local fh = io.open(filename, 'w')
+          fh:write('Bonjour!\n')
+          fh:close()
+          local archive = zip.create({dirname}, {recursive=true})
+          assert.are_equal(
+            archive.entries[2].path,
+            filename
+          )
+        end)
+      end)
     end)
   },
 
