@@ -96,6 +96,28 @@ return {
     end)
   },
 
+  group 'read_entry' {
+    test('empty archive', function ()
+      assert.are_equal(#zip.create().entries, 0)
+    end),
+
+    test('archive with file', function ()
+      system.with_tmpdir('archive', function (tmpdir)
+        system.with_wd(tmpdir, function ()
+          local filename = 'greetings.txt'
+          local fh = io.open(filename, 'w')
+          fh:write('Hi Mom!\n')
+          fh:close()
+          local entry = zip.read_entry(filename)
+          assert.are_equal(
+            entry.path,
+            'greetings.txt'
+          )
+        end)
+      end)
+    end)
+  },
+
   group 'tobinary' {
     test('empty archive', function ()
       assert.are_equal(zip.create():tobinary(), empty_archive)

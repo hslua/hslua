@@ -17,7 +17,7 @@ module HsLua.Module.Zip (
   , typeArchive
   , toarchive
   , create
-  , entry_from_file
+  , read_entry
   -- ** archive methods
   , extract
   , tobinary
@@ -83,7 +83,7 @@ functions :: LuaError e => [DocumentedFunction e]
 functions =
   [ toarchive
   , create
-  , entry_from_file
+  , read_entry
   ]
 
 -- | Wrapper for 'Zip.toArchive'; converts a string into an Archive.
@@ -126,14 +126,15 @@ create = defun "create"
      ]
   `since` initialVersion
 
--- | Creates a new empty 'Archive'; wraps 'Zip.emptyArchive'.
-entry_from_file :: LuaError e => DocumentedFunction e
-entry_from_file = defun "entry_from_file"
-  ### liftIO . Zip.readEntry []
+-- | Creates a new 'ZipEntry' from a file; wraps 'Zip.readEntry'.
+read_entry :: LuaError e => DocumentedFunction e
+read_entry = defun "read_entry"
+  ### (\filepath mopts -> liftIO $! Zip.readEntry (fromMaybe [] mopts) filepath)
   <#> parameter peekString "string" "filepath" ""
+  <#> opt (parameter peekZipOptions "table" "opts" "zipping options")
   =#> udresult typeEntry "a new zip archive entry"
   #? T.unlines
-     [ "Generates a Entry from a file or directory."
+     [ "Generates a ZipEntry from a file or directory."
      ]
   `since` initialVersion
 
