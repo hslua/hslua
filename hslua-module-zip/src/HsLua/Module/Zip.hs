@@ -48,6 +48,13 @@ import HsLua.Packaging
 import qualified Codec.Archive.Zip as Zip
 import qualified Data.Text as T
 
+#if MIN_VERSION_base(4,11,0)
+import Data.Functor ((<&>))
+#else
+(<&>) :: Functor f => f a -> (a -> b) -> f b
+(<&>) = flip fmap
+#endif
+
 -- | The @zip@ module specification.
 documentedModule :: LuaError e => Module e
 documentedModule = Module
@@ -143,21 +150,21 @@ read_entry = defun "read_entry"
 --
 peekZipOptions :: LuaError e => Peeker e [ZipOption]
 peekZipOptions = retrieving "Zip options" . \idx -> catMaybes <$> sequence
-  [ optional (peekFieldRaw peekBool "recursive" idx) >>= \case
-      Just True -> pure (Just OptRecursive)
-      _         -> pure Nothing
-  , optional (peekFieldRaw peekBool "verbose" idx) >>= \case
-      Just True -> pure (Just OptVerbose)
-      _         -> pure Nothing
-  , optional (peekFieldRaw peekString "destination" idx) >>= \case
-      Just fp -> pure (Just $ OptDestination fp)
-      _       -> pure Nothing
-  , optional (peekFieldRaw peekString "location" idx) >>= \case
-      Just fp -> pure (Just $ OptLocation fp True)
-      _       -> pure Nothing
-  , optional (peekFieldRaw peekBool "preserve_symlinks" idx) >>= \case
-      Just True -> pure (Just OptPreserveSymbolicLinks)
-      _         -> pure Nothing
+  [ optional (peekFieldRaw peekBool "recursive" idx) <&> \case
+      Just True -> Just OptRecursive
+      _         -> Nothing
+  , optional (peekFieldRaw peekBool "verbose" idx) <&> \case
+      Just True -> Just OptVerbose
+      _         -> Nothing
+  , optional (peekFieldRaw peekString "destination" idx) <&> \case
+      Just fp -> Just (OptDestination fp)
+      _       -> Nothing
+  , optional (peekFieldRaw peekString "location" idx) <&> \case
+      Just fp -> Just (OptLocation fp True)
+      _       -> Nothing
+  , optional (peekFieldRaw peekBool "preserve_symlinks" idx) <&> \case
+      Just True -> (Just OptPreserveSymbolicLinks)
+      _         -> Nothing
   ]
 
 --
