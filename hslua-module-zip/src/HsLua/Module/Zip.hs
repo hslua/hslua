@@ -220,9 +220,19 @@ typeEntry = deftype "ZipEntry"
 -- | Returns the uncompressed contents of a zip entry.
 contents :: LuaError e => DocumentedFunction e
 contents = defun "contents"
-  ### liftPure Zip.fromEntry
+  ### (\entry mpasswd -> case mpasswd of
+          Nothing -> return $! Zip.fromEntry entry
+          Just passwd -> case Zip.fromEncryptedEntry passwd entry of
+            Just contents' -> return $! contents'
+            Nothing        -> failLua "Could not decrypt entry.")
   <#> udparam typeEntry "self" ""
+  <#> opt (parameter peekString "string" "password" "password for entry")
   =#> functionResult pushLazyByteString "string" "binary contents"
+  #? T.unlines
+     [ "Get the uncompressed contents of a zip entry. If `password` is given,"
+     , "then that password is used to decrypt the contents. An error is throws"
+     , "if decrypting fails."
+     ]
 
 peekEntryFuzzy :: LuaError e => Peeker e Entry
 peekEntryFuzzy = retrieving "ZipEntry" . \idx ->

@@ -97,11 +97,7 @@ return {
   },
 
   group 'read_entry' {
-    test('empty archive', function ()
-      assert.are_equal(#zip.create().entries, 0)
-    end),
-
-    test('archive with file', function ()
+    test('has correct file path', function ()
       system.with_tmpdir('archive', function (tmpdir)
         system.with_wd(tmpdir, function ()
           local filename = 'greetings.txt'
@@ -112,6 +108,22 @@ return {
           assert.are_equal(
             entry.path,
             'greetings.txt'
+          )
+        end)
+      end)
+    end),
+
+    test('has contents', function ()
+      system.with_tmpdir('archive', function (tmpdir)
+        system.with_wd(tmpdir, function ()
+          local filename = 'greetings.txt'
+          local fh = io.open(filename, 'w')
+          fh:write('Hallo!\n')
+          fh:close()
+          local entry = zip.read_entry(filename)
+          assert.are_equal(
+            entry:contents('foo'),
+            'Hallo!\n'
           )
         end)
       end)
