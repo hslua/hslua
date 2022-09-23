@@ -75,6 +75,7 @@ Expose a Haskell function to Lua and call it from Lua.
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications  #-}
 import Control.Monad (void)
+import Data.Version (makeVersion)
 import HsLua
 import Prelude
 
