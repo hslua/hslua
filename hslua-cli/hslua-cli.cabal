@@ -1,0 +1,78 @@
+cabal-version:       2.2
+name:                hslua-cli
+version:             1.0.0
+synopsis:            Command-line interface for Lua
+description:         Provides an embeddable command-line interface for Lua.
+                     The interface is compatible with the standard Lua
+                     interpreter, i.e., the `lua` executable provided in a
+                     default Lua installation.
+homepage:            https://hslua.org/
+bug-reports:         https://github.com/hslua/hslua/issues
+license:             MIT
+license-file:        LICENSE
+author:              Albert Krewinkel
+maintainer:          Albert Krewinkel <albert@hslua.org>
+copyright:           © 2022 Albert Krewinkel
+category:            Foreign
+build-type:          Simple
+extra-doc-files:     README.md
+                     CHANGELOG.md
+tested-with:         GHC == 8.0.2
+                   , GHC == 8.2.2
+                   , GHC == 8.4.4
+                   , GHC == 8.6.5
+                   , GHC == 8.8.4
+                   , GHC == 8.10.7
+                   , GHC == 9.0.2
+                   , GHC == 9.2.3
+
+source-repository head
+  type:                git
+  location:            https://github.com/hslua/hslua
+  subdir:              hslua-cli
+
+Flag executable
+  description:         Compile `hslua` standalone executable.
+  default:             False
+
+common common-options
+  build-depends:       base              >= 4.9.1  && < 5
+                     , bytestring
+                     , hslua-core        >= 2.1    && < 2.3
+
+  ghc-options:         -Wall
+                       -Wcompat
+                       -Widentities
+                       -Wincomplete-uni-patterns
+                       -Wincomplete-record-updates
+  if impl(ghc >= 8.0)
+    ghc-options:       -Wredundant-constraints
+  if impl(ghc >= 8.2)
+    ghc-options:       -fhide-source-paths
+  if impl(ghc >= 8.4)
+    ghc-options:       -Wmissing-export-lists
+                       -Wpartial-fields
+  if impl(ghc >= 8.8)
+    ghc-options:       -Wmissing-deriving-strategies
+
+  default-language:    Haskell2010
+
+library
+  import:              common-options
+  hs-source-dirs:      src
+  exposed-modules:     HsLua.CLI
+  build-depends:       base              >= 4.9.1  && < 5
+                     , hslua-marshalling >= 2.1    && < 2.3
+                     , lua               >= 2.1    && < 2.3
+                     , text              >= 1.2    && < 2.1
+
+executable hslua
+  import:              common-options
+  hs-source-dirs:      app
+  main-is:             hslua.hs
+  ghc-options:         -rtsopts -with-rtsopts=-A8m -threaded
+  if flag(executable)
+    buildable:           True
+    build-depends:       hslua-cli
+  else
+   buildable:            False
