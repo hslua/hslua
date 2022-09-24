@@ -69,7 +69,7 @@ test-suite hslua-module-path-test
                      , hslua-module-path
                      , tasty
                      , tasty-hunit
-                     , tasty-lua  >= 1.0    && < 1.1
+                     , tasty-lua  >= 1.0    && < 1.2
                      , text
   ghc-options:         -threaded
                        -rtsopts

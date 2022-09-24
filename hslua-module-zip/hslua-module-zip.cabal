@@ -71,7 +71,7 @@ test-suite hslua-module-zip-test
                      , hslua-module-system
                      , tasty
                      , tasty-hunit
-                     , tasty-lua         >= 1.0    && < 1.1
+                     , tasty-lua         >= 1.0    && < 1.2
                      , text
   ghc-options:         -threaded
                        -rtsopts
