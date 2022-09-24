@@ -39,7 +39,7 @@ common common-options
   build-depends:       base              >= 4.8    && < 5
                      , bytestring        >= 0.10.2 && < 0.12
                      , containers        >= 0.5.9  && < 0.7
-                     , hslua-core        >= 2.2.1  && < 2.3
+                     , hslua-core        >= 2.2.1  && < 2.4
                      , mtl               >= 2.2    && < 2.4
                      , text              >= 1.2    && < 2.1
   ghc-options:         -Wall
