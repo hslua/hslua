@@ -6,6 +6,10 @@
 
 Release pending.
 
+-   The functions `loadfile`, `dofile`, and `dofileTrace` now
+    expect the argument to be of type `Maybe FilePath`. The
+    functions load from *stdin* when the argument is `Nothing`.
+
 ## hslua-core-2.2.1
 
 Released 2022-06-19.

@@ -44,7 +44,7 @@ callTrace nargs nres = pcallTrace nargs nres >>= \case
 
 -- | Run the given file as a Lua program, while also adding a
 -- traceback to the error message if an error occurs.
-dofileTrace :: FilePath -> LuaE e Status
+dofileTrace :: Maybe FilePath -> LuaE e Status
 dofileTrace fp = loadfile fp >>= \case
   OK -> pcallTrace 0 multret
   s  -> pure s

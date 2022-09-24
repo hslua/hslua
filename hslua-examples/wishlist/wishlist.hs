@@ -73,6 +73,6 @@ main :: IO ()
 main = do
   filterFile <- fmap (!! 0) getArgs -- get first argument
   result <- run $ do
-    _status <- dofile filterFile
+    _status <- dofile (Just filterFile)
     filterM hasPredicate wishes
   print result

@@ -87,8 +87,8 @@ dostring s = loadstring s >>= \case
 -- | Loads and runs the given file. Note that the filepath is
 -- interpreted by Lua, not Haskell. The resulting chunk is named using
 -- the UTF8 encoded filepath.
-dofile :: FilePath -> LuaE e Status
-dofile fp = loadfile fp >>= \case
+dofile :: Maybe FilePath -> LuaE e Status
+dofile mfp = loadfile mfp >>= \case
   Lua.OK -> Lua.pcall 0 multret Nothing
   err    -> return err
 {-# INLINABLE dofile #-}
@@ -161,8 +161,9 @@ loadbuffer bs (Name name) = liftLua $ \l ->
 {-# INLINABLE loadbuffer #-}
 
 -- | Loads a file as a Lua chunk. This function uses @lua_load@ (see
--- @'Lua.load'@) to load the chunk in the file named filename. The first
--- line in the file is ignored if it starts with a @#@.
+-- @'Lua.load'@) to load the chunk in the file named @filename@. If
+-- filename is @Nothing@, then it loads from the standard input. The
+-- first line in the file is ignored if it starts with a @#@.
 --
 -- The string mode works as in function @'Lua.load'@.
 --
@@ -174,15 +175,19 @@ loadbuffer bs (Name name) = liftLua $ \l ->
 -- it.
 --
 -- See <https://www.lua.org/manual/5.4/manual.html#luaL_loadfile luaL_loadfile>.
-loadfile :: FilePath -- ^ filename
+loadfile :: Maybe FilePath -- ^ filename
          -> LuaE e Status
-loadfile fp = liftLua $ \l -> do
+loadfile mfp = liftLua $ \l -> do
 #if defined(mingw32_HOST_OS)
   fsEncoding <- GHC.mkTextEncoding "CP0"  -- a.k.a CP_ACP
 #else
   fsEncoding <- GHC.getFileSystemEncoding
 #endif
-  GHC.withCString fsEncoding fp $! fmap Lua.toStatus . luaL_loadfile l
+  case mfp of
+    Just fp ->
+      GHC.withCString fsEncoding fp $! fmap Lua.toStatus . luaL_loadfile l
+    Nothing ->
+      Lua.toStatus <$!> luaL_loadfile l nullPtr
 {-# INLINABLE loadfile #-}
 
 -- | Loads a string as a Lua chunk. This function uses @lua_load@ to

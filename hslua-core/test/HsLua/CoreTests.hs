@@ -345,17 +345,17 @@ tests = testGroup "Core module"
 
     , testGroup "loadfile"
       [ "file error should be returned when file does not exist" =:
-        ErrFile `shouldBeResultOf` loadfile "./file-does-not-exist.lua"
+        ErrFile `shouldBeResultOf` loadfile (Just "./file-does-not-exist.lua")
 
       , "loading an invalid file should give a syntax error" =:
-        ErrSyntax `shouldBeResultOf` loadfile "test/lua/syntax-error.lua"
+        ErrSyntax `shouldBeResultOf` loadfile (Just "test/lua/syntax-error.lua")
 
       , "loading a valid program should succeed" =:
-        OK `shouldBeResultOf` loadfile "./test/lua/example.lua"
+        OK `shouldBeResultOf` loadfile (Just "./test/lua/example.lua")
 
       , "example fib program should be loaded correctly" =:
         Just 8 `shouldBeResultOf` do
-          loadfile "./test/lua/example.lua" *> call 0 0
+          loadfile (Just "./test/lua/example.lua") *> call 0 0
           getglobal "fib"
           pushinteger 6
           call 1 1
@@ -364,20 +364,20 @@ tests = testGroup "Core module"
 
     , testGroup "dofile"
       [ "file error should be returned when file does not exist" =:
-        ErrFile `shouldBeResultOf` dofile "./file-does-not-exist.lua"
+        ErrFile `shouldBeResultOf` dofile (Just "./file-does-not-exist.lua")
 
       , "loading an invalid file should give a syntax error" =:
-        ErrSyntax `shouldBeResultOf` dofile "test/lua/syntax-error.lua"
+        ErrSyntax `shouldBeResultOf` dofile (Just "test/lua/syntax-error.lua")
 
       , "loading a failing program should give an run error" =:
-        ErrRun `shouldBeResultOf` dofile "test/lua/error.lua"
+        ErrRun `shouldBeResultOf` dofile (Just "test/lua/error.lua")
 
       , "loading a valid program should succeed" =:
-        OK `shouldBeResultOf` dofile "./test/lua/example.lua"
+        OK `shouldBeResultOf` dofile (Just "./test/lua/example.lua")
 
       , "example fib program should be loaded correctly" =:
         Just 21 `shouldBeResultOf` do
-          _ <- dofile "./test/lua/example.lua"
+          _ <- dofile (Just "./test/lua/example.lua")
           getglobal "fib"
           pushinteger 8
           call 1 1

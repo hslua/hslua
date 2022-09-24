@@ -32,7 +32,7 @@ runTastyFile :: LuaError e => FilePath -> LuaE e (Either String [ResultTree])
 runTastyFile fp = do
   Lua.openlibs
   Lua.requirehs "tasty" (const . void $ pushModule)
-  res <- Lua.dofileTrace fp
+  res <- Lua.dofileTrace (Just fp)
   if res /= Lua.OK
     then Left . Utf8.toString <$> Lua.tostring' top
     else resultToEither <$> runPeek (peekList peekResultTree top)
