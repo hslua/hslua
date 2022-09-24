@@ -2,6 +2,10 @@
 
 `tasty-hslua` uses [PVP Versioning][].
 
+## tasty-hslua-1.1.0
+
+Release pending.
+
 ## tasty-hslua-1.0.2
 
 Released 2022-02-19.

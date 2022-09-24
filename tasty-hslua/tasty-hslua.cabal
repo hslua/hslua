@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                tasty-hslua
-version:             1.0.2
+version:             1.1.0
 synopsis:            Tasty helpers to test HsLua.
 description:         Various tasty helpers and utilities to test HsLua
                      oparations. Built on top of tasty-hunit.
@@ -31,7 +31,7 @@ source-repository head
 common common-options
   default-language:    Haskell2010
   build-depends:       base          >= 4.8    && < 5
-                     , hslua-core    >= 2.0    && < 2.3
+                     , hslua-core    >= 2.3    && < 2.4
                      , bytestring    >= 0.10.2 && < 0.12
   ghc-options:         -Wall
                        -Wincomplete-record-updates
