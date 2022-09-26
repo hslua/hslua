@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP               #-}
 {-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
 {- |
@@ -20,6 +21,7 @@ import Data.ByteString (ByteString)
 import Data.Foldable (foldl')
 import Data.Maybe (listToMaybe)
 import Data.Text (Text)
+import Foreign.C.String (withCString)
 import Foreign.Ptr (nullPtr)
 import HsLua.Core (LuaE, LuaError)
 import System.Console.GetOpt
@@ -27,9 +29,10 @@ import System.Environment (getArgs, getProgName, lookupEnv)
 import System.IO (hPutStrLn, stderr)
 import qualified Lua.Auxiliary as Lua
 import qualified Lua.Constants as Lua
+import qualified Lua.Primary as Lua
 import qualified HsLua.Core as Lua
-import qualified HsLua.Marshalling as Lua
 import qualified HsLua.Core.Types as Lua
+import qualified HsLua.Marshalling as Lua
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified HsLua.Core.Utf8 as UTF8
@@ -97,8 +100,6 @@ runStandalone settings = do
       putErr "[WARNING] Flag `-i` is not supported yet."
     when (optNoEnv opts) $
       putErr "[WARNING] Flag `-E` is not fully supported yet."
-    when (optWarnings opts) $
-      putErr "[WARNING] Flag `-W` is not supported yet."
 
     -- push `arg` table
     case optScript opts of
@@ -114,6 +115,14 @@ runStandalone settings = do
         Lua.rawseti (Lua.nth 2) 0
     Lua.setglobal "arg"
 
+#if MIN_VERSION_lua(2,2,1)
+    when (optWarnings opts) $ do
+      l <- Lua.state
+      -- turn warnings on
+      Lua.liftIO $ withCString "@on" $ \w -> Lua.lua_warning l w Lua.FALSE
+#endif
+
+    -- Run init code.
     unless (optNoEnv opts) $ do
       init' <- Lua.liftIO $ lookupEnv "LUA_INIT"
       (case init' of
