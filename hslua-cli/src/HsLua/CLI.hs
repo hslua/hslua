@@ -23,7 +23,7 @@ import Data.Text (Text)
 import Foreign.Ptr (nullPtr)
 import HsLua.Core (LuaE, LuaError)
 import System.Console.GetOpt
-import System.Environment (getArgs, getProgName)
+import System.Environment (getArgs, getProgName, lookupEnv)
 import System.IO (hPutStrLn, stderr)
 import qualified Lua.Auxiliary as Lua
 import qualified Lua.Constants as Lua
@@ -106,6 +106,16 @@ runStandalone settings = do
         Lua.pushString (optProgName opts)
         Lua.rawseti (Lua.nth 2) 0
     Lua.setglobal "arg"
+
+    unless (optNoEnv opts) $ do
+      init' <- Lua.liftIO $ lookupEnv "LUA_INIT"
+      (case init' of
+         Just ('@' : filename) -> Lua.dofileTrace filename
+         Just cmd              -> Lua.dostring (UTF8.fromString cmd)
+         Nothing               -> return Lua.OK)
+        >>= \case
+        Lua.OK -> pure ()
+        _      -> Lua.throwErrorAsException
 
     -- run code statements and module loading instructions
     mapM_ runCode (reverse $ optExecute opts)
@@ -198,7 +208,7 @@ luaOptions =
 
   , Option "E" []
     (NoArg $ \opt -> do
-        hPutStrLn stderr "[WARNING] Flag `-E` is not supported yet."
+        hPutStrLn stderr "[WARNING] Flag `-E` is not fully supported yet."
         return opt { optNoEnv = True })
     "ignore environment variables -- currently not supported"
 
