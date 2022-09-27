@@ -1,4 +1,5 @@
 {-# LANGUAGE CPP               #-}
+{-# LANGUAGE DerivingStrategies#-}
 {-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
 {- |
@@ -13,6 +14,7 @@ module HsLua.CLI
   ( -- * Run scripts as program
     runStandalone
   , Settings (..)
+  , EnvVarOpt (..)
   ) where
 
 import Control.Monad (unless, when, zipWithM_)
@@ -38,10 +40,28 @@ import qualified Data.Text.IO as T
 import qualified HsLua.Core.Utf8 as UTF8
 
 -- | Settings for the Lua command line interface.
+--
+--  If env vars should be ignored, and the interpreter runs @openlibs@,
+-- then the registry key @LUA_NOENV@ should be set to @true@ before that
+-- function is invoked. E.g.:
+--
+-- > runner envVarOpt action = run $ do
+-- >   when (envVarOpt == IgnoreEnvVars) $ do
+-- >     pushboolean True
+-- >     setfield registryindex "LUA_NOENV"
+-- >   openlibs
+-- >   action
+--
 data Settings e = Settings
   { settingsVersionInfo :: Text
-  , settingsRunner      :: LuaE e () -> IO ()
+  , settingsRunner      :: EnvVarOpt -> LuaE e () -> IO ()
+    -- ^ The Lua interpreter to be used; the first argument indicates
+    -- whether environment variables should be consulted or ignored.
   }
+
+-- | Whether environment variables should be consulted or ignored.
+data EnvVarOpt = IgnoreEnvVars | ConsultEnvVars
+  deriving stock (Eq, Show)
 
 -- | Get the Lua interpreter options from the command line. Throws an
 -- error with usage instructions if parsing fails.
@@ -94,14 +114,15 @@ runStandalone :: LuaError e
               -> IO ()
 runStandalone settings progName args = do
   opts <- getOptions progName args
-  settingsRunner settings $ do
+  let envVarOpt = if optNoEnv opts
+                  then IgnoreEnvVars
+                  else ConsultEnvVars
+  settingsRunner settings envVarOpt $ do
     let putErr = Lua.liftIO . hPutStrLn stderr
     -- print version info
     when (optVersion opts) (showVersion $ settingsVersionInfo settings)
     when (optInteractive opts) $
       putErr "[WARNING] Flag `-i` is not supported yet."
-    when (optNoEnv opts) $
-      putErr "[WARNING] Flag `-E` is not fully supported yet."
 
     -- push `arg` table
     case optScript opts of
