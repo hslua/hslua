@@ -4,7 +4,7 @@
 
 ## hslua-cli-1.2.0
 
-Release pending.
+Released 2022-09-27.
 
 -   The function `runStandalone` now takes two additional
     arguments, the program name and list command line args.
