@@ -11,6 +11,7 @@ Re-implementation of the standard Lua interpreter.
 module Main (main) where
 import HsLua.Core  as Lua (Exception, openlibs, run)
 import HsLua.CLI (Settings (..), runStandalone)
+import System.Environment (getArgs, getProgName)
 
 -- | Run a default Lua interpreter.
 main :: IO ()
@@ -21,4 +22,6 @@ main = do
             openlibs
             action
         }
-  runStandalone @Lua.Exception settings
+  prg  <- getProgName
+  args <- getArgs
+  runStandalone @Lua.Exception settings prg args

@@ -2,6 +2,13 @@
 
 `hslua-cli` uses [PVP Versioning](https://pvp.haskell.org).
 
+## hslua-cli-1.2.0
+
+Release pending.
+
+-   The function `runStandalone` now takes two additional
+    arguments, the program name and list command line args.
+
 ## hslua-cli-1.1.0
 
 Released 2022-09-26.

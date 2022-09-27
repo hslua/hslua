@@ -25,7 +25,7 @@ import Foreign.C.String (withCString)
 import Foreign.Ptr (nullPtr)
 import HsLua.Core (LuaE, LuaError)
 import System.Console.GetOpt
-import System.Environment (getArgs, getProgName, lookupEnv)
+import System.Environment (lookupEnv)
 import System.IO (hPutStrLn, stderr)
 import qualified Lua.Auxiliary as Lua
 import qualified Lua.Constants as Lua
@@ -45,10 +45,8 @@ data Settings e = Settings
 
 -- | Get the Lua interpreter options from the command line. Throws an
 -- error with usage instructions if parsing fails.
-getOptions :: IO Options
-getOptions = do
-  rawArgs <- getArgs
-  progName <- getProgName
+getOptions :: String -> [String] -> IO Options
+getOptions progName rawArgs = do
   let (actions, args, errs) = getOpt RequireOrder luaOptions rawArgs
   unless (null errs) . ioError . userError $
     let usageHead = "Usage: " ++ progName ++ " [options] [script [args]]"
@@ -89,9 +87,13 @@ runCode = \case
 -- and tries to run that script in Lua. Falls back to stdin if no file
 -- is given. Any remaining args are passed to Lua via the global table
 -- @arg@.
-runStandalone :: LuaError e => Settings e -> IO ()
-runStandalone settings = do
-  opts <- getOptions
+runStandalone :: LuaError e
+              => Settings e   -- ^ interpreter configuration
+              -> String       -- ^ program name (for error messages)
+              -> [String]     -- ^ command line arguments
+              -> IO ()
+runStandalone settings progName args = do
+  opts <- getOptions progName args
   settingsRunner settings $ do
     let putErr = Lua.liftIO . hPutStrLn stderr
     -- print version info
