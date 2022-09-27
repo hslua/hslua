@@ -12,7 +12,7 @@ module Main (main) where
 import Control.Monad (when)
 import HsLua.Core  as Lua
   (Exception, openlibs, pushboolean, registryindex, run, setfield)
-import HsLua.CLI (EnvVarOpt (IgnoreEnvVars), Settings (..), runStandalone)
+import HsLua.CLI (EnvBehavior (IgnoreEnvVars), Settings (..), runStandalone)
 import System.Environment (getArgs, getProgName)
 
 -- | Run a default Lua interpreter.
@@ -20,8 +20,8 @@ main :: IO ()
 main = do
   let settings = Settings
         { settingsVersionInfo = ""
-        , settingsRunner = \envVarOpt action -> run $ do
-            when (envVarOpt == IgnoreEnvVars) $ do
+        , settingsRunner = \envBehavior action -> run $ do
+            when (envBehavior == IgnoreEnvVars) $ do
               pushboolean True
               setfield registryindex "LUA_NOENV"
             openlibs

@@ -1,5 +1,4 @@
 {-# LANGUAGE CPP               #-}
-{-# LANGUAGE DerivingStrategies#-}
 {-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
 {- |
@@ -14,7 +13,7 @@ module HsLua.CLI
   ( -- * Run scripts as program
     runStandalone
   , Settings (..)
-  , EnvVarOpt (..)
+  , EnvBehavior (..)
   ) where
 
 import Control.Monad (unless, when, zipWithM_)
@@ -41,12 +40,12 @@ import qualified HsLua.Core.Utf8 as UTF8
 
 -- | Settings for the Lua command line interface.
 --
---  If env vars should be ignored, and the interpreter runs @openlibs@,
--- then the registry key @LUA_NOENV@ should be set to @true@ before that
--- function is invoked. E.g.:
+-- If env vars should be ignored, and the interpreter invokes
+-- @openlibs@, then the registry key @LUA_NOENV@ should be set to @true@
+-- before that function is invoked. E.g.:
 --
--- > runner envVarOpt action = run $ do
--- >   when (envVarOpt == IgnoreEnvVars) $ do
+-- > runner envBehavior action = run $ do
+-- >   when (envBehavior == IgnoreEnvVars) $ do
 -- >     pushboolean True
 -- >     setfield registryindex "LUA_NOENV"
 -- >   openlibs
@@ -54,14 +53,14 @@ import qualified HsLua.Core.Utf8 as UTF8
 --
 data Settings e = Settings
   { settingsVersionInfo :: Text
-  , settingsRunner      :: EnvVarOpt -> LuaE e () -> IO ()
+  , settingsRunner      :: EnvBehavior -> LuaE e () -> IO ()
     -- ^ The Lua interpreter to be used; the first argument indicates
     -- whether environment variables should be consulted or ignored.
   }
 
 -- | Whether environment variables should be consulted or ignored.
-data EnvVarOpt = IgnoreEnvVars | ConsultEnvVars
-  deriving stock (Eq, Show)
+data EnvBehavior = IgnoreEnvVars | ConsultEnvVars
+  deriving (Eq, Show)
 
 -- | Get the Lua interpreter options from the command line. Throws an
 -- error with usage instructions if parsing fails.
