@@ -191,6 +191,8 @@ tests = testGroup "lua"
       ("_LOADED"  @=? loadedTableRegistryField)
     , "preloadTableRegistryField" =:
       ("_PRELOAD" @=? preloadTableRegistryField)
+    , "LUA_VERSION" =:
+      ("Lua 5.4" @=? LUA_VERSION)
     ]
 
   , testGroup "compare"

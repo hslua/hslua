@@ -12,8 +12,12 @@ Portability : ForeignFunctionInterface
 Lua constants
 -}
 module Lua.Constants
-  ( -- * Special values
-    pattern LUA_MULTRET
+  ( -- * Version and copyright information
+    pattern LUA_VERSION
+  , pattern LUA_RELEASE
+  , pattern LUA_COPYRIGHT
+    -- * Special values
+  , pattern LUA_MULTRET
     -- * Pseudo-indices
   , pattern LUA_REGISTRYINDEX
     -- * Basic types
@@ -79,6 +83,22 @@ import Lua.Types
 
 #include <lua.h>
 #include <lauxlib.h>
+
+--
+-- Version and copyright info
+--
+
+-- | Lua version information in the form "@Lua MAJOR.MINOR@".
+pattern LUA_VERSION :: String
+pattern LUA_VERSION = #{const_str LUA_VERSION}
+
+-- | Lua version information in the form "@Lua MAJOR.MINOR.RELEASE@".
+pattern LUA_RELEASE :: String
+pattern LUA_RELEASE = #{const_str LUA_RELEASE}
+
+-- | Lua copyright information; includes the Lua release
+pattern LUA_COPYRIGHT :: String
+pattern LUA_COPYRIGHT = #{const_str LUA_COPYRIGHT}
 
 --
 -- Special values

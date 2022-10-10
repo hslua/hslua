@@ -2,6 +2,15 @@
 
 `lua` uses [PVP Versioning][].
 
+## lua-2.3.0
+
+Release pending.
+
+-   Export version and copyright info from Lua.Constants: the
+    following patterns are made available, with content identical
+    to that of the respective C functions: `LUA_VERSION`,
+    `LUA_RELEASE`, and `LUA_COPYRIGHT`.
+
 ## lua-2.2.1
 
 Released 2022-06-19.

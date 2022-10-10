@@ -254,6 +254,11 @@ module Lua
 
     -- * Push Haskell functions
   , hslua_pushhsfunction
+
+    -- * Version and copyright info
+  , pattern LUA_VERSION
+  , pattern LUA_RELEASE
+  , pattern LUA_COPYRIGHT
   ) where
 
 import Foreign.C (CInt)
