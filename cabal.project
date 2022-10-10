@@ -7,6 +7,7 @@ packages: lpeg/lpeg.cabal
           hslua-core/hslua-core.cabal
           hslua-classes/hslua-classes.cabal
           hslua-examples/hslua-examples.cabal
+          hslua-list/hslua-list.cabal
           hslua-marshalling/hslua-marshalling.cabal
           hslua-module-path/hslua-module-path.cabal
           hslua-module-system/hslua-module-system.cabal
