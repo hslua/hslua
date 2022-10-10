@@ -47,7 +47,7 @@ executable print-version
   import:              common-options
   main-is:             print-version.hs
   hs-source-dirs:      print-version
-  build-depends:       lua               >= 2.0 && < 2.3
+  build-depends:       lua               >= 2.0 && < 2.4
 
 executable run-lua
   import:              common-options
@@ -76,4 +76,4 @@ executable low-level-factorial
   import:              common-options
   main-is:             low-level-factorial.hs
   hs-source-dirs:      low-level-factorial
-  build-depends:       lua               >= 2.0 && < 2.3
+  build-depends:       lua               >= 2.0 && < 2.4
