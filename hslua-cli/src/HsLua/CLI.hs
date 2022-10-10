@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP               #-}
 {-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
 {- |
@@ -23,16 +22,13 @@ import Data.Foldable (foldl')
 import Data.Maybe (listToMaybe)
 import Data.Text (Text)
 import Foreign.C.String (withCString)
-import Foreign.Ptr (nullPtr)
 import HsLua.Core (LuaE, LuaError)
 import System.Console.GetOpt
 import System.Environment (lookupEnv)
 import System.IO (hPutStrLn, stderr)
-import qualified Lua.Auxiliary as Lua
 import qualified Lua.Constants as Lua
 import qualified Lua.Primary as Lua
 import qualified HsLua.Core as Lua
-import qualified HsLua.Core.Types as Lua
 import qualified HsLua.Marshalling as Lua
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -137,18 +133,16 @@ runStandalone settings progName args = do
         Lua.rawseti (Lua.nth 2) 0
     Lua.setglobal "arg"
 
-#if MIN_VERSION_lua(2,2,1)
     when (optWarnings opts) $ do
       l <- Lua.state
       -- turn warnings on
       Lua.liftIO $ withCString "@on" $ \w -> Lua.lua_warning l w Lua.FALSE
-#endif
 
     -- Run init code.
     unless (optNoEnv opts) $ do
       init' <- Lua.liftIO $ lookupEnv "LUA_INIT"
       (case init' of
-         Just ('@' : filename) -> Lua.dofileTrace filename
+         Just ('@' : filename) -> Lua.dofileTrace (Just filename)
          Just cmd              -> Lua.dostring (UTF8.fromString cmd)
          Nothing               -> return Lua.OK)
         >>= \case
@@ -159,27 +153,21 @@ runStandalone settings progName args = do
     mapM_ runCode (reverse $ optExecute opts)
 
     let nargs = fromIntegral . length $ optScriptArgs opts
-    result <- case optScript opts of
-      -- `dofileTrace` should really accept a (Maybe FilePath)
-      Just script | script /= "-" -> do
-        Lua.loadfile (Just script) >>= \case
+    let handleScriptResult = \case
           Lua.OK -> do
             mapM_ Lua.pushString (optScriptArgs opts)
-            Lua.pcallTrace nargs Lua.multret
-          s      -> pure s
+            status <- Lua.pcallTrace nargs Lua.multret
+            when (status /= Lua.OK)
+              Lua.throwErrorAsException
+          _      -> Lua.throwErrorAsException
+    case optScript opts of
+      Just script | script /= "-" -> do
+        Lua.loadfile (Just script) >>= handleScriptResult
       Nothing | optVersion opts || not (null (optExecute opts)) ->
-        pure Lua.OK
+        pure ()
       _ -> do
         -- load script from stdin
-        l <- Lua.state
-        Lua.liftIO (Lua.luaL_loadfile l nullPtr) >>= \case
-          Lua.LUA_OK -> do
-            mapM_ Lua.pushString (optScriptArgs opts)
-            Lua.pcallTrace nargs Lua.multret
-          s          -> pure $ Lua.toStatus s
-
-    when (result /= Lua.OK)
-      Lua.throwErrorAsException
+        Lua.loadfile Nothing >>= handleScriptResult
 
 -- | Code to execute on startup.
 data LuaCode =
