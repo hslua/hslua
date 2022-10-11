@@ -20,7 +20,7 @@ module HsLua.Module.Zip (
   , read_entry
   -- ** archive methods
   , extract
-  , tobinary
+  , tobytestring
   -- * Archive entries
   , typeEntry
   , peekEntryFuzzy
@@ -180,7 +180,7 @@ typeArchive = deftype "ZipArchive"
     (pushEntries, Zip.zEntries)
     (peekList peekEntryFuzzy, \ar entries -> ar { Zip.zEntries = entries })
   , method extract
-  , method tobinary
+  , method tobytestring
   ]
 
 -- | Returns the raw binary string representation of the archive;
@@ -197,8 +197,8 @@ extract = defun "extract"
      ]
 
 -- | Returns the raw binary string representation of the archive.
-tobinary :: LuaError e => DocumentedFunction e
-tobinary = defun "tobinary"
+tobytestring :: LuaError e => DocumentedFunction e
+tobytestring = defun "tobytestring"
   ### liftPure Zip.fromArchive
   <#> udparam typeArchive "self" ""
   =#> functionResult pushLazyByteString "string" "bytes of the archive"
