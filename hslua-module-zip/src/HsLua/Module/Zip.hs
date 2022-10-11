@@ -37,9 +37,10 @@ import Data.Semigroup (Semigroup(..))  -- includes (<>)
 #endif
 import Data.Version (Version, makeVersion)
 import HsLua.Core
-  ( LuaError, Type(..), failLua, liftIO, ltype )
+  ( LuaError, Type(..), failLua, liftIO, ltype, nth, setmetatable )
+import HsLua.List (newListMetatable)
 import HsLua.Marshalling
-  ( Peeker, choice, failPeek, liftLua, peekBool
+  ( Peeker, Pusher, choice, failPeek, liftLua, peekBool
   , peekFieldRaw, peekIntegral, peekLazyByteString, peekList, peekString
   , pushLazyByteString, pushList, pushString
   , retrieving, typeMismatchMessage )
@@ -176,7 +177,7 @@ typeArchive :: LuaError e => DocumentedType e Archive
 typeArchive = deftype "ZipArchive"
   []
   [ property "entries" "files in this zip archive"
-    (pushList (pushUD typeEntry), Zip.zEntries)
+    (pushEntries, Zip.zEntries)
     (peekList peekEntryFuzzy, \ar entries -> ar { Zip.zEntries = entries })
   , method extract
   , method tobinary
@@ -249,3 +250,11 @@ peekEntryFromTable idx = Zip.toEntry
           Nothing -> pure 0
           Just t  -> pure t)
   <*>  peekFieldRaw peekLazyByteString "contents" idx
+
+-- | Pushes a list of entries as an Entries object, i.e., a list with
+-- additional methods.
+pushEntries :: LuaError e => Pusher e [Entry]
+pushEntries es = do
+  pushList (pushUD typeEntry) es
+  newListMetatable "ZipEntry list" (pure ())
+  setmetatable (nth 2)
