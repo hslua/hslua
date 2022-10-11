@@ -8,8 +8,7 @@ Maintainer : Albert Krewinkel <tarleb+pandoc@moltkeplatz.de>
 Lua lists with additional methods.
 -}
 module HsLua.List
-  ( pushPandocList
-  , luaopen_list_ptr
+  ( luaopen_list_ptr
   , pushListModule
   , newListMetatable
   ) where
@@ -18,15 +17,6 @@ import Data.ByteString (useAsCString)
 import Foreign.C
 import HsLua.Core
 import HsLua.Marshalling (Pusher, pushList)
-
--- | Pushes a list as a numerically-indexed Lua table, and sets a
--- metatable that offers a number of convenience functions.
-pushPandocList :: LuaError e => Pusher e a -> Pusher e [a]
-pushPandocList pushItem items = do
-  pushList pushItem items
-  getmetatable' "List" >>= \case
-    TypeTable -> setmetatable (nth 2)
-    _ -> failLua "List has not been initialized correctly."
 
 -- | Pointer to the function that opens the List module and pushes it to the
 -- stack.
