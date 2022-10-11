@@ -16,7 +16,6 @@ module HsLua.List
 import Data.ByteString (useAsCString)
 import Foreign.C
 import HsLua.Core
-import HsLua.Marshalling (Pusher, pushList)
 
 -- | Pointer to the function that opens the List module and pushes it to the
 -- stack.

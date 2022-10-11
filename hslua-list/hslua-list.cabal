@@ -56,7 +56,6 @@ library
   c-sources:           cbits/listmod.c
   exposed-modules:     HsLua.List
   build-depends:       bytestring
-                     , hslua-marshalling     >= 2.1    && < 2.3
 
 test-suite hslua-list-test
   import:              common-options
