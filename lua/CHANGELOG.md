@@ -11,6 +11,12 @@ Release pending.
     to that of the respective C functions: `LUA_VERSION`,
     `LUA_RELEASE`, and `LUA_COPYRIGHT`.
 
+-   Added a new flag `cross-compile`. When enabled, the code is
+    setup in a way that allows cross-compilation of the package,
+    but some of the string constants will be hard-coded and may
+    not match the Lua version against which the library is
+    compiled.
+
 ## lua-2.2.1
 
 Released 2022-06-19.

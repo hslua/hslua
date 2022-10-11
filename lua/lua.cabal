@@ -75,6 +75,13 @@ flag pkg-config
   description:         Use @pkg-config@ to discover library and include paths.
                        Setting this flag implies `system-lua`.
 
+flag cross-compile
+  default:             False
+  manual:              True
+  description:         Avoids constructs that would prevent cross-compilation.
+                       The Lua version constants may become inaccurate when
+                       this flag is enabled.
+
 common common-options
   default-language:    Haskell2010
   build-depends:       base                 >= 4.8    && < 5
@@ -99,6 +106,9 @@ common common-options
 
   if flag(allow-unsafe-gc)
     cpp-options:         -DALLOW_UNSAFE_GC
+
+  if flag(cross-compile)
+    cpp-options:         -D_LUA_NO_CONST_STR
 
 library
   import:              common-options

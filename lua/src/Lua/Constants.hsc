@@ -90,15 +90,22 @@ import Lua.Types
 
 -- | Lua version information in the form "@Lua MAJOR.MINOR@".
 pattern LUA_VERSION :: String
-pattern LUA_VERSION = #{const_str LUA_VERSION}
 
 -- | Lua version information in the form "@Lua MAJOR.MINOR.RELEASE@".
 pattern LUA_RELEASE :: String
-pattern LUA_RELEASE = #{const_str LUA_RELEASE}
 
 -- | Lua copyright information; includes the Lua release
 pattern LUA_COPYRIGHT :: String
+
+#ifdef _LUA_NO_CONST_STR
+pattern LUA_VERSION = "Lua 5.4"
+pattern LUA_RELEASE = "Lua 5.4.4"
+pattern LUA_COPYRIGHT = "Lua 5.4.4  Copyright (C) 1994-2022 Lua.org, PUC-Rio"
+#else
+pattern LUA_RELEASE = #{const_str LUA_RELEASE}
+pattern LUA_VERSION = #{const_str LUA_VERSION}
 pattern LUA_COPYRIGHT = #{const_str LUA_COPYRIGHT}
+#endif
 
 --
 -- Special values
