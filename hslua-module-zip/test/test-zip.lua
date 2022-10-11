@@ -9,6 +9,20 @@ local group = tasty.test_group
 local test = tasty.test_case
 local assert = tasty.assert
 
+local make_sample_archive = function (opts)
+  opts = opts or {}
+  local filename = opts.filename or 'greetings.txt'
+  local contents = opts.contents or 'Hello Bob!\n'
+  return system.with_tmpdir('archive', function (tmpdir)
+    return system.with_wd(tmpdir, function ()
+      local fh = io.open(filename, 'w')
+      fh:write(contents)
+      fh:close()
+      return zip.create{filename}
+    end)
+  end)
+end
+
 local empty_archive = '\80\75\5\6\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0'
 -- Check existence static fields
 return {
@@ -80,20 +94,22 @@ return {
     end),
 
     test('archive with file', function ()
-      system.with_tmpdir('archive', function (tmpdir)
-        system.with_wd(tmpdir, function ()
-          local filename = 'greetings.txt'
-          local fh = io.open(filename, 'w')
-          fh:write('Hi Mom!\n')
-          fh:close()
-          local archive = zip.create{filename}
-          assert.are_equal(
-            archive.entries[1].path,
-            'greetings.txt'
-          )
-        end)
-      end)
-    end)
+      local archive = make_sample_archive{filename='greetings.txt'}
+      assert.are_equal(
+        archive.entries[1].path,
+        'greetings.txt'
+      )
+    end),
+
+    test('has type "ZipEntry list"', function ()
+      local archive = make_sample_archive()
+      assert.are_equal(getmetatable(archive.entries).__name, 'ZipEntry list')
+    end),
+
+    test('has `insert` method', function ()
+      local archive = make_sample_archive()
+      assert.are_equal(type(archive.entries.insert), 'function')
+    end),
   },
 
   group 'read_entry' {
