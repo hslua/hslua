@@ -16,6 +16,63 @@ Lua module to work with file zips.
 
 ## zip
 
-Module for file zip manipulations.
+Functions to create, modify, and extract files from zip archives.
 
-The interface is still in flux and has not been finalized.
+## Functions
+
+### toarchive (binary archive string)
+
+Reads an *Archive* structure from a raw zip archive; throws an error
+if the given string cannot be decoded into an archive.
+
+*Since: 1.0.0*
+
+Parameters:
+
+binary archive string
+:    (string)
+
+Returns:
+
+ -   (ZipArchive)
+
+### create (entries_or_filepaths, opts)
+
+Creates a new archive. If a list of ZipEntry objects is given,
+then a new archive with just these entries is created. For a list
+of file paths, this function reads these files and adds them to
+the repository.
+
+
+*Since: 1.0.0*
+
+Parameters:
+
+entries_or_filepaths
+:    ({string,...}|{ZipEntry,...})
+
+opts
+:   zip options (table)
+
+Returns:
+
+ -  a new archive (ZipArchive)
+
+### read_entry (filepath, opts)
+
+Generates a ZipEntry from a file or directory.
+
+
+*Since: 1.0.0*
+
+Parameters:
+
+filepath
+:    (string)
+
+opts
+:   zipping options (table)
+
+Returns:
+
+ -  a new zip archive entry (ZipEntry)
