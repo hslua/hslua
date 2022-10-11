@@ -97,10 +97,7 @@ functions =
 -- | Wrapper for 'Zip.toArchive'; converts a string into an Archive.
 toarchive :: LuaError e => DocumentedFunction e
 toarchive = defun "toarchive"
-  ### (\str -> case Zip.toArchiveOrFail str of
-          Left err -> failLua err
-          Right a  -> return a
-          )
+  ### (either failLua pure . Zip.toArchiveOrFail)
   <#> parameter peekLazyByteString "string" "binary archive string" ""
   =#> udresult typeArchive ""
   #? T.unlines
