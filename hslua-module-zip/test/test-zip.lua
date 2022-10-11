@@ -71,13 +71,12 @@ return {
       system.with_tmpdir('archive', function (tmpdir)
         system.with_wd(tmpdir, function ()
           local filename = 'greetings.txt'
-          local fh = io.open(filename, 'w')
-          fh:write('Hi Mom!\n')
-          fh:close()
-          local archive = zip.create{filename}
-          os.remove(filename)
-
+          local archive = make_sample_archive{
+            filename = filename,
+            contents = 'Hi Mom!\n',
+          }
           archive:extract()
+
           assert.are_equal(system.ls()[1], filename)
           assert.are_equal(
             io.open(filename):read 'a',
@@ -121,10 +120,7 @@ return {
           fh:write('Hi Mom!\n')
           fh:close()
           local entry = zip.read_entry(filename)
-          assert.are_equal(
-            entry.path,
-            'greetings.txt'
-          )
+          assert.are_equal(entry.path, filename)
         end)
       end)
     end),
