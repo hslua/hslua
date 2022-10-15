@@ -91,6 +91,7 @@ functions :: LuaError e => [DocumentedFunction e]
 functions =
   [ toarchive
   , create
+  , mkEntry
   , read_entry
   ]
 
@@ -128,6 +129,22 @@ create = defun "create"
      , "new archive with just these entries is created. For a list of file"
      , "paths, this function reads these files and adds them to the"
      , "repository."
+     ]
+  `since` initialVersion
+
+-- | Creates a new 'ZipEntry' from a file; wraps 'Zip.readEntry'.
+mkEntry :: LuaError e => DocumentedFunction e
+mkEntry = defun "Entry"
+  ### liftPure3 (\filepath contents' mmodtime ->
+                   let modtime = fromMaybe 0 mmodtime
+                   in Zip.toEntry filepath modtime contents')
+  <#> parameter peekString "string" "filepath" "path in archive"
+  <#> parameter peekLazyByteString "string" "content" "uncompressed content"
+  <#> opt (parameter peekIntegral "integer" "modtime" "modification time")
+  =#> udresult typeEntry "a new zip archive entry"
+  #? T.unlines
+     [ "Generates a ZipEntry from a filepath, uncompressed content, and"
+     , "the file's modification time."
      ]
   `since` initialVersion
 
