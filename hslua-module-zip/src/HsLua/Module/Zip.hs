@@ -23,10 +23,13 @@ module HsLua.Module.Zip (
   -- ** archive methods
   , extract
   , bytestring
-  -- * Archive entries
+  -- * Zip entry
   , typeEntry
   , peekEntryFuzzy
+  -- ** entry methods
   , contents
+  -- * Zip Options
+  , peekZipOptions
   )
 where
 
