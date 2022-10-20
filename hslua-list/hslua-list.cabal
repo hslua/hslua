@@ -30,7 +30,7 @@ source-repository head
 
 common common-options
   build-depends:       base                  >= 4.9.1  && < 5
-                     , hslua-core            >= 2.3    && < 2.4
+                     , hslua-core            >= 2.2    && < 2.3
   ghc-options:         -Wall
                        -Wcompat
                        -Widentities
