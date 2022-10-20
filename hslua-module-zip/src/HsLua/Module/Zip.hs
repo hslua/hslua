@@ -43,7 +43,7 @@ import HsLua.List (newListMetatable)
 import HsLua.Marshalling
   ( Peeker, Pusher, choice, failPeek, liftLua, peekBool
   , peekFieldRaw, peekIntegral, peekLazyByteString, peekList, peekString
-  , pushLazyByteString, pushList, pushString
+  , pushLazyByteString, pushList, pushIntegral, pushString
   , retrieving, typeMismatchMessage )
 import HsLua.Packaging
 
@@ -134,22 +134,6 @@ create = defun "create"
   `since` initialVersion
 
 -- | Creates a new 'ZipEntry' from a file; wraps 'Zip.readEntry'.
-mkEntry :: LuaError e => DocumentedFunction e
-mkEntry = defun "Entry"
-  ### (\filepath contents' mmodtime -> do
-          modtime <- maybe (floor <$> liftIO getPOSIXTime) pure mmodtime
-          pure $ Zip.toEntry filepath modtime contents')
-  <#> parameter peekString "string" "filepath" "path in archive"
-  <#> parameter peekLazyByteString "string" "content" "uncompressed content"
-  <#> opt (parameter peekIntegral "integer" "modtime" "modification time")
-  =#> udresult typeEntry "a new zip archive entry"
-  #? T.unlines
-     [ "Generates a ZipEntry from a filepath, uncompressed content, and"
-     , "the file's modification time."
-     ]
-  `since` initialVersion
-
--- | Creates a new 'ZipEntry' from a file; wraps 'Zip.readEntry'.
 read_entry :: LuaError e => DocumentedFunction e
 read_entry = defun "read_entry"
   ### (\filepath mopts -> liftIO $! Zip.readEntry (fromMaybe [] mopts) filepath)
@@ -230,8 +214,27 @@ typeEntry = deftype "ZipEntry"
   [ property "path" "relative path, using `/` as separator"
     (pushString, Zip.eRelativePath)
     (peekString, \entry path -> entry { Zip.eRelativePath = path })
+  , property "modtime" "modification time (seconds since unix epoch)"
+    (pushIntegral, Zip.eLastModified)
+    (peekIntegral, \entry modtime -> entry { Zip.eLastModified = modtime})
   , method contents
   ]
+
+-- | Creates a new 'ZipEntry' from a file; wraps 'Zip.readEntry'.
+mkEntry :: LuaError e => DocumentedFunction e
+mkEntry = defun "Entry"
+  ### (\filepath contents' mmodtime -> do
+          modtime <- maybe (floor <$> liftIO getPOSIXTime) pure mmodtime
+          pure $ Zip.toEntry filepath modtime contents')
+  <#> parameter peekString "string" "path" "file path in archive"
+  <#> parameter peekLazyByteString "string" "contents" "uncompressed contents"
+  <#> opt (parameter peekIntegral "integer" "modtime" "modification time")
+  =#> udresult typeEntry "a new zip archive entry"
+  #? T.unlines
+     [ "Generates a ZipEntry from a filepath, uncompressed content, and"
+     , "the file's modification time."
+     ]
+  `since` initialVersion
 
 -- | Returns the uncompressed contents of a zip entry.
 contents :: LuaError e => DocumentedFunction e
