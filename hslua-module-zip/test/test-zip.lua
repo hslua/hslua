@@ -18,7 +18,7 @@ local make_sample_archive = function (opts)
       local fh = io.open(filename, 'w')
       fh:write(contents)
       fh:close()
-      return zip.create{filename}
+      return zip.zip{filename}
     end)
   end)
 end
@@ -32,7 +32,7 @@ return {
     end),
   },
 
-  group 'create' {
+  group 'zip' {
     test('archive with file', function ()
       system.with_tmpdir('archive', function (tmpdir)
         system.with_wd(tmpdir, function ()
@@ -41,7 +41,7 @@ return {
           fh:write('Hi Mom!\n')
           fh:close()
           assert.are_equal(
-            type(zip.create{filename}),
+            type(zip.zip{filename}),
             'userdata'
           )
         end)
@@ -58,7 +58,7 @@ return {
           local fh = io.open(filename, 'w')
           fh:write('Bonjour!\n')
           fh:close()
-          local archive = zip.create({dirname}, {recursive=true})
+          local archive = zip.zip({dirname}, {recursive=true})
           assert.are_equal(
             archive.entries[2].path,
             filename

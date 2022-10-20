@@ -16,8 +16,8 @@ module HsLua.Module.Zip (
   -- * Zip archives
   , typeArchive
   , mkArchive
-  , create
   , read_entry
+  , zip
   -- ** archive methods
   , extract
   , bytestring
@@ -28,6 +28,7 @@ module HsLua.Module.Zip (
   )
 where
 
+import Prelude hiding (zip)
 import Control.Applicative (optional)
 import Control.Monad ((<$!>))
 import Codec.Archive.Zip (Archive, Entry, ZipOption (..), emptyArchive)
@@ -91,14 +92,14 @@ fields = []
 functions :: LuaError e => [DocumentedFunction e]
 functions =
   [ mkArchive
-  , create
   , mkEntry
   , read_entry
+  , zip
   ]
 
 -- | Creates a new 'Archive' from a list of files.
-create :: LuaError e => DocumentedFunction e
-create = defun "create"
+zip :: LuaError e => DocumentedFunction e
+zip = defun "zip"
   ### (\filepaths mopts ->
          let opts = fromMaybe [] mopts
          in liftIO $! Zip.addFilesToArchive opts emptyArchive filepaths)
