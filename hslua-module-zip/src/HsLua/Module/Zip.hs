@@ -35,6 +35,7 @@ import Data.Maybe (catMaybes, fromMaybe)
 #if !MIN_VERSION_base(4,11,0)
 import Data.Semigroup (Semigroup(..))  -- includes (<>)
 #endif
+import Data.Time.Clock.POSIX (getPOSIXTime)
 import Data.Version (Version, makeVersion)
 import HsLua.Core
   ( LuaError, Type(..), failLua, liftIO, ltype, nth, setmetatable )
@@ -135,9 +136,9 @@ create = defun "create"
 -- | Creates a new 'ZipEntry' from a file; wraps 'Zip.readEntry'.
 mkEntry :: LuaError e => DocumentedFunction e
 mkEntry = defun "Entry"
-  ### liftPure3 (\filepath contents' mmodtime ->
-                   let modtime = fromMaybe 0 mmodtime
-                   in Zip.toEntry filepath modtime contents')
+  ### (\filepath contents' mmodtime -> do
+          modtime <- maybe (floor <$> liftIO getPOSIXTime) pure mmodtime
+          pure $ Zip.toEntry filepath modtime contents')
   <#> parameter peekString "string" "filepath" "path in archive"
   <#> parameter peekLazyByteString "string" "content" "uncompressed content"
   <#> opt (parameter peekIntegral "integer" "modtime" "modification time")
