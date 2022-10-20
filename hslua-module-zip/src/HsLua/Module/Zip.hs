@@ -15,7 +15,7 @@ module HsLua.Module.Zip (
 
   -- * Zip archives
   , typeArchive
-  , toarchive
+  , mkArchive
   , create
   , read_entry
   -- ** archive methods
@@ -90,23 +90,11 @@ fields = []
 -- | Exported functions
 functions :: LuaError e => [DocumentedFunction e]
 functions =
-  [ toarchive
+  [ mkArchive
   , create
   , mkEntry
   , read_entry
   ]
-
--- | Wrapper for 'Zip.toArchive'; converts a string into an Archive.
-toarchive :: LuaError e => DocumentedFunction e
-toarchive = defun "toarchive"
-  ### (either failLua pure . Zip.toArchiveOrFail)
-  <#> parameter peekLazyByteString "string" "binary archive string" ""
-  =#> udresult typeArchive ""
-  #? T.unlines
-     [ "Reads an *Archive* structure from a raw zip archive; throws an error"
-     , "if the given string cannot be decoded into an archive."
-     ]
-  `since` initialVersion
 
 -- | Creates a new 'Archive'.
 create :: LuaError e => DocumentedFunction e
@@ -182,6 +170,17 @@ typeArchive = deftype "ZipArchive"
   , method tobytestring
   ]
 
+-- | Wrapper for 'Zip.toArchive'; converts a string into an Archive.
+mkArchive :: LuaError e => DocumentedFunction e
+mkArchive = defun "Archive"
+  ### (either failLua pure . Zip.toArchiveOrFail)
+  <#> parameter peekLazyByteString "string" "binary archive string" ""
+  =#> udresult typeArchive ""
+  #? T.unlines
+     [ "Reads an *Archive* structure from a raw zip archive; throws an error"
+     , "if the given string cannot be decoded into an archive."
+     ]
+  `since` initialVersion
 -- | Returns the raw binary string representation of the archive;
 -- wraps 'Zip.extractFilesFromArchive'
 extract :: LuaError e => DocumentedFunction e

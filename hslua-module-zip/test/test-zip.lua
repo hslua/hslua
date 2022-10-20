@@ -148,13 +148,13 @@ return {
     end),
   },
 
-  group 'toarchive' {
+  group 'Archive constructor' {
     test('empty archive', function ()
-      assert.are_equal(type(zip.toarchive(empty_archive)), 'userdata')
+      assert.are_equal(type(zip.Archive(empty_archive)), 'userdata')
     end),
     test('misformed archive', function ()
       assert.error_matches(
-        function () zip.toarchive(empty_archive:sub(2)) end,
+        function () zip.Archive(empty_archive:sub(2)) end,
         ''
       )
     end),
