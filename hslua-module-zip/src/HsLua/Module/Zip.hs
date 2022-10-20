@@ -203,8 +203,10 @@ mkArchive = defun "Archive"
 -- wraps 'Zip.extractFilesFromArchive'
 extract :: LuaError e => DocumentedFunction e
 extract = defun "extract"
-  ### (\archive -> liftIO $! Zip.extractFilesFromArchive [] archive)
+  ### (\archive mopts ->
+         liftIO $! Zip.extractFilesFromArchive (fromMaybe [] mopts) archive)
   <#> udparam typeArchive "self" ""
+  <#> opt (parameter peekZipOptions "table" "opts" "zip options")
   =#> []
   #? T.unlines
      [ "Extract all files from this archive, creating directories as needed."

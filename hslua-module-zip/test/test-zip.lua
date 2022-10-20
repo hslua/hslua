@@ -87,6 +87,23 @@ return {
             filename = filename,
             contents = 'Hi Mom!\n',
           }
+          archive:extract{destination = 'foo'}
+          assert.are_equal(system.ls()[1], 'foo')
+          assert.are_equal(
+            io.open('foo/' .. filename):read 'a',
+            'Hi Mom!\n'
+          )
+        end)
+      end)
+    end),
+    test('archive with file', function ()
+      system.with_tmpdir('archive', function (tmpdir)
+        system.with_wd(tmpdir, function ()
+          local filename = 'greetings.txt'
+          local archive = make_sample_archive{
+            filename = filename,
+            contents = 'Hi Mom!\n',
+          }
           archive:extract()
 
           assert.are_equal(system.ls()[1], filename)

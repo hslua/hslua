@@ -127,11 +127,14 @@ A zip archive with file entries.
 
 #### Methods
 
-`extract()`
+`extract([opts])`
 :   Extract all files from this archive, creating directories as
     needed. Note that the last-modified time is set correctly only
     in POSIX, not in Windows. This function fails if encrypted
     entries are present.
+
+    Use `archive:extract{destination = 'dir'}` to extract to
+    subdirectory `dir`.
 
 `bytestring()`
 :   Returns the raw binary string representation of the archive.
