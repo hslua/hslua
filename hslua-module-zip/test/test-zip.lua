@@ -18,7 +18,7 @@ local make_sample_archive = function (opts)
       local fh = io.open(filename, 'w')
       fh:write(contents)
       fh:close()
-      return zip.zip{filename}
+      return zip{filename}
     end)
   end)
 end
@@ -48,7 +48,6 @@ return {
       end)
     end),
 
-
     test('recursive', function ()
       system.with_tmpdir('archive', function (tmpdir)
         system.with_wd(tmpdir, function ()
@@ -65,6 +64,17 @@ return {
           )
         end)
       end)
+    end),
+
+    test('module metamethod', function()
+      local filename = 'greetings.txt'
+      local fh = io.open(filename, 'w')
+      fh:write('Hi Mom!\n')
+      fh:close()
+      assert.are_equal(
+        zip.zip{filename}:bytestring(),
+        zip{filename}:bytestring()
+      )
     end)
   },
 

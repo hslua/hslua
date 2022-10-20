@@ -1,6 +1,8 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications    #-}
 {-|
 Module      : HsLua.Module.Zip
 Copyright   : © 2022 Albert Krewinkel
@@ -39,7 +41,9 @@ import Data.Semigroup (Semigroup(..))  -- includes (<>)
 import Data.Time.Clock.POSIX (getPOSIXTime)
 import Data.Version (Version, makeVersion)
 import HsLua.Core
-  ( LuaError, Type(..), failLua, liftIO, ltype, nth, setmetatable )
+  ( LuaError, NumArgs (..), NumResults (..), Type(..), call, failLua
+  , fromStackIndex, getfield, gettop, replace, liftIO, ltype
+  , nth, nthBottom, setmetatable )
 import HsLua.List (newListMetatable)
 import HsLua.Marshalling
   ( Peeker, Pusher, choice, failPeek, liftLua, peekBool
@@ -59,7 +63,7 @@ import Data.Functor ((<&>))
 #endif
 
 -- | The @zip@ module specification.
-documentedModule :: LuaError e => Module e
+documentedModule :: forall e. LuaError e => Module e
 documentedModule = Module
   { moduleName = "zip"
   , moduleDescription = T.unwords
@@ -68,7 +72,17 @@ documentedModule = Module
     ]
   , moduleFields = fields
   , moduleFunctions = functions
-  , moduleOperations = []
+  , moduleOperations =
+    [ operation Call $ lambda
+      ### (do
+              -- call function `zip`
+              _ <- getfield (nthBottom 1) (functionName @e zip)
+              replace (nthBottom 1)
+              nargs <- NumArgs . subtract 1 . fromStackIndex <$> gettop
+              call nargs 1
+              pure (NumResults 1))
+      =?> "new Archive"
+    ]
   }
 
 -- | First published version of this library.
