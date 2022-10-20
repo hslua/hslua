@@ -26,11 +26,13 @@ end
 local empty_archive = '\80\75\5\6\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0'
 -- Check existence static fields
 return {
-  group 'create' {
+  group 'Archive' {
     test('empty archive', function ()
-      assert.are_equal(type(zip.create()), 'userdata')
+      assert.are_equal(type(zip.Archive()), 'userdata')
     end),
+  },
 
+  group 'create' {
     test('archive with file', function ()
       system.with_tmpdir('archive', function (tmpdir)
         system.with_wd(tmpdir, function ()
@@ -89,7 +91,7 @@ return {
 
   group 'entries' {
     test('empty archive', function ()
-      assert.are_equal(#zip.create().entries, 0)
+      assert.are_equal(#zip.Archive().entries, 0)
     end),
 
     test('archive with file', function ()
@@ -144,7 +146,7 @@ return {
 
   group 'tobytestring' {
     test('empty archive', function ()
-      assert.are_equal(zip.create():tobytestring(), empty_archive)
+      assert.are_equal(zip.Archive():tobytestring(), empty_archive)
     end),
   },
 

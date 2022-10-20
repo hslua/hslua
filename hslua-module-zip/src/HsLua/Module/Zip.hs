@@ -96,21 +96,14 @@ functions =
   , read_entry
   ]
 
--- | Creates a new 'Archive'.
+-- | Creates a new 'Archive' from a list of files.
 create :: LuaError e => DocumentedFunction e
 create = defun "create"
-  ### (\fpsOrEntries mopts ->
+  ### (\filepaths mopts ->
          let opts = fromMaybe [] mopts
-         in case fpsOrEntries of
-              Nothing ->
-                return Zip.emptyArchive
-              Just (Left filepaths) ->
-                liftIO $! Zip.addFilesToArchive opts emptyArchive filepaths
-              Just (Right entries)  ->
-                return $! foldr Zip.addEntryToArchive emptyArchive entries)
-  <#> opt (parameter (choice [ fmap Left  . peekList peekString
-                             , fmap Right . peekList peekEntryFuzzy])
-           "{string,...}|{ZipEntry,...}" "entries_or_filepaths" "")
+         in liftIO $! Zip.addFilesToArchive opts emptyArchive filepaths)
+  <#> parameter (peekList peekString) "{string,...}"
+       "filepaths" "list of files from which the archive is created."
   <#> opt (parameter peekZipOptions "table" "opts" "zip options")
   =#> udresult typeArchive "a new archive"
   #? T.unlines
@@ -173,14 +166,25 @@ typeArchive = deftype "ZipArchive"
 -- | Wrapper for 'Zip.toArchive'; converts a string into an Archive.
 mkArchive :: LuaError e => DocumentedFunction e
 mkArchive = defun "Archive"
-  ### (either failLua pure . Zip.toArchiveOrFail)
-  <#> parameter peekLazyByteString "string" "binary archive string" ""
-  =#> udresult typeArchive ""
+  ### (\case
+          Nothing                ->
+            pure Zip.emptyArchive
+          Just (Left bytestring) ->
+            either failLua pure $ Zip.toArchiveOrFail bytestring
+          Just (Right entries)   ->
+            pure $ foldr Zip.addEntryToArchive emptyArchive entries)
+  <#> opt (parameter (choice [ fmap Left  . peekLazyByteString
+                             , fmap Right . peekList peekEntryFuzzy ])
+           "string|{ZipEntry,...}" "contents"
+           "binary archive data or list of entries")
+  =#> udresult typeArchive "new Archive"
   #? T.unlines
-     [ "Reads an *Archive* structure from a raw zip archive; throws an error"
-     , "if the given string cannot be decoded into an archive."
+     [ "Reads an *Archive* structure from a raw zip archive or a list of"
+     , "Entry items; throws an error if the given string cannot be decoded"
+     , "into an archive."
      ]
   `since` initialVersion
+
 -- | Returns the raw binary string representation of the archive;
 -- wraps 'Zip.extractFilesFromArchive'
 extract :: LuaError e => DocumentedFunction e
