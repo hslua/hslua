@@ -144,9 +144,9 @@ return {
     end)
   },
 
-  group 'tobytestring' {
+  group 'bytestring' {
     test('empty archive', function ()
-      assert.are_equal(zip.Archive():tobytestring(), empty_archive)
+      assert.are_equal(zip.Archive():bytestring(), empty_archive)
     end),
   },
 
