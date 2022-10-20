@@ -125,11 +125,7 @@ zip = defun "zip"
   <#> opt (parameter peekZipOptions "table" "opts" "zip options")
   =#> udresult typeArchive "a new archive"
   #? T.unlines
-     [ "Creates a new archive. If a list of ZipEntry objects is given, then a"
-     , "new archive with just these entries is created. For a list of file"
-     , "paths, this function reads these files and adds them to the"
-     , "repository."
-     ]
+     [ "Package and compress the given files into a new Archive." ]
   `since` initialVersion
 
 -- | Creates a new 'ZipEntry' from a file; wraps 'Zip.readEntry'.
@@ -137,7 +133,7 @@ read_entry :: LuaError e => DocumentedFunction e
 read_entry = defun "read_entry"
   ### (\filepath mopts -> liftIO $! Zip.readEntry (fromMaybe [] mopts) filepath)
   <#> parameter peekString "string" "filepath" ""
-  <#> opt (parameter peekZipOptions "table" "opts" "zipping options")
+  <#> opt (parameter peekZipOptions "table" "opts" "zip options")
   =#> udresult typeEntry "a new zip archive entry"
   #? T.unlines
      [ "Generates a ZipEntry from a file or directory."
