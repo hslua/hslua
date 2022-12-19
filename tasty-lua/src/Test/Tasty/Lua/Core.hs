@@ -17,10 +17,10 @@ module Test.Tasty.Lua.Core
 where
 
 import Control.Monad ((<$!>), void)
-import HsLua.Core (LuaE, LuaError, toboolean, top)
+import HsLua.Core (LuaE, LuaError, pop, toboolean, top)
 import HsLua.Marshalling
-  ( Peeker, failPeek, liftLua, resultToEither, retrieving
-  , peekFieldRaw, peekList, peekString, runPeek, typeMismatchMessage)
+  ( Peeker, lastly, liftLua, resultToEither, retrieving
+  , peekFieldRaw, peekList, peekString, runPeek)
 import Test.Tasty.Lua.Module (pushModule)
 import qualified HsLua.Core as Lua
 import qualified HsLua.Core.Utf8 as Utf8
@@ -64,11 +64,12 @@ peekUnnamedTree idx = liftLua (Lua.ltype idx) >>= \case
 data Outcome = Success | Failure String
 
 -- | Unmarshal a test outcome
-peekOutcome :: Peeker e Outcome
+peekOutcome :: LuaError e => Peeker e Outcome
 peekOutcome idx = retrieving "test result" $ do
   liftLua (Lua.ltype idx) >>= \case
     Lua.TypeString  -> Failure <$!> peekString idx
     Lua.TypeBoolean -> do
       b <- liftLua $ toboolean idx
       return $ if b then Success else Failure "???"
-    _ -> typeMismatchMessage "string or boolean" idx >>= failPeek
+    _ -> Failure <$!>
+         (liftLua (Lua.tostring' idx) *> peekString top) `lastly` pop 1

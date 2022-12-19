@@ -6,6 +6,9 @@
 
 Released 2023-03-13.
 
+-   Fixed `peekOutcome`, allowing any result type. This gives much
+    better results when working with custom error objects.
+
 ## tasty-lua-1.0.2
 
 Released 2022-02-19.
