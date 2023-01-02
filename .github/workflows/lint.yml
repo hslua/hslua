@@ -29,6 +29,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: HLint
-        uses: tfausak/hlint-action@v1
+        uses: actions/checkout@v3
+
+      - name: Set up HLint
+        uses: haskell/actions/hlint-setup@v2
+
+      - name: Run HLint
+        uses: haskell/actions/hlint-run@v2
+        with:
+          path: '.'
+          fail-on: warning
