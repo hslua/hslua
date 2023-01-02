@@ -74,5 +74,32 @@ return {
       assert.are_equal(text.sub('☢ radioactive', 0, 1), '☢')
       assert.are_equal(text.sub('☢ radioactive', -11, -1), 'radioactive')
     end)
+  },
+
+  group 'toencoding' {
+    test('encode as UTF-16, big endian', function ()
+      local encoded = text.toencoding('Straße', 'utf16be')
+      assert.are_equal(encoded, '\0S\0t\0r\0a\0\xdf\0e')
+    end),
+    test('encode as UTF-16, little endian', function ()
+      local encoded = text.toencoding('Straße', 'utf16le')
+      assert.are_equal(encoded, 'S\0t\0r\0a\0\xdf\0e\0')
+    end),
+    test('encode as UTF-32, little endian', function ()
+      local encoded = text.toencoding('Straße', 'UTF-32LE')
+      assert.are_equal(encoded, 'S\0\0\0t\0\0\0r\0\0\0a\0\0\0\xdf\0\0\0e\0\0\0')
+    end),
+    test('throws error for unknown encoding', function ()
+      assert.error_matches(
+        function () text.toencoding('a', 'utf9') end,
+        "unknown encoding"
+      )
+    end),
+    test('throws error if input cannot be encoded', function ()
+      assert.error_matches(
+        function () text.toencoding('😊', 'latin1') end,
+        "invalid character"
+      )
+    end),
   }
 }

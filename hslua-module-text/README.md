@@ -15,7 +15,7 @@ hslua-module-text
 
 An UTF-8 aware subset of Lua's `string` module. The functions
 provided by this module are `upper`, `lower`, `len`, `reverse`,
-and `sub`.
+`sub`, and `toencoding`.
 
 Intended usage for this package is to preload it by adding the
 loader function to `package.preload`. Note that the Lua `package`

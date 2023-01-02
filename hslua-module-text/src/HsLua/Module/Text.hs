@@ -1,12 +1,13 @@
+{-# LANGUAGE CPP               #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeApplications  #-}
 {-|
 Module      : HsLua.Module.Text
 Copyright   : © 2017–2021 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : alpha
-Portability : ForeignFunctionInterface
+Portability : GHC only
 
 Provides a Lua module containing a selection of useful Text functions.
 -}
@@ -18,17 +19,24 @@ module HsLua.Module.Text
   , lower
   , reverse
   , sub
+  , toencoding
   , upper
   ) where
 
 import Prelude hiding (reverse)
 import Data.Text (Text)
 import Data.Maybe (fromMaybe)
+import HsLua.Core (LuaError)
 import HsLua.Packaging
+import Lua (lua_pushlstring)
+import System.IO.Error (tryIOError)
 import qualified Data.Text as T
+import qualified GHC.Foreign as GHC
+import qualified GHC.IO.Encoding as GHC
+import qualified HsLua.Core as Lua
 
 -- | The @text@ module.
-documentedModule :: Module e
+documentedModule :: LuaError e => Module e
 documentedModule = Module
   { moduleName = "text"
   , moduleOperations = []
@@ -38,6 +46,7 @@ documentedModule = Module
     , lower
     , reverse
     , sub
+    , toencoding
     , upper
     ]
   , moduleDescription =
@@ -89,6 +98,33 @@ sub = defun "sub"
           fromEnd   = if j <  0 then -j - 1 else T.length s - j
       in T.dropEnd fromEnd . T.drop fromStart $ s
 
+-- | Converts a UTF-8 string to a different encoding.
+toencoding :: LuaError e => DocumentedFunction e
+toencoding = defun "toencoding"
+  ### (\s menc -> do
+          l <- Lua.state
+          result <- Lua.liftIO . tryIOError $ do
+            encoding <- maybe getFileSystemEncoding GHC.mkTextEncoding menc
+            GHC.withCStringLen encoding (T.unpack s) $ \(sPtr, sLen) ->
+              lua_pushlstring l sPtr (fromIntegral sLen)
+          case result of
+            Right () -> pure ()
+            Left err -> Lua.failLua (show err))
+  <#> textParam "s" "UTF-8 string"
+  <#> opt (stringParam "enc" "target encoding")
+  =#> functionResult (const (pure ())) "string" "re-encoded string"
+  #? T.unlines
+     [ "Converts a UTF-8 string to a different encoding. On Windows, the"
+     , "`encoding` parameter defaults to the current ANSI code page; on"
+     , "other platforms the function will try to use the file system's"
+     , "encoding."
+     , ""
+     , "The set of known encodings is system dependent, but includes at"
+     , "least `UTF-8`, `UTF-16BE`, `UTF-16LE`, `UTF-32BE`, and `UTF-32LE`."
+     , "Note that the prefix `CP` allows to access code page on Windows,"
+     , "e.g. `CP0` (the current ANSI code page) or `CP1250`."
+     ]
+
 -- | Wrapper for @'T.toUpper'@.
 upper :: DocumentedFunction e
 upper = defun "upper"
@@ -106,3 +142,14 @@ textIndex :: Text -- ^ parameter name
           -> Text -- ^ parameter description
           -> Parameter e Int
 textIndex = integralParam @Int
+
+--
+-- Helpers
+--
+getFileSystemEncoding :: IO GHC.TextEncoding
+getFileSystemEncoding =
+#if defined(mingw32_HOST_OS)
+  GHC.mkTextEncoding "CP0"  -- a.k.a CP_ACP
+#else
+  GHC.getFileSystemEncoding
+#endif

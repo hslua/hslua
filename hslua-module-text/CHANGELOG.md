@@ -2,6 +2,14 @@
 
 `hslua-module-text` uses [PVP Versioning][].
 
+## hslua-module-text-1.0.3
+
+Release pending.
+
+-   Added new function `toencoding`. This can be used to convert a
+    UTF-8 encoded string to a different encoding. Most notably, it
+    allows to use the systems default code page (`CP0`) on Windows.
+
 ## hslua-module-text-1.0.2
 
 Released 2022-02-19.
