@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : HsLua.Module.Path
@@ -33,9 +32,6 @@ module HsLua.Module.Path (
   )
 where
 
-#if !MIN_VERSION_base(4,11,0)
-import Data.Semigroup (Semigroup(..))  -- includes (<>)
-#endif
 import Data.Text (Text)
 import Data.Version (Version, makeVersion)
 import HsLua.Core

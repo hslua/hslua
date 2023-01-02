@@ -37,10 +37,8 @@ import Prelude hiding (zip)
 import Control.Applicative (optional)
 import Control.Monad ((<$!>))
 import Codec.Archive.Zip (Archive, Entry, ZipOption (..), emptyArchive)
+import Data.Functor ((<&>))
 import Data.Maybe (catMaybes, fromMaybe)
-#if !MIN_VERSION_base(4,11,0)
-import Data.Semigroup (Semigroup(..))  -- includes (<>)
-#endif
 import Data.Time.Clock.POSIX (getPOSIXTime)
 import Data.Version (Version, makeVersion)
 import HsLua.Core
@@ -58,12 +56,6 @@ import HsLua.Packaging
 import qualified Codec.Archive.Zip as Zip
 import qualified Data.Text as T
 
-#if MIN_VERSION_base(4,11,0)
-import Data.Functor ((<&>))
-#else
-(<&>) :: Functor f => f a -> (a -> b) -> f b
-(<&>) = flip fmap
-#endif
 
 -- | The @zip@ module specification.
 documentedModule :: forall e. LuaError e => Module e

@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-|
@@ -26,10 +25,6 @@ import HsLua.Packaging.Types
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified HsLua.Core.Utf8 as Utf8
-
-#if !MIN_VERSION_base(4,12,0)
-import Data.Semigroup (Semigroup ((<>)))
-#endif
 
 --
 -- Module documentation

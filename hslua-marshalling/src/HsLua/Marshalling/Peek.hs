@@ -40,9 +40,6 @@ import HsLua.Core as Lua
 #if !MIN_VERSION_base(4,13,0)
 import Control.Monad.Fail (MonadFail (..))
 #endif
-#if !MIN_VERSION_base(4,12,0)
-import Data.Semigroup (Semigroup ((<>)))
-#endif
 import qualified HsLua.Core.Utf8 as Utf8
 
 -- | Record to keep track of failure contexts while retrieving objects

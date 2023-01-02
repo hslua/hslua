@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP                 #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -41,9 +40,6 @@ module HsLua.ObjectOrientation
 import Control.Monad ((<$!>), forM_, void, when)
 import Data.Maybe (mapMaybe)
 import Data.Map (Map)
-#if !MIN_VERSION_base(4,12,0)
-import Data.Semigroup (Semigroup ((<>)))
-#endif
 import Data.String (IsString (..))
 import Data.Text (Text)
 import Data.Void (Void)

@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-|
@@ -26,9 +25,6 @@ import Data.Maybe (fromMaybe)
 import Data.Version
   ( Version, makeVersion, parseVersion, showVersion, versionBranch )
 import Data.List.NonEmpty as NonEmpty (last, nonEmpty)
-#if !MIN_VERSION_base(4,12,0)
-import Data.Semigroup (Semigroup ((<>)))
-#endif
 import Data.Text (Text)
 import HsLua.Core
   ( LuaError, Type (..) , call, dostring, error, ltype )

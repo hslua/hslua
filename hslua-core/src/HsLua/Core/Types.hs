@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-|
 Module      : HsLua.Core.Types
@@ -81,9 +80,6 @@ import Lua.Auxiliary
   , toReference
   )
 import qualified HsLua.Core.Utf8 as Utf8
-#if !MIN_VERSION_base(4,12,0)
-import Data.Semigroup (Semigroup)
-#endif
 
 -- | Environment in which Lua computations are evaluated.
 newtype LuaEnvironment = LuaEnvironment

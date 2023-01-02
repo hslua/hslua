@@ -1,5 +1,4 @@
 {-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-|
@@ -62,10 +61,6 @@ import HsLua.Packaging.Documentation
 import HsLua.Packaging.Types
 import qualified HsLua.Core as Lua
 import qualified HsLua.Core.Utf8 as Utf8
-
-#if !MIN_VERSION_base(4,12,0)
-import Data.Semigroup (Semigroup ((<>)))
-#endif
 
 --
 -- Haskell function building

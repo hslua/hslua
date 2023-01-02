@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      :  HsLua.Class.UtilTests
@@ -21,10 +20,6 @@ import HsLua.Core as Lua
 import Test.Tasty.HsLua ( (?:), (=:), pushLuaExpr, shouldBeResultOf
                        , shouldBeErrorMessageOf, shouldHoldForResultOf)
 import Test.Tasty (TestTree, testGroup)
-
-#if !MIN_VERSION_base(4,12,0)
-import Data.Semigroup (Semigroup ((<>)))
-#endif
 
 -- | Specifications for Attributes parsing functions.
 tests :: TestTree
