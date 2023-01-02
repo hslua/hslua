@@ -18,7 +18,7 @@ local make_sample_archive = function (opts)
       local fh = io.open(filename, 'w')
       fh:write(contents)
       fh:close()
-      return zip.create{filename}
+      return zip{filename}
     end)
   end)
 end
@@ -26,11 +26,13 @@ end
 local empty_archive = '\80\75\5\6\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0'
 -- Check existence static fields
 return {
-  group 'create' {
+  group 'Archive' {
     test('empty archive', function ()
-      assert.are_equal(type(zip.create()), 'userdata')
+      assert.are_equal(type(zip.Archive()), 'userdata')
     end),
+  },
 
+  group 'zip' {
     test('archive with file', function ()
       system.with_tmpdir('archive', function (tmpdir)
         system.with_wd(tmpdir, function ()
@@ -39,13 +41,12 @@ return {
           fh:write('Hi Mom!\n')
           fh:close()
           assert.are_equal(
-            type(zip.create{filename}),
+            type(zip.zip{filename}),
             'userdata'
           )
         end)
       end)
     end),
-
 
     test('recursive', function ()
       system.with_tmpdir('archive', function (tmpdir)
@@ -56,13 +57,24 @@ return {
           local fh = io.open(filename, 'w')
           fh:write('Bonjour!\n')
           fh:close()
-          local archive = zip.create({dirname}, {recursive=true})
+          local archive = zip.zip({dirname}, {recursive=true})
           assert.are_equal(
             archive.entries[2].path,
             filename
           )
         end)
       end)
+    end),
+
+    test('module metamethod', function()
+      local filename = 'greetings.txt'
+      local fh = io.open(filename, 'w')
+      fh:write('Hi Mom!\n')
+      fh:close()
+      assert.are_equal(
+        zip.zip{filename}:bytestring(),
+        zip{filename}:bytestring()
+      )
     end)
   },
 
@@ -84,12 +96,29 @@ return {
           )
         end)
       end)
-    end)
+    end),
+    test('to destination directory', function ()
+      system.with_tmpdir('archive', function (tmpdir)
+        system.with_wd(tmpdir, function ()
+          local filename = 'greetings.txt'
+          local archive = make_sample_archive{
+            filename = filename,
+            contents = 'Hi Mom!\n',
+          }
+          archive:extract{destination = 'foo'}
+          assert.are_equal(system.ls()[1], 'foo')
+          assert.are_equal(
+            io.open('foo/' .. filename):read 'a',
+            'Hi Mom!\n'
+          )
+        end)
+      end)
+    end),
   },
 
   group 'entries' {
     test('empty archive', function ()
-      assert.are_equal(#zip.create().entries, 0)
+      assert.are_equal(#zip.Archive().entries, 0)
     end),
 
     test('archive with file', function ()
@@ -142,19 +171,19 @@ return {
     end)
   },
 
-  group 'tobytestring' {
+  group 'bytestring' {
     test('empty archive', function ()
-      assert.are_equal(zip.create():tobytestring(), empty_archive)
+      assert.are_equal(zip.Archive():bytestring(), empty_archive)
     end),
   },
 
-  group 'toarchive' {
+  group 'Archive constructor' {
     test('empty archive', function ()
-      assert.are_equal(type(zip.toarchive(empty_archive)), 'userdata')
+      assert.are_equal(type(zip.Archive(empty_archive)), 'userdata')
     end),
     test('misformed archive', function ()
       assert.error_matches(
-        function () zip.toarchive(empty_archive:sub(2)) end,
+        function () zip.Archive(empty_archive:sub(2)) end,
         ''
       )
     end),

@@ -1,6 +1,8 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications    #-}
 {-|
 Module      : HsLua.Module.Zip
 Copyright   : © 2022 Albert Krewinkel
@@ -15,19 +17,23 @@ module HsLua.Module.Zip (
 
   -- * Zip archives
   , typeArchive
-  , toarchive
-  , create
+  , mkArchive
   , read_entry
+  , zip
   -- ** archive methods
   , extract
-  , tobytestring
-  -- * Archive entries
+  , bytestring
+  -- * Zip entry
   , typeEntry
   , peekEntryFuzzy
+  -- ** entry methods
   , contents
+  -- * Zip Options
+  , peekZipOptions
   )
 where
 
+import Prelude hiding (zip)
 import Control.Applicative (optional)
 import Control.Monad ((<$!>))
 import Codec.Archive.Zip (Archive, Entry, ZipOption (..), emptyArchive)
@@ -35,14 +41,17 @@ import Data.Maybe (catMaybes, fromMaybe)
 #if !MIN_VERSION_base(4,11,0)
 import Data.Semigroup (Semigroup(..))  -- includes (<>)
 #endif
+import Data.Time.Clock.POSIX (getPOSIXTime)
 import Data.Version (Version, makeVersion)
 import HsLua.Core
-  ( LuaError, Type(..), failLua, liftIO, ltype, nth, setmetatable )
+  ( LuaError, NumArgs (..), NumResults (..), Type(..), call, failLua
+  , fromStackIndex, getfield, gettop, replace, liftIO, ltype
+  , nth, nthBottom, setmetatable )
 import HsLua.List (newListMetatable)
 import HsLua.Marshalling
   ( Peeker, Pusher, choice, failPeek, liftLua, peekBool
   , peekFieldRaw, peekIntegral, peekLazyByteString, peekList, peekString
-  , pushLazyByteString, pushList, pushString
+  , pushLazyByteString, pushList, pushIntegral, pushString
   , retrieving, typeMismatchMessage )
 import HsLua.Packaging
 
@@ -57,7 +66,7 @@ import Data.Functor ((<&>))
 #endif
 
 -- | The @zip@ module specification.
-documentedModule :: LuaError e => Module e
+documentedModule :: forall e. LuaError e => Module e
 documentedModule = Module
   { moduleName = "zip"
   , moduleDescription = T.unwords
@@ -66,7 +75,17 @@ documentedModule = Module
     ]
   , moduleFields = fields
   , moduleFunctions = functions
-  , moduleOperations = []
+  , moduleOperations =
+    [ operation Call $ lambda
+      ### (do
+              -- call function `zip`
+              _ <- getfield (nthBottom 1) (functionName @e zip)
+              replace (nthBottom 1)
+              nargs <- NumArgs . subtract 1 . fromStackIndex <$> gettop
+              call nargs 1
+              pure (NumResults 1))
+      =?> "new Archive"
+    ]
   }
 
 -- | First published version of this library.
@@ -89,63 +108,24 @@ fields = []
 -- | Exported functions
 functions :: LuaError e => [DocumentedFunction e]
 functions =
-  [ toarchive
-  , create
+  [ mkArchive
   , mkEntry
   , read_entry
+  , zip
   ]
 
--- | Wrapper for 'Zip.toArchive'; converts a string into an Archive.
-toarchive :: LuaError e => DocumentedFunction e
-toarchive = defun "toarchive"
-  ### (either failLua pure . Zip.toArchiveOrFail)
-  <#> parameter peekLazyByteString "string" "binary archive string" ""
-  =#> udresult typeArchive ""
-  #? T.unlines
-     [ "Reads an *Archive* structure from a raw zip archive; throws an error"
-     , "if the given string cannot be decoded into an archive."
-     ]
-  `since` initialVersion
-
--- | Creates a new 'Archive'.
-create :: LuaError e => DocumentedFunction e
-create = defun "create"
-  ### (\fpsOrEntries mopts ->
+-- | Creates a new 'Archive' from a list of files.
+zip :: LuaError e => DocumentedFunction e
+zip = defun "zip"
+  ### (\filepaths mopts ->
          let opts = fromMaybe [] mopts
-         in case fpsOrEntries of
-              Nothing ->
-                return Zip.emptyArchive
-              Just (Left filepaths) ->
-                liftIO $! Zip.addFilesToArchive opts emptyArchive filepaths
-              Just (Right entries)  ->
-                return $! foldr Zip.addEntryToArchive emptyArchive entries)
-  <#> opt (parameter (choice [ fmap Left  . peekList peekString
-                             , fmap Right . peekList peekEntryFuzzy])
-           "{string,...}|{ZipEntry,...}" "entries_or_filepaths" "")
+         in liftIO $! Zip.addFilesToArchive opts emptyArchive filepaths)
+  <#> parameter (peekList peekString) "{string,...}"
+       "filepaths" "list of files from which the archive is created."
   <#> opt (parameter peekZipOptions "table" "opts" "zip options")
   =#> udresult typeArchive "a new archive"
   #? T.unlines
-     [ "Creates a new archive. If a list of ZipEntry objects is given, then a"
-     , "new archive with just these entries is created. For a list of file"
-     , "paths, this function reads these files and adds them to the"
-     , "repository."
-     ]
-  `since` initialVersion
-
--- | Creates a new 'ZipEntry' from a file; wraps 'Zip.readEntry'.
-mkEntry :: LuaError e => DocumentedFunction e
-mkEntry = defun "Entry"
-  ### liftPure3 (\filepath contents' mmodtime ->
-                   let modtime = fromMaybe 0 mmodtime
-                   in Zip.toEntry filepath modtime contents')
-  <#> parameter peekString "string" "filepath" "path in archive"
-  <#> parameter peekLazyByteString "string" "content" "uncompressed content"
-  <#> opt (parameter peekIntegral "integer" "modtime" "modification time")
-  =#> udresult typeEntry "a new zip archive entry"
-  #? T.unlines
-     [ "Generates a ZipEntry from a filepath, uncompressed content, and"
-     , "the file's modification time."
-     ]
+     [ "Package and compress the given files into a new Archive." ]
   `since` initialVersion
 
 -- | Creates a new 'ZipEntry' from a file; wraps 'Zip.readEntry'.
@@ -153,7 +133,7 @@ read_entry :: LuaError e => DocumentedFunction e
 read_entry = defun "read_entry"
   ### (\filepath mopts -> liftIO $! Zip.readEntry (fromMaybe [] mopts) filepath)
   <#> parameter peekString "string" "filepath" ""
-  <#> opt (parameter peekZipOptions "table" "opts" "zipping options")
+  <#> opt (parameter peekZipOptions "table" "opts" "zip options")
   =#> udresult typeEntry "a new zip archive entry"
   #? T.unlines
      [ "Generates a ZipEntry from a file or directory."
@@ -194,15 +174,39 @@ typeArchive = deftype "ZipArchive"
     (pushEntries, Zip.zEntries)
     (peekList peekEntryFuzzy, \ar entries -> ar { Zip.zEntries = entries })
   , method extract
-  , method tobytestring
+  , method bytestring
   ]
+
+-- | Wrapper for 'Zip.toArchive'; converts a string into an Archive.
+mkArchive :: LuaError e => DocumentedFunction e
+mkArchive = defun "Archive"
+  ### (\case
+          Nothing                ->
+            pure Zip.emptyArchive
+          Just (Left bytestring') ->
+            either failLua pure $ Zip.toArchiveOrFail bytestring'
+          Just (Right entries)   ->
+            pure $ foldr Zip.addEntryToArchive emptyArchive entries)
+  <#> opt (parameter (choice [ fmap Left  . peekLazyByteString
+                             , fmap Right . peekList peekEntryFuzzy ])
+           "string|{ZipEntry,...}" "contents"
+           "binary archive data or list of entries")
+  =#> udresult typeArchive "new Archive"
+  #? T.unlines
+     [ "Reads an *Archive* structure from a raw zip archive or a list of"
+     , "Entry items; throws an error if the given string cannot be decoded"
+     , "into an archive."
+     ]
+  `since` initialVersion
 
 -- | Returns the raw binary string representation of the archive;
 -- wraps 'Zip.extractFilesFromArchive'
 extract :: LuaError e => DocumentedFunction e
 extract = defun "extract"
-  ### (\archive -> liftIO $! Zip.extractFilesFromArchive [] archive)
+  ### (\archive mopts ->
+         liftIO $! Zip.extractFilesFromArchive (fromMaybe [] mopts) archive)
   <#> udparam typeArchive "self" ""
+  <#> opt (parameter peekZipOptions "table" "opts" "zip options")
   =#> []
   #? T.unlines
      [ "Extract all files from this archive, creating directories as needed."
@@ -211,8 +215,8 @@ extract = defun "extract"
      ]
 
 -- | Returns the raw binary string representation of the archive.
-tobytestring :: LuaError e => DocumentedFunction e
-tobytestring = defun "tobytestring"
+bytestring :: LuaError e => DocumentedFunction e
+bytestring = defun "bytestring"
   ### liftPure Zip.fromArchive
   <#> udparam typeArchive "self" ""
   =#> functionResult pushLazyByteString "string" "bytes of the archive"
@@ -229,8 +233,27 @@ typeEntry = deftype "ZipEntry"
   [ property "path" "relative path, using `/` as separator"
     (pushString, Zip.eRelativePath)
     (peekString, \entry path -> entry { Zip.eRelativePath = path })
+  , property "modtime" "modification time (seconds since unix epoch)"
+    (pushIntegral, Zip.eLastModified)
+    (peekIntegral, \entry modtime -> entry { Zip.eLastModified = modtime})
   , method contents
   ]
+
+-- | Creates a new 'ZipEntry' from a file; wraps 'Zip.readEntry'.
+mkEntry :: LuaError e => DocumentedFunction e
+mkEntry = defun "Entry"
+  ### (\filepath contents' mmodtime -> do
+          modtime <- maybe (floor <$> liftIO getPOSIXTime) pure mmodtime
+          pure $ Zip.toEntry filepath modtime contents')
+  <#> parameter peekString "string" "path" "file path in archive"
+  <#> parameter peekLazyByteString "string" "contents" "uncompressed contents"
+  <#> opt (parameter peekIntegral "integer" "modtime" "modification time")
+  =#> udresult typeEntry "a new zip archive entry"
+  #? T.unlines
+     [ "Generates a ZipEntry from a filepath, uncompressed content, and"
+     , "the file's modification time."
+     ]
+  `since` initialVersion
 
 -- | Returns the uncompressed contents of a zip entry.
 contents :: LuaError e => DocumentedFunction e

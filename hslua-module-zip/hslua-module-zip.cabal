@@ -39,6 +39,7 @@ common common-options
                      , hslua-marshalling >= 2.1    && < 2.3
                      , hslua-packaging   >= 2.1    && < 2.3
                      , text              >= 1.2    && < 2.1
+                     , time              >= 1.5    && < 1.14
                      , zip-archive       >= 0.4    && < 0.5
 
   ghc-options:         -Wall
