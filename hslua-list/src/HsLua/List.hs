@@ -1,5 +1,4 @@
 {-# LANGUAGE LambdaCase           #-}
-{-# LANGUAGE OverloadedStrings    #-}
 {- |
 Copyright  : © 2021-2022 Albert Krewinkel
 License    : MIT
