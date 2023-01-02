@@ -33,21 +33,11 @@ jobs:
     strategy:
       matrix:
         versions:
-          - ghc: '8.0.2'
-            cabal: '2.4'
-            lua: 'bundled'
-            flags: '+apicheck'
-            aeson: '< 2'
-          - ghc: '8.2.2'
-            cabal: '2.4'
-            lua: '5.4.4'
-            flags: '+system-lua'
-            aeson: '>= 2'
           - ghc: '8.4.4'
             cabal: '2.4'
             lua: 'bundled'
             flags: '-export-dynamic'
-            aeson: '>= 2'
+            aeson: '< 2'
           - ghc: '8.6.5'
             cabal: '3.2'
             lua: 'bundled'

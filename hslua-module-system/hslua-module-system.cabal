@@ -19,9 +19,7 @@ copyright:           © 2019-2022 Albert Krewinkel <albert+hslua@zeitkraut.de>
 category:            Foreign
 extra-source-files:  CHANGELOG.md
                    , test/test-system.lua
-tested-with:         GHC == 8.0.2
-                   , GHC == 8.2.2
-                   , GHC == 8.4.4
+tested-with:         GHC == 8.4.4
                    , GHC == 8.6.5
                    , GHC == 8.8.3
                    , GHC == 8.10.7
