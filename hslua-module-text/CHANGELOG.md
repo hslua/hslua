@@ -4,7 +4,7 @@
 
 ## hslua-module-text-1.0.3
 
-Release pending.
+Released 2023-01-03.
 
 -   Added new functions `fromencoding` and `toencoding`. These can
     be used to convert from or to a different (non UTF-8)
