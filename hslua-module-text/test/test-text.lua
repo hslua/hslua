@@ -76,6 +76,32 @@ return {
     end)
   },
 
+  group 'fromencoding' {
+    test('decode UTF-16, big endian', function ()
+      local utf16be = '\0S\0t\0r\0a\0\xdf\0e'
+      local decoded = text.fromencoding(utf16be, 'utf16be')
+      assert.are_equal(decoded, "Straße")
+    end),
+    test('throws error for unknown encoding', function ()
+      assert.error_matches(
+        function () text.toencoding('a', 'utf9') end,
+        "unknown encoding"
+      )
+    end),
+    test('throws error if input cannot be decoded', function ()
+      assert.error_matches(
+        function () text.fromencoding('\xff\xff\xff\ff', 'utf16le') end,
+        "invalid byte sequence"
+      )
+    end),
+    test('throws error if input is not a string', function ()
+      assert.error_matches(
+        function () text.fromencoding({}, 'utf16le') end,
+        "string expected, got table"
+      )
+    end),
+  },
+
   group 'toencoding' {
     test('encode as UTF-16, big endian', function ()
       local encoded = text.toencoding('Straße', 'utf16be')

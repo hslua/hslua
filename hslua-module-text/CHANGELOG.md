@@ -6,9 +6,11 @@
 
 Release pending.
 
--   Added new function `toencoding`. This can be used to convert a
-    UTF-8 encoded string to a different encoding. Most notably, it
-    allows to use the systems default code page (`CP0`) on Windows.
+-   Added new functions `fromencoding` and `toencoding`. These can
+    be used to convert from or to a different (non UTF-8)
+    encoding. This is particularly helpful when opening files on
+    system that don't use UTF-8 for their file system, most
+    notably Windows.
 
 ## hslua-module-text-1.0.2
 

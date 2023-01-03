@@ -15,6 +15,7 @@ module HsLua.Module.Text
   ( -- * Module
     documentedModule
     -- ** Functions
+  , fromencoding
   , len
   , lower
   , reverse
@@ -26,14 +27,17 @@ module HsLua.Module.Text
 import Prelude hiding (reverse)
 import Data.Text (Text)
 import Data.Maybe (fromMaybe)
+import Foreign.Marshal.Alloc (alloca)
 import HsLua.Core (LuaError)
 import HsLua.Packaging
-import Lua (lua_pushlstring)
+import Lua (lua_pushlstring, lua_tolstring)
 import System.IO.Error (tryIOError)
 import qualified Data.Text as T
+import qualified Foreign.Storable as F
 import qualified GHC.Foreign as GHC
 import qualified GHC.IO.Encoding as GHC
 import qualified HsLua.Core as Lua
+import qualified HsLua.Marshalling as Lua
 
 -- | The @text@ module.
 documentedModule :: LuaError e => Module e
@@ -42,7 +46,8 @@ documentedModule = Module
   , moduleOperations = []
   , moduleFields = []
   , moduleFunctions =
-    [ len
+    [ fromencoding
+    , len
     , lower
     , reverse
     , sub
@@ -56,6 +61,39 @@ documentedModule = Module
 --
 -- Functions
 --
+
+-- | Recodes a string as UTF-8.
+fromencoding :: LuaError e => DocumentedFunction e
+fromencoding = defun "fromencoding"
+  ### (\strIdx menc -> do
+          l <- Lua.state
+          result <- Lua.liftIO . tryIOError $ do
+            encoding <- maybe getFileSystemEncoding GHC.mkTextEncoding menc
+            alloca $ \lenPtr -> do
+              cstr <- lua_tolstring l strIdx lenPtr
+              -- cstr cannot be NULL, or stringIndex would have failed.
+              cstrLen <- F.peek lenPtr
+              GHC.peekCStringLen encoding (cstr, fromIntegral cstrLen)
+          case result of
+            Right s -> pure $ T.pack s
+            Left err -> Lua.failLua (show err))
+  <#> parameter stringIndex "string" "s" "string to be converted"
+  <#> opt (stringParam "encoding" "target encoding")
+  =#> functionResult Lua.pushText "string" "UTF-8 string"
+  #? T.unlines
+     [ "Converts a string from a different encoding to UTF-8. On Windows,"
+     , "the `encoding` parameter defaults to the current ANSI code page; on"
+     , "other platforms the function will try to use the file system's"
+     , "encoding."
+     , ""
+     , "See `toencoding` for more info on supported encodings."
+     ]
+  where
+    stringIndex idx = do
+      isstr <- Lua.liftLua (Lua.isstring idx)
+      if isstr
+        then pure idx
+        else Lua.typeMismatchMessage "string" idx >>= Lua.failPeek
 
 -- | Wrapper for @'T.length'@.
 len :: DocumentedFunction e
