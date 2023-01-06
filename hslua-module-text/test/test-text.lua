@@ -91,7 +91,7 @@ return {
     test('throws error if input cannot be decoded', function ()
       assert.error_matches(
         function () text.fromencoding('\xff\xff\xff\ff', 'utf16le') end,
-        "invalid byte sequence"
+        "invalid"
       )
     end),
     test('throws error if input is not a string', function ()
@@ -124,7 +124,7 @@ return {
     test('throws error if input cannot be encoded', function ()
       assert.error_matches(
         function () text.toencoding('😊', 'latin1') end,
-        "invalid character"
+        "invalid"
       )
     end),
   }
