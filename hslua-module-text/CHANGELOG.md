@@ -8,6 +8,8 @@ Released 2023-01-06.
 
 -   Generalized a test to avoid failures with stack nightly.
 
+-   Added GHC 9.4 to test matrix.
+
 ## hslua-module-text-1.0.3
 
 Released 2023-01-03.
