@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                hslua-list
-version:             1.1.0
+version:             1.1.0.1
 synopsis:            Opinionated, but extensible Lua list type.
 description:         List type for Lua, with a Haskell interface.
 homepage:            https://hslua.org/
@@ -14,6 +14,7 @@ category:            Foreign
 build-type:          Simple
 extra-doc-files:     README.md
                      CHANGELOG.md
+extra-source-files:  test/test-list.lua
 tested-with:         GHC == 8.4.4
                    , GHC == 8.6.5
                    , GHC == 8.8.4
