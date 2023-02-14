@@ -2,6 +2,13 @@
 
 `hslua-module-system` uses [PVP Versioning][].
 
+## hslua-module-system-1.0.3
+
+Released 2023-02-14.
+
+-   Added new function `cputime` and field `cputime_precision`,
+    e.g. for benchmarking.
+
 ## hslua-module-system-1.0.2
 
 Released 2022-02-19.
@@ -10,7 +17,7 @@ Released 2022-02-19.
 
 ## hslua-module-system-1.0.1
 
-Released 29-01-2022.
+Released 2022-01-29.
 
 -   Relaxed upper bound of hslua-core, hslua-marshalling, and
     hslua-packaging, allowing their respective version 2.1.
