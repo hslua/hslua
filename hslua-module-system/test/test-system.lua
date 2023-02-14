@@ -43,8 +43,17 @@ return {
     test('compiler_version', function ()
       assert.are_equal(type(system.compiler_version), 'table')
     end),
+    test('cputime_precision', function ()
+      assert.are_equal(type(system.cputime_precision), 'number')
+    end),
     test('os', function ()
       assert.are_equal(type(system.os), 'string')
+    end),
+  },
+
+  group 'cputime' {
+    test('returns a number', function ()
+      assert.are_equal(type(system.cputime()), 'number')
     end),
   },
 

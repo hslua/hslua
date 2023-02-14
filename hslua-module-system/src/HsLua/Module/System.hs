@@ -20,9 +20,10 @@ module HsLua.Module.System (
   , os
 
   -- ** Functions
+  , cputime
   , env
-  , getwd
   , getenv
+  , getwd
   , ls
   , mkdir
   , rmdir
@@ -47,6 +48,7 @@ import HsLua.Module.SystemUtils
 
 import qualified Data.Text as T
 import qualified HsLua.Core as Lua
+import qualified System.CPUTime as CPUTime
 import qualified System.Directory as Directory
 import qualified System.Environment as Env
 import qualified System.Info as Info
@@ -60,10 +62,12 @@ documentedModule = Module
       [ arch
       , compiler_name
       , compiler_version
+      , cputime_precision
       , os
       ]
   , moduleFunctions =
-      [ env
+      [ cputime
+      , env
       , getenv
       , getwd
       , ls
@@ -117,6 +121,18 @@ compiler_version = Field
                      versionBranch Info.compilerVersion
   }
 
+-- | Field containing the smallest measurable difference in CPU time.
+cputime_precision :: Field e
+cputime_precision = Field
+  { fieldName = "cputime_precision"
+  , fieldDescription = T.unlines
+      [ "The smallest measurable difference in CPU time that the"
+      , "implementation can record, and is given as an integral number of"
+      , "picoseconds."
+      ]
+  , fieldPushValue = pushIntegral CPUTime.cpuTimePrecision
+  }
+
 -- | Field containing the operating system on which the program is
 -- running.
 os :: Field e
@@ -130,6 +146,18 @@ os = Field
 --
 -- Functions
 --
+
+-- | Access the CPU time, e.g. for benchmarking.
+cputime :: LuaError e => DocumentedFunction e
+cputime = defun "cputime"
+  ### ioToLua CPUTime.getCPUTime
+  =#> functionResult pushIntegral "integer" "CPU time in picoseconds"
+  #? T.unlines
+     [ "Returns the number of picoseconds CPU time used by the current"
+     , "program. The precision of this result may vary in different"
+     , "versions and on different platforms. See also the field"
+     , "`cputime_precision`."
+     ]
 
 -- | Retrieve the entire environment
 env :: LuaError e => DocumentedFunction e

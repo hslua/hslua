@@ -38,11 +38,26 @@ The Haskell implementation with which the host program was compiled.
 
 The version of `compiler_name` with which the host program was compiled.
 
+#### cputime_precision
+
+The smallest measurable difference in CPU time that the
+implementation can record, and is given as an integral number of
+picoseconds.
+
 #### os
 
 The operating system on which the program is running.
 
 ### General Functions
+
+#### cputime
+
+`cputime ()`
+
+Returns the number of picoseconds CPU time used by the current
+program. The precision of this result may vary in different
+versions and on different platforms. See also the field
+`cputime_precision`.
 
 #### env
 
