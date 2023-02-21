@@ -78,11 +78,25 @@ tests = testGroup "hslua-aeson"
       assertRoundtripEqual @(Either Bool Text) pushViaJSON peekViaJSON
     ]
 
-  , testGroup "__toaeson"
-    [ testCase "respect __toaeson metamethod" . run @Lua.Exception $ do
-        pushTwentyThree TwentyThree
-        val <- forcePeek $ peekValue top
-        liftIO $ object [ "title" .= (23 :: Int) ] @?= val
+  , testGroup "special encodings"
+    [ testGroup "__toaeson"
+      [ testCase "respect __toaeson metamethod" . run @Lua.Exception $ do
+          pushTwentyThree TwentyThree
+          val <- forcePeek $ peekValue top
+          liftIO $ object [ "title" .= (23 :: Int) ] @?= val
+      ]
+    , testGroup "__tojson"
+      [ testCase "respect __tojson metamethod" . run @Lua.Exception $ do
+          newtable -- object
+
+          newtable -- metatable
+          pushHaskellFunction (1 <$ pushText "{\"answer\": 42}")
+          setfield (nth 2) "__tojson"
+
+          setmetatable (nth 2)
+          val <- forcePeek $ peekValue top
+          liftIO $ object [ "answer" .= (42 :: Int) ] @?= val
+      ]
     ]
   ]
 
@@ -151,7 +165,6 @@ instance ToJSON TwentyThree where
 peekTwentyThree :: Peeker e TwentyThree
 peekTwentyThree =
   reportValueOnFailure "TwentyThree" (`Lua.fromuserdata` "TwentyThree")
-
 
 pushTwentyThree :: LuaError e => Pusher e TwentyThree
 pushTwentyThree _ = do

@@ -32,6 +32,7 @@ module HsLua.Aeson
   , pushToAeson
   ) where
 
+import Control.Applicative ((<|>))
 import Control.Monad ((<$!>), void)
 import Data.Scientific (toRealFloat, fromFloatDigits)
 import Foreign.Ptr (nullPtr)
@@ -91,7 +92,7 @@ peekValue idx = liftLua (ltype idx) >>= \case
     Nothing -> pure Aeson.Null
     _       -> typeMismatchMessage "null" idx >>= failPeek
   TypeNil -> return Aeson.Null
-  TypeTable -> do
+  TypeTable -> peekValueViaMetatable idx <|> do
       liftLua $ checkstack' 2 "HsLua.Aeson.peekValue"
       let peekKey = fmap fromText . peekText
           peekArray = Aeson.Array . Vector.fromList <$!>
@@ -113,16 +114,34 @@ peekValue idx = liftLua (ltype idx) >>= \case
 -- Peek via __toaeson metamethod
 --
 
+-- | Retrieves a JSON value by using special metafields or metamethods.
+peekValueViaMetatable :: LuaError e => Peeker e Aeson.Value
+peekValueViaMetatable idx = peekValueViaToaeson idx <|> peekValueViaTojson idx
+
 -- | Retrieves a JSON value by calling an object's @__toaeson@
 -- metamethod.
-peekValueViaMetatable :: Peeker e Aeson.Value
-peekValueViaMetatable idx = do
+peekValueViaToaeson :: Peeker e Aeson.Value
+peekValueViaToaeson idx = do
   absidx <- liftLua (absindex idx)
   liftLua (getmetafield absidx "__toaeson") >>= \case
-    TypeNil -> failPeek "Object does not have a __toaeson metamethod."
-    _       -> do
+    TypeNil -> failPeek "Object does not have a `__toaeson` metavalue."
+    _ -> do
       fn <- peekToAeson top `lastly` pop 1
       fn absidx
+
+peekValueViaTojson :: LuaError e => Peeker e Aeson.Value
+peekValueViaTojson idx = do
+  absidx <- liftLua $ absindex idx
+  liftLua (getmetafield absidx "__tojson") >>= \case
+    TypeNil ->
+      failPeek "Object does not have a `__tojson` metamethod."
+    _ -> do
+      -- Try to use the field value as function
+      liftLua $ do
+        pushvalue absidx
+        call 1 1
+      json <- peekLazyByteString top `lastly` pop 1
+      maybe (failPeek "Could not decode string") pure $ Aeson.decode json
 
 -- | Type for the function that gets an Aeson value from a Lua object.
 type ToAeson e = Peeker e Aeson.Value
