@@ -29,7 +29,9 @@ import qualified Data.ByteString as B
 
 -- | Creates a new userdata wrapping the given Haskell object. The
 -- userdata is pushed to the top of the stack.
-newhsuserdatauv :: forall a e. a -> Int -> LuaE e ()
+newhsuserdatauv :: forall a e. a -- ^ Haskell object
+                -> Int           -- ^ number of extra userdata values
+                -> LuaE e ()
 newhsuserdatauv x nuvalue = liftLua $ \l ->
   hslua_newhsuserdatauv l x (fromIntegral nuvalue)
 {-# INLINABLE newhsuserdatauv #-}
@@ -37,6 +39,8 @@ newhsuserdatauv x nuvalue = liftLua $ \l ->
 -- | Creates and registers a new metatable for a userdata-wrapped
 -- Haskell value; checks whether a metatable of that name has been
 -- registered yet and uses the registered table if possible.
+--
+-- Returns 'True' if a new metatable was created, and 'False' otherwise.
 --
 -- Using a metatable created by this functions ensures that the pointer
 -- to the Haskell value will be freed when the userdata object is
