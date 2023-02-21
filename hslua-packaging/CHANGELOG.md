@@ -2,6 +2,13 @@
 
 `hslua-packaging` uses [PVP Versioning][].
 
+## hslua-packaging-2.3.0
+
+Release pending.
+
+-   *Field* records now have an additional `fieldType` entry.
+    \[API change\]
+
 ## hslua-packaging-2.2.1
 
 Release pending.

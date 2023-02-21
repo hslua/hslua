@@ -107,7 +107,7 @@ mymath = Module
   { moduleName = "mymath"
   , moduleDescription = "A math module."
   , moduleFields = [
-      Field "unit" "additive unit" (pushinteger 1)
+      Field "unit" "integer" "additive unit" (pushinteger 1)
     ]
   , moduleFunctions = [factorial]
   , moduleOperations =

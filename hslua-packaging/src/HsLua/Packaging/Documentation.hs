@@ -117,6 +117,7 @@ pushModuleDoc = pushAsTable
 pushFieldDoc :: LuaError e => Pusher e (Field e)
 pushFieldDoc = pushAsTable
   [ ("name", pushText . fieldName)
+  , ("type", pushText . fieldType)
   , ("description", pushText . fieldDescription)
   ]
 
@@ -133,7 +134,7 @@ pushFunctionDoc fun = pushAsTable
   ] (functionDoc fun)
 
 -- | Pushes the documentation of a parameter as a table with boolean
--- field @optional@ and string fields @name@, @type@, and @description.
+-- field @optional@ and string fields @name@, @type@, and @description@.
 pushParameterDoc :: LuaError e => Pusher e ParameterDoc
 pushParameterDoc = pushAsTable
   [ ("name", pushText . parameterName)

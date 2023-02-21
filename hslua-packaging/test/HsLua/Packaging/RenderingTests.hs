@@ -114,6 +114,7 @@ mymath = Module
 euler_mascheroni :: Field Lua.Exception
 euler_mascheroni = Field
   { fieldName = "euler_mascheroni"
+  , fieldType = "number"
   , fieldDescription = "Euler-Mascheroni constant"
   , fieldPushValue = pushRealFloat @Double
                      0.57721566490153286060651209008240243

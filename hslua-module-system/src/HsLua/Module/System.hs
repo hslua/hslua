@@ -94,6 +94,7 @@ documentedModule = Module
 arch :: Field e
 arch = Field
   { fieldName = "arch"
+  , fieldType = "string"
   , fieldDescription =
       "The machine architecture on which the program is running."
   , fieldPushValue = pushString Info.arch
@@ -104,6 +105,7 @@ arch = Field
 compiler_name :: Field e
 compiler_name = Field
   { fieldName = "compiler_name"
+  , fieldType = "string"
   , fieldDescription = "The Haskell implementation with which the host "
                        `T.append` "program was compiled."
   , fieldPushValue = pushString Info.compilerName
@@ -114,6 +116,7 @@ compiler_name = Field
 compiler_version :: LuaError e => Field e
 compiler_version = Field
   { fieldName = "compiler_version"
+  , fieldType = "string"
   , fieldDescription = T.unwords
       [ "The Haskell implementation with which the host "
       , "program was compiled." ]
@@ -125,6 +128,7 @@ compiler_version = Field
 cputime_precision :: Field e
 cputime_precision = Field
   { fieldName = "cputime_precision"
+  , fieldType = "integer"
   , fieldDescription = T.unlines
       [ "The smallest measurable difference in CPU time that the"
       , "implementation can record, and is given as an integral number of"
@@ -138,6 +142,7 @@ cputime_precision = Field
 os :: Field e
 os = Field
   { fieldName = "os"
+  , fieldType = "string"
   , fieldDescription = "The operating system on which the program is running."
   , fieldPushValue = pushString Info.os
   }
