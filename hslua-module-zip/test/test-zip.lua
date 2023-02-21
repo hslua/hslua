@@ -67,14 +67,18 @@ return {
     end),
 
     test('module metamethod', function()
-      local filename = 'greetings.txt'
-      local fh = io.open(filename, 'w')
-      fh:write('Hi Mom!\n')
-      fh:close()
-      assert.are_equal(
-        zip.zip{filename}:bytestring(),
-        zip{filename}:bytestring()
-      )
+      system.with_tmpdir('archive', function (tmpdir)
+        system.with_wd(tmpdir, function ()
+          local filename = 'greetings.txt'
+          local fh = io.open(filename, 'w')
+          fh:write('Hi Mom!\n')
+          fh:close()
+          assert.are_equal(
+            zip.zip{filename}:bytestring(),
+            zip{filename}:bytestring()
+          )
+        end)
+      end)
     end)
   },
 
