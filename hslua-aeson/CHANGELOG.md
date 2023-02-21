@@ -4,7 +4,7 @@
 
 ## hslua-aeson-2.3.0
 
-Release pending.
+Released 2023-02-21.
 
 -   The `peekValue` peeker now checks for a `__toaeson` metafield
     or `__tojson` metamethod and uses them to compute the `Value`
