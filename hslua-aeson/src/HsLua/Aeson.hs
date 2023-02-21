@@ -27,6 +27,9 @@ module HsLua.Aeson
   , peekViaJSON
   , pushViaJSON
   , jsonarray
+    -- * Encoding arbitrary objects
+  , peekToAeson
+  , pushToAeson
   ) where
 
 import Control.Monad ((<$!>), void)
@@ -104,7 +107,48 @@ peekValue idx = liftLua (ltype idx) >>= \case
         True  -> peekArray
         False -> Aeson.Object . KeyMap.fromList <$!>
                  peekKeyValuePairs peekKey peekValue idx
-  luaType -> fail ("Unexpected type: " ++ show luaType)
+  _ -> peekValueViaMetatable idx
+
+--
+-- Peek via __toaeson metamethod
+--
+
+-- | Retrieves a JSON value by calling an object's @__toaeson@
+-- metamethod.
+peekValueViaMetatable :: Peeker e Aeson.Value
+peekValueViaMetatable idx = do
+  absidx <- liftLua (absindex idx)
+  liftLua (getmetafield absidx "__toaeson") >>= \case
+    TypeNil -> failPeek "Object does not have a __toaeson metamethod."
+    _       -> do
+      fn <- peekToAeson top `lastly` pop 1
+      fn absidx
+
+-- | Type for the function that gets an Aeson value from a Lua object.
+type ToAeson e = Peeker e Aeson.Value
+
+-- | Lua type name for 'ToAeson' values.
+typeNameToAeson :: Name
+typeNameToAeson = "HsLua.ToAeson"
+
+-- | Pushes a function that converts the object at a given index into a
+-- 'Aeson.Value'.
+pushToAeson :: Pusher e (ToAeson e)
+pushToAeson val = do
+  newhsuserdatauv val 0
+  _ <- newudmetatable typeNameToAeson
+  setmetatable (nth 2)
+
+-- | Gets the 'ToAeson' function from a Lua userdata object.
+peekToAeson :: Peeker e (ToAeson e)
+peekToAeson idx =
+  liftLua (fromuserdata idx typeNameToAeson) >>= \case
+    Nothing -> typeMismatchMessage typeNameToAeson idx >>= failPeek
+    Just ta -> return ta
+
+--
+-- Retrieving any value via JSON
+--
 
 -- | Retrieves a value from the Lua stack via JSON.
 peekViaJSON :: (Aeson.FromJSON a, LuaError e) => Peeker e a

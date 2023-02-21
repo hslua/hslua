@@ -6,12 +6,14 @@ License     :  MIT
 Tests for Aeson–Lua glue.
 -}
 import Control.Monad (when)
+import Data.Aeson (ToJSON, object, (.=))
 import Data.Text (Text)
 import HsLua.Core as Lua
 import HsLua.Marshalling
 import HsLua.Aeson
 import Test.QuickCheck.Monadic (assert)
 import Test.Tasty (TestTree, defaultMain, testGroup)
+import Test.Tasty.HUnit ((@?=), testCase)
 import Test.Tasty.QuickCheck
 import Test.QuickCheck.Instances ()
 
@@ -75,6 +77,13 @@ tests = testGroup "hslua-aeson"
     , testProperty "can roundtrip 'Either Bool Text' via JSON" $
       assertRoundtripEqual @(Either Bool Text) pushViaJSON peekViaJSON
     ]
+
+  , testGroup "__toaeson"
+    [ testCase "respect __toaeson metamethod" . run @Lua.Exception $ do
+        pushTwentyThree TwentyThree
+        val <- forcePeek $ peekValue top
+        liftIO $ object [ "title" .= (23 :: Int) ] @?= val
+    ]
   ]
 
 assertRoundtripEqual :: Eq a
@@ -126,3 +135,29 @@ arbitraryValue size = frequency
     , (2, resize (size - 1) $ Aeson.Object <$> arbitrary)
     ]
 #endif
+
+--
+-- Type for __toaeson tests
+--
+
+-- | Example type with custom JSON encoding.
+data TwentyThree = TwentyThree
+
+instance ToJSON TwentyThree where
+  toJSON _ = object
+    [ "title" .= (23 :: Int)
+    ]
+
+peekTwentyThree :: Peeker e TwentyThree
+peekTwentyThree =
+  reportValueOnFailure "TwentyThree" (`Lua.fromuserdata` "TwentyThree")
+
+
+pushTwentyThree :: LuaError e => Pusher e TwentyThree
+pushTwentyThree _ = do
+  Lua.newhsuserdatauv TwentyThree 0
+  created <- Lua.newudmetatable "TwentyThree"
+  when created $ do
+    pushToAeson (fmap Aeson.toJSON . peekTwentyThree)
+    setfield (nth 2) "__toaeson"
+  setmetatable (nth 2)
