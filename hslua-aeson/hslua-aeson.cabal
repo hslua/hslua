@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                hslua-aeson
-version:             2.2.1
+version:             2.3.0
 synopsis:            Allow aeson data types to be used with Lua.
 description:         This package provides instances to push and receive any
                      datatype encodable as JSON to and from the Lua stack.
@@ -9,7 +9,7 @@ license:             MIT
 license-file:        LICENSE
 author:              Albert Krewinkel
 maintainer:          Albert Krewinkel <albert+hslua@zeitkraut.de>
-copyright:           © 2017–2022 Albert Krewinkel
+copyright:           © 2017–2023 Albert Krewinkel
 category:            Foreign
 extra-source-files:  README.md
                    , CHANGELOG.md

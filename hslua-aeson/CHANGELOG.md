@@ -2,6 +2,29 @@
 
 `hslua-aeson` uses [PVP Versioning][].
 
+## hslua-aeson-2.3.0
+
+Release pending.
+
+-   The `peekValue` peeker now checks for a `__toaeson` metafield
+    or `__tojson` metamethod and uses them to compute the `Value`
+    of an object:
+
+    The `__toaeson` metafield, if set, must be a function pushed
+    via `pushToAeson`. That function is called on a given object,
+    and the returned *Value* becomes the result of calling
+    `peekValue`.
+
+    Likewise, the `__tojson` metamethod must be a function that
+    returns a valid JSON string. The result in that case is the
+    decoded string.
+
+    If both, `__toaeson` and `__tojson` are set, then `__toaeson`
+    takes precedent.
+
+-   The test suite now has *tasty-hunit* as an additional
+    dependency.
+
 ## hslua-aeson-2.2.1
 
 Released 2022-06-23.
