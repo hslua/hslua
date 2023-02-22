@@ -9,6 +9,13 @@ Release pending.
 -   *Field* records now have an additional `fieldType` entry.
     \[API change\]
 
+-   (Re)export `initType` from `HsLua.Packaging.UDType`. The
+    function is defined in package `hslua-objectorientation` and
+    ensures that the metatable of a type has been fully
+    initialized. This can be helpful when the default method of
+    lazy initialization is not desired, e.g. when the type object
+    is to be inspected or extended.
+
 ## hslua-packaging-2.2.1
 
 Release 2022-06-19.

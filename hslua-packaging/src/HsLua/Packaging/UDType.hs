@@ -24,6 +24,7 @@ module HsLua.Packaging.UDType
   , operation
   , peekUD
   , pushUD
+  , initType
   , udparam
   , udresult
     -- * Helper types for building
