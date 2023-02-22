@@ -50,6 +50,7 @@ documentedModule = Module
       <#> versionParam "version" "version-like object"
       =#> udresult typeVersion "new Version object"
     ]
+  , moduleTypeInitializers = []
   }
 
 -- | Type definition of Lua Version values.

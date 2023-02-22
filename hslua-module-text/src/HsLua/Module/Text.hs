@@ -56,6 +56,7 @@ documentedModule = Module
     ]
   , moduleDescription =
       "UTF-8 aware text manipulation functions, implemented in Haskell."
+  , moduleTypeInitializers = []
   }
 
 --

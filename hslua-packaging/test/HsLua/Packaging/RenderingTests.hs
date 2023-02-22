@@ -108,6 +108,7 @@ mymath = Module
   , moduleFields = [euler_mascheroni]
   , moduleFunctions = [ factorial, nroot ]
   , moduleOperations = []
+  , moduleTypeInitializers = []
   }
 
 -- | Euler-Mascheroni constant

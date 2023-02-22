@@ -81,6 +81,7 @@ documentedModule = Module
       , with_wd
       ]
   , moduleOperations = []
+  , moduleTypeInitializers = []
   , moduleDescription =
       "Access to the system's information and file functionality."
   }

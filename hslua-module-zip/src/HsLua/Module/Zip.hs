@@ -78,6 +78,10 @@ documentedModule = Module
               pure (NumResults 1))
       =?> "new Archive"
     ]
+  , moduleTypeInitializers =
+      [ initType typeArchive
+      , initType typeEntry
+      ]
   }
 
 -- | First published version of this library.

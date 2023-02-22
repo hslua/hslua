@@ -6,6 +6,16 @@
 
 Release pending.
 
+-   Type initializers as part of Module records. This allows to
+    associate types with a module. For performance reasons, the
+    types are not initialized when the module is pushed, but only
+    on first use. However, the documentation Lua object for each
+    module now has an additional field `types`. The new field
+    contains a function that returns the names of all associated
+    types. Calling the function will also initialize these types,
+    thereby making the respective metatables available in the
+    registry.
+
 -   *Field* records now have an additional `fieldType` entry.
     \[API change\]
 

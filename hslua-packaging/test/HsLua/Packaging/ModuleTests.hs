@@ -14,11 +14,12 @@ module HsLua.Packaging.ModuleTests (tests) where
 
 import HsLua.Core
 import HsLua.Marshalling
-  ( forcePeek, peekFieldRaw, peekIntegral, peekString
+  ( forcePeek, peekFieldRaw, peekIntegral, peekList, peekName, peekString
   , pushIntegral, pushText)
 import HsLua.Packaging.Documentation
 import HsLua.Packaging.Function
 import HsLua.Packaging.Module
+import HsLua.Packaging.UDType (deftype, initType)
 import Test.Tasty.HsLua ((=:), shouldBeResultOf)
 import Test.Tasty (TestTree, testGroup)
 
@@ -99,6 +100,15 @@ tests = testGroup "Module"
         TypeTable <- getfield top "fields"
         TypeTable <- rawgeti top 1
         forcePeek $ peekFieldRaw peekString "name" Lua.top
+
+    , "document object has associated types" =:
+      ["Void"] `shouldBeResultOf` do
+        Lua.openlibs
+        registerModule mymath
+        TypeTable <- getdocumentation top
+        TypeFunction <- getfield top "types"
+        call 0 1
+        forcePeek $ peekList peekName top
     ]
   ]
 
@@ -115,6 +125,7 @@ mymath = Module
       ### (1 <$ pushText "call me maybe")
       =?> "call result"
     ]
+  , moduleTypeInitializers = [initType (deftype "Void" [] [])]
   }
 
 factorial :: DocumentedFunction Lua.Exception

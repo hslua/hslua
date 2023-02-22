@@ -51,6 +51,7 @@ documentedModule = Module
   , moduleFields = fields
   , moduleFunctions = functions
   , moduleOperations = []
+  , moduleTypeInitializers = []
   }
 
 --

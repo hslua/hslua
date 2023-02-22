@@ -33,6 +33,7 @@ data Module e = Module
   , moduleFields :: [Field e]
   , moduleFunctions :: [DocumentedFunction e]
   , moduleOperations :: [(Operation, DocumentedFunction e)]
+  , moduleTypeInitializers :: [LuaE e Name]
   }
 
 -- | Self-documenting module field

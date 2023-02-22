@@ -23,7 +23,7 @@ where
 
 import Control.Monad (forM_)
 import HsLua.Core
-import HsLua.Marshalling (pushAsTable, pushList, pushName, pushText)
+import HsLua.Marshalling (Pusher, pushAsTable, pushList, pushName, pushText)
 import HsLua.ObjectOrientation.Operation (Operation (..), metamethodName)
 import HsLua.Packaging.Documentation
 import HsLua.Packaging.Types
@@ -60,6 +60,7 @@ pushModule mdl = do
     [ ("name", pushName . moduleName)
     , ("description", pushText . moduleDescription)
     , ("fields", pushList pushFieldDoc . moduleFields)
+    , ("types", pushTypesFunction . moduleTypeInitializers)
     ] mdl
   create        -- module table
   pushvalue (nth 2)              -- push documentation object
@@ -106,3 +107,8 @@ pushModule mdl = do
         Fun.pushDocumentedFunction $ Fun.setName "" fn
         rawset (nth 3)
       setmetatable (nth 2)
+
+pushTypesFunction :: LuaError e => Pusher e [LuaE e Name]
+pushTypesFunction initializers = pushHaskellFunction $ do
+  sequence initializers >>= pushList pushName
+  pure 1
