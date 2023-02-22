@@ -11,7 +11,7 @@ Release pending.
 
 ## hslua-packaging-2.2.1
 
-Release pending.
+Release 2022-06-19.
 
 -   Require hslua-core-2.2.1.
 
