@@ -2,6 +2,14 @@
 
 `hslua-objectorientation` uses [PVP Versioning][].
 
+## hslua-objectorientation-2.3.0
+
+Release pending.
+
+-   Export new function `initType`: The function ensures that a
+    type's metatable is initialized and available from the
+    registry.
+
 ## hslua-objectorientation-2.2.1
 
 Released 2022-06-19.
@@ -24,7 +32,7 @@ Released 2022-02-19.
 
 ## hslua-objectorientation-2.1.0
 
-Released 29-01-2022.
+Released 2022-01-29.
 
 -   Allow integers as aliases: Aliases can now be of type
     `AliasIndex`, so integers can now be defined as aliases for

@@ -27,6 +27,7 @@ module HsLua.ObjectOrientation
   , alias
   , peekUD
   , pushUD
+  , initType
     -- * Helper types for building
   , Member
   , Property
@@ -215,6 +216,15 @@ alias :: AliasIndex    -- ^ property alias
       -> [AliasIndex]  -- ^ sequence of nested properties
       -> Member e fn a
 alias name _desc = MemberAlias name
+
+-- | Ensures that the type has been fully initialized, i.e., that all
+-- metatables have been created and stored in the registry. Returns the
+-- name of the initialized type.
+initType :: LuaError e => UDTypeWithList e fn a itemtype -> LuaE e Name
+initType ty = do
+  pushUDMetatable ty
+  pop 1
+  return (udName ty)
 
 -- | Pushes the metatable for the given type to the Lua stack. Creates
 -- the new table afresh on the first time it is needed, and retrieves it

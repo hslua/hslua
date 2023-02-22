@@ -168,6 +168,27 @@ tests = testGroup "Object Orientation"
         forcePeek $ peekIntegral @Int top
     ]
 
+  , testGroup "initType"
+    [ "type table is added to the registry" =:
+      TypeTable `shouldBeResultOf` do
+        openlibs
+        name <- initType typeBar
+        getfield registryindex name
+
+    , "type table is not in registry when uninitialized" =:
+      TypeNil `shouldBeResultOf` do
+        openlibs
+        getfield registryindex (udName (typeBar @HsLua.Core.Exception))
+
+    , "initializing does not affect the stack" =:
+      0 `shouldBeResultOf` do
+        openlibs
+        before <- gettop
+        _ <- initType typeBar
+        after <- gettop
+        return $ after - before
+    ]
+
   , testGroup "lazy list"
     [ "Access an element of a lazy list stub" =:
       3 `shouldBeResultOf` do
