@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-|
 Module      : HsLua.Packaging.ModuleTests
-Copyright   : © 2019-2022 Albert Krewinkel
+Copyright   : © 2019-2023 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
 Stability   : alpha

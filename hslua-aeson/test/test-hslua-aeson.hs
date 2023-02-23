@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-|
-Copyright   :  © 2017–2022 Albert Krewinkel
+Copyright   :  © 2017-2023 Albert Krewinkel
 License     :  MIT
 
 Tests for Aeson–Lua glue.

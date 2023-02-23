@@ -1,6 +1,6 @@
 {-|
 Module      : Test.Tasty.Lua.Translate
-Copyright   : © 2019–2022 Albert Krewinkel
+Copyright   : © 2019-2023 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
 

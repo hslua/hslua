@@ -1,6 +1,6 @@
 {-|
 Module      : Main
-Copyright   : © 2017-2022 Albert Krewinkel
+Copyright   : © 2017-2023 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 

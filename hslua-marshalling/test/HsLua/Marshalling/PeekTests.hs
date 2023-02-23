@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-|
 Module      : HsLua.Marshalling.PeekTests
-Copyright   : © 2020-2022 Albert Krewinkel
+Copyright   : © 2020-2023 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
 Stability   : alpha

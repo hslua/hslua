@@ -5,7 +5,7 @@
 {-# LANGUAGE TypeApplications    #-}
 {-|
 Module      : HsLua.Module.Zip
-Copyright   : © 2022 Albert Krewinkel
+Copyright   : © 2022-2023 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
 
