@@ -2,6 +2,13 @@
 
 `hslua-classes` uses [PVP Versioning][].
 
+## hslua-classes-2.3.0
+
+Release pending.
+
+-   Require version 2.3.* of HsLua packages hslua-core and
+    hslua-marshalling.
+
 ## hslua-classes-2.2.0
 
 Released 2022-02-19.

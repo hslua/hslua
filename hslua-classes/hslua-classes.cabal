@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                hslua-classes
-version:             2.2.0
+version:             2.3.0
 synopsis:            Type classes for HsLua
 description:         Type classes for convenient marshalling and calling of
                      Lua functions.
