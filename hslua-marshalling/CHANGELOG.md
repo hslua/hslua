@@ -2,6 +2,12 @@
 
 `hslua-marshalling` uses [PVP Versioning][].
 
+## hslua-marshalling-2.3.0
+
+Release pending.
+
+-   `Result` is now an instance of `MonadFail`.
+
 ## hslua-marshalling-2.2.1
 
 Released 2022-06-19.

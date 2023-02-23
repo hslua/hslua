@@ -70,6 +70,10 @@ instance Alternative Result where
 
 instance MonadPlus Result
 
+instance MonadFail Result where
+  fail = failure . Utf8.fromString
+  {-# INLINABLE fail #-}
+
 --
 -- Peek
 --
