@@ -22,6 +22,7 @@ module HsLua.Marshalling.Push
   , pushName
   -- * Collections
   , pushList
+  , pushNonEmpty
   , pushKeyValuePairs
   , pushMap
   , pushSet
@@ -40,6 +41,7 @@ import Numeric (showGFloat)
 
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as BL
+import qualified Data.List.NonEmpty as NonEmpty
 import qualified HsLua.Core.Utf8 as Utf8
 
 -- | Function to push a value to Lua's stack.
@@ -113,6 +115,10 @@ pushList push xs = checkstack 2 >>= \case
     let setField i x = push x *> rawseti (-2) i
     newtable
     zipWithM_ setField [1..] xs
+
+-- | Push non-empty list as numerically indexed table.
+pushNonEmpty :: LuaError e => Pusher e a -> NonEmpty.NonEmpty a -> LuaE e ()
+pushNonEmpty push = pushList push . NonEmpty.toList
 
 -- | Push 'Map' as default key-value Lua table.
 pushMap :: LuaError e => Pusher e a -> Pusher e b -> Pusher e (Map a b)

@@ -8,6 +8,8 @@ Release pending.
 
 -   `Result` is now an instance of `MonadFail`.
 
+-   New peeker and pusher functions for `NonEmpty`.
+
 ## hslua-marshalling-2.2.1
 
 Released 2022-06-19.

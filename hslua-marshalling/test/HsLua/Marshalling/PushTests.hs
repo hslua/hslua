@@ -155,6 +155,14 @@ tests = testGroup "Push"
       , testSingleElementProperty (pushList pushText)
       ]
 
+    , testGroup "pushNonEmpty"
+      [ testProperty "table size equals list length" $ \list -> monadicIO $ do
+          tableSize <- run $ Lua.run @Lua.Exception $ do
+            pushNonEmpty pushString list
+            Lua.rawlen Lua.top
+          assert $ tableSize == length list
+      ]
+
     , testGroup "pushKeyValuePairs"
       [ testProperty "creates a table" $ \x -> monadicIO $ do
           producesTable <- run $ Lua.run @Lua.Exception $ do
