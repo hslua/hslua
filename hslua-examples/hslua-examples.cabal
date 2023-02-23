@@ -54,14 +54,14 @@ executable run-lua
   main-is:             run-lua.hs
   hs-source-dirs:      run-lua
   build-depends:       bytestring
-                     , hslua             >= 2.0 && < 2.3
+                     , hslua             >= 2.0 && < 2.4
 
 executable wishlist
   import:              common-options
   main-is:             wishlist.hs
   hs-source-dirs:      wishlist
   build-depends:       bytestring
-                     , hslua             >= 2.0 && < 2.3
+                     , hslua             >= 2.0 && < 2.4
                      , text
 
 executable factorial
@@ -69,7 +69,7 @@ executable factorial
   main-is:             factorial.hs
   hs-source-dirs:      factorial
   build-depends:       bytestring
-                     , hslua             >= 2.0 && < 2.3
+                     , hslua             >= 2.0 && < 2.4
 
 executable low-level-factorial
   import:              common-options

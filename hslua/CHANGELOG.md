@@ -6,7 +6,9 @@
 
 Release pending.
 
--   Require hslua-aeson-2.3.0.
+-   Require version 2.3.* of HsLua packages: hslua-core,
+    hslua-marshalling, hslua-objectorientation, hslua-packaging,
+    hslua-aeson, hslua-classes.
 
 ## hslua-2.2.1
 
