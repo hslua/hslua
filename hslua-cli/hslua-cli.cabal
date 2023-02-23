@@ -59,7 +59,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     HsLua.CLI
   build-depends:       base              >= 4.9.1  && < 5
-                     , hslua-marshalling >= 2.2    && < 2.3
+                     , hslua-marshalling >= 2.2    && < 2.4
                      , lua               >= 2.3    && < 2.4
                      , text              >= 1.2    && < 2.1
 

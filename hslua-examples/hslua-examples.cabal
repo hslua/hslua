@@ -62,7 +62,6 @@ executable wishlist
   hs-source-dirs:      wishlist
   build-depends:       bytestring
                      , hslua             >= 2.0 && < 2.3
-                     , hslua-marshalling >= 2.0 && < 2.3
                      , text
 
 executable factorial

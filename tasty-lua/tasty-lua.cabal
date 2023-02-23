@@ -32,7 +32,7 @@ common common-options
   build-depends:       base              >= 4.8    && < 5
                      , bytestring        >= 0.10.2 && < 0.12
                      , hslua-core        >= 2.3    && < 2.4
-                     , hslua-marshalling >= 2.0    && < 2.3
+                     , hslua-marshalling >= 2.0    && < 2.4
                      , lua-arbitrary     >= 1.0    && < 1.1
                      , tasty             >= 1.2    && < 1.5
                      , QuickCheck        >= 2.9    && < 2.15

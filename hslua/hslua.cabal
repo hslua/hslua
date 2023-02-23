@@ -46,7 +46,7 @@ common common-options
                      , hslua-aeson             >= 2.3    && < 2.4
                      , hslua-core              >= 2.3    && < 2.4
                      , hslua-classes           >= 2.2    && < 2.3
-                     , hslua-marshalling       >= 2.2.1  && < 2.3
+                     , hslua-marshalling       >= 2.3    && < 2.4
                      , hslua-objectorientation >= 2.3    && < 2.4
                      , hslua-packaging         >= 2.3    && < 2.4
                      , mtl                     >= 2.2    && < 2.4
