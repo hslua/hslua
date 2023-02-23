@@ -117,7 +117,7 @@ pushModuleDoc = pushAsTable
 pushFieldDoc :: LuaError e => Pusher e (Field e)
 pushFieldDoc = pushAsTable
   [ ("name", pushText . fieldName)
-  , ("type", pushText . fieldType)
+  , ("type", pushText . fieldName)
   , ("description", pushText . fieldDescription)
   ]
 
