@@ -43,7 +43,7 @@ flag rely-on-shared-lpeg-library
 
 common common-options
   default-language:    Haskell2010
-  build-depends:       base                 >= 4.8    && < 5
+  build-depends:       base                 >= 4.11   && < 5
                      , lua                  >= 2.1    && < 2.4
   ghc-options:         -Wall
                        -Wincomplete-record-updates
