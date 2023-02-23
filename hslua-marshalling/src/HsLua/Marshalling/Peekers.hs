@@ -31,6 +31,7 @@ module HsLua.Marshalling.Peekers
   -- ** Collections
   , peekKeyValuePairs
   , peekList
+  , peekNonEmpty
   , peekMap
   , peekSet
   -- ** Combinators
@@ -48,6 +49,7 @@ module HsLua.Marshalling.Peekers
 import Control.Applicative (Alternative (..))
 import Control.Monad ((<$!>), (>=>), void)
 import Data.ByteString (ByteString)
+import Data.List.NonEmpty (NonEmpty ((:|)))
 import Data.Map (Map)
 import Data.Set (Set)
 import Data.String (IsString (fromString))
@@ -221,8 +223,18 @@ peekRealFloat idx = liftLua (ltype idx) >>= \case
 -- the list is equal to @rawlen(t)@. The operation will fail unless all
 -- numerical fields between @1@ and @rawlen(t)@ can be retrieved.
 peekList :: forall a e. LuaError e => Peeker e a -> Peeker e [a]
-peekList peekElement = fmap (retrieving "list") .
-  typeChecked "table" istable $ \idx -> do
+peekList peekElement = retrieving "list" . peekList' peekElement
+
+-- | Like 'peekList', but fails if the list is empty.
+peekNonEmpty :: LuaError e => Peeker e a -> Peeker e (NonEmpty a)
+peekNonEmpty peekElement = retrieving "NonEmpty" .
+  (peekList' peekElement >=> \case
+    (x:xs) -> return (x :| xs)
+    []     -> failPeek "empty list")
+
+-- | Helper function that retrieves a list, but doesn't set a context.
+peekList' :: LuaError e => Peeker e a -> Peeker e [a]
+peekList' peekElement = typeChecked "table" istable $ \idx -> do
   liftLua $ checkstack' 1 "retrieving a list"
   let elementsAt [] = return []
       elementsAt (i : is) = do

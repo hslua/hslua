@@ -25,6 +25,7 @@ import Test.Tasty.QuickCheck (testProperty)
 
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as Char8
+import qualified Data.List.NonEmpty as NonEmpty
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import qualified Data.Text as T
@@ -278,6 +279,18 @@ tests = testGroup "Peekers"
           runPeek $ peekList peekByteString Lua.top
       ]
 
+    , testGroup "peekNonEmpty"
+      [ "empty list" =:
+        Failure "empty list" ["retrieving NonEmpty"] `shouldBeResultOf` do
+          Lua.newtable
+          runPeek $ peekNonEmpty peekBool Lua.top
+
+      , "non-empty list" =:
+        Success (5 NonEmpty.:| [23]) `shouldBeResultOf` do
+          pushLuaExpr "{ 5, 23 }"
+          runPeek $ peekNonEmpty (peekIntegral @Int) Lua.top
+      ]
+
     , testGroup "peekSet"
       [ "empty set" =:
         Success Set.empty `shouldBeResultOf` do
@@ -342,6 +355,7 @@ tests = testGroup "Peekers"
           runPeek $ peekMap (peekIntegral @Int) peekText Lua.top
       ]
     ]
+
 
   , testGroup "combinators"
     [ testGroup "peekFieldRaw"
