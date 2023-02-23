@@ -61,9 +61,24 @@ import qualified Data.Text as T
 documentedModule :: forall e. LuaError e => Module e
 documentedModule = Module
   { moduleName = "zip"
-  , moduleDescription = T.unwords
-    [ "Function for creating, modifying, and extracting files from zip"
-    , "archives."
+  , moduleDescription = T.unlines
+    [ "Functions to create, modify, and extract files from zip archives."
+    , ""
+    , "The module can be called as a function, in which case it behaves"
+    , "like the `zip` function described below."
+    , ""
+    , "Zip options are optional; when defined, they must be a table with"
+    , "any of the following keys:"
+    , ""
+    , "  - `recursive`: recurse directories when set to `true`;"
+    , "  - `verbose`: print info messages to stdout;"
+    , "  - `destination`: the value specifies the directory in which to"
+    , "    extract;"
+    , "  - `location`: value is used as path name, defining where files"
+    , "    are placed."
+    , "  - `preserve_symlinks`: Boolean value, controlling whether"
+    , "    symbolic links are preserved as such. This option is ignored"
+    , "    on Windows."
     ]
   , moduleFields = fields
   , moduleFunctions = functions
@@ -185,8 +200,8 @@ mkArchive = defun "Archive"
             pure $ foldr Zip.addEntryToArchive emptyArchive entries)
   <#> opt (parameter (choice [ fmap Left  . peekLazyByteString
                              , fmap Right . peekList peekEntryFuzzy ])
-           "string|{ZipEntry,...}" "contents"
-           "binary archive data or list of entries")
+           "string|{ZipEntry,...}" "bytestring_or_entries"
+           "binary archive data or list of entries; defaults to an empty list")
   =#> udresult typeArchive "new Archive"
   #? T.unlines
      [ "Reads an *Archive* structure from a raw zip archive or a list of"
