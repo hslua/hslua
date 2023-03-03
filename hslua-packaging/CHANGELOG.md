@@ -26,6 +26,9 @@ Release pending.
     lazy initialization is not desired, e.g. when the type object
     is to be inspected or extended.
 
+-   Re-export `udDocs`, `udTypeSpec`, allowing to generate typing
+    info for userdata classes.
+
 ## hslua-packaging-2.2.1
 
 Release 2022-06-19.

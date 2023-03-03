@@ -27,6 +27,8 @@ module HsLua.Packaging.UDType
   , initType
   , udparam
   , udresult
+  , udDocs
+  , udTypeSpec
     -- * Helper types for building
   , Member
   , Operation (..)
