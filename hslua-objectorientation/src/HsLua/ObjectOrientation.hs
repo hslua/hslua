@@ -18,13 +18,21 @@ objects/, and to their type as /UD type/.
 module HsLua.ObjectOrientation
   ( UDType
   , UDTypeWithList (..)
+    -- * Defining types
   , deftypeGeneric
   , deftypeGeneric'
+    -- ** Methods
   , methodGeneric
+    -- ** Properties
   , property
+  , property'
   , possibleProperty
+  , possibleProperty'
   , readonly
+  , readonly'
+    -- ** Aliases
   , alias
+    -- * Marshaling
   , peekUD
   , pushUD
   , initType
@@ -52,7 +60,7 @@ import HsLua.Core as Lua
 import HsLua.Marshalling
 import HsLua.ObjectOrientation.Operation
 import HsLua.Typing ( NamedType (..), TypeDocs (..), TypeSpec (..)
-                    , userdataType )
+                    , anyType, userdataType )
 import qualified Data.Map.Strict as Map
 import qualified HsLua.Core.Unsafe as Unsafe
 import qualified HsLua.Core.Utf8 as Utf8
@@ -134,6 +142,7 @@ data Property e a = Property
   { propertyGet :: a -> LuaE e NumResults
   , propertySet :: Maybe (StackIndex -> a -> LuaE e a)
   , propertyDescription :: Text
+  , propertyType :: TypeSpec
   }
 
 -- | Alias for a different property of this or of a nested object.
@@ -164,6 +173,19 @@ data Possible a
   = Actual a
   | Absent
 
+-- | Declares a new read- and writable typed property.
+property' :: LuaError e
+          => Name                       -- ^ property name
+          -> TypeSpec                   -- ^ property type
+          -> Text                       -- ^ property description
+          -> (Pusher e b, a -> b)       -- ^ how to get the property value
+          -> (Peeker e b, a -> b -> a)  -- ^ how to set a new property value
+          -> Member e fn a
+property' name typespec desc (push, get) (peek, set) =
+  possibleProperty' name typespec desc
+    (push, Actual . get)
+    (peek, \a b -> Actual (set a b))
+
 -- | Declares a new read- and writable property.
 property :: LuaError e
          => Name                       -- ^ property name
@@ -184,7 +206,19 @@ possibleProperty :: LuaError e
   -> (Pusher e b, a -> Possible b)      -- ^ how to get the property value
   -> (Peeker e b, a -> b -> Possible a) -- ^ how to set a new property value
   -> Member e fn a
-possibleProperty name desc (push, get) (peek, set) = MemberProperty name $
+possibleProperty name = possibleProperty' name anyType
+
+-- | Declares a new read- and writable property which is not always
+-- available.
+possibleProperty' :: LuaError e
+  => Name                               -- ^ property name
+  -> TypeSpec                           -- ^ type of the property value
+  -> Text                               -- ^ property description
+  -> (Pusher e b, a -> Possible b)      -- ^ how to get the property value
+  -> (Peeker e b, a -> b -> Possible a) -- ^ how to set a new property value
+  -> Member e fn a
+possibleProperty' name typespec desc (push, get) (peek, set) =
+  MemberProperty name $
   Property
   { propertyGet = \x -> do
       case get x of
@@ -197,23 +231,34 @@ possibleProperty name desc (push, get) (peek, set) = MemberProperty name $
         Absent   -> failLua $ "Trying to set unavailable property "
                             <> Utf8.toString (fromName name)
                             <> "."
+  , propertyType = typespec
+  , propertyDescription = desc
+  }
+
+-- | Creates a read-only object property. Attempts to set the value will
+-- cause an error.
+readonly' :: Name                 -- ^ property name
+          -> TypeSpec             -- ^ property type
+          -> Text                 -- ^ property description
+          -> (Pusher e b, a -> b) -- ^ how to get the property value
+          -> Member e fn a
+readonly' name typespec desc (push, get) = MemberProperty name $
+  Property
+  { propertyGet = \x -> do
+      push $ get x
+      return (NumResults 1)
+  , propertySet = Nothing
+  , propertyType = typespec
   , propertyDescription = desc
   }
 
 -- | Creates a read-only object property. Attempts to set the value will
 -- cause an error.
 readonly :: Name                 -- ^ property name
-         -> Text                 -- ^ property description
-         -> (Pusher e b, a -> b) -- ^ how to get the property value
-         -> Member e fn a
-readonly name desc (push, get) = MemberProperty name $
-  Property
-  { propertyGet = \x -> do
-      push $ get x
-      return (NumResults 1)
-  , propertySet = Nothing
-  , propertyDescription = desc
-  }
+                -> Text                 -- ^ property description
+                -> (Pusher e b, a -> b) -- ^ how to get the property value
+                -> Member e fn a
+readonly name = readonly' name anyType
 
 -- | Define an alias for another, possibly nested, property.
 alias :: AliasIndex    -- ^ property alias
