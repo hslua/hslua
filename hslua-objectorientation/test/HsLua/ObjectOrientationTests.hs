@@ -18,9 +18,11 @@ module HsLua.ObjectOrientationTests (tests) where
 import HsLua.Core
 import HsLua.ObjectOrientation
 import HsLua.Marshalling
+import HsLua.Typing
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HsLua ((=:), shouldBeResultOf, shouldBeErrorMessageOf)
 import qualified Data.ByteString.Char8 as Char8
+import qualified Data.Map as Map
 
 -- | Tests for HsLua object orientation.
 tests :: TestTree
@@ -417,7 +419,7 @@ newtype Bar = Bar [Int]
 
 typeBar :: LuaError e => UDType e (HaskellFunction e) Bar
 typeBar = deftype "Bar" []
-  [ property "nums" "some numbers"
+  [ property' "nums" (seqType integerType) "some numbers"
     (pushList pushIntegral, \(Bar nums) -> nums)
     (peekList peekIntegral, \(Bar _) nums -> Bar nums)
   , alias "first" "first element" ["nums", IntegerIndex 1]
@@ -462,6 +464,12 @@ peekPoint idx = do
   y <- peekFieldRaw peekRealFloat "y" idx
   return $ x `seq` y `seq` Point x y
 
+pointType :: TypeSpec
+pointType = RecordType $ Map.fromList
+  [ ("x", numberType)
+  , ("y", numberType)
+  ]
+
 showQux :: LuaError e => HaskellFunction e
 showQux = do
   qux <- forcePeek $ peekQux (nthBottom 1)
@@ -475,7 +483,7 @@ typeQux :: LuaError e => UDType e (HaskellFunction e) Qux
 typeQux = deftype "Qux"
   [ operation Tostring showQux ]
   [ methodGeneric "show" showQux
-  , property "num" "some number"
+  , property' "num" integerType "some number"
       (pushIntegral, \case
           Quux n _ -> n
           Quuz _ n -> n)
@@ -483,7 +491,7 @@ typeQux = deftype "Qux"
           Quux _ s -> (`Quux` s)
           Quuz d _ -> Quuz d)
 
-  , possibleProperty "str" "a string in Quux"
+  , possibleProperty' "str" stringType "a string in Quux"
     (pushString, \case
         Quux _ s -> Actual s
         Quuz {}  -> Absent)
@@ -491,7 +499,7 @@ typeQux = deftype "Qux"
         Quux n _ -> Actual . Quux n
         Quuz {}  -> const Absent)
 
-  , possibleProperty "point" "a point in Quuz"
+  , possibleProperty' "point" pointType "a point in Quuz"
     (pushPoint, \case
         Quuz p _ -> Actual p
         Quux {}  -> Absent)

@@ -10,6 +10,12 @@ Release pending.
     type's metatable is initialized and available from the
     registry.
 
+-   Type info for properties: Properties are amended with
+    information on the property's type. The functions `property`,
+    `possibleProperty`, and `readonly` each now come with typed
+    version `property'`, `possibleProperty'`, and `readonly`'.
+    This allows to specify the type of a property value.
+
 -   Functions for object typing info: The functions `udDocs` and
     `udTypeSpec` are added, enabling the generation of typing
     information for UDType objects.
