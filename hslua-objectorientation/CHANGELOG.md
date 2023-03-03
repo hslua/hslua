@@ -10,6 +10,10 @@ Release pending.
     type's metatable is initialized and available from the
     registry.
 
+-   Functions for object typing info: The functions `udDocs` and
+    `udTypeSpec` are added, enabling the generation of typing
+    information for UDType objects.
+
 ## hslua-objectorientation-2.2.1
 
 Released 2022-06-19.

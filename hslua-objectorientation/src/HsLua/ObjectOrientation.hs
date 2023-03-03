@@ -28,6 +28,9 @@ module HsLua.ObjectOrientation
   , peekUD
   , pushUD
   , initType
+    -- * Type docs
+  , udDocs
+  , udTypeSpec
     -- * Helper types for building
   , Member
   , Property
@@ -48,6 +51,8 @@ import Foreign.Ptr (FunPtr)
 import HsLua.Core as Lua
 import HsLua.Marshalling
 import HsLua.ObjectOrientation.Operation
+import HsLua.Typing ( NamedType (..), TypeDocs (..), TypeSpec (..)
+                    , userdataType )
 import qualified Data.Map.Strict as Map
 import qualified HsLua.Core.Unsafe as Unsafe
 import qualified HsLua.Core.Utf8 as Utf8
@@ -471,3 +476,22 @@ setList (_pushspec, (peekItem, updateList)) x = (x `updateList`) <$!> do
                   (y:) <$!> itemsAfter (i + 1)
               else getLazyList
       itemsAfter 1
+
+--
+-- Typing
+--
+
+-- | Returns documentation for this type.
+udDocs :: UDTypeWithList e fn a itemtype
+       -> TypeDocs
+udDocs ty = TypeDocs
+  { typeName = udName ty
+  , typeDescription = mempty
+  , typeSpec = userdataType
+  , typeRegistry = Just (udName ty)
+  }
+
+-- | Type specifier for a UDType
+udTypeSpec :: UDTypeWithList e fn a itemtype
+           -> TypeSpec
+udTypeSpec = NamedType . CustomType . udDocs
