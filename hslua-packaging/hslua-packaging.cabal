@@ -37,6 +37,7 @@ common common-options
                      , hslua-core              >= 2.2.1  && < 2.4
                      , hslua-marshalling       >= 2.2.1  && < 2.4
                      , hslua-objectorientation >= 2.3    && < 2.4
+                     , hslua-typing            >= 1.0    && < 1.1
                      , mtl                     >= 2.2    && < 2.4
                      , text                    >= 1.2    && < 2.1
   ghc-options:         -Wall
