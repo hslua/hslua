@@ -1,0 +1,71 @@
+cabal-version:       2.2
+name:                hslua-typing
+version:             1.0.0
+synopsis:            Type specifiers for Lua.
+description:         Structure to hold detailed type information. The primary
+                     use-case at this time are auto-generated docs.
+homepage:            https://hslua.org/
+license:             MIT
+license-file:        LICENSE
+author:              Albert Krewinkel
+maintainer:          Albert Krewinkel <albert@hslua.org>
+copyright:           © 2023 Albert Krewinkel
+category:            Foreign
+extra-source-files:  README.md
+                   , CHANGELOG.md
+tested-with:         GHC == 8.4.4
+                   , GHC == 8.6.5
+                   , GHC == 8.8.4
+                   , GHC == 8.10.7
+                   , GHC == 9.0.2
+                   , GHC == 9.2.5
+                   , GHC == 9.4.4
+
+source-repository head
+  type:                git
+  location:            https://github.com/hslua/hslua
+  subdir:              hslua-typing
+
+common common-options
+  default-language:    Haskell2010
+  build-depends:       base                 >= 4.11   && < 5
+  other-extensions:    DeriveGeneric
+                     , LambdaCase
+                     , OverloadedStrings
+  ghc-options:         -Wall -fno-warn-unused-do-bind
+                       -Wcpp-undef
+                       -Widentities
+                       -Wincomplete-record-updates
+                       -Wincomplete-uni-patterns
+                       -Wmissing-export-lists
+                       -Wmissing-signatures
+                       -Wnoncanonical-monad-instances
+                       -Wpartial-fields
+                       -Wredundant-constraints
+                       -fhide-source-paths
+
+  if impl(ghc >= 8.10)
+    ghc-options:       -Wunused-packages
+
+  if impl(ghc >= 9.0)
+    ghc-options:       -Winvalid-haddock
+
+library
+  import:              common-options
+  exposed-modules:     HsLua.Typing
+  hs-source-dirs:      src
+  build-depends:       containers           >= 0.5.9  && < 0.7
+                     , hslua-core           >= 2.3    && < 2.4
+                     , text                 >= 1.2    && < 2.1
+  default-language:    Haskell2010
+
+test-suite test-hslua-typing
+  import:              common-options
+  type:                exitcode-stdio-1.0
+  main-is:             test-hslua-typing.hs
+  hs-source-dirs:      test
+  build-depends:       hslua-typing
+                     , tasty                >= 0.11
+                     , tasty-hunit          >= 0.10
+  ghc-options:         -threaded
+  default-language:    Haskell2010

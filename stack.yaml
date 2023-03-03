@@ -13,6 +13,7 @@ packages:
 - 'hslua-module-version'
 - 'hslua-objectorientation'
 - 'hslua-packaging'
+- 'hslua-typing'
 - 'lua'
 - 'lua-arbitrary'
 - 'tasty-lua'
