@@ -7,7 +7,7 @@
 Module      : HsLua.Module.Zip
 Copyright   : © 2022-2023 Albert Krewinkel
 License     : MIT
-Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
+Maintainer  : Albert Krewinkel <albert@hslua.org>
 
 Lua module to work with file zips.
 -}

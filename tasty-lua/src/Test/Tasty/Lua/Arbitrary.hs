@@ -5,7 +5,7 @@
 Module      : Test.Tasty.Lua.Arbitrary
 Copyright   : © 2019-2023 Albert Krewinkel
 License     : MIT
-Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
+Maintainer  : Albert Krewinkel <albert@hslua.org>
 
 Generators for arbitrary Lua values.
 -}

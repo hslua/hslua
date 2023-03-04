@@ -5,7 +5,7 @@
 Module      : HsLua.Packaging.Module
 Copyright   : © 2019-2023 Albert Krewinkel
 License     : MIT
-Maintainer  : Albert Krewinkel <albert+hslua@zeitkraut.de>
+Maintainer  : Albert Krewinkel <albert@hslua.org>
 Stability   : alpha
 Portability : Requires GHC 8 or later.
 

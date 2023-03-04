@@ -11,7 +11,7 @@ bug-reports:         https://github.com/hslua/hslua/issues
 license:             MIT
 license-file:        LICENSE
 author:              Albert Krewinkel
-maintainer:          Albert Krewinkel <albert+hslua@zeitkraut.de>
+maintainer:          Albert Krewinkel <albert@hslua.org>
 copyright:           © 2007-2019 Lua.org, PUC-Rio;
                      © 2021-2023 Albert Krewinkel
 category:            Foreign

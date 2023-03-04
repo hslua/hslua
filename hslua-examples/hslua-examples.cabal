@@ -15,7 +15,7 @@ license:             MIT
 license-File:        LICENSE
 author:              Albert Krewinkel
 copyright:           © 2020–2021 Albert Krewinkel
-maintainer:          Albert Krewinkel <albert+hslua@zeitkraut.de>
+maintainer:          Albert Krewinkel <albert@hslua.org>
 category:            Foreign
 build-type:          Simple
 extra-source-files:  README.md

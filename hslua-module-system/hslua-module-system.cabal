@@ -15,7 +15,7 @@ license:             MIT
 license-file:        LICENSE
 author:              Albert Krewinkel
 maintainer:          albert+hslua@zeitkraut.de
-copyright:           © 2019-2023 Albert Krewinkel <albert+hslua@zeitkraut.de>
+copyright:           © 2019-2023 Albert Krewinkel <albert@hslua.org>
 category:            Foreign
 extra-source-files:  CHANGELOG.md
                    , test/test-system.lua
