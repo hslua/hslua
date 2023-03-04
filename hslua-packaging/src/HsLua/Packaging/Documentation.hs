@@ -12,6 +12,7 @@ module HsLua.Packaging.Documentation
   , getdocumentation
   , registerDocumentation
   , pushModuleDoc
+  , pushTypeDoc
   , pushFunctionDoc
   , pushFieldDoc
   , docsField
@@ -21,6 +22,7 @@ import Data.Version (showVersion)
 import HsLua.Core as Lua
 import HsLua.Marshalling
 import HsLua.Packaging.Types
+import HsLua.Typing (TypeDocs (..), typeSpecToString)
 
 -- | Function that retrieves documentation.
 documentation :: LuaError e => DocumentedFunction e
@@ -117,7 +119,7 @@ pushModuleDoc = pushAsTable
 pushFieldDoc :: LuaError e => Pusher e (Field e)
 pushFieldDoc = pushAsTable
   [ ("name", pushText . fieldName)
-  , ("type", pushText . fieldName)
+  , ("type", pushString . typeSpecToString . fieldType)
   , ("description", pushText . fieldDescription)
   ]
 
@@ -157,4 +159,12 @@ pushResultValueDoc :: LuaError e => Pusher e ResultValueDoc
 pushResultValueDoc = pushAsTable
   [ ("type", pushText . resultValueType)
   , ("description", pushText . resultValueDescription)
+  ]
+
+-- | Pushes documentation for a custom type.
+pushTypeDoc :: LuaError e => Pusher e TypeDocs
+pushTypeDoc = pushAsTable
+  [ ("name", pushName . typeName)
+  , ("description", pushText . typeDescription)
+  , ("registry", maybe pushnil pushName . typeRegistry)
   ]
