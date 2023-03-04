@@ -66,8 +66,17 @@ data TypeDocs = TypeDocs
 -- | Returns the sum of two type specifiers, declaring that a Lua value
 -- can have either type.
 (#|#) :: TypeSpec -> TypeSpec -> TypeSpec
-SumType a #|# SumType b = SumType (a ++ b)
-_         #|# _         = AnyType
+AnyType    #|# _          = AnyType
+_          #|# AnyType    = AnyType
+SumType [] #|# b          = b                   -- `SumType []` is `Void`
+a          #|# SumType [] = a
+SumType a  #|# SumType b  = SumType (a ++ b)
+SumType a  #|# b          = SumType (a ++ [b])
+a          #|# SumType b  = SumType (a : b)
+a          #|# b          =
+  if a == b
+  then a
+  else SumType [a, b]
 
 -- | Generate a string representation of the type specifier.
 typeSpecToString :: TypeSpec -> String

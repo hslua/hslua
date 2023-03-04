@@ -40,4 +40,18 @@ tests = testGroup "hslua-typespec"
     , testCase "table"    $ typeSpecToString tableType    @?= "table"
     , testCase "userdata" $ typeSpecToString userdataType @?= "userdata"
     ]
+
+  , testGroup "operators"
+    [ testGroup "#|#"
+      -- These should be property tests
+      [ testCase "combining basic types yields sum type" $
+        booleanType #|# numberType @?= SumType [booleanType, numberType]
+      , testCase "any is the unit" $ do
+        booleanType #|# anyType @?= anyType
+        anyType #|# booleanType @?= anyType
+      , testCase "void is zero" $ do
+        booleanType #|# voidType @?= booleanType
+        voidType #|# numberType @?= numberType
+      ]
+    ]
   ]
