@@ -29,6 +29,7 @@ module HsLua.Typing
   , threadType
   , userdataType
     -- ** Type constructors
+  , recType
   , seqType
   ) where
 
@@ -44,13 +45,13 @@ import qualified Data.Map as Map
 
 -- | Type specification for Lua values.
 data TypeSpec =
-    AnyType                             -- ^ Unconstrained type.
-  | BasicType HsLua.Type                -- ^ Built-in type
-  | NamedType TypeDocs                  -- ^ A type that's been given a name.
-  | SequenceType TypeSpec               -- ^ Sequence of the given type.
-  | SumType [TypeSpec]                  -- ^ Union type; a sum type.
-  | RecordType (Map.Map Name TypeSpec)  -- ^ Record type (type product).
-  | FunctionType [TypeSpec] [TypeSpec]  -- ^ Function type.
+    BasicType HsLua.Type              -- ^ Built-in type
+  | NamedType TypeDocs                -- ^ A type that's been given a name.
+  | SeqType TypeSpec                  -- ^ Sequence of the given type.
+  | SumType [TypeSpec]                -- ^ Union type; a sum type.
+  | RecType (Map.Map Name TypeSpec)   -- ^ Record type (type product).
+  | FunType [TypeSpec] [TypeSpec]     -- ^ Function type.
+  | AnyType                           -- ^ Unconstrained type.
   deriving (Eq, Generic, Ord, Show)
 
 -- | Documented custom type.
@@ -71,13 +72,13 @@ _         #|# _         = AnyType
 -- | Generate a string representation of the type specifier.
 typeSpecToString :: TypeSpec -> String
 typeSpecToString = \case
-  AnyType        -> "any"
-  FunctionType{} -> "function"
-  RecordType{}   -> "table"
-  BasicType t    -> map toLower . drop 4 $ show t
-  NamedType nt   -> toString . fromName $ typeName nt
-  SequenceType t -> '{' : typeSpecToString t ++ ",...}"
-  SumType specs  -> intercalate "|" (map typeSpecToString specs)
+  BasicType t   -> map toLower . drop 4 $ show t
+  NamedType nt  -> toString . fromName $ typeName nt
+  AnyType       -> "any"
+  FunType{}     -> "function"
+  RecType{}     -> "table"
+  SeqType t     -> '{' : typeSpecToString t ++ ",...}"
+  SumType specs -> intercalate "|" (map typeSpecToString specs)
 
 --
 -- Built-in types
@@ -156,5 +157,10 @@ instance IsString TypeSpec where
 -- Constructors
 --
 
+-- | Creates a sequence type.
 seqType :: TypeSpec -> TypeSpec
-seqType = SequenceType
+seqType = SeqType
+
+-- | Creates a record type.
+recType :: [(Name, TypeSpec)] -> TypeSpec
+recType = RecType . Map.fromList

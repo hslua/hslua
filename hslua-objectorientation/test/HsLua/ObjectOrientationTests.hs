@@ -22,7 +22,6 @@ import HsLua.Typing
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HsLua ((=:), shouldBeResultOf, shouldBeErrorMessageOf)
 import qualified Data.ByteString.Char8 as Char8
-import qualified Data.Map as Map
 
 -- | Tests for HsLua object orientation.
 tests :: TestTree
@@ -465,7 +464,7 @@ peekPoint idx = do
   return $ x `seq` y `seq` Point x y
 
 pointType :: TypeSpec
-pointType = RecordType $ Map.fromList
+pointType = recType
   [ ("x", numberType)
   , ("y", numberType)
   ]
