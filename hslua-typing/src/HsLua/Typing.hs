@@ -14,6 +14,7 @@ module HsLua.Typing
   , NamedType (..)
   , TypeDocs (..)
   , (#|#)
+  , typeSpecToString
     -- * Types
   , anyType
   , voidType
@@ -32,10 +33,13 @@ module HsLua.Typing
   , seqType
   ) where
 
+import Data.Char (toLower)
+import Data.List (intercalate)
 import Data.String (IsString (..))
 import Data.Text (Text)
 import GHC.Generics (Generic)
-import HsLua.Core (Name)
+import HsLua.Core (Name (fromName))
+import HsLua.Core.Utf8 (toString)
 import qualified HsLua.Core as HsLua
 import qualified Data.Map as Map
 
@@ -69,6 +73,18 @@ data TypeDocs = TypeDocs
 (#|#) :: TypeSpec -> TypeSpec -> TypeSpec
 SumType a #|# SumType b = SumType (a ++ b)
 _         #|# _         = AnyType
+
+-- | Generate a string representation of the type specifier.
+typeSpecToString :: TypeSpec -> String
+typeSpecToString = \case
+  AnyType        -> "any"
+  FunctionType{} -> "function"
+  RecordType{}   -> "table"
+  NamedType nt   -> case nt of
+                      CustomType ct -> toString . fromName $ typeName ct
+                      BasicType b   -> map toLower . drop 4 $ show b
+  SequenceType t -> '{' : typeSpecToString t ++ ",...}"
+  SumType specs  -> intercalate "|" (map typeSpecToString specs)
 
 --
 -- Built-in types

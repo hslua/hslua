@@ -30,4 +30,14 @@ tests = testGroup "hslua-typespec"
     , testCase "table"    $ "table"    @?= tableType
     , testCase "userdata" $ "userdata" @?= userdataType
     ]
+
+  , testGroup "to string"
+    [ testCase "any"      $ typeSpecToString anyType      @?= "any"
+    , testCase "boolean"  $ typeSpecToString booleanType  @?= "boolean"
+    , testCase "function" $ typeSpecToString functionType @?= "function"
+    , testCase "number"   $ typeSpecToString numberType   @?= "number"
+    , testCase "string"   $ typeSpecToString stringType   @?= "string"
+    , testCase "table"    $ typeSpecToString tableType    @?= "table"
+    , testCase "userdata" $ typeSpecToString userdataType @?= "userdata"
+    ]
   ]
