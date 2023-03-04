@@ -59,8 +59,7 @@ import Foreign.Ptr (FunPtr)
 import HsLua.Core as Lua
 import HsLua.Marshalling
 import HsLua.ObjectOrientation.Operation
-import HsLua.Typing ( NamedType (..), TypeDocs (..), TypeSpec (..)
-                    , anyType, userdataType )
+import HsLua.Typing ( TypeDocs (..), TypeSpec (..), anyType, userdataType )
 import qualified Data.Map.Strict as Map
 import qualified HsLua.Core.Unsafe as Unsafe
 import qualified HsLua.Core.Utf8 as Utf8
@@ -539,4 +538,4 @@ udDocs ty = TypeDocs
 -- | Type specifier for a UDType
 udTypeSpec :: UDTypeWithList e fn a itemtype
            -> TypeSpec
-udTypeSpec = NamedType . CustomType . udDocs
+udTypeSpec = NamedType . udDocs

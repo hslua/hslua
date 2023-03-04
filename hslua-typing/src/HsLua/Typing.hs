@@ -11,7 +11,6 @@ describe and declare the types of Lua values.
 -}
 module HsLua.Typing
   ( TypeSpec (..)
-  , NamedType (..)
   , TypeDocs (..)
   , (#|#)
   , typeSpecToString
@@ -46,17 +45,12 @@ import qualified Data.Map as Map
 -- | Type specification for Lua values.
 data TypeSpec =
     AnyType                             -- ^ Unconstrained type.
-  | NamedType NamedType                 -- ^ A type that's been given a name.
+  | BasicType HsLua.Type                -- ^ Built-in type
+  | NamedType TypeDocs                  -- ^ A type that's been given a name.
   | SequenceType TypeSpec               -- ^ Sequence of the given type.
   | SumType [TypeSpec]                  -- ^ Union type; a sum type.
   | RecordType (Map.Map Name TypeSpec)  -- ^ Record type (type product).
   | FunctionType [TypeSpec] [TypeSpec]  -- ^ Function type.
-  deriving (Eq, Generic, Ord, Show)
-
--- | An atomic type; either a basic (built-in) type or a custom type.
-data NamedType =
-    BasicType HsLua.Type
-  | CustomType TypeDocs
   deriving (Eq, Generic, Ord, Show)
 
 -- | Documented custom type.
@@ -80,9 +74,8 @@ typeSpecToString = \case
   AnyType        -> "any"
   FunctionType{} -> "function"
   RecordType{}   -> "table"
-  NamedType nt   -> case nt of
-                      CustomType ct -> toString . fromName $ typeName ct
-                      BasicType b   -> map toLower . drop 4 $ show b
+  BasicType t    -> map toLower . drop 4 $ show t
+  NamedType nt   -> toString . fromName $ typeName nt
   SequenceType t -> '{' : typeSpecToString t ++ ",...}"
   SumType specs  -> intercalate "|" (map typeSpecToString specs)
 
@@ -100,43 +93,43 @@ voidType = SumType []
 
 -- | The built-in @boolean@ Lua type.
 booleanType :: TypeSpec
-booleanType = NamedType (BasicType HsLua.TypeBoolean)
+booleanType = BasicType HsLua.TypeBoolean
 
 -- | The built-in @function@ Lua type.
 functionType :: TypeSpec
-functionType = NamedType (BasicType HsLua.TypeFunction)
+functionType = BasicType HsLua.TypeFunction
 
 -- | The built-in @number@ Lua type.
 integerType :: TypeSpec
-integerType = NamedType (BasicType HsLua.TypeNumber)
+integerType = BasicType HsLua.TypeNumber
 
 -- | The built-in @light userdata@ Lua type.
 lightUserdataType :: TypeSpec
-lightUserdataType = NamedType (BasicType HsLua.TypeLightUserdata)
+lightUserdataType = BasicType HsLua.TypeLightUserdata
 
 -- | The built-in @nil@ Lua type.
 nilType :: TypeSpec
-nilType = NamedType (BasicType HsLua.TypeNil)
+nilType = BasicType HsLua.TypeNil
 
 -- | The built-in @number@ Lua type.
 numberType :: TypeSpec
-numberType = NamedType (BasicType HsLua.TypeNumber)
+numberType = BasicType HsLua.TypeNumber
 
 -- | The built-in @string@ Lua type.
 stringType :: TypeSpec
-stringType = NamedType (BasicType HsLua.TypeString)
+stringType = BasicType HsLua.TypeString
 
 -- | The built-in @table@ Lua type.
 tableType :: TypeSpec
-tableType = NamedType (BasicType HsLua.TypeTable)
+tableType = BasicType HsLua.TypeTable
 
 -- | The built-in @thread@ Lua type.
 threadType :: TypeSpec
-threadType = NamedType (BasicType HsLua.TypeThread)
+threadType = BasicType HsLua.TypeThread
 
 -- | The built-in @userdata@ Lua type.
 userdataType :: TypeSpec
-userdataType = NamedType (BasicType HsLua.TypeUserdata)
+userdataType = BasicType HsLua.TypeUserdata
 
 -- | For backwards compatibility and convenience, strings can be used as
 -- TypeSpec values.
@@ -152,7 +145,7 @@ instance IsString TypeSpec where
     "string"         -> stringType
     "table"          -> tableType
     "userdata"       -> userdataType
-    s -> NamedType $ CustomType $ TypeDocs
+    s -> NamedType $ TypeDocs
          { typeName = fromString s
          , typeSpec = anyType
          , typeDescription = mempty
