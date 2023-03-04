@@ -25,6 +25,7 @@ import Data.Text (Text)
 import Data.Version (Version)
 import HsLua.Core (LuaE, Name, NumResults)
 import HsLua.ObjectOrientation (Operation)
+import HsLua.Typing (TypeSpec)
 
 -- | Named and documented Lua module.
 data Module e = Module
@@ -39,7 +40,7 @@ data Module e = Module
 -- | Self-documenting module field
 data Field e = Field
   { fieldName :: Text
-  , fieldType :: Name
+  , fieldType :: TypeSpec
   , fieldDescription :: Text
   , fieldPushValue :: LuaE e ()
   }
