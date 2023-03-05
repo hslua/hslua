@@ -6,6 +6,8 @@
 
 Release pending.
 
+-   Export all constructors and functions of type `Property`.
+
 -   Hook for udtype metatable initializer. The function `pushUD`
     has been renamed to `pushUDGeneric` and now takes an
     additional `hook` parameter. The hook operation can be used to

@@ -41,7 +41,7 @@ module HsLua.ObjectOrientation
   , udTypeSpec
     -- * Helper types for building
   , Member
-  , Property
+  , Property (..)
   , Operation (..)
   , ListSpec
   , Possible (..)
