@@ -52,6 +52,7 @@ import HsLua.Marshalling
   , pushLazyByteString, pushList, pushIntegral, pushString
   , retrieving, typeMismatchMessage )
 import HsLua.Packaging
+import HsLua.Typing
 
 import qualified Codec.Archive.Zip as Zip
 import qualified Data.Text as T
@@ -178,10 +179,11 @@ peekZipOptions = retrieving "Zip options" . \idx -> catMaybes <$> sequence
 --
 
 -- | The Lua 'Archive' type
-typeArchive :: LuaError e => DocumentedType e Archive
-typeArchive = deftype "ZipArchive"
+typeArchive :: forall e. LuaError e => DocumentedType e Archive
+typeArchive = deftype "zip.Archive"
   []
-  [ property "entries" "files in this zip archive"
+  [ property' "entries" (seqType (udTypeSpec @e typeEntry))
+    "Files in this zip archive"
     (pushEntries, Zip.zEntries)
     (peekList peekEntryFuzzy, \ar entries -> ar { Zip.zEntries = entries })
   , method extract
@@ -189,7 +191,7 @@ typeArchive = deftype "ZipArchive"
   ]
 
 -- | Wrapper for 'Zip.toArchive'; converts a string into an Archive.
-mkArchive :: LuaError e => DocumentedFunction e
+mkArchive :: forall e. LuaError e => DocumentedFunction e
 mkArchive = defun "Archive"
   ### (\case
           Nothing                ->
@@ -200,7 +202,8 @@ mkArchive = defun "Archive"
             pure $ foldr Zip.addEntryToArchive emptyArchive entries)
   <#> opt (parameter (choice [ fmap Left  . peekLazyByteString
                              , fmap Right . peekList peekEntryFuzzy ])
-           "string|{ZipEntry,...}" "bytestring_or_entries"
+           (stringType #|# seqType (udTypeSpec @e typeEntry))
+           "bytestring_or_entries"
            "binary archive data or list of entries; defaults to an empty list")
   =#> udresult typeArchive "new Archive"
   #? T.unlines
@@ -238,13 +241,15 @@ bytestring = defun "bytestring"
 --
 
 -- | The Lua type for 'Entry' objects.
-typeEntry :: LuaError e => DocumentedType e Entry
-typeEntry = deftype "ZipEntry"
+typeEntry :: forall e. LuaError e => DocumentedType e Entry
+typeEntry = deftype "zip.Entry"
   []
-  [ property "path" "relative path, using `/` as separator"
+  [ property' "path" (udTypeSpec @e typeEntry)
+    "Relative path, using `/` as separator"
     (pushString, Zip.eRelativePath)
     (peekString, \entry path -> entry { Zip.eRelativePath = path })
-  , property "modtime" "modification time (seconds since unix epoch)"
+  , property' "modtime" integerType
+    "Modification time (seconds since unix epoch)"
     (pushIntegral, Zip.eLastModified)
     (peekIntegral, \entry modtime -> entry { Zip.eLastModified = modtime})
   , method contents
