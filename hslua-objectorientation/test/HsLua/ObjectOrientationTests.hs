@@ -173,7 +173,7 @@ tests = testGroup "Object Orientation"
     [ "type table is added to the registry" =:
       TypeTable `shouldBeResultOf` do
         openlibs
-        name <- initType typeBar
+        name <- initTypeGeneric (\_ -> pure ()) typeBar
         getfield registryindex name
 
     , "type table is not in registry when uninitialized" =:
@@ -185,7 +185,7 @@ tests = testGroup "Object Orientation"
       0 `shouldBeResultOf` do
         openlibs
         before <- gettop
-        _ <- initType typeBar
+        _ <- initTypeGeneric (\_ -> pure ()) typeBar
         after <- gettop
         return $ after - before
     ]
@@ -387,6 +387,10 @@ deftype' :: LuaError e
          -> Maybe (ListSpec e a itemtype)  -- ^ list access
          -> UDTypeWithList e (HaskellFunction e) a itemtype
 deftype' = deftypeGeneric' pushHaskellFunction
+
+-- | Pushes a userdata value of the given type.
+pushUD :: LuaError e => UDTypeWithList e fn a itemtype -> a -> LuaE e ()
+pushUD = pushUDGeneric (const (pure ()))
 
 -- | Define a (meta) operation on a type.
 operation :: Operation -> HaskellFunction e -> (Operation, HaskellFunction e)

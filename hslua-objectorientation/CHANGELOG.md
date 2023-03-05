@@ -20,6 +20,21 @@ Release pending.
     `udTypeSpec` are added, enabling the generation of typing
     information for UDType objects.
 
+-   Hook for udtype metatable initializer. The functions `pushUD`
+    and `initType` have been renamed to `pushUDGeneric` and
+    `initTypeGeneric` and now take an additional `hook` parameter.
+    The hook operation can be used to perform additional setup
+    operations, e.g., for documentation.
+
+    The old `pushUD` and `initType` functions can be recovered
+    with
+
+        pushUD = pushUDGeneric (\_ -> pure ())
+        initType = initTypeGeneric (\_ -> pure ())
+
+    The `hslua-packaging` now exports `pushUD` and `initType`
+    functions specialized to documented types.
+
 ## hslua-objectorientation-2.2.1
 
 Released 2022-06-19.

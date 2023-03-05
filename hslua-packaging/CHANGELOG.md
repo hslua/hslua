@@ -19,12 +19,12 @@ Release pending.
 -   *Field* records now have an additional `fieldType` entry.
     \[API change\]
 
--   (Re)export `initType` from `HsLua.Packaging.UDType`. The
-    function is defined in package `hslua-objectorientation` and
-    ensures that the metatable of a type has been fully
-    initialized. This can be helpful when the default method of
-    lazy initialization is not desired, e.g. when the type object
-    is to be inspected or extended.
+-   The `pushUD` function is now specialized to documented types.
+
+-   Export `initType`. The function ensures that the metatable of
+    a type has been fully initialized. This can be helpful when
+    the default method of lazy initialization is not desired, e.g.
+    when the type object is to be inspected or extended.
 
 -   Re-export `udDocs`, `udTypeSpec`, allowing to generate typing
     info for userdata classes.

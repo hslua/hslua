@@ -98,3 +98,19 @@ udresult :: LuaError e
          -> Text           -- ^ result description
          -> FunctionResults e a
 udresult ty = functionResult (pushUD ty) (Utf8.toText . fromName $ udName ty)
+
+-- | Pushes a userdata value of the given type.
+pushUD :: LuaError e => DocumentedTypeWithList e a itemtype -> a -> LuaE e ()
+pushUD = pushUDGeneric pushUDTypeDocs
+
+-- | Ensures that the type has been fully initialized, i.e., that all
+-- metatables have been created and stored in the registry. Returns the
+-- name of the initialized type.
+initType :: LuaError e
+         => DocumentedTypeWithList e a itemtype
+         -> LuaE e Name
+initType = initTypeGeneric pushUDTypeDocs
+
+pushUDTypeDocs :: DocumentedTypeWithList e a itemtype
+               -> LuaE e ()
+pushUDTypeDocs _ = pure ()

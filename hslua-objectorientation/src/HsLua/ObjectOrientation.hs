@@ -34,8 +34,8 @@ module HsLua.ObjectOrientation
   , alias
     -- * Marshaling
   , peekUD
-  , pushUD
-  , initType
+  , pushUDGeneric
+  , initTypeGeneric
     -- * Type docs
   , udDocs
   , udTypeSpec
@@ -254,9 +254,9 @@ readonly' name typespec desc (push, get) = MemberProperty name $
 -- | Creates a read-only object property. Attempts to set the value will
 -- cause an error.
 readonly :: Name                 -- ^ property name
-                -> Text                 -- ^ property description
-                -> (Pusher e b, a -> b) -- ^ how to get the property value
-                -> Member e fn a
+         -> Text                 -- ^ property description
+         -> (Pusher e b, a -> b) -- ^ how to get the property value
+         -> Member e fn a
 readonly name = readonly' name anyType
 
 -- | Define an alias for another, possibly nested, property.
@@ -269,17 +269,38 @@ alias name _desc = MemberAlias name
 -- | Ensures that the type has been fully initialized, i.e., that all
 -- metatables have been created and stored in the registry. Returns the
 -- name of the initialized type.
-initType :: LuaError e => UDTypeWithList e fn a itemtype -> LuaE e Name
-initType ty = do
-  pushUDMetatable ty
+--
+-- The @hook@ can be used to perform additional setup operations. The
+-- function is called as the last step after the type metatable has been
+-- initialized: the fully initialized metatable will be at the top of
+-- the stack at that point. Note that the hook will /not/ be called if
+-- the type's metatable already existed before this function was
+-- invoked.
+initTypeGeneric :: LuaError e
+                => (UDTypeWithList e fn a itemtype -> LuaE e ())
+                -> UDTypeWithList e fn a itemtype
+                -> LuaE e Name
+initTypeGeneric hook ty = do
+  pushUDMetatable hook ty
   pop 1
   return (udName ty)
 
 -- | Pushes the metatable for the given type to the Lua stack. Creates
 -- the new table afresh on the first time it is needed, and retrieves it
 -- from the registry after that.
-pushUDMetatable :: LuaError e => UDTypeWithList e fn a itemtype -> LuaE e ()
-pushUDMetatable ty = do
+--
+--
+-- A @hook@ can be used to perform additional setup operations. The
+-- function is called as the last step after the type metatable has been
+-- initialized: the fully initialized metatable will be at the top of
+-- the stack at that point. Note that the hook will /not/ be called if
+-- the type's metatable already existed before this function was
+-- invoked.
+pushUDMetatable :: LuaError e
+  => (UDTypeWithList e fn a itemtype -> LuaE e ())  -- ^ @hook@
+  -> UDTypeWithList e fn a itemtype
+  -> LuaE e ()
+pushUDMetatable hook ty = do
   created <- newudmetatable (udName ty)
   when created $ do
     add (metamethodName Index)    $ pushcfunction hslua_udindex_ptr
@@ -295,6 +316,7 @@ pushUDMetatable ty = do
       Nothing -> pure ()
       Just ((pushItem, _), _) -> do
         add "lazylisteval" $ pushHaskellFunction (lazylisteval pushItem)
+    hook ty
   where
     add :: LuaError e => Name -> LuaE e () -> LuaE e ()
     add name op = do
@@ -438,10 +460,14 @@ lazyListStateName :: Name
 lazyListStateName = "HsLua unevalled lazy list"
 
 -- | Pushes a userdata value of the given type.
-pushUD :: LuaError e => UDTypeWithList e fn a itemtype -> a -> LuaE e ()
-pushUD ty x = do
+pushUDGeneric :: LuaError e
+  => (UDTypeWithList e fn a itemtype -> LuaE e ()) -- ^ push docs
+  -> UDTypeWithList e fn a itemtype                -- ^ userdata type
+  -> a                                             -- ^ value to push
+  -> LuaE e ()
+pushUDGeneric pushDocs ty x = do
   newhsuserdatauv x 1
-  pushUDMetatable ty
+  pushUDMetatable pushDocs ty
   setmetatable (nth 2)
   -- add list as value in caching table
   case udListSpec ty of
