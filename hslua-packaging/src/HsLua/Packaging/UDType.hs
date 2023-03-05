@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : HsLua.Packaging.UDType
 Copyright   : © 2020-2023 Albert Krewinkel
@@ -36,11 +37,15 @@ module HsLua.Packaging.UDType
   , Possible (..)
   ) where
 
+import Data.Map (Map)
 import Data.Text (Text)
 import HsLua.Core
+import HsLua.Marshalling
 import HsLua.ObjectOrientation
 import HsLua.ObjectOrientation.Operation (metamethodName)
 import HsLua.Packaging.Function
+import HsLua.Typing (typeSpecToString)
+import qualified Data.Map as Map
 import qualified HsLua.Core.Utf8 as Utf8
 
 -- | Type definitions containing documented functions.
@@ -111,6 +116,25 @@ initType :: LuaError e
          -> LuaE e Name
 initType = initTypeGeneric pushUDTypeDocs
 
-pushUDTypeDocs :: DocumentedTypeWithList e a itemtype
+-- | Pushes a documentation table for the given UD type.
+pushUDTypeDocs :: LuaError e
+               => DocumentedTypeWithList e a itemtype
                -> LuaE e ()
-pushUDTypeDocs _ = pure ()
+pushUDTypeDocs ty = do
+  -- metadata table is at the top of the stack
+  pushName "docs"
+  pushAsTable
+    [ ("name", pushName . udName)
+    , ("properties", pushPropertyDocs . udProperties)
+    ] ty
+  rawset (nth 3)
+
+pushPropertyDocs :: LuaError e
+                 => Map Name (Property e a)
+                 -> LuaE e ()
+pushPropertyDocs = pushKeyValuePairs pushName pushPropDocs . Map.toList
+  where
+    pushPropDocs = pushAsTable
+      [ ("description", pushText . propertyDescription)
+      , ("type", pushString . typeSpecToString . propertyType)
+      ]
