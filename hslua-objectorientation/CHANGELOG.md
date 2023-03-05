@@ -6,9 +6,22 @@
 
 Release pending.
 
--   Export new function `initType`: The function ensures that a
-    type's metatable is initialized and available from the
-    registry.
+-   Hook for udtype metatable initializer. The function `pushUD`
+    has been renamed to `pushUDGeneric` and now takes an
+    additional `hook` parameter. The hook operation can be used to
+    perform additional setup operations, e.g., for documentation.
+
+    The old `pushUD` function can be recovered with
+
+        pushUD = pushUDGeneric (\_ -> pure ())
+
+    The `hslua-packaging` now exports a `pushUD` functions that is
+    specialized to documented types.
+
+-   Export new function `initTypeGeneric`: The function ensures
+    that a type's metatable is initialized and available from the
+    registry. Just like with `pushUDGeneric`, a hook can be used
+    to augment the initialization.
 
 -   Type info for properties: Properties are amended with
     information on the property's type. The functions `property`,
@@ -19,21 +32,6 @@ Release pending.
 -   Functions for object typing info: The functions `udDocs` and
     `udTypeSpec` are added, enabling the generation of typing
     information for UDType objects.
-
--   Hook for udtype metatable initializer. The functions `pushUD`
-    and `initType` have been renamed to `pushUDGeneric` and
-    `initTypeGeneric` and now take an additional `hook` parameter.
-    The hook operation can be used to perform additional setup
-    operations, e.g., for documentation.
-
-    The old `pushUD` and `initType` functions can be recovered
-    with
-
-        pushUD = pushUDGeneric (\_ -> pure ())
-        initType = initTypeGeneric (\_ -> pure ())
-
-    The `hslua-packaging` now exports `pushUD` and `initType`
-    functions specialized to documented types.
 
 ## hslua-objectorientation-2.2.1
 
