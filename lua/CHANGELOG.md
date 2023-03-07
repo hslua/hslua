@@ -17,6 +17,8 @@ Release pending.
     not match the Lua version against which the library is
     compiled.
 
+-   `Type` is now an instance of `Read`.
+
 ## lua-2.2.1
 
 Released 2022-06-19.

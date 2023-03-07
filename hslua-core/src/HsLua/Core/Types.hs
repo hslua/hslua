@@ -152,7 +152,7 @@ data Type
   | TypeFunction       -- ^ type of functions, either normal or @'CFunction'@
   | TypeUserdata       -- ^ type of full user data
   | TypeThread         -- ^ type of Lua threads
-  deriving (Bounded, Eq, Ord, Show)
+  deriving (Bounded, Eq, Ord, Show, Read)
 
 instance Enum Type where
   fromEnum = fromIntegral . fromTypeCode . fromType
