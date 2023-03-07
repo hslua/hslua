@@ -423,6 +423,48 @@ tests = testGroup "Peekers"
         Failure "all choices failed" [] `shouldBeResultOf` do
           runPeeker (choice [const $ failPeek @() "nope"]) Lua.top
       ]
+
+    , testGroup "peekNilOr"
+      [ "returns the parser result if the value is not nil" =:
+        Success (Just "a") `shouldBeResultOf` runPeek
+          (liftLua (Lua.pushstring "a") *> peekNilOr peekString Lua.top)
+      , "returns nothing if the value is nil" =:
+        Success Nothing `shouldBeResultOf` runPeek
+          (liftLua Lua.pushnil *> peekNilOr peekString Lua.top)
+      , "fails if the value is none" =:
+        Failure "string expected, got no value" [] `shouldBeResultOf` runPeek
+          (liftLua Lua.gettop >>= peekNilOr @Maybe peekString . (+1))
+      ]
+
+    , testGroup "peekNoneOr"
+      [ "returns the parser result if a value is present" =:
+        Success (Just "a") `shouldBeResultOf` runPeek
+          (liftLua (Lua.pushstring "a") *> peekNoneOr peekString Lua.top)
+      , "returns the parser result if the value is nil" =:
+        Success (Just ()) `shouldBeResultOf` runPeek
+          (liftLua Lua.pushnil *> peekNoneOr peekNil Lua.top)
+      , "returns `empty` if the value is missing" =:
+        Success Nothing `shouldBeResultOf` runPeek
+          (liftLua Lua.gettop >>= peekNoneOr @Maybe peekString . (+1))
+      , "fails if the parser cannot parse the value" =:
+        Failure "string expected, got nil" [] `shouldBeResultOf` runPeek
+          (liftLua Lua.pushnil *> peekNoneOr @Maybe peekString Lua.top)
+      ]
+    , testGroup "peekNoneOrNilOr"
+      [ "returns the parser result if a value is present" =:
+        Success (Just "a") `shouldBeResultOf` runPeek
+          (liftLua (Lua.pushstring "a") *> peekNoneOrNilOr peekString Lua.top)
+      , "returns `empty` if the value is nil" =:
+        Success Nothing `shouldBeResultOf` runPeek
+          (liftLua Lua.pushnil *> peekNoneOrNilOr @Maybe peekString Lua.top)
+      , "returns `empty` if the value is missing" =:
+        Success Nothing `shouldBeResultOf` runPeek
+          (liftLua Lua.gettop >>= peekNoneOrNilOr @Maybe peekString . (+1))
+      , "fails if the parser cannot parse the value" =:
+        Failure "string expected, got boolean" [] `shouldBeResultOf` runPeek
+          (liftLua (Lua.pushboolean True) *>
+           peekNoneOrNilOr @Maybe peekString Lua.top)
+      ]
     ]
 
   , testGroup "helper"

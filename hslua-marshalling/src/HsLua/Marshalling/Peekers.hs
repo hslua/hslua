@@ -38,6 +38,9 @@ module HsLua.Marshalling.Peekers
   , choice
   , peekFieldRaw
   , peekIndexRaw
+  , peekNilOr
+  , peekNoneOr
+  , peekNoneOrNilOr
   , peekPair
   , peekTriple
   -- ** Building peek functions
@@ -316,6 +319,35 @@ peekIndexRaw i peeker idx = do
     liftLua . void $ rawgeti idx i
     peeker top `lastly` Lua.pop 1
 {-# INLINABLE peekIndexRaw #-}
+
+
+-- | Returns 'empty' if the value at the given index is @nil@;
+-- otherwise returns the result of peeker @p@.
+peekNilOr :: Alternative m
+          => Peeker e a          -- ^ p
+          -> Peeker e (m a)
+peekNilOr p idx = liftLua (ltype idx) >>= \case
+  TypeNil  -> pure empty
+  _        -> pure <$> p idx
+
+-- | Returns 'empty' if the value at the given index is @none@;
+-- otherwise returns the result of peeker @p@.
+peekNoneOr :: Alternative m
+           => Peeker e a          -- ^ p
+           -> Peeker e (m a)
+peekNoneOr p idx = liftLua (ltype idx) >>= \case
+  TypeNone -> pure empty
+  _        -> pure <$> p idx
+
+-- | Returns 'empty' if the value at the given index is @none@ or
+-- @nil@; otherwise returns the result of peeker @p@.
+peekNoneOrNilOr :: Alternative m
+                => Peeker e a          -- ^ p
+                -> Peeker e (m a)
+peekNoneOrNilOr p idx = liftLua (ltype idx) >>= \case
+  TypeNil  -> pure empty
+  TypeNone -> pure empty
+  _        -> pure <$> p idx
 
 -- | Retrieves a value pair from a table. Expects the values to be
 -- stored in a numerically indexed table; does not access metamethods.

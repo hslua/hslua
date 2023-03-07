@@ -10,6 +10,10 @@ Release pending.
 
 -   New peeker and pusher functions for `NonEmpty`.
 
+-   Peeker combinators for optional values: The new combinators
+    `peekNilOr`, `peekNoneOr`, and `peekNoneOrNil` can be used to
+    retrieve optional values.
+
 ## hslua-marshalling-2.2.1
 
 Released 2022-06-19.

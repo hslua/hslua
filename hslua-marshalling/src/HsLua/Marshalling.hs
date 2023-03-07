@@ -42,6 +42,9 @@ module HsLua.Marshalling
   , peekFieldRaw
   , peekPair
   , peekTriple
+  , peekNilOr
+  , peekNoneOr
+  , peekNoneOrNilOr
     -- ** Lua peek monad
   , Peek (..)
   , forcePeek
