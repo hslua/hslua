@@ -19,8 +19,11 @@ module HsLua.Packaging.UDType
   , deftype'
   , method
   , property
+  , property'
   , possibleProperty
+  , possibleProperty'
   , readonly
+  , readonly'
   , alias
   , operation
   , peekUD
