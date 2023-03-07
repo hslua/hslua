@@ -1,5 +1,6 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE LambdaCase    #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE LambdaCase        #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : HsLua.Typing
 Copyright   : © 2023 Albert Krewinkel
@@ -31,15 +32,22 @@ module HsLua.Typing
     -- ** Type constructors
   , recType
   , seqType
+    -- * Marshalling
+  , pushTypeSpec
+  , peekTypeSpec
+  , pushTypeDoc
+  , peekTypeDoc
   ) where
 
+import Control.Monad (when)
 import Data.Char (toLower)
 import Data.List (intercalate)
 import Data.String (IsString (..))
 import Data.Text (Text)
 import GHC.Generics (Generic)
-import HsLua.Core (Name (fromName))
+import HsLua.Core
 import HsLua.Core.Utf8 (toString)
+import HsLua.Marshalling
 import qualified HsLua.Core as HsLua
 import qualified Data.Map as Map
 
@@ -173,3 +181,66 @@ seqType = SeqType
 -- | Creates a record type.
 recType :: [(Name, TypeSpec)] -> TypeSpec
 recType = RecType . Map.fromList
+
+--
+-- Marshalling
+--
+
+-- | Pushes documentation for a custom type.
+pushTypeDoc :: LuaError e => Pusher e TypeDocs
+pushTypeDoc = pushAsTable
+  [ ("name", pushName . typeName)
+  , ("description", pushText . typeDescription)
+  , ("typespec", pushTypeSpec . typeSpec)
+  , ("registry", maybe pushnil pushName . typeRegistry)
+  ]
+
+-- | Retrieves a custom type specifier.
+peekTypeDoc :: LuaError e => Peeker e TypeDocs
+peekTypeDoc = typeChecked "TypeDoc" istable $ \idx -> do
+  name <- peekFieldRaw peekName "name" idx
+  desc <- peekFieldRaw peekText "description" idx
+  spec <- peekFieldRaw peekTypeSpec "typespec" idx
+  regn <- peekFieldRaw (peekNilOr peekName) "registry" idx
+  return $ TypeDocs name desc spec regn
+
+-- | Pushes a table representation of a 'TypeSpec' to the stack.
+pushTypeSpec :: LuaError e
+             => TypeSpec
+             -> LuaE e ()
+pushTypeSpec ts = do
+  checkstack' 4 "HsLua.Typing.pushTypeSpec"
+  case ts of
+    BasicType bt  -> pushAsTable [("basic", pushString . show)] bt
+    NamedType td  -> pushAsTable [("named", pushTypeDoc)] td
+    SeqType seq'  -> pushAsTable [("sequence", pushTypeSpec)] seq'
+    SumType st    -> pushAsTable [("sum", pushList pushTypeSpec)] st
+    RecType rt    -> pushAsTable [("record", pushMap pushName pushTypeSpec)] rt
+    FunType dt ct -> pushAsTable [("domain", pushList pushTypeSpec . fst)
+                                 ,("codomain", pushList pushTypeSpec . snd)]
+                                 (dt, ct)
+    AnyType       -> pushAsTable [("any", pushBool)] True
+  created <- newmetatable "HsLua.TypeSpec"
+  when created $ do
+    pushHaskellFunction $ do
+      ts' <- forcePeek $ peekTypeSpec (nth 1)
+      pushString $ typeSpecToString ts'
+      return 1
+    setfield (nth 2) "__tostring"
+  setmetatable (nth 2)
+
+-- | Retrieves a 'TypeSpec' from a table on the stack.
+peekTypeSpec :: LuaError e => Peeker e TypeSpec
+peekTypeSpec = typeChecked "TypeSpec" istable $ \idx ->
+  choice
+  [ fmap BasicType . peekFieldRaw peekRead "basic"
+  , fmap NamedType . peekFieldRaw peekTypeDoc "named"
+  , fmap SeqType . peekFieldRaw peekTypeSpec "sequence"
+  , fmap SumType . peekFieldRaw (peekList peekTypeSpec) "sum"
+  , fmap RecType . peekFieldRaw (peekMap peekName peekTypeSpec) "record"
+  , \i -> do
+      dom <- peekFieldRaw (peekList peekTypeSpec) "domain" i
+      cod <- peekFieldRaw (peekList peekTypeSpec) "codomain" i
+      pure $ FunType dom cod
+  , const (pure AnyType)
+  ] idx
