@@ -555,8 +555,7 @@ setList (_pushspec, (peekItem, updateList)) x = (x `updateList`) <$!> do
 udDocs :: UDTypeWithList e fn a itemtype
        -> TypeDocs
 udDocs ty = TypeDocs
-  { typeName = udName ty
-  , typeDescription = mempty
+  { typeDescription = mempty
   , typeSpec = userdataType
   , typeRegistry = Just (udName ty)
   }
@@ -564,4 +563,4 @@ udDocs ty = TypeDocs
 -- | Type specifier for a UDType
 udTypeSpec :: UDTypeWithList e fn a itemtype
            -> TypeSpec
-udTypeSpec = NamedType . udDocs
+udTypeSpec = NamedType . udName

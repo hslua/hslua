@@ -86,7 +86,6 @@ instance Arbitrary TypeDocs where
     <$> arbitrary
     <*> arbitrary
     <*> arbitrary
-    <*> arbitrary
   shrink td = (\ts -> td{ typeSpec = ts}) <$> shrink (typeSpec td)
 
 instance Arbitrary Name where
@@ -105,7 +104,6 @@ arbitraryTypeSpec size = frequency
 
 shrinkTypeSpec :: TypeSpec -> [TypeSpec]
 shrinkTypeSpec = \case
-  NamedType n -> typeSpec n : (NamedType <$> shrink n)
   SumType cs  -> SumType <$> shrinkList shrink cs
   SeqType x   -> shrink x
   FunType d c -> (FunType c <$> shrinkList shrinkTypeSpec d) ++

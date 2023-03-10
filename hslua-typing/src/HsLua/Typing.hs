@@ -54,7 +54,7 @@ import qualified Data.Map as Map
 -- | Type specification for Lua values.
 data TypeSpec =
     BasicType HsLua.Type              -- ^ Built-in type
-  | NamedType TypeDocs                -- ^ A type that's been given a name.
+  | NamedType Name                    -- ^ A type that's been given a name.
   | SeqType TypeSpec                  -- ^ Sequence of the given type.
   | SumType [TypeSpec]                -- ^ Union type; a sum type.
   | RecType (Map.Map Name TypeSpec)   -- ^ Record type (type product).
@@ -64,8 +64,7 @@ data TypeSpec =
 
 -- | Documented custom type.
 data TypeDocs = TypeDocs
-  { typeName        :: Name
-  , typeDescription :: Text
+  { typeDescription :: Text
   , typeSpec        :: TypeSpec
   , typeRegistry    :: Maybe Name
   }
@@ -90,7 +89,7 @@ a          #|# b          =
 typeSpecToString :: TypeSpec -> String
 typeSpecToString = \case
   BasicType t   -> map toLower . drop 4 $ show t
-  NamedType nt  -> toString . fromName $ typeName nt
+  NamedType nt  -> toString $ fromName nt
   AnyType       -> "any"
   FunType{}     -> "function"
   RecType{}     -> "table"
@@ -147,13 +146,7 @@ userdataType = BasicType HsLua.TypeUserdata
 
 -- | A Lua integer type.
 integerType :: TypeSpec
-integerType = NamedType $ TypeDocs
-  { typeName = "integer"
-  , typeDescription = "An integer between `math.mininteger` and" <>
-                      "`math.maxinteger`"
-  , typeSpec = numberType
-  , typeRegistry = Nothing
-  }
+integerType = NamedType "integer"
 
 -- | For backwards compatibility and convenience, strings can be used as
 -- TypeSpec values.
@@ -169,12 +162,7 @@ instance IsString TypeSpec where
     "string"         -> stringType
     "table"          -> tableType
     "userdata"       -> userdataType
-    s -> NamedType $ TypeDocs
-         { typeName = fromString s
-         , typeSpec = anyType
-         , typeDescription = mempty
-         , typeRegistry = Nothing
-         }
+    s                -> NamedType (fromString s)
 
 --
 -- Constructors
@@ -195,8 +183,7 @@ recType = RecType . Map.fromList
 -- | Pushes documentation for a custom type.
 pushTypeDoc :: LuaError e => Pusher e TypeDocs
 pushTypeDoc = pushAsTable
-  [ ("name", pushName . typeName)
-  , ("description", pushText . typeDescription)
+  [ ("description", pushText . typeDescription)
   , ("typespec", pushTypeSpec . typeSpec)
   , ("registry", maybe pushnil pushName . typeRegistry)
   ]
@@ -204,11 +191,10 @@ pushTypeDoc = pushAsTable
 -- | Retrieves a custom type specifier.
 peekTypeDoc :: LuaError e => Peeker e TypeDocs
 peekTypeDoc = typeChecked "TypeDoc" istable $ \idx -> do
-  name <- peekFieldRaw peekName "name" idx
   desc <- peekFieldRaw peekText "description" idx
   spec <- peekFieldRaw peekTypeSpec "typespec" idx
   regn <- peekFieldRaw (peekNilOr peekName) "registry" idx
-  return $ TypeDocs name desc spec regn
+  return $ TypeDocs desc spec regn
 
 -- | Pushes a table representation of a 'TypeSpec' to the stack.
 pushTypeSpec :: LuaError e
@@ -218,7 +204,7 @@ pushTypeSpec ts = do
   checkstack' 4 "HsLua.Typing.pushTypeSpec"
   case ts of
     BasicType bt  -> pushAsTable [("basic", pushString . show)] bt
-    NamedType td  -> pushAsTable [("named", pushTypeDoc)] td
+    NamedType n   -> pushAsTable [("named", pushName)] n
     SeqType seq'  -> pushAsTable [("sequence", pushTypeSpec)] seq'
     SumType st    -> pushAsTable [("sum", pushList pushTypeSpec)] st
     RecType rt    -> pushAsTable [("record", pushMap pushName pushTypeSpec)] rt
@@ -240,7 +226,7 @@ peekTypeSpec :: LuaError e => Peeker e TypeSpec
 peekTypeSpec = typeChecked "TypeSpec" istable $ \idx ->
   choice
   [ fmap BasicType . peekFieldRaw peekRead "basic"
-  , fmap NamedType . peekFieldRaw peekTypeDoc "named"
+  , fmap NamedType . peekFieldRaw peekName "named"
   , fmap SeqType . peekFieldRaw peekTypeSpec "sequence"
   , fmap SumType . peekFieldRaw (peekList peekTypeSpec) "sum"
   , fmap RecType . peekFieldRaw (peekMap peekName peekTypeSpec) "record"
