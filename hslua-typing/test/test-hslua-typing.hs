@@ -40,6 +40,10 @@ tests = testGroup "hslua-typespec"
     , testCase "string"   $ "string"   @?= stringType
     , testCase "table"    $ "table"    @?= tableType
     , testCase "userdata" $ "userdata" @?= userdataType
+    , testCase "sequence" $
+      "{string,...}" @?= seqType stringType
+    , testCase "alternative" $
+      "string|boolean|number" @?= stringType #|# (booleanType #|# numberType)
     ]
 
   , testGroup "to string"

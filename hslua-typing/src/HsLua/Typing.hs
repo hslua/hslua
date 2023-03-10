@@ -15,6 +15,7 @@ module HsLua.Typing
   , TypeDocs (..)
   , (#|#)
   , typeSpecToString
+  , typeSpecFromString
     -- * Types
   , anyType
   , voidType
@@ -96,6 +97,29 @@ typeSpecToString = \case
   SeqType t     -> '{' : typeSpecToString t ++ ",...}"
   SumType specs -> intercalate "|" (map typeSpecToString specs)
 
+-- | Creates a 'TypeSpec' value from a string.
+--
+-- *WARNING*: The implementation is primitive and only handles the most
+-- basic types.
+typeSpecFromString :: String -> TypeSpec
+typeSpecFromString = \case
+  "any"            -> anyType
+  "boolean"        -> booleanType
+  "function"       -> functionType
+  "integer"        -> integerType
+  "light userdata" -> lightUserdataType
+  "nil"            -> nilType
+  "number"         -> numberType
+  "string"         -> stringType
+  "table"          -> tableType
+  "userdata"       -> userdataType
+  '{' : seqstr     -> seqType . typeSpecFromString $
+                      takeWhile (/= ',') seqstr
+  s                -> case break (== '|') s of
+                        (t, '|':rest) -> typeSpecFromString t #|#
+                                         typeSpecFromString rest
+                        _ -> NamedType (fromString s)
+
 --
 -- Built-in types
 --
@@ -151,18 +175,7 @@ integerType = NamedType "integer"
 -- | For backwards compatibility and convenience, strings can be used as
 -- TypeSpec values.
 instance IsString TypeSpec where
-  fromString = \case
-    "any"            -> anyType
-    "boolean"        -> booleanType
-    "function"       -> functionType
-    "integer"        -> integerType
-    "light userdata" -> lightUserdataType
-    "nil"            -> nilType
-    "number"         -> numberType
-    "string"         -> stringType
-    "table"          -> tableType
-    "userdata"       -> userdataType
-    s                -> NamedType (fromString s)
+  fromString = typeSpecFromString
 
 --
 -- Constructors
