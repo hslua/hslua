@@ -59,6 +59,7 @@ import HsLua.Core
 import HsLua.Marshalling
 import HsLua.Packaging.Documentation
 import HsLua.Packaging.Types
+import HsLua.Typing (TypeSpec)
 import qualified HsLua.Core as Lua
 import qualified HsLua.Core.Utf8 as Utf8
 
@@ -299,7 +300,7 @@ pushDocumentedFunction fn = do
 
 -- | Creates a parameter.
 parameter :: Peeker e a   -- ^ method to retrieve value from Lua
-          -> Text         -- ^ expected Lua type
+          -> TypeSpec     -- ^ expected Lua type
           -> Text         -- ^ parameter name
           -> Text         -- ^ parameter description
           -> Parameter e a
@@ -326,7 +327,7 @@ opt p = Parameter
 --
 -- DEPRECATED: Use @opt (parameter ...)@ instead.
 optionalParameter :: Peeker e a   -- ^ method to retrieve the value from Lua
-                  -> Text         -- ^ expected Lua type
+                  -> TypeSpec     -- ^ expected Lua type
                   -> Text         -- ^ parameter name
                   -> Text         -- ^ parameter description
                   -> Parameter e (Maybe a)

@@ -22,6 +22,7 @@ import Data.Text (Text)
 import Data.Version (showVersion)
 import HsLua.Core
 import HsLua.Packaging.Types
+import HsLua.Typing (typeSpecToString)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified HsLua.Core.Utf8 as Utf8
@@ -117,7 +118,7 @@ renderParamDoc pd = mconcat
   [ parameterName pd
   ,  "\n:   "
   , parameterDescription pd
-  , " (", parameterType pd, ")\n"
+  , " (", T.pack (typeSpecToString (parameterType pd)), ")\n"
   ]
 
 -- | Renders the documentation of a function result as a Markdown list

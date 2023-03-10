@@ -47,7 +47,7 @@ import HsLua.Marshalling
 import HsLua.ObjectOrientation
 import HsLua.ObjectOrientation.Operation (metamethodName)
 import HsLua.Packaging.Function
-import HsLua.Typing (typeSpecToString)
+import HsLua.Typing (pushTypeSpec)
 import qualified Data.Map as Map
 import qualified HsLua.Core.Utf8 as Utf8
 
@@ -98,7 +98,7 @@ udparam :: LuaError e
         -> Text            -- ^ parameter name
         -> Text            -- ^ parameter description
         -> Parameter e a
-udparam ty = parameter (peekUD ty) (Utf8.toText . fromName $ udName ty)
+udparam ty = parameter (peekUD ty) (udTypeSpec ty)
 
 -- | Defines a function result of the given type.
 udresult :: LuaError e
@@ -139,5 +139,5 @@ pushPropertyDocs = pushKeyValuePairs pushName pushPropDocs . Map.toList
   where
     pushPropDocs = pushAsTable
       [ ("description", pushText . propertyDescription)
-      , ("type", pushString . typeSpecToString . propertyType)
+      , ("type", pushTypeSpec . propertyType)
       ]

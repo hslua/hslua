@@ -74,7 +74,7 @@ data FunctionDoc = FunctionDoc
 -- | Documentation for function parameters.
 data ParameterDoc = ParameterDoc
   { parameterName :: Text
-  , parameterType :: Text
+  , parameterType :: TypeSpec
   , parameterDescription :: Text
   , parameterIsOptional :: Bool
   }

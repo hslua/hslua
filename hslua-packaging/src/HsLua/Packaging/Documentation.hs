@@ -139,7 +139,7 @@ pushFunctionDoc fun = pushAsTable
 pushParameterDoc :: LuaError e => Pusher e ParameterDoc
 pushParameterDoc = pushAsTable
   [ ("name", pushText . parameterName)
-  , ("type", pushText . parameterType)
+  , ("type", pushTypeSpec . parameterType)
   , ("description", pushText . parameterDescription)
   , ("optional", pushBool . parameterIsOptional)
   ]
