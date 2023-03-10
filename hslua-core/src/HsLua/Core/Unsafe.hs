@@ -3,7 +3,7 @@
 Module      : HsLua.Core.Unsafe
 Copyright   : © 2019-2023 Albert Krewinkel
 License     : MIT
-Maintainer  : Albert Krewinkel <albert@hslua.org>
+Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 
 Unsafe Lua functions.
 

@@ -3,7 +3,7 @@
 Module      : HsLua.Core.Trace
 Copyright   : © 2017-2023 Albert Krewinkel
 License     : MIT
-Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
+Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 
 Helper functions to call Lua functions with tracebacks.
 -}

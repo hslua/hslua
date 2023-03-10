@@ -2,7 +2,7 @@
 Module      : HsLua.Packaging
 Copyright   : © 2019-2023 Albert Krewinkel
 License     : MIT
-Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
+Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 
 Tools to create documented Lua functions and modules.
 -}

@@ -2,7 +2,7 @@
 Module      : HsLua.Packaging.UDType
 Copyright   : © 2020-2023 Albert Krewinkel
 License     : MIT
-Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
+Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 
 This module provides types and functions to use Haskell values as
 userdata objects in Lua. These objects wrap a Haskell value and provide

@@ -4,7 +4,7 @@
 Module      : Lua.PrimaryTests
 Copyright   : © 2021-2023 Albert Krewinkel
 License     : MIT
-Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
+Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 
 Tests for bindings to primary API functions.
 -}

@@ -3,7 +3,7 @@
 Module      : HsLua.ObjectOrientation.Operation
 Copyright   : © 2020-2023 Albert Krewinkel
 License     : MIT
-Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
+Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 
 Binary and unary object operations.
 -}

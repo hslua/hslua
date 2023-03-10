@@ -2,7 +2,7 @@
 Module      : Test.Tasty.Lua.Translate
 Copyright   : © 2019-2023 Albert Krewinkel
 License     : MIT
-Maintainer  : Albert Krewinkel <albert@hslua.org>
+Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 
 Translate test results from Lua into a Tasty @'TestTree'@.
 -}

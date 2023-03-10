@@ -6,7 +6,7 @@
 Module      : HsLua.Marshalling.Peek
 Copyright   : © 2020-2023 Albert Krewinkel
 License     : MIT
-Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
+Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 Stability   : beta
 Portability : Portable
 

@@ -3,7 +3,7 @@
 Module      : Test.Tasty.HsLua
 Copyright   : © 2017-2023 Albert Krewinkel
 License     : MIT
-Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
+Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 Stability   : beta
 Portability : non-portable (depends on GHC)
 

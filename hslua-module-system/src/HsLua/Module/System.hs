@@ -2,7 +2,7 @@
 Module      : HsLua.Module.System
 Copyright   : © 2019-2023 Albert Krewinkel
 License     : MIT
-Maintainer  : Albert Krewinkel <albert@hslua.org>
+Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 Stability   : alpha
 Portability : Requires GHC 8 or later.
 

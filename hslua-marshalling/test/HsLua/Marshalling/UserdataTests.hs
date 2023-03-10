@@ -3,7 +3,7 @@
 Module      : HsLua.Marshalling.UserdataTests
 Copyright   : © 2018-2023 Albert Krewinkel
 License     : MIT
-Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
+Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 
 Tests that any data type can be pushed to Lua as userdata.
 -}

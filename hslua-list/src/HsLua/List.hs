@@ -2,7 +2,7 @@
 {- |
 Copyright  : © 2021-2023 Albert Krewinkel
 License    : MIT
-Maintainer : Albert Krewinkel <tarleb+pandoc@moltkeplatz.de>
+Maintainer : Albert Krewinkel <tarleb@hslua.org>
 
 Lua lists with additional methods.
 -}

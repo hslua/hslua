@@ -6,7 +6,7 @@
 Module      : HsLua.ObjectOrientation
 Copyright   : © 2021-2023 Albert Krewinkel
 License     : MIT
-Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
+Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 
 This module provides types and functions to use Haskell values as
 userdata objects in Lua. These objects wrap a Haskell value and provide

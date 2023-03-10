@@ -2,7 +2,7 @@
 Module      : HsLua.Core.Utf8
 Copyright   : © 2018-2023 Albert Krewinkel
 License     : MIT
-Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
+Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 Stability   : beta
 Portability : portable
 

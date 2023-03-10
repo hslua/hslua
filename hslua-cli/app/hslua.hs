@@ -4,7 +4,7 @@
 Module      : Main
 Copyright   : © 2022-2023 Albert Krewinkel
 License     : MIT
-Maintainer  : Albert Krewinkel <albert@hslua.org>
+Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 
 Re-implementation of the standard Lua interpreter.
 -}

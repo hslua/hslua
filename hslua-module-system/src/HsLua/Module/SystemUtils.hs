@@ -2,7 +2,7 @@
 Module      : HsLua.Module.SystemUtils
 Copyright   : © 2019-2023 Albert Krewinkel
 License     : MIT
-Maintainer  : Albert Krewinkel <albert@hslua.org>
+Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 
 Utility functions and types for HsLua's system module.
 -}

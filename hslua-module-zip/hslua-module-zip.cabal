@@ -9,7 +9,7 @@ bug-reports:         https://github.com/hslua/hslua/issues
 license:             MIT
 license-file:        LICENSE
 author:              Albert Krewinkel
-maintainer:          Albert Krewinkel <albert@hslua.org>
+maintainer:          Albert Krewinkel <tarleb@hslua.org>
 copyright:           © 2020-2023 Albert Krewinkel
 category:            Foreign
 build-type:          Simple

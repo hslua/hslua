@@ -4,7 +4,7 @@
 Module      : Text.Pandoc.Lua
 Copyright   : Copyright © 2017-2023 Albert Krewinkel
 License     : MIT
-Maintainer  : Albert Krewinkel <albert@hslua.org>
+Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 
 Embeddable Lua interpreter interface.
 -}

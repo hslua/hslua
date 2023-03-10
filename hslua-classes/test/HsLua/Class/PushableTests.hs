@@ -5,7 +5,7 @@ Module      :  HsLua.Class.PushableTests
 Copyright   :  © 2017-2023 Albert Krewinkel
 License     :  MIT
 
-Maintainer  :  Albert Krewinkel <tarleb+hslua@zeitkraut.de>
+Maintainer  :  Albert Krewinkel <tarleb@hslua.org>
 Stability   :  stable
 Portability :  portable
 

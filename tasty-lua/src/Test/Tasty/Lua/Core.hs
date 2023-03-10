@@ -4,7 +4,7 @@
 Module      : Test.Tasty.Lua.Core
 Copyright   : © 2019-2023 Albert Krewinkel
 License     : MIT
-Maintainer  : Albert Krewinkel <albert@hslua.org>
+Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 
 Core types and functions for tasty Lua tests.
 -}

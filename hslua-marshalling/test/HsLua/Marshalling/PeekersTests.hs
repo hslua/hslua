@@ -4,7 +4,7 @@
 Module      : HsLua.Marshalling.PeekersTests
 Copyright   : © 2020-2023 Albert Krewinkel
 License     : MIT
-Maintainer  : Albert Krewinkel <tarleb+hslua@zeitkraut.de>
+Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 
 Tests for Haskell-value retriever functions.
 -}
