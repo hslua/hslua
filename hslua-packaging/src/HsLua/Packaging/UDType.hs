@@ -49,7 +49,6 @@ import HsLua.ObjectOrientation.Operation (metamethodName)
 import HsLua.Packaging.Function
 import HsLua.Typing (pushTypeSpec)
 import qualified Data.Map as Map
-import qualified HsLua.Core.Utf8 as Utf8
 
 -- | Type definitions containing documented functions.
 type DocumentedType e a = UDType e (DocumentedFunction e) a
@@ -105,7 +104,7 @@ udresult :: LuaError e
          => DocumentedTypeWithList e a itemtype -- ^ result type
          -> Text           -- ^ result description
          -> FunctionResults e a
-udresult ty = functionResult (pushUD ty) (Utf8.toText . fromName $ udName ty)
+udresult ty = functionResult (pushUD ty) (udTypeSpec ty)
 
 -- | Pushes a userdata value of the given type.
 pushUD :: LuaError e => DocumentedTypeWithList e a itemtype -> a -> LuaE e ()

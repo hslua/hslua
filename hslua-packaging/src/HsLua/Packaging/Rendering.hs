@@ -136,7 +136,7 @@ renderResultValueDoc :: ResultValueDoc -> Text
 renderResultValueDoc rd = mconcat
   [ " -  "
   , resultValueDescription rd
-  , " (", resultValueType rd, ")"
+  , " (", T.pack (typeSpecToString $ resultValueType rd), ")"
   ]
 
 indent :: Int -> Text -> Text

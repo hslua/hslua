@@ -50,6 +50,8 @@ tests = testGroup "hslua-typespec"
     , testCase "string"   $ typeSpecToString stringType   @?= "string"
     , testCase "table"    $ typeSpecToString tableType    @?= "table"
     , testCase "userdata" $ typeSpecToString userdataType @?= "userdata"
+    , testCase "sequence" $
+      seqType stringType @?= "{string,...}"
     ]
 
   , testGroup "operators"

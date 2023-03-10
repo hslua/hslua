@@ -337,7 +337,7 @@ optionalParameter peeker type_ name desc = opt $
 
 -- | Creates a function result.
 functionResult :: Pusher e a      -- ^ method to push the Haskell result to Lua
-               -> Text            -- ^ Lua type of result
+               -> TypeSpec        -- ^ Lua type of result
                -> Text            -- ^ result description
                -> FunctionResults e a
 functionResult pusher type_ desc = (:[]) $ FunctionResult

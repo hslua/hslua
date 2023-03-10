@@ -88,7 +88,7 @@ data ResultsDoc
 
 -- | Documentation for a single return value of a function.
 data ResultValueDoc = ResultValueDoc
-  { resultValueType :: Text
+  { resultValueType :: TypeSpec
   , resultValueDescription :: Text
   }
   deriving (Eq, Ord, Show)

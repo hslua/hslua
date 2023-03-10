@@ -156,6 +156,6 @@ pushResultsDoc = \case
 -- fields @type@ and @description@.
 pushResultValueDoc :: LuaError e => Pusher e ResultValueDoc
 pushResultValueDoc = pushAsTable
-  [ ("type", pushText . resultValueType)
+  [ ("type", pushTypeSpec . resultValueType)
   , ("description", pushText . resultValueDescription)
   ]
