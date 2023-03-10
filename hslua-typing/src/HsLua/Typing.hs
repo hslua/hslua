@@ -117,10 +117,6 @@ booleanType = BasicType HsLua.TypeBoolean
 functionType :: TypeSpec
 functionType = BasicType HsLua.TypeFunction
 
--- | The built-in @number@ Lua type.
-integerType :: TypeSpec
-integerType = BasicType HsLua.TypeNumber
-
 -- | The built-in @light userdata@ Lua type.
 lightUserdataType :: TypeSpec
 lightUserdataType = BasicType HsLua.TypeLightUserdata
@@ -149,6 +145,16 @@ threadType = BasicType HsLua.TypeThread
 userdataType :: TypeSpec
 userdataType = BasicType HsLua.TypeUserdata
 
+-- | A Lua integer type.
+integerType :: TypeSpec
+integerType = NamedType $ TypeDocs
+  { typeName = "integer"
+  , typeDescription = "An integer between `math.mininteger` and" <>
+                      "`math.maxinteger`"
+  , typeSpec = numberType
+  , typeRegistry = Nothing
+  }
+
 -- | For backwards compatibility and convenience, strings can be used as
 -- TypeSpec values.
 instance IsString TypeSpec where
@@ -156,7 +162,7 @@ instance IsString TypeSpec where
     "any"            -> anyType
     "boolean"        -> booleanType
     "function"       -> functionType
-    "integer"        -> numberType
+    "integer"        -> integerType
     "light userdata" -> lightUserdataType
     "nil"            -> nilType
     "number"         -> numberType
