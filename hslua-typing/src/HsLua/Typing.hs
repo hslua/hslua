@@ -41,7 +41,7 @@ module HsLua.Typing
   ) where
 
 import Control.Monad (when)
-import Data.Char (toLower)
+import Data.Char (toLower, toUpper)
 import Data.List (intercalate)
 import Data.String (IsString (..))
 import Data.Text (Text)
@@ -49,6 +49,7 @@ import GHC.Generics (Generic)
 import HsLua.Core
 import HsLua.Core.Utf8 (toString)
 import HsLua.Marshalling
+import Text.Read (readMaybe)
 import qualified HsLua.Core as HsLua
 import qualified Data.Map as Map
 
@@ -89,7 +90,7 @@ a          #|# b          =
 -- | Generate a string representation of the type specifier.
 typeSpecToString :: TypeSpec -> String
 typeSpecToString = \case
-  BasicType t   -> map toLower . drop 4 $ show t
+  BasicType t   -> basicTypeName t
   NamedType nt  -> toString $ fromName nt
   AnyType       -> "any"
   FunType{}     -> "function"
@@ -216,7 +217,7 @@ pushTypeSpec :: LuaError e
 pushTypeSpec ts = do
   checkstack' 4 "HsLua.Typing.pushTypeSpec"
   case ts of
-    BasicType bt  -> pushAsTable [("basic", pushString . show)] bt
+    BasicType bt  -> pushAsTable [("basic", pushString . basicTypeName)] bt
     NamedType n   -> pushAsTable [("named", pushName)] n
     SeqType seq'  -> pushAsTable [("sequence", pushTypeSpec)] seq'
     SumType st    -> pushAsTable [("sum", pushList pushTypeSpec)] st
@@ -234,11 +235,20 @@ pushTypeSpec ts = do
     setfield (nth 2) "__tostring"
   setmetatable (nth 2)
 
+-- | String representation of a basic type. This is similar to, but
+-- different from the output of @'typename'@, in that 'TypeNone' is
+-- reported as @none@ (instead of @no value@) and 'TypeLightUserdata' is
+-- represented as @light userdata@ (instead of @userdata@).
+basicTypeName :: Type -> String
+basicTypeName = \case
+  TypeLightUserdata -> "light userdata"
+  t                 -> map toLower . drop 4 $ show t
+
 -- | Retrieves a 'TypeSpec' from a table on the stack.
 peekTypeSpec :: LuaError e => Peeker e TypeSpec
 peekTypeSpec = typeChecked "TypeSpec" istable $ \idx ->
   choice
-  [ fmap BasicType . peekFieldRaw peekRead "basic"
+  [ fmap BasicType . peekFieldRaw peekBasicType "basic"
   , fmap NamedType . peekFieldRaw peekName "named"
   , fmap SeqType . peekFieldRaw peekTypeSpec "sequence"
   , fmap SumType . peekFieldRaw (peekList peekTypeSpec) "sum"
@@ -249,3 +259,9 @@ peekTypeSpec = typeChecked "TypeSpec" istable $ \idx ->
       pure $ FunType dom cod
   , const (pure AnyType)
   ] idx
+ where
+  peekBasicType idx = peekString idx >>= \case
+    "light userdata" -> pure TypeLightUserdata
+    (c:cs)           -> maybe (fail "unknown type") pure $
+                        readMaybe ("Type" ++ toUpper c : cs)
+    _                -> failPeek "invalid type string"
