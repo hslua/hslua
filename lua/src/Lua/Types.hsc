@@ -20,6 +20,7 @@ module Lua.Types
   , CFunction
   , PreCFunction
   , WarnFunction
+  , PreWarnFunction
   , LuaBool (..)
   , Integer (..)
   , Number (..)
@@ -100,6 +101,12 @@ type Reader = FunPtr (State -> Ptr () -> Ptr CSize -> IO (Ptr CChar))
 -- See <https://www.lua.org/manual/5.4/manual.html#pdf-warn warn> for
 -- more details about warnings.
 type WarnFunction = FunPtr (Ptr () -> CString -> LuaBool -> IO ())
+
+-- | Type of Haskell functions that can be turned into a WarnFunction.
+--
+-- This is the same as a dereferenced 'WarnFunction'.
+type PreWarnFunction = Ptr () -> CString -> LuaBool -> IO ()
+
 
 -- |  The type of integers in Lua.
 --

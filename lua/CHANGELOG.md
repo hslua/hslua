@@ -6,6 +6,11 @@
 
 Release pending.
 
+-   New function `hslua_setwarnf`: The function allows to set a
+    C function as a hook that is called on all complete warning
+    messages. It is intended as a simple way to set a custom
+    warning function.
+
 -   Export version and copyright info from Lua.Constants: the
     following patterns are made available, with content identical
     to that of the respective C functions: `LUA_VERSION`,

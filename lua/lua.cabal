@@ -122,6 +122,7 @@ library
                      , Lua.Primary
                      , Lua.Types
                      , Lua.Userdata
+                     , Lua.Warn
   hs-source-dirs:      src
   default-extensions:  CApiFFI
                      , ForeignFunctionInterface
@@ -135,6 +136,7 @@ library
                      , cbits/hslua/hslcall.c
                      , cbits/hslua/hslauxlib.c
                      , cbits/hslua/hslua.c
+                     , cbits/hslua/hslwarn.c
   include-dirs:        cbits/hslua
   includes:            lua.h
                      , luaconf.h

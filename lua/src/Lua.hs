@@ -241,6 +241,8 @@ module Lua
   , hslua_concat
   , hslua_arith
   , hslua_compare
+    -- ** Simplified warnings handling
+  , hsluaL_setwarnf
 
     -- * Standard Lua libraries
   , luaopen_base
@@ -270,6 +272,7 @@ import Lua.Ersatz.Auxiliary
 import Lua.Lib
 import Lua.Primary
 import Lua.Types as Lua
+import Lua.Warn
 
 -- | Runs operations on a new Lua @'Lua.State'@. The state is created
 -- when the function is called and closed on return. The state, and all
