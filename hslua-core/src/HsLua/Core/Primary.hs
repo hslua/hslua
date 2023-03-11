@@ -888,6 +888,15 @@ setiuservalue :: StackIndex {- ^ index -} -> Int {- ^ n -} -> LuaE e Bool
 setiuservalue idx n = liftLua $ \l ->
   fromLuaBool <$!> lua_setiuservalue l idx (fromIntegral n)
 
+-- | Sets the warning function to be used by Lua to emit warnings (see
+-- 'WarnFunction'). The @ud@ parameter sets the value @ud@ passed to the
+-- warning function.
+setwarnf :: WarnFunction -- ^ f
+         -> Ptr ()       -- ^ ud
+         -> LuaE e ()
+setwarnf f ud = liftLua $ \l ->
+  lua_setwarnf l f ud
+
 -- |  Returns the status of this Lua thread.
 --
 -- The status can be 'OK' for a normal thread, an error value if the

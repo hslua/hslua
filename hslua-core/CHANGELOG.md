@@ -10,6 +10,15 @@ Release pending.
     expect the argument to be of type `Maybe FilePath`. The
     functions load from *stdin* when the argument is `Nothing`.
 
+-   Added `setwarnf'` for simple warning messgae handling: The
+    built-in method of setting a warn function is flexible but not
+    straight-forward to use. The new `setwarnf'` function allows
+    to set a Haskell action as a warning hook: the default warning
+    behavior is kept in place, but, in addition to the default
+    action, the hook is called on the concatenated warning
+    messages. This can be used to plug Lua warnings into an
+    application specific Haskell reporting system.
+
 ## hslua-core-2.2.1
 
 Released 2022-06-19.

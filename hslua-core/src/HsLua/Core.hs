@@ -144,6 +144,7 @@ module HsLua.Core
   , concat
   , pushglobaltable
   , register
+  , setwarnf
   -- * loading libraries
   , openbase
   , opendebug
@@ -183,6 +184,8 @@ module HsLua.Core
   , callTrace
   , dofileTrace
   , dostringTrace
+  -- ** Warnings
+  , setwarnf'
   -- * Haskell userdata values
   --
   -- | Push arbitrary Haskell values to the Lua stack.
@@ -221,3 +224,4 @@ import HsLua.Core.Run
 import HsLua.Core.Trace
 import HsLua.Core.Types as Lua
 import HsLua.Core.Userdata
+import HsLua.Core.Warn

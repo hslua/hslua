@@ -41,6 +41,7 @@ import qualified HsLua.Core.RunTests
 import qualified HsLua.Core.TraceTests
 import qualified HsLua.Core.UnsafeTests
 import qualified HsLua.Core.UserdataTests
+import qualified HsLua.Core.WarnTests
 import qualified Foreign.Marshal as Foreign
 import qualified Foreign.Ptr as Foreign
 import qualified Test.QuickCheck.Monadic as QCMonadic
@@ -454,6 +455,7 @@ tests = testGroup "Core module"
   , HsLua.Core.TraceTests.tests
   , HsLua.Core.UnsafeTests.tests
   , HsLua.Core.UserdataTests.tests
+  , HsLua.Core.WarnTests.tests
   ]
 
 compareWith :: (Lua.Integer -> Lua.Integer -> Bool)
