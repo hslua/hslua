@@ -182,7 +182,7 @@ peekZipOptions = retrieving "Zip options" . \idx -> catMaybes <$> sequence
 typeArchive :: forall e. LuaError e => DocumentedType e Archive
 typeArchive = deftype "zip.Archive"
   []
-  [ property' "entries" (seqType (udTypeSpec @e typeEntry))
+  [ property' "entries" (seqType (docedTypeSpec @e typeEntry))
     "Files in this zip archive"
     (pushEntries, Zip.zEntries)
     (peekList peekEntryFuzzy, \ar entries -> ar { Zip.zEntries = entries })
@@ -202,7 +202,7 @@ mkArchive = defun "Archive"
             pure $ foldr Zip.addEntryToArchive emptyArchive entries)
   <#> opt (parameter (choice [ fmap Left  . peekLazyByteString
                              , fmap Right . peekList peekEntryFuzzy ])
-           (stringType #|# seqType (udTypeSpec @e typeEntry))
+           (stringType #|# seqType (docedTypeSpec @e typeEntry))
            "bytestring_or_entries"
            "binary archive data or list of entries; defaults to an empty list")
   =#> udresult typeArchive "new Archive"
@@ -244,7 +244,7 @@ bytestring = defun "bytestring"
 typeEntry :: forall e. LuaError e => DocumentedType e Entry
 typeEntry = deftype "zip.Entry"
   []
-  [ property' "path" (udTypeSpec @e typeEntry)
+  [ property' "path" (docedTypeSpec @e typeEntry)
     "Relative path, using `/` as separator"
     (pushString, Zip.eRelativePath)
     (peekString, \entry path -> entry { Zip.eRelativePath = path })
