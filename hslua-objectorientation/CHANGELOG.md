@@ -8,10 +8,14 @@ Release pending.
 
 -   Export all constructors and functions of type `Property`.
 
--   Hook for udtype metatable initializer. The function `pushUD`
-    has been renamed to `pushUDGeneric` and now takes an
-    additional `hook` parameter. The hook operation can be used to
-    perform additional setup operations, e.g., for documentation.
+-   Renamed `peekUD` to `peekUDGeneric` and `pushUD` to
+    `pushUDGeneric`.  Functions with the old names are now
+    now defined hslua-packaging.
+
+-   Hook for udtype metatable initializer. The function
+    `pushUDGeneric` takes an additional `hook` parameter. The hook
+    operation can be used to perform additional setup operations,
+    e.g., for documentation.
 
     The old `pushUD` function can be recovered with
 

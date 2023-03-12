@@ -97,7 +97,7 @@ udparam :: LuaError e
         -> Text            -- ^ parameter name
         -> Text            -- ^ parameter description
         -> Parameter e a
-udparam ty = parameter (peekUD ty) (udTypeSpec ty)
+udparam ty = parameter (peekUDGeneric ty) (udTypeSpec ty)
 
 -- | Defines a function result of the given type.
 udresult :: LuaError e
@@ -109,6 +109,10 @@ udresult ty = functionResult (pushUD ty) (udTypeSpec ty)
 -- | Pushes a userdata value of the given type.
 pushUD :: LuaError e => DocumentedTypeWithList e a itemtype -> a -> LuaE e ()
 pushUD = pushUDGeneric pushUDTypeDocs
+
+-- | Retrieves a userdata value of the given type.
+peekUD :: LuaError e => DocumentedTypeWithList e a itemtype -> Peeker e a
+peekUD = peekUDGeneric
 
 -- | Ensures that the type has been fully initialized, i.e., that all
 -- metatables have been created and stored in the registry. Returns the

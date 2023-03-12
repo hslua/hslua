@@ -33,7 +33,7 @@ module HsLua.ObjectOrientation
     -- ** Aliases
   , alias
     -- * Marshaling
-  , peekUD
+  , peekUDGeneric
   , pushUDGeneric
   , initTypeGeneric
     -- * Type docs
@@ -361,7 +361,7 @@ pushGetters ty = do
   newtable
   void $ flip Map.traverseWithKey (udProperties ty) $ \name prop -> do
     pushName name
-    pushHaskellFunction $ forcePeek (peekUD ty 1) >>= propertyGet prop
+    pushHaskellFunction $ forcePeek (peekUDGeneric ty 1) >>= propertyGet prop
     rawset (nth 3)
 
 -- | Pushes the metatable's @setters@ field table.
@@ -402,7 +402,7 @@ pushAliasIndex = \case
 pairsFunction :: forall e fn a itemtype. LuaError e
               => UDTypeWithList e fn a itemtype -> LuaE e NumResults
 pairsFunction ty = do
-  obj <- forcePeek $ peekUD ty (nthBottom 1)
+  obj <- forcePeek $ peekUDGeneric ty (nthBottom 1)
   let pushMember = \case
         MemberProperty name prop -> do
           pushName name
@@ -482,8 +482,8 @@ pushUDGeneric pushDocs ty x = do
       void (setiuservalue (nth 2) 1)
 
 -- | Retrieves a userdata value of the given type.
-peekUD :: LuaError e => UDTypeWithList e fn a itemtype -> Peeker e a
-peekUD ty idx = do
+peekUDGeneric :: LuaError e => UDTypeWithList e fn a itemtype -> Peeker e a
+peekUDGeneric ty idx = do
   let name = udName ty
   x <- reportValueOnFailure name (`fromuserdata` name) idx
   (`lastly` pop 1) $ liftLua (getiuservalue idx 1) >>= \case

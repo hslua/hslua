@@ -46,7 +46,7 @@ tests = testGroup "Object Orientation"
     , "peek" =:
       Foo 37 "ananas" `shouldBeResultOf` do
         pushUD typeFoo $ Foo 37 "ananas"
-        forcePeek $ peekUD typeFoo top
+        forcePeek $ peekUDGeneric typeFoo top
 
     , "unknown properties have value `nil`" =:
       TypeNil `shouldBeResultOf` do
@@ -82,7 +82,7 @@ tests = testGroup "Object Orientation"
         setglobal "foo"
         OK <- dostring "foo.num = -1"
         TypeUserdata <- getglobal "foo"
-        forcePeek $ peekUD typeFoo top
+        forcePeek $ peekUDGeneric typeFoo top
 
     , "get string" =:
       "lint" `shouldBeResultOf` do
@@ -108,7 +108,7 @@ tests = testGroup "Object Orientation"
         setglobal "foo"
         OK <- dostring "bar = foo.str"
         _ <- getglobal "foo"
-        forcePeek $ peekUD typeFoo top
+        forcePeek $ peekUDGeneric typeFoo top
 
     , "cannot change unknown property" =:
       "Cannot set unknown property." `shouldBeErrorMessageOf` do
@@ -158,7 +158,7 @@ tests = testGroup "Object Orientation"
         setglobal "bar"
         OK <- dostring "table.insert(bar.nums, 8)"
         _ <- getglobal "bar"
-        forcePeek $ peekUD typeBar top
+        forcePeek $ peekUDGeneric typeBar top
 
     , "Use integer index in alias" =:
       42 `shouldBeResultOf` do
@@ -237,7 +237,7 @@ tests = testGroup "Object Orientation"
         pushUD typeLazyIntList $ LazyIntList [9..17]
         setglobal "ninetofive"
         _ <- dostring "assert(ninetofive[3] == 11); return ninetofive"
-        forcePeek $ peekUD typeLazyIntList top
+        forcePeek $ peekUDGeneric typeLazyIntList top
 
     , "List is writable" =:
       LazyIntList [1, 4, 9, 16] `shouldBeResultOf` do
@@ -245,7 +245,7 @@ tests = testGroup "Object Orientation"
         pushUD typeLazyIntList $ LazyIntList [0,4,9,16]
         setglobal "list"
         OK <- dostring "list[1] = 1; return list"
-        forcePeek $ peekUD typeLazyIntList top
+        forcePeek $ peekUDGeneric typeLazyIntList top
 
     , "List can be extended" =:
       LazyIntList [1, 4, 9, 16, 25] `shouldBeResultOf` do
@@ -253,7 +253,7 @@ tests = testGroup "Object Orientation"
         pushUD typeLazyIntList $ LazyIntList [1,4,9,16]
         setglobal "list"
         OK <- dostring "list[5] = 25; return list"
-        forcePeek $ peekUD typeLazyIntList top
+        forcePeek $ peekUDGeneric typeLazyIntList top
 
     , "List can be shortened" =:
       LazyIntList [1, 9, 27, 81] `shouldBeResultOf` do
@@ -261,7 +261,7 @@ tests = testGroup "Object Orientation"
         pushUD typeLazyIntList $ LazyIntList [1, 9, 27, 81, 243]
         setglobal "list"
         OK <- dostring "list[5] = nil; return list"
-        forcePeek $ peekUD typeLazyIntList top
+        forcePeek $ peekUDGeneric typeLazyIntList top
 
     , "Setting element to nil shortenes the list" =:
       LazyIntList [1, 9, 27] `shouldBeResultOf` do
@@ -269,7 +269,7 @@ tests = testGroup "Object Orientation"
         pushUD typeLazyIntList $ LazyIntList [1, 9, 27, 81, 243]
         setglobal "list"
         OK <- dostring "list[4] = nil; return list"
-        forcePeek $ peekUD typeLazyIntList top
+        forcePeek $ peekUDGeneric typeLazyIntList top
 
     , "Infinite lists are ok" =:
       233 `shouldBeResultOf` do
@@ -412,7 +412,7 @@ typeFoo = deftype "Foo"
   ]
   where
     show' = do
-      foo <- forcePeek $ peekUD typeFoo (nthBottom 1)
+      foo <- forcePeek $ peekUDGeneric typeFoo (nthBottom 1)
       pushString (show foo)
       return (NumResults 1)
 
@@ -435,7 +435,7 @@ typeLazyIntList :: LuaError e
                 => UDTypeWithList e (HaskellFunction e) LazyIntList Int
 typeLazyIntList = deftype' "LazyIntList"
   [ operation Tostring $ do
-      lazyList <- forcePeek $ peekUD typeLazyIntList (nthBottom 1)
+      lazyList <- forcePeek $ peekUDGeneric typeLazyIntList (nthBottom 1)
       pushString (show lazyList)
       return (NumResults 1)
   ]
@@ -480,7 +480,7 @@ showQux = do
   return (NumResults 1)
 
 peekQux :: LuaError e => Peeker e Qux
-peekQux = peekUD typeQux
+peekQux = peekUDGeneric typeQux
 
 typeQux :: LuaError e => UDType e (HaskellFunction e) Qux
 typeQux = deftype "Qux"
