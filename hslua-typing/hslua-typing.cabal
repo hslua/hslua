@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                hslua-typing
-version:             1.0.0
+version:             0.1.0
 synopsis:            Type specifiers for Lua.
 description:         Structure to hold detailed type information. The primary
                      use-case at this time are auto-generated docs.

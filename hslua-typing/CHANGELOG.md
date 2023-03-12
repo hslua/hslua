@@ -2,7 +2,7 @@
 
 `hslua-typing` uses [PVP Versioning][].
 
-## hslua-typing-1.0.0
+## hslua-typing-0.1.0
 
 Release pending.
 
