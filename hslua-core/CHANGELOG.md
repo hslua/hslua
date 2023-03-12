@@ -19,6 +19,10 @@ Release pending.
     messages. This can be used to plug Lua warnings into an
     application specific Haskell reporting system.
 
+-   Export `GCManagedState`, `newGCManagedState`,
+    `closeGCManagedState`, and `withGCManagedState` from
+    `HsLua.Core`.
+
 ## hslua-core-2.2.1
 
 Released 2022-06-19.

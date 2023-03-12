@@ -19,6 +19,10 @@ module HsLua.Core
     run
   , runWith
   , runEither
+  , GCManagedState
+  , newGCManagedState
+  , closeGCManagedState
+  , withGCManagedState
   -- * Lua Computations
   , LuaE (..)
   , Lua
