@@ -197,7 +197,7 @@ recType = RecType . Map.fromList
 -- | Pushes documentation for a custom type.
 pushTypeDoc :: LuaError e => Pusher e TypeDocs
 pushTypeDoc td = do
-  checkstack' 4 "HsLua.Typing.pushTypeDoc"
+  checkstack' 8 "HsLua.Typing.pushTypeDoc"
   pushAsTable
     [ ("description", pushText . typeDescription)
     , ("typespec", pushTypeSpec . typeSpec)
@@ -207,6 +207,7 @@ pushTypeDoc td = do
 -- | Retrieves a custom type specifier.
 peekTypeDoc :: LuaError e => Peeker e TypeDocs
 peekTypeDoc = typeChecked "TypeDoc" istable $ \idx -> do
+  liftLua $ checkstack' 8 "HsLua.Typing.peekTypeDoc"
   desc <- peekFieldRaw peekText "description" idx
   spec <- peekFieldRaw peekTypeSpec "typespec" idx
   regn <- peekFieldRaw (peekNilOr peekName) "registry" idx
@@ -217,7 +218,7 @@ pushTypeSpec :: LuaError e
              => TypeSpec
              -> LuaE e ()
 pushTypeSpec ts = do
-  checkstack' 4 "HsLua.Typing.pushTypeSpec"
+  checkstack' 8 "HsLua.Typing.pushTypeSpec"
   case ts of
     BasicType bt  -> pushAsTable [("basic", pushString . basicTypeName)] bt
     NamedType n   -> pushAsTable [("named", pushName)] n
@@ -248,19 +249,20 @@ basicTypeName = \case
 
 -- | Retrieves a 'TypeSpec' from a table on the stack.
 peekTypeSpec :: LuaError e => Peeker e TypeSpec
-peekTypeSpec = typeChecked "TypeSpec" istable $ \idx ->
+peekTypeSpec = typeChecked "TypeSpec" istable $ \idx -> do
+  liftLua $ checkstack' 8 "HsLua.Typing.peekTypeSpec"
   choice
-  [ fmap BasicType . peekFieldRaw peekBasicType "basic"
-  , fmap NamedType . peekFieldRaw peekName "named"
-  , fmap SeqType . peekFieldRaw peekTypeSpec "sequence"
-  , fmap SumType . peekFieldRaw (peekList peekTypeSpec) "sum"
-  , fmap RecType . peekFieldRaw (peekMap peekName peekTypeSpec) "record"
-  , \i -> do
-      dom <- peekFieldRaw (peekList peekTypeSpec) "domain" i
-      cod <- peekFieldRaw (peekList peekTypeSpec) "codomain" i
-      pure $ FunType dom cod
-  , const (pure AnyType)
-  ] idx
+    [ fmap BasicType . peekFieldRaw peekBasicType "basic"
+    , fmap NamedType . peekFieldRaw peekName "named"
+    , fmap SeqType . peekFieldRaw peekTypeSpec "sequence"
+    , fmap SumType . peekFieldRaw (peekList peekTypeSpec) "sum"
+    , fmap RecType . peekFieldRaw (peekMap peekName peekTypeSpec) "record"
+    , \i -> do
+        dom <- peekFieldRaw (peekList peekTypeSpec) "domain" i
+        cod <- peekFieldRaw (peekList peekTypeSpec) "codomain" i
+        pure $ FunType dom cod
+    , const (pure AnyType)
+    ] idx
  where
   peekBasicType idx = peekString idx >>= \case
     "light userdata" -> pure TypeLightUserdata
