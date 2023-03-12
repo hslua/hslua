@@ -196,11 +196,13 @@ recType = RecType . Map.fromList
 
 -- | Pushes documentation for a custom type.
 pushTypeDoc :: LuaError e => Pusher e TypeDocs
-pushTypeDoc = pushAsTable
-  [ ("description", pushText . typeDescription)
-  , ("typespec", pushTypeSpec . typeSpec)
-  , ("registry", maybe pushnil pushName . typeRegistry)
-  ]
+pushTypeDoc td = do
+  checkstack' 4 "HsLua.Typing.pushTypeDoc"
+  pushAsTable
+    [ ("description", pushText . typeDescription)
+    , ("typespec", pushTypeSpec . typeSpec)
+    , ("registry", maybe pushnil pushName . typeRegistry)
+    ] td
 
 -- | Retrieves a custom type specifier.
 peekTypeDoc :: LuaError e => Peeker e TypeDocs
