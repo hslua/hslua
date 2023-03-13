@@ -16,7 +16,7 @@ bug-reports:         https://github.com/hslua/hslua/issues
 license:             MIT
 license-file:        LICENSE
 author:              Albert Krewinkel, Gracjan Polak, Ömer Sinan Ağacan
-maintainer:          albert+hslua@zeitkraut.de
+maintainer:          tarleb@hslua.org
 copyright:           © 2007–2012 Gracjan Polak;
                      © 2012–2016 Ömer Sinan Ağacan;
                      © 2017-2023 Albert Krewinkel

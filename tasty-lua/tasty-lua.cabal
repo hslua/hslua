@@ -7,7 +7,7 @@ homepage:            https://github.com/hslua/hslua
 license:             MIT
 license-file:        LICENSE
 author:              Albert Krewinkel
-maintainer:          albert+hslua@zeitkraut.de
+maintainer:          tarleb@hslua.org
 copyright:           © 2019-2023 Albert Krewinkel <tarleb@hslua.org>
 category:            Foreign
 build-type:          Simple
