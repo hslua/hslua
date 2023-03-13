@@ -2,6 +2,13 @@
 
 `hslua-module-text` uses [PVP Versioning][].
 
+## hslua-module-text-1.1.0
+
+Released 2023-03-13.
+
+-   Update to hslua-2.3; this includes the addition of type
+    initializers to the module and type specifiers to the fields.
+
 ## hslua-module-text-1.0.3.1
 
 Released 2023-01-06.
