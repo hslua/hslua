@@ -49,6 +49,7 @@ common common-options
                      , hslua-marshalling       >= 2.3    && < 2.4
                      , hslua-objectorientation >= 2.3    && < 2.4
                      , hslua-packaging         >= 2.3    && < 2.4
+                     , hslua-typing            >= 0.1    && < 0.2
                      , mtl                     >= 2.2    && < 2.4
                      , text                    >= 1.2    && < 2.1
   ghc-options:         -Wall
@@ -84,6 +85,7 @@ library
                      , HsLua.Packaging.Function
                      , HsLua.Packaging.Module
                      , HsLua.Packaging.Rendering
+                     , HsLua.Typing
   hs-source-dirs:      src
 
 test-suite test-hslua

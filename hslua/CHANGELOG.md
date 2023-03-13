@@ -10,6 +10,8 @@ Released 2023-03-13.
     hslua-marshalling, hslua-objectorientation, hslua-packaging,
     hslua-aeson, hslua-classes.
 
+-   Include `hslua-typing`, re-export `HsLua.Typing`.
+
 ## hslua-2.2.1
 
 Released 2022-06-19.
