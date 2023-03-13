@@ -2,6 +2,11 @@
 
 `hslua-module-system` uses [PVP Versioning][].
 
+## hslua-module-system-1.1.0
+
+-   Update to hslua-2.3; this includes the addition of type
+    initializers to the module and type specifiers to the fields.
+
 ## hslua-module-system-1.0.3
 
 Released 2023-02-14.
