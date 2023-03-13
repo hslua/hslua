@@ -2,6 +2,12 @@
 
 `lua-arbitrary` uses [PVP Versioning][].
 
+## lua-arbitrary-1.0.1.1
+
+Released 2023-03-13.
+
+-   Allow lua-2.3.*.
+
 ## lua-arbitrary-1.0.1
 
 Released 2022-02-19.

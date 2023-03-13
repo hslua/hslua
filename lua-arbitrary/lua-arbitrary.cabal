@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                lua-arbitrary
-version:             1.0.1
+version:             1.0.1.1
 synopsis:            Arbitrary instances for Lua types.
 description:         Provides instances for QuickCheck's \"Arbitrary\"
                      typeclass.
