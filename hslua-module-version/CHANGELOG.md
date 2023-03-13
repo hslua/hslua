@@ -2,6 +2,13 @@
 
 `hslua-module-version` uses [PVP Versioning][].
 
+## hslua-module-version-1.1.0
+
+Released 2023-03-13.
+
+-   Update to hslua-2.3; this includes the addition of type
+    initializers to the module.
+
 ## hslua-module-version-1.0.3
 
 Released 2022-09-01.
