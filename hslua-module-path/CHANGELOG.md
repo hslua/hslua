@@ -2,6 +2,15 @@
 
 `hslua-module-paths` uses [PVP Versioning][].
 
+## hslua-module-path-1.1.0
+
+Released 2023-03-13.
+
+-   Update to hslua-2.3; this includes the addition of type
+    initializers to the module and type specifiers to the fields.
+
+-   Fixed tests for `make_relative` on Windows.
+
 ## hslua-module-path-1.0.3
 
 Released 2022-08-19.
