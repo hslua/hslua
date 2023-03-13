@@ -40,10 +40,24 @@ tests = testGroup "hslua-typespec"
     , testCase "string"   $ "string"   @?= stringType
     , testCase "table"    $ "table"    @?= tableType
     , testCase "userdata" $ "userdata" @?= userdataType
+    , testCase "light userdata" $
+      "light userdata"  @?= lightUserdataType
     , testCase "sequence" $
       "{string,...}" @?= seqType stringType
     , testCase "alternative" $
       "string|boolean|number" @?= stringType #|# (booleanType #|# numberType)
+    , testCase "sequence of alternatives" $
+      "{string|number,...}" @?=
+      seqType (stringType #|# numberType)
+    , testCase "string or strings" $
+      "string|{string,...}" @?=
+      stringType #|# seqType stringType
+    , testCase "strings or string" $
+      "{string,...}|string" @?=
+      seqType stringType #|# stringType
+    , testCase "sequence of sequences" $
+      "{{number,...}, ... }" @?=
+      seqType (seqType "number")
     ]
 
   , testGroup "to string"

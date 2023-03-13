@@ -42,7 +42,7 @@ module HsLua.Typing
 
 import Control.Monad (when)
 import Data.Char (toLower, toUpper)
-import Data.List (intercalate)
+import Data.List (find, intercalate)
 import Data.String (IsString (..))
 import Data.Text (Text)
 import GHC.Generics (Generic)
@@ -50,6 +50,7 @@ import HsLua.Core
 import HsLua.Core.Utf8 (toString)
 import HsLua.Marshalling
 import Text.Read (readMaybe)
+import Text.ParserCombinators.ReadP hiding (choice)
 import qualified HsLua.Core as HsLua
 import qualified Data.Map as Map
 
@@ -100,8 +101,9 @@ typeSpecToString = \case
 
 -- | Creates a 'TypeSpec' value from a string.
 --
--- *WARNING*: The implementation is primitive and only handles the most
--- basic types.
+-- The implementation currently handles basic types, sequences, and
+-- alternatives. A string that cannot be parsed is returned as a 'Named'
+-- type with the full string as the name.
 typeSpecFromString :: String -> TypeSpec
 typeSpecFromString = \case
   "any"            -> anyType
@@ -114,12 +116,40 @@ typeSpecFromString = \case
   "string"         -> stringType
   "table"          -> tableType
   "userdata"       -> userdataType
-  '{' : seqstr     -> seqType . typeSpecFromString $
-                      takeWhile (/= ',') seqstr
-  s                -> case break (== '|') s of
-                        (t, '|':rest) -> typeSpecFromString t #|#
-                                         typeSpecFromString rest
-                        _ -> NamedType (fromString s)
+  s                -> case find completeParse (readP_to_S pTypeSpec s) of
+                        Nothing -> NamedType (fromString s)  -- Parsing failed
+                        Just (x,_) -> x
+ where completeParse = null . snd
+
+pTypeSpec :: ReadP TypeSpec
+pTypeSpec = foldr (#|#) voidType <$> sepBy (pAtomic <++ pSeq) (char '|')
+
+-- | Parses an atomic, non-composite type.
+pAtomic :: ReadP TypeSpec
+pAtomic = do
+  str <- many1 (satisfy (`notElem` ['{', '}', '|', ',']))
+  pure $ case str of
+    "any"            -> anyType
+    "boolean"        -> booleanType
+    "function"       -> functionType
+    "integer"        -> integerType
+    "light userdata" -> lightUserdataType
+    "nil"            -> nilType
+    "number"         -> numberType
+    "string"         -> stringType
+    "table"          -> tableType
+    "userdata"       -> userdataType
+    _                -> NamedType (fromString str)
+
+-- | Parses a sequence type.
+pSeq :: ReadP TypeSpec
+pSeq = seqType <$> (char '{' *> pTypeSpec <* pComma <* pEllipsis <* char '}')
+  where
+    pComma :: ReadP Char
+    pComma = skipSpaces *> char ',' <* skipSpaces
+
+    pEllipsis :: ReadP String
+    pEllipsis = string "..." <* skipSpaces
 
 --
 -- Built-in types
