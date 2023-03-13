@@ -4,7 +4,7 @@
 
 ## hslua-core-2.3.0
 
-Release pending.
+Released 2023-03-13.
 
 -   The functions `loadfile`, `dofile`, and `dofileTrace` now
     expect the argument to be of type `Maybe FilePath`. The

@@ -4,7 +4,7 @@
 
 ## tasty-hslua-1.1.0
 
-Release pending.
+Released 2023-03-13.
 
 ## tasty-hslua-1.0.2
 

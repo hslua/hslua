@@ -4,7 +4,7 @@
 
 ## hslua-module-zip-1.0.0
 
-Release pending.
+Released 2023-03-13.
 
 -   Initially created.
 

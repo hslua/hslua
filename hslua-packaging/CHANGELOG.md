@@ -4,7 +4,7 @@
 
 ## hslua-packaging-2.3.0
 
-Release pending.
+Released 2023-03-13.
 
 -   Type initializers as part of Module records. This allows to
     associate types with a module. For performance reasons, the

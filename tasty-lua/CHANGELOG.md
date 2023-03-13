@@ -4,7 +4,7 @@
 
 ## tasty-lua-1.1.0
 
-Release pending.
+Released 2023-03-13.
 
 ## tasty-lua-1.0.2
 

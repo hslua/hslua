@@ -4,7 +4,7 @@
 
 ## hslua-cli-1.3.0
 
-Release pending.
+Released 2023-03-13.
 
 -   Require hslua-core 2.3.
 

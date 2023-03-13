@@ -4,7 +4,7 @@
 
 ## lua-2.3.0
 
-Release pending.
+Released 2023-03-13.
 
 -   New function `hslua_setwarnf`: The function allows to set a
     C function as a hook that is called on all complete warning

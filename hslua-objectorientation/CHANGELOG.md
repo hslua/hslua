@@ -4,7 +4,7 @@
 
 ## hslua-objectorientation-2.3.0
 
-Release pending.
+Released 2023-03-13.
 
 -   Export all constructors and functions of type `Property`.
 

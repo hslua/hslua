@@ -11,7 +11,7 @@ Released 2023-01-23.
 
 ## hslua-list-1.1.0
 
-Release pending.
+Released 2023-03-13.
 
 -   Removed `pushPandocList`. The function was a left-over from
     pandoc-lua-marshal, the place where this package originated.
