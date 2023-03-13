@@ -2,6 +2,15 @@
 
 `lpeg` uses [PVP Versioning][].
 
+## lpeg-1.0.4
+
+Released 2023-03-13.
+
+-   Allow lua-2.3.
+
+-   Cease support for GHC 8.2 and older; require base 4.11 or
+    later.
+
 ## lpeg-1.0.3
 
 Released 2022-01-29.
