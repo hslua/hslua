@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP               #-}
 {-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
 {- |
@@ -15,7 +16,7 @@ module HsLua.CLI
   , EnvBehavior (..)
   ) where
 
-import Control.Monad (unless, when, zipWithM_)
+import Control.Monad (unless, void, when, zipWithM_)
 import Data.Bifunctor (first)
 import Data.ByteString (ByteString)
 import Data.Foldable (foldl')
@@ -23,9 +24,9 @@ import Data.Maybe (listToMaybe)
 import Data.Text (Text)
 import Foreign.C.String (withCString)
 import HsLua.Core (LuaE, LuaError)
+import HsLua.REPL (Config (..), defaultConfig, repl, setup)
 import System.Console.GetOpt
 import System.Environment (lookupEnv)
-import System.IO (hPutStrLn, stderr)
 import qualified Lua.Constants as Lua
 import qualified Lua.Primary as Lua
 import qualified HsLua.Core as Lua
@@ -33,6 +34,19 @@ import qualified HsLua.Marshalling as Lua
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified HsLua.Core.Utf8 as UTF8
+
+#ifndef _WINDOWS
+import System.Posix.IO (stdOutput)
+import System.Posix.Terminal (queryTerminal)
+#endif
+
+-- | Whether the program is connected to a terminal
+istty :: IO Bool
+#ifdef _WINDOWS
+istty = pure True
+#else
+istty = queryTerminal stdOutput
+#endif
 
 -- | Settings for the Lua command line interface.
 --
@@ -54,6 +68,7 @@ data Settings e = Settings
   , settingsRunner      :: EnvBehavior -> LuaE e () -> IO ()
     -- ^ The Lua interpreter to be used; the first argument indicates
     -- whether environment variables should be consulted or ignored.
+  , settingsHistory     :: Maybe FilePath
   }
 
 -- | Whether environment variables should be consulted or ignored.
@@ -82,7 +97,7 @@ getOptions progName rawArgs = do
 showVersion :: LuaError e => Text -> LuaE e ()
 showVersion extraInfo = do
   _ <- Lua.getglobal "_VERSION"
-  versionString <- Lua.forcePeek $ Lua.peekText Lua.top
+  versionString <- Lua.forcePeek $ Lua.peekText Lua.top `Lua.lastly` Lua.pop 1
   Lua.liftIO . T.putStrLn $ versionString `T.append` extraInfo
 
 -- | Runs code given on the command line
@@ -100,6 +115,10 @@ runCode = \case
       then Lua.setglobal g
       else Lua.throwErrorAsException
 
+--
+-- Standalone
+--
+
 -- | Uses the first command line argument as the name of a script file
 -- and tries to run that script in Lua. Falls back to stdin if no file
 -- is given. Any remaining args are passed to Lua via the global table
@@ -115,11 +134,8 @@ runStandalone settings progName args = do
                   then IgnoreEnvVars
                   else ConsultEnvVars
   settingsRunner settings envVarOpt $ do
-    let putErr = Lua.liftIO . hPutStrLn stderr
     -- print version info
     when (optVersion opts) (showVersion $ settingsVersionInfo settings)
-    when (optInteractive opts) $
-      putErr "[WARNING] Flag `-i` is not supported yet."
 
     -- push `arg` table
     case optScript opts of
@@ -155,18 +171,30 @@ runStandalone settings progName args = do
     mapM_ runCode (reverse $ optExecute opts)
 
     let nargs = fromIntegral . length $ optScriptArgs opts
+    let startREPL = do
+          setup defaultConfig
+            { replHistory = settingsHistory settings
+            , replInfo = replInfo defaultConfig `T.append`
+                         settingsVersionInfo settings
+            }
+          void repl
     let handleScriptResult = \case
           Lua.OK -> do
             mapM_ Lua.pushString (optScriptArgs opts)
             status <- Lua.pcallTrace nargs Lua.multret
             when (status /= Lua.OK)
               Lua.throwErrorAsException
+            when (optInteractive opts)
+              startREPL
           _      -> Lua.throwErrorAsException
+    tty <- Lua.liftIO istty
     case optScript opts of
       Just script | script /= "-" -> do
         Lua.loadfile (Just script) >>= handleScriptResult
       Nothing | optVersion opts || not (null (optExecute opts)) ->
         pure ()
+      _ | tty -> do
+        startREPL
       _ -> do
         -- load script from stdin
         Lua.loadfile Nothing >>= handleScriptResult

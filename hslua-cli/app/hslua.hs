@@ -26,6 +26,7 @@ main = do
               setfield registryindex "LUA_NOENV"
             openlibs
             action
+        , settingsHistory = Just ".hslua-history"
         }
   prg  <- getProgName
   args <- getArgs

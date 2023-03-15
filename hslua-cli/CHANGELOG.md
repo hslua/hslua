@@ -2,6 +2,13 @@
 
 `hslua-cli` uses [PVP Versioning](https://pvp.haskell.org).
 
+## hslua-cli-1.4.0
+
+Release pending.
+
+-   Isocline-based REPL: interactive mode is now supported with
+    the help of a new repl built with the isocline library.
+
 ## hslua-cli-1.3.0
 
 Released 2023-03-13.
