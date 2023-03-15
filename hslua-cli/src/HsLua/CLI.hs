@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
 {- |
-Module      : Text.Pandoc.Lua
+Module      : HsLua.CLI
 Copyright   : Copyright © 2017-2023 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb@hslua.org>
