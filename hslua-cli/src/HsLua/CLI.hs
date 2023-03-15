@@ -49,6 +49,8 @@ import qualified HsLua.Core.Utf8 as UTF8
 --
 data Settings e = Settings
   { settingsVersionInfo :: Text
+    -- ^ Additional version info to present to the user. The current
+    -- Lua version will always be printed.
   , settingsRunner      :: EnvBehavior -> LuaE e () -> IO ()
     -- ^ The Lua interpreter to be used; the first argument indicates
     -- whether environment variables should be consulted or ignored.
