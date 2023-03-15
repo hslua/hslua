@@ -4,7 +4,7 @@
 
 ## hslua-cli-1.4.0
 
-Release pending.
+Released 2023-03-16.
 
 -   Isocline-based REPL: interactive mode is now supported with
     the help of a new repl built with the isocline library.
