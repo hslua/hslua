@@ -16,6 +16,7 @@ packages: lpeg/lpeg.cabal
           hslua-module-zip/hslua-module-zip.cabal
           hslua-objectorientation/hslua-objectorientation.cabal
           hslua-packaging/hslua-packaging.cabal
+          hslua-repl/hslua-repl.cabal
           hslua-typing/hslua-typing.cabal
           tasty-lua/tasty-lua.cabal
           tasty-hslua/tasty-hslua.cabal

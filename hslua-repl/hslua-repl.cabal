@@ -1,0 +1,78 @@
+cabal-version:       2.2
+name:                hslua-repl
+version:             0.1.0
+synopsis:            Isocline-based Lua REPL
+description:         An embeddable Lua REPL built with Isocline and HsLua.
+homepage:            https://hslua.org/
+bug-reports:         https://github.com/hslua/hslua/issues
+license:             MIT
+license-file:        LICENSE
+author:              Albert Krewinkel
+maintainer:          Albert Krewinkel <tarleb@hslua.org>
+copyright:           © lbert Krewinkel
+category:            Foreign
+build-type:          Simple
+extra-doc-files:     README.md
+                     CHANGELOG.md
+tested-with:         GHC == 8.4.4
+                   , GHC == 8.6.5
+                   , GHC == 8.8.4
+                   , GHC == 8.10.7
+                   , GHC == 9.0.2
+                   , GHC == 9.2.5
+                   , GHC == 9.4.4
+
+source-repository head
+  type:                git
+  location:            https://github.com/hslua/hslua
+  subdir:              hslua-repl
+
+Flag executable
+  description:         Compile `luarepl` standalone executable.
+  default:             False
+
+common common-options
+  build-depends:       base              >= 4.9.1  && < 5
+                     , hslua-core        >= 2.3    && < 2.4
+                     , text              >= 1.2    && < 2.1
+
+  ghc-options:         -Wall
+                       -Wcpp-undef
+                       -Widentities
+                       -Wincomplete-record-updates
+                       -Wincomplete-uni-patterns
+                       -Wmissing-export-lists
+                       -Wmissing-signatures
+                       -Wnoncanonical-monad-instances
+                       -Wpartial-fields
+                       -Wredundant-constraints
+                       -fhide-source-paths
+
+  if impl(ghc >= 8.10)
+    ghc-options:       -Wunused-packages
+
+  if impl(ghc >= 9.0)
+    ghc-options:       -Winvalid-haddock
+
+
+  default-language:    Haskell2010
+
+library
+  import:              common-options
+  hs-source-dirs:      src
+  exposed-modules:     HsLua.REPL
+  build-depends:       base              >= 4.11   && < 5
+                     , bytestring        >= 0.10   && < 0.12
+                     , isocline          >= 1.0    && < 1.1
+                     , lua               >= 2.3    && < 2.4
+
+executable luarepl
+  import:              common-options
+  hs-source-dirs:      app
+  main-is:             luarepl.hs
+  ghc-options:         -rtsopts -with-rtsopts=-A8m -threaded
+  if flag(executable)
+    buildable:           True
+    build-depends:       hslua-repl
+  else
+   buildable:            False
