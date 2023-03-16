@@ -18,4 +18,4 @@ packages:
 - 'lua-arbitrary'
 - 'tasty-lua'
 - 'tasty-hslua'
-resolver: 'lts-18.25'
+resolver: 'lts-20.14'
