@@ -14,6 +14,7 @@ Embeddable Lua interpreter interface.
 module HsLua.REPL
   ( -- * Run scripts as program
     repl
+  , replWithEnv
   , setup
   , Config (..)
   , defaultConfig
@@ -90,9 +91,14 @@ loadStatement lns = do
       else throwErrorAsException
     _ -> throwErrorAsException
 
--- | Run a Lua repl.
+-- | Run a Lua REPL.
 repl :: LuaError e => LuaE e NumResults
-repl = try repl' >>= \case
+repl = replWithEnv Nothing
+
+-- | Run a Lua REPL, using the table in the given upvalue as the load
+-- environment.
+replWithEnv :: LuaError e => Maybe Reference -> LuaE e NumResults
+replWithEnv mEnvRef = try repl' >>= \case
   Right n  -> pure n -- Ctrl-D or Ctrl-C
   Left err -> do
     -- something went wrong: report error, reset stack and try again
@@ -100,7 +106,7 @@ repl = try repl' >>= \case
     pushException err
     call 1 0
     settop 0
-    repl
+    replWithEnv mEnvRef
  where
   repl' :: LuaError e => LuaE e NumResults
   repl' = liftIO (readlineMaybe "") >>= \case
@@ -111,6 +117,14 @@ repl = try repl' >>= \case
       settop 0  -- reset stack
       let input = UTF8.fromString inputStr
       loadExpression input <|> loadStatement [input]
+      -- take env (if any) and set it as the first upvalue of the loaded
+      -- thunk.
+      case mEnvRef of
+        Nothing -> pure ()
+        Just envRef -> do
+          getref registryindex envRef >>= \case
+            TypeTable -> void $ setupvalue (nth 2) 1
+            _ -> pop 1
       -- run loaded input
       callTrace 0 multret
       nvalues <- gettop
