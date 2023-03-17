@@ -2,6 +2,12 @@
 
 `hslua-cli` uses [PVP Versioning](https://pvp.haskell.org).
 
+## hslua-cli-1.4.0.1
+
+Released 2023-03-17.
+
+-   Fix building on Windows.
+
 ## hslua-cli-1.4.0
 
 Released 2023-03-16.
