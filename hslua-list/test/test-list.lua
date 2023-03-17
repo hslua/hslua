@@ -312,6 +312,20 @@ return {
           "abc"
         )
       end),
+    },
+    group 'tostring' {
+      test('lists all elements', function ()
+        assert.are_equal(
+          tostring(List {5, 23, 42}),
+          'List {5, 23, 42}'
+        )
+      end),
+      test('empty list', function ()
+        assert.are_equal(
+          tostring(List {}),
+          'List {}'
+        )
+      end),
     }
   },
 }

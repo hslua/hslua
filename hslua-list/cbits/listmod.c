@@ -264,6 +264,39 @@ static int list_map(lua_State *L) {
   return 1;
 }
 
+
+static void addfield (lua_State *L, luaL_Buffer *b, lua_Integer i) {
+  lua_geti(L, 1, i);
+  luaL_tolstring(L, -1, NULL);
+  lua_remove(L, -2);  /* element */
+  luaL_addvalue(b);
+}
+
+/*
+** Convert the list to a string.
+*/
+static int list_tostring(lua_State *L) {
+  luaL_Buffer b;
+  lua_Integer len = luaL_len(L, 1);
+  luaL_buffinit(L, &b);
+  /* Prefix the string with name from metatable */
+  if (luaL_getmetafield(L, 1, "__name") != LUA_TNIL) {
+    luaL_addvalue(&b);
+    luaL_addchar(&b, ' ');
+  }
+  luaL_addchar(&b, '{');
+  lua_Integer i = 1;
+  for (; i < len; i++) {
+    addfield(L, &b, i);
+    luaL_addstring(&b, ", ");
+  }
+  if (i == len)  /* add last value (if interval was not empty) */
+    addfield(L, &b, i);
+  luaL_addchar(&b, '}');
+  luaL_pushresult(&b);
+  return 1;
+}
+
 /*
 ** Pushes the standard `table` module to the stack.
 */
@@ -309,6 +342,7 @@ static void copyfromtablelib (lua_State *L, int idx) {
 static const luaL_Reg list_funcs[] = {
   {"__concat", list_concat},
   {"__eq", list_eq},
+  {"__tostring", list_tostring},
   {"clone", list_clone},
   {"extend", list_extend},
   {"filter", list_filter},
