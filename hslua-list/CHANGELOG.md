@@ -2,6 +2,14 @@
 
 `hslua-list` uses [PVP Versioning](https://pvp.haskell.org).
 
+## hslua-list-1.1.1
+
+Released 2023-03-17.
+
+-   Conversion to strings: added a `__tostring` that lists all
+    elements separated by commas and a space, surrounded by braces
+    and prefixed with the metatable's name.
+
 ## hslua-list-1.1.0.1
 
 Released 2023-01-23.
