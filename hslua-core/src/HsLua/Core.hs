@@ -190,6 +190,11 @@ module HsLua.Core
   , dostringTrace
   -- ** Warnings
   , setwarnf'
+
+  -- * Debug interface
+  , getupvalue
+  , setupvalue
+
   -- * Haskell userdata values
   --
   -- | Push arbitrary Haskell values to the Lua stack.
@@ -221,6 +226,7 @@ import Prelude hiding (EQ, LT, compare, concat, error)
 
 import HsLua.Core.Auxiliary
 import HsLua.Core.Closures
+import HsLua.Core.Debug
 import HsLua.Core.Error
 import HsLua.Core.Package
 import HsLua.Core.Primary
