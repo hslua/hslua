@@ -65,6 +65,8 @@ library
                      , text              >= 1.2    && < 2.1
   if !os(windows)
     build-depends:     unix              >= 2.7    && < 2.9
+  if os(windows)
+    cpp-options:         -D_WINDOWS
 
 executable hslua
   import:              common-options
