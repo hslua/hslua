@@ -2,6 +2,14 @@
 
 `lua` uses [PVP Versioning][].
 
+## lua-2.3.1
+
+Released 2023-03-17.
+
+-   New module *Lua.Debug*: the module provides bindings to a
+    subset of functions of the Lua debug interface. Currently the
+    module only binds `lua_getupvalue` and `lua_setupvalue`.
+
 ## lua-2.3.0
 
 Released 2023-03-13.
