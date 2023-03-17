@@ -34,6 +34,7 @@ import qualified Prelude
 import qualified Data.ByteString as B
 import qualified HsLua.Core.AuxiliaryTests
 import qualified HsLua.Core.ClosuresTests
+import qualified HsLua.Core.DebugTests
 import qualified HsLua.Core.ErrorTests
 import qualified HsLua.Core.PackageTests
 import qualified HsLua.Core.PrimaryTests
@@ -456,6 +457,7 @@ tests = testGroup "Core module"
   , HsLua.Core.UnsafeTests.tests
   , HsLua.Core.UserdataTests.tests
   , HsLua.Core.WarnTests.tests
+  , HsLua.Core.DebugTests.tests
   ]
 
 compareWith :: (Lua.Integer -> Lua.Integer -> Bool)

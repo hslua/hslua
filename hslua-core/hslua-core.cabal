@@ -58,6 +58,7 @@ library
   import:              common-options
   exposed-modules:     HsLua.Core
                      , HsLua.Core.Closures
+                     , HsLua.Core.Debug
                      , HsLua.Core.Error
                      , HsLua.Core.Package
                      , HsLua.Core.Run
@@ -89,6 +90,7 @@ test-suite test-hslua-core
   other-modules:       HsLua.CoreTests
                      , HsLua.Core.AuxiliaryTests
                      , HsLua.Core.ClosuresTests
+                     , HsLua.Core.DebugTests
                      , HsLua.Core.ErrorTests
                      , HsLua.Core.PackageTests
                      , HsLua.Core.PrimaryTests
