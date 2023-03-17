@@ -115,6 +115,7 @@ library
                      , Lua.Auxiliary
                      , Lua.Call
                      , Lua.Constants
+                     , Lua.Debug
                      , Lua.Ersatz
                      , Lua.Ersatz.Auxiliary
                      , Lua.Ersatz.Functions

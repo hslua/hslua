@@ -225,6 +225,10 @@ module Lua
   , fromReference
   , toReference
 
+    -- * Debug interface
+  , lua_getupvalue
+  , lua_setupvalue
+
     -- * Ersatz functions
   , hsluaL_newstate
   , hsluaL_tolstring
@@ -267,6 +271,7 @@ import Foreign.C (CInt)
 import Lua.Auxiliary
 import Lua.Call
 import Lua.Constants
+import Lua.Debug
 import Lua.Ersatz.Functions
 import Lua.Ersatz.Auxiliary
 import Lua.Lib
