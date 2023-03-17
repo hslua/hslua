@@ -2,6 +2,15 @@
 
 `hslua-core` uses [PVP Versioning][].
 
+## hslua-core-2.3.1
+
+Released 2023-03-17.
+
+-   New module *HsLua.Core.Debug*: the module provides bindings to
+    a subset of functions of the Lua debug interface. Currently
+    the module only exports `getupvalue` and `setupvalue`, both of
+    which are also re-exported from *HsLua.Core*.
+
 ## hslua-core-2.3.0
 
 Released 2023-03-13.
