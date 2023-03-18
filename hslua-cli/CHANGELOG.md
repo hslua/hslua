@@ -2,6 +2,14 @@
 
 `hslua-cli` uses [PVP Versioning](https://pvp.haskell.org).
 
+## hslua-cli-1.4.1
+
+Released 2023-03-18.
+
+-   Always start the REPL if the `-i` parameter is given on the
+    command line. This fixes a bug where the REPL would not start
+    if `-v`, `-e` or `-l` where given.
+
 ## hslua-cli-1.4.0.1
 
 Released 2023-03-17.
