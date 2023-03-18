@@ -189,9 +189,13 @@ runStandalone settings progName args = do
           _      -> Lua.throwErrorAsException
     tty <- Lua.liftIO istty
     case optScript opts of
-      Just script | script /= "-" -> do
+      Just "-" ->  -- load from stdin
+        Lua.loadfile Nothing >>= handleScriptResult
+      Just script ->
         Lua.loadfile (Just script) >>= handleScriptResult
-      Nothing | optVersion opts || not (null (optExecute opts)) ->
+      _ | optInteractive opts -> do
+        startREPL
+      _ | optVersion opts || not (null (optExecute opts)) ->
         pure ()
       _ | tty -> do
         startREPL
