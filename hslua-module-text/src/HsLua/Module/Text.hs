@@ -82,12 +82,15 @@ fromencoding = defun "fromencoding"
   <#> opt (stringParam "encoding" "target encoding")
   =#> functionResult Lua.pushText "string" "UTF-8 string"
   #? T.unlines
-     [ "Converts a string from a different encoding to UTF-8. On Windows,"
-     , "the `encoding` parameter defaults to the current ANSI code page; on"
-     , "other platforms the function will try to use the file system's"
-     , "encoding."
+     [ "Converts a string to UTF-8. The `encoding` parameter specifies the"
+     , "encoding of the input string. On Windows, that parameter defaults"
+     , "to the current ANSI code page; on other platforms the function"
+     , "will try to use the file system's encoding."
      , ""
-     , "See `toencoding` for more info on supported encodings."
+     , "The set of known encodings is system dependent, but includes at"
+     , "least `UTF-8`, `UTF-16BE`, `UTF-16LE`, `UTF-32BE`, and `UTF-32LE`."
+     , "Note that the default code page on Windows is available through"
+     , "`CP0`."
      ]
   where
     stringIndex idx = do
@@ -102,7 +105,7 @@ len = defun "len"
   ### liftPure T.length
   <#> textParam "s" "UTF-8 encoded string"
   =#> integralResult "length"
-  #? "Determines the number of characters in a string."
+  #? "Returns the length of a UTF-8 string, i.e., the number of characters."
 
 -- | Wrapper for @'T.toLower'@.
 lower :: DocumentedFunction e
@@ -110,7 +113,7 @@ lower = defun "lower"
   ### liftPure T.toLower
   <#> textParam "s" "UTF-8 string to convert to lowercase"
   =#> textResult "Lowercase copy of `s`"
-  #? "Converts a string to lower case."
+  #? "Returns a copy of a UTF-8 string, converted to lowercase."
 
 -- | Wrapper for @'T.reverse'@.
 reverse :: DocumentedFunction e
@@ -118,7 +121,7 @@ reverse = defun "reverse"
   ### liftPure T.reverse
   <#> textParam "s" "UTF-8 string to revert"
   =#> textResult "Reversed `s`"
-  #? "Reverses a string."
+  #? "Returns a copy of a UTF-8 string, with characters reversed."
 
 -- | Returns a substring, using Lua's string indexing rules.
 sub :: DocumentedFunction e
@@ -128,7 +131,10 @@ sub = defun "sub"
   <#> textIndex "i" "substring start position"
   <#> opt (textIndex "j" "substring end position")
   =#> textResult "text substring"
-  #? "Returns a substring, using Lua's string indexing rules."
+  #? T.unlines
+     [ "Returns a substring of a UTF-8 string, using Lua's string"
+     , "indexing rules."
+     ]
   where
     substring :: Text -> Int -> Maybe Int -> Text
     substring s i jopt =
@@ -153,15 +159,14 @@ toencoding = defun "toencoding"
   <#> opt (stringParam "enc" "target encoding")
   =#> functionResult (const (pure ())) "string" "re-encoded string"
   #? T.unlines
-     [ "Converts a UTF-8 string to a different encoding. On Windows, the"
-     , "`encoding` parameter defaults to the current ANSI code page; on"
-     , "other platforms the function will try to use the file system's"
-     , "encoding."
+     [ "Converts a UTF-8 string to a different encoding. The `encoding`"
+     , "parameter defaults to the current ANSI code page on Windows; on"
+     , "other platforms it will try to guess the file system's encoding."
      , ""
      , "The set of known encodings is system dependent, but includes at"
      , "least `UTF-8`, `UTF-16BE`, `UTF-16LE`, `UTF-32BE`, and `UTF-32LE`."
-     , "Note that the prefix `CP` allows to access code page on Windows,"
-     , "e.g. `CP0` (the current ANSI code page) or `CP1250`."
+     , "Note that the default code page on Windows is available through"
+     , "`CP0`."
      ]
 
 -- | Wrapper for @'T.toUpper'@.
@@ -170,7 +175,7 @@ upper = defun "upper"
   ### liftPure T.toUpper
   <#> textParam "s" "UTF-8 string to convert to uppercase"
   =#> textResult "Uppercase copy of `s`"
-  #? "Converts a string to upper case."
+  #? "Returns a copy of a UTF-8 string, converted to uppercase."
 
 --
 -- Parameters
