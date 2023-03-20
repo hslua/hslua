@@ -161,8 +161,7 @@ cputime = defun "cputime"
   #? T.unlines
      [ "Returns the number of picoseconds CPU time used by the current"
      , "program. The precision of this result may vary in different"
-     , "versions and on different platforms. See also the field"
-     , "`cputime_precision`."
+     , "versions and on different platforms."
      ]
 
 -- | Retrieve the entire environment
@@ -170,8 +169,8 @@ env :: LuaError e => DocumentedFunction e
 env = defun "env"
   ### ioToLua Env.getEnvironment
   =#> functionResult (pushKeyValuePairs pushString pushString) "table"
-        "A table mapping environment variable names to their value"
-  #? "Retrieves the entire environment."
+        "A table mapping environment variable names to their value."
+  #? "Retrieves the entire environment as a string-indexed table."
 
 -- | Return the current working directory as an absolute path.
 getwd :: LuaError e => DocumentedFunction e
@@ -298,9 +297,9 @@ with_wd = defun "with_wd"
               Lua.liftIO (Directory.setCurrentDirectory fp)
               callback `invokeWithFilePath` fp))
   <#> filepathParam "directory"
-        "Directory in which the given `callback` should be executed."
+        "Directory in which the given `callback` should be executed"
   <#> parameter peekCallback "function" "callback"
-        "Action to execute in the given directory."
+        "Action to execute in the given directory"
   =?> "The results of the call to `callback`."
   #? T.unwords
      [ "Run an action within a different directory. This function will"
@@ -358,8 +357,10 @@ with_tmpdir = defun "with_tmpdir"
         ("Function which takes the name of the temporary directory as "
          `T.append` "its first argument.")
   =?> "The results of the call to `callback`."
-  #? ("Create and use a temporary directory inside the given directory."
-      `T.append` "The directory is deleted after use.")
+  #? T.unlines
+     [ "Create and use a temporary directory inside the given directory."
+     , "The directory is deleted after the callback returns."
+     ]
   where
     peekParentDir idx = do
       args <- liftLua gettop
