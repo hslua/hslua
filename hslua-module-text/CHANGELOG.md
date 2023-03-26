@@ -2,6 +2,12 @@
 
 `hslua-module-text` uses [PVP Versioning][].
 
+## hslua-module-text-1.1.0.1
+
+Released 2023-03-26.
+
+-   Improved doc strings.
+
 ## hslua-module-text-1.1.0
 
 Released 2023-03-13.

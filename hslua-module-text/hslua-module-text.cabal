@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                hslua-module-text
-version:             1.1.0
+version:             1.1.0.1
 synopsis:            Lua module for text
 description:         UTF-8 aware subset of Lua's `string` module.
                      .
