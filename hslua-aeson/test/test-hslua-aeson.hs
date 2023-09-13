@@ -7,6 +7,7 @@ Tests for Aeson–Lua glue.
 -}
 import Control.Monad (when)
 import Data.Aeson (ToJSON, object, (.=))
+import Data.Scientific (Scientific, fromFloatDigits, toRealFloat)
 import Data.Text (Text)
 import HsLua.Core as Lua
 import HsLua.Marshalling
@@ -25,10 +26,8 @@ import qualified Test.QuickCheck.Monadic as QC
 import qualified Data.Aeson.KeyMap as KeyMap
 #if !MIN_VERSION_aeson(2,0,3)
 import Data.Aeson.Key (Key, fromText)
-import Data.Scientific (Scientific, fromFloatDigits)
 #endif
 #else
-import Data.Scientific (Scientific, fromFloatDigits)
 import qualified Data.HashMap.Strict as KeyMap
 #endif
 
@@ -42,7 +41,7 @@ tests :: TestTree
 tests = testGroup "hslua-aeson"
   [ testGroup "Value"
     [ testProperty "can be round-tripped through the stack" $
-      assertRoundtripEqual pushValue peekValue
+      assertRoundtripEqual pushValue peekValue . numbersToDoubles
     , testProperty "can roundtrip a bool nested in 50 layers of arrays" $
       \b -> QC.monadicIO $ do
         let go _ x = Aeson.Array $ Vector.fromList [x]
@@ -119,11 +118,22 @@ roundtrip pushX peekX x = run $ do
     failLua $ "peeking modified the stack: " ++ show afterPeekSize
   return result
 
--- aeson defines instances for Arbitrary since 2.0.3.0
-#if !MIN_VERSION_aeson(2,0,3)
+
+-- | Ensure that numbers are representable as Doubles.
+numbersToDoubles :: Aeson.Value -> Aeson.Value
+numbersToDoubles (Aeson.Number x) = Aeson.Number . luaNumberToScientific $
+                                    toRealFloat x
+numbersToDoubles (Aeson.Object x) = Aeson.Object $ fmap numbersToDoubles x
+numbersToDoubles (Aeson.Array x) = Aeson.Array $ fmap numbersToDoubles x
+numbersToDoubles x = x
+
+-- | Convert a Lua number to a scientific number, which are the basis for JSON
+-- numbers.
 luaNumberToScientific :: Lua.Number -> Scientific
 luaNumberToScientific = fromFloatDigits . (realToFrac :: Lua.Number -> Double)
 
+-- aeson defines instances for Arbitrary since 2.0.3.0
+#if !MIN_VERSION_aeson(2,0,3)
 instance Arbitrary Aeson.Value where
   arbitrary = arbitraryValue 9
 

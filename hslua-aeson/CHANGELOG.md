@@ -2,6 +2,14 @@
 
 `hslua-aeson` uses [PVP Versioning][].
 
+## hslua-aeson-2.3.1
+
+-   Relaxed upper bound for hslua-aeson. This required changes to
+    the testsuite: The arbitrary JSON values produced by current
+    aeson versions include numbers that cannot be converted to Lua
+    numbers without loss of precision. Those are first converted
+    to representable numbers before round-tripping is tested.
+
 ## hslua-aeson-2.3.0.1
 
 Released 2023-03-13.
