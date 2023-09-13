@@ -10,6 +10,9 @@
     numbers without loss of precision. Those are first converted
     to representable numbers before round-tripping is tested.
 
+-   Relaxed upper bound for text and bytestring, allowing text-2.1
+    and bytestring-0.12.
+
 ## hslua-aeson-2.3.0.1
 
 Released 2023-03-13.
