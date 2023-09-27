@@ -54,8 +54,8 @@ tests = testGroup "LPeg" $
 
       _ <- withCString "version" $ lua_pushstring l
       _ <- lua_rawget l (-2)
-      assertEqual "module should have `version` field of type function"
-        LUA_TFUNCTION =<< lua_type l (-1)
+      assertEqual "module should have `version` field of type 'string'"
+        LUA_TSTRING =<< lua_type l (-1)
       lua_close l
 
   , testCase "load libraries manually" $ do
@@ -131,7 +131,7 @@ tests = testGroup "LPeg" $
 testScript :: String
 testScript = unlines
   [ "local m = require 'lpeg'"
-  , "assert(type(m.version()) == 'string')"
+  , "assert(type(m.version) == 'string')"
   , "assert(m.type(m.P'alo') == 'pattern')"
   , "assert(m.match('a' * m.P(true), 'a') == 2)"
   ]

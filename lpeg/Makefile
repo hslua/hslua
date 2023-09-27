@@ -1,3 +1,3 @@
 # Include script as byte array
-cbits/re.h: cbits/lpeg-1.0.2/re.lua
+cbits/re.h: cbits/lpeg-1.1.0/re.lua
 	xxd -i $< $@
