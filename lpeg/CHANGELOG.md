@@ -2,6 +2,12 @@
 
 `lpeg` uses [PVP Versioning][].
 
+## lpeg-1.1.0
+
+Released 2023-09-27.
+
+-   Update to the latest upstream version, LPeg version 1.1.
+
 ## lpeg-1.0.4
 
 Released 2023-03-13.
