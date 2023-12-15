@@ -37,7 +37,7 @@ common common-options
   build-depends:       base                 >= 4.11   && < 5
                      , hslua-core           >= 2.1    && < 2.4
                      , hslua-packaging      >= 2.3    && < 2.4
-                     , text                 >= 1.2    && < 2.1
+                     , text                 >= 1.2    && < 2.2
   default-extensions:  LambdaCase
                      , OverloadedStrings
   ghc-options:         -Wall

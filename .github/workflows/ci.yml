@@ -58,23 +58,33 @@ jobs:
             lua: '5.4.4'
             flags: '+system-lua'
             aeson: '>= 2'
-          - ghc: '9.2.5'
+          - ghc: '9.2'
             cabal: '3.6.2'
             lua: 'bundled'
             flags: '+apicheck'
             aeson: '>= 2'
-          - ghc: '9.4.4'
+          - ghc: '9.4'
             cabal: '3.8'
+            lua: 'bundled'
+            flags: '+apicheck'
+            aeson: '>= 2'
+          - ghc: '9.6'
+            cabal: '3.10'
+            lua: 'bundled'
+            flags: '+apicheck'
+            aeson: '>= 2'
+          - ghc: '9.8'
+            cabal: '3.10'
             lua: 'bundled'
             flags: '+apicheck'
             aeson: '>= 2'
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Setup Haskell
-      uses: haskell/actions/setup@v2
+      uses: haskell-actions/setup@v2
       with:
         ghc-version: ${{ matrix.versions.ghc }}
         cabal-version: ${{ matrix.versions.cabal }}
@@ -115,7 +125,7 @@ jobs:
     name: Windows (stack)
     runs-on: windows-2019
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Cache stack global package db
         id:   stack-global-package-db

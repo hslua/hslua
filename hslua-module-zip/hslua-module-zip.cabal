@@ -32,13 +32,13 @@ source-repository head
 common common-options
   build-depends:       base              >= 4.11   && < 5
                      , bytestring
-                     , filepath          >= 1.4    && < 1.5
+                     , filepath          >= 1.4    && < 1.6
                      , hslua-core        >= 2.3    && < 2.4
                      , hslua-list        >= 1.1    && < 1.2
                      , hslua-marshalling >= 2.3    && < 2.4
                      , hslua-packaging   >= 2.3    && < 2.4
                      , hslua-typing      >= 0.1    && < 0.2
-                     , text              >= 1.2    && < 2.1
+                     , text              >= 1.2    && < 2.2
                      , time              >= 1.5    && < 1.14
                      , zip-archive       >= 0.4    && < 0.5
 
