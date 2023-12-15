@@ -31,6 +31,7 @@ jobs:
       ${{ matrix.versions.flags }}; aeson ${{ matrix.versions.aeson }}
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         versions:
           - ghc: '8.4.4'
