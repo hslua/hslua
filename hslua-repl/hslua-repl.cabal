@@ -34,7 +34,7 @@ Flag executable
 common common-options
   build-depends:       base              >= 4.9.1  && < 5
                      , hslua-core        >= 2.3.1  && < 2.4
-                     , text              >= 1.2    && < 2.1
+                     , text              >= 1.2    && < 2.2
 
   ghc-options:         -Wall
                        -Wcpp-undef
@@ -62,7 +62,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     HsLua.REPL
   build-depends:       base              >= 4.11   && < 5
-                     , bytestring        >= 0.10   && < 0.12
+                     , bytestring        >= 0.10   && < 0.13
                      , isocline          >= 1.0    && < 1.1
                      , lua               >= 2.3    && < 2.4
 

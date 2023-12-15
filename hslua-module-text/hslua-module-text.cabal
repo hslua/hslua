@@ -35,7 +35,7 @@ common common-options
   build-depends:       base                 >= 4.11   && < 5
                      , hslua-core           >= 2.3    && < 2.4
                      , hslua-packaging      >= 2.3    && < 2.4
-                     , text                 >= 1.2    && < 2.1
+                     , text                 >= 1.2    && < 2.2
   ghc-options:         -Wall
                        -Wincomplete-record-updates
                        -Wnoncanonical-monad-instances

@@ -31,11 +31,11 @@ source-repository head
 
 common common-options
   build-depends:       base              >= 4.9.1  && < 5
-                     , filepath          >= 1.4    && < 1.5
+                     , filepath          >= 1.4    && < 1.6
                      , hslua-core        >= 2.1    && < 2.4
                      , hslua-marshalling >= 2.1    && < 2.4
                      , hslua-packaging   >= 2.3    && < 2.4
-                     , text              >= 1.2    && < 2.1
+                     , text              >= 1.2    && < 2.2
 
   ghc-options:         -Wall
                        -Wcompat

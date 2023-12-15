@@ -62,7 +62,7 @@ library
                      , hslua-marshalling >= 2.2    && < 2.4
                      , hslua-repl        >= 0.1    && < 0.2
                      , lua               >= 2.3    && < 2.4
-                     , text              >= 1.2    && < 2.1
+                     , text              >= 1.2    && < 2.2
   if !os(windows)
     build-depends:     unix              >= 2.7    && < 2.9
   if os(windows)
