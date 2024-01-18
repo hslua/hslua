@@ -45,13 +45,13 @@ common common-options
                      , bytestring              >= 0.10.2 && < 0.13
                      , containers              >= 0.5.9  && < 0.8
                      , exceptions              >= 0.8    && < 0.11
-                     , hslua-aeson             >= 2.3    && < 2.4
-                     , hslua-core              >= 2.3    && < 2.4
-                     , hslua-classes           >= 2.2    && < 2.4
-                     , hslua-marshalling       >= 2.3    && < 2.4
-                     , hslua-objectorientation >= 2.3    && < 2.4
-                     , hslua-packaging         >= 2.3    && < 2.4
-                     , hslua-typing            >= 0.1    && < 0.2
+                     , hslua-aeson             >= 2.3.1  && < 2.4
+                     , hslua-core              >= 2.3.2  && < 2.4
+                     , hslua-classes           >= 2.2.1  && < 2.4
+                     , hslua-marshalling       >= 2.3.1  && < 2.4
+                     , hslua-objectorientation >= 2.3.1  && < 2.4
+                     , hslua-packaging         >= 2.3.1  && < 2.4
+                     , hslua-typing            >= 0.1.1  && < 0.2
                      , mtl                     >= 2.2    && < 2.4
                      , text                    >= 1.2    && < 2.2
   ghc-options:         -Wall
