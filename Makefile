@@ -35,8 +35,14 @@ publish:
 	cabal update
 	for archive in $$(cabal sdist all | grep -v '^Wrote tarball sdist to'); do \
 	    tagname=$$(basename "$$archive" | sed -e 's/\.tar\.gz//'); \
-	    if ! cabal info -v0 "$$tagname" 2>&1 > /dev/null ; then \
+	    if ! cabal info -v0 "$$tagname" 2> /dev/null > /dev/null ; then \
 	      cabal upload "$$archive" --publish ; \
 	      git tag --sign --message="$$tagname" $$tagname ; \
 	    fi \
 	done
+
+.PHONY: publish-%
+publish-%:
+	cabal sdist $$(echo "$*" | sed -e 's/-[0-9][0-9]*\..*//g')
+	cabal upload dist-newstyle/sdist/"$*".tar.gz --publish
+	git tag --sign --message="$*" "$*"
