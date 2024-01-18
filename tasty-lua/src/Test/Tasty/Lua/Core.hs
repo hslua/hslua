@@ -2,7 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-|
 Module      : Test.Tasty.Lua.Core
-Copyright   : © 2019-2023 Albert Krewinkel
+Copyright   : © 2019-2024 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 

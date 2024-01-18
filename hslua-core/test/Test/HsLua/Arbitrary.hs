@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-|
 Module      :  HsLua.Core.RunTests
-Copyright   :  © 2017-2023 Albert Krewinkel
+Copyright   :  © 2017-2024 Albert Krewinkel
 License     :  MIT
 
 Maintainer  :  Albert Krewinkel <tarleb@hslua.org>

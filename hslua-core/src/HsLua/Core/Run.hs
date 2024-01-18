@@ -2,7 +2,7 @@
 Module      : HsLua.Core.Run
 Copyright   : © 2007–2012 Gracjan Polak;
               © 2012–2016 Ömer Sinan Ağacan;
-              © 2017-2023 Albert Krewinkel
+              © 2017-2024 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 Stability   : beta

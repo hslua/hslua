@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-|
 Module      : HsLua.Packaging.UDTypeTests
-Copyright   : © 2020-2023 Albert Krewinkel
+Copyright   : © 2020-2024 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 

@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
 {-|
 Module      :  HsLua.Core.DebugTests
-Copyright   :  © 2023 Albert Krewinkel
+Copyright   :  © 2023-2024 Albert Krewinkel
 License     :  MIT
 Maintainer  :  Albert Krewinkel <tarleb@hslua.org>
 

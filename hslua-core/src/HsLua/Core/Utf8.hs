@@ -1,6 +1,6 @@
 {-|
 Module      : HsLua.Core.Utf8
-Copyright   : © 2018-2023 Albert Krewinkel
+Copyright   : © 2018-2024 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 Stability   : beta

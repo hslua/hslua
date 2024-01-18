@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeApplications  #-}
 {- |
 Module      : Main
-Copyright   : © 2022-2023 Albert Krewinkel
+Copyright   : © 2022-2024 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 
@@ -20,7 +20,7 @@ main = run @Lua.Exception $ do
   let config = Config
         { replPrompt = "luarepl"
         , replInfo = replInfo defaultConfig `T.append`
-                     "\nREPL: © 2023 Albert Krewinkel"
+                     "\nREPL: © 2023-2024 Albert Krewinkel"
         , replHistory = Just ".luarepl-history"
         }
   openlibs

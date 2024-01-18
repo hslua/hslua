@@ -5,7 +5,7 @@
 {-# LANGUAGE TypeApplications    #-}
 {-|
 Module      : HsLua.Module.Zip
-Copyright   : © 2022-2023 Albert Krewinkel
+Copyright   : © 2022-2024 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 

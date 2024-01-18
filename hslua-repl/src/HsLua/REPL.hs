@@ -5,7 +5,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {- |
 Module      : HsLua.REPL
-Copyright   : Copyright © 2017-2023 Albert Krewinkel
+Copyright   : Copyright © 2017-2024 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 
