@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                tasty-lua
-version:             1.1.0
+version:             1.1.1
 synopsis:            Write tests in Lua, integrate into tasty.
 description:         Allow users to define tasty tests from Lua.
 homepage:            https://github.com/hslua/hslua
