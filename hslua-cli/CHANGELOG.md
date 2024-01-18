@@ -2,6 +2,12 @@
 
 `hslua-cli` uses [PVP Versioning](https://pvp.haskell.org).
 
+## hslua-cli-1.4.2
+
+Released 2024-01-18.
+
+-   Relaxed upper bound for text, allowing text-2.1.
+
 ## hslua-cli-1.4.1
 
 Released 2023-03-18.
