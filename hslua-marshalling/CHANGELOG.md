@@ -2,6 +2,13 @@
 
 `hslua-marshalling` uses [PVP Versioning][].
 
+## hslua-marshalling-2.3.1
+
+Released 2024-01-18.
+
+-   Relaxed upper bound for text, containers, and bytestring,
+    allowing text-2.1, containers-0.7, and bytestring-0.12.
+
 ## hslua-marshalling-2.3.0
 
 Released 2023-03-13.
