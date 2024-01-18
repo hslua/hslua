@@ -2,6 +2,13 @@
 
 `hslua-core` uses [PVP Versioning][].
 
+## hslua-core-2.3.2
+
+Released 2024-01-18.
+
+-   Relaxed upper bound for text, and bytestring, allowing
+    text-2.1, and bytestring-0.12.
+
 ## hslua-core-2.3.1
 
 Released 2023-03-17.
