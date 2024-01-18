@@ -2,6 +2,12 @@
 
 `tasty-hslua` uses [PVP Versioning][].
 
+## tasty-hslua-1.1.1
+
+Released 2024-01-18.
+
+-   Relaxed upper bound for bytestring, allowing bytestring-0.12.
+
 ## tasty-hslua-1.1.0
 
 Released 2023-03-13.
