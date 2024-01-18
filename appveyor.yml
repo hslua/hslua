@@ -6,11 +6,11 @@ environment:
     - STACK_VERSION: "windows-i386"
       STACK_ROOT: "c:\\sr32"
       STACK: "stack.exe"
-      STACK_FLAGS: "--resolver=lts-17"
+      STACK_FLAGS: "--resolver=lts-22"
     - STACK_VERSION: "windows-x86_64"
       STACK_ROOT: "c:\\sr64"
       STACK: "stack.exe"
-      STACK_FLAGS: "--resolver=lts-17"
+      STACK_FLAGS: "--resolver=lts-22"
 
 matrix:
   fast_finish: true
