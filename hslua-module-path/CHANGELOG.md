@@ -2,6 +2,13 @@
 
 `hslua-module-paths` uses [PVP Versioning][].
 
+## hslua-module-path-1.1.1
+
+Released 2024-01-18.
+
+-   Relaxed upper bound for text, and filepath,
+    allowing text-2.1, filepath-1.5.
+
 ## hslua-module-path-1.1.0
 
 Released 2023-03-13.
