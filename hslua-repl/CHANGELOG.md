@@ -2,7 +2,14 @@
 
 `hslua-repl` uses [PVP Versioning](https://pvp.haskell.org).
 
-## hslua-repl-0.1.0
+## hslua-repl-0.1.2
+
+Released 2024-01-18.
+
+-   Relaxed upper bound for text and bytestring, allowing text-2.1
+    and bytestring-0.12.
+
+## hslua-repl-0.1.1
 
 Released 2023-03-17.
 
