@@ -2,6 +2,13 @@
 
 `hslua-packaging` uses [PVP Versioning][].
 
+## hslua-packaging-2.3.1
+
+Released 2024-01-18.
+
+-   Relaxed upper bound for text and containers, allowing
+    text-2.1, and containers-0.7.
+
 ## hslua-packaging-2.3.0
 
 Released 2023-03-13.
