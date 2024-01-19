@@ -99,8 +99,8 @@ pattern LUA_COPYRIGHT :: String
 
 #ifdef _LUA_NO_CONST_STR
 pattern LUA_VERSION = "Lua 5.4"
-pattern LUA_RELEASE = "Lua 5.4.4"
-pattern LUA_COPYRIGHT = "Lua 5.4.4  Copyright (C) 1994-2022 Lua.org, PUC-Rio"
+pattern LUA_RELEASE = "Lua 5.4.6"
+pattern LUA_COPYRIGHT = "Lua 5.4.6  Copyright (C) 1994-2023 Lua.org, PUC-Rio"
 #else
 pattern LUA_RELEASE = #{const_str LUA_RELEASE}
 pattern LUA_VERSION = #{const_str LUA_VERSION}

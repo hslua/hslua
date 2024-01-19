@@ -30,7 +30,7 @@ programs, to make them scriptable, and to expose relevant Haskell
 code to Lua.
 
 HsLua ships with batteries included and includes a recent Lua
-version, currently Lua 5.4.4. Cabal flags make it easy to compile
+version, currently Lua 5.4.6. Cabal flags make it easy to compile
 against a system-wide Lua installation.
 
 ### Use-cases
