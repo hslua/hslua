@@ -46,3 +46,11 @@ publish-%:
 	cabal sdist $$(echo "$*" | sed -e 's/-[0-9][0-9]*\..*//g')
 	cabal upload dist-newstyle/sdist/"$*".tar.gz --publish
 	git tag --sign --message="$*" "$*"
+
+.PHONY: outdated
+outdated:
+	@for d in *; do \
+	    if [ -f "$$d/$$d.cabal" ]; then \
+	        echo "$$d:" && ( cd "$$d" && cabal outdated ); \
+	    fi \
+	done
