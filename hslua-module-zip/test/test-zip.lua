@@ -149,7 +149,7 @@ return {
       system.with_tmpdir('archive', function (tmpdir)
         system.with_wd(tmpdir, function ()
           local filename = 'greetings.txt'
-          local fh = io.open(filename, 'w')
+          local fh = io.open(filename, 'wb')
           fh:write('Hi Mom!\n')
           fh:close()
           local entry = zip.read_entry(filename)
@@ -162,7 +162,7 @@ return {
       system.with_tmpdir('archive', function (tmpdir)
         system.with_wd(tmpdir, function ()
           local filename = 'greetings.txt'
-          local fh = io.open(filename, 'w')
+          local fh = io.open(filename, 'wb')
           fh:write('Hallo!\n')
           fh:close()
           local entry = zip.read_entry(filename)

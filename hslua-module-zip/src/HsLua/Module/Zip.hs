@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -37,7 +38,11 @@ import Prelude hiding (zip)
 import Control.Applicative (optional)
 import Control.Monad ((<$!>))
 import Codec.Archive.Zip
-  ( Archive, Entry, ZipOption (..), emptyArchive, symbolicLinkEntryTarget )
+  ( Archive, Entry, ZipOption (..), emptyArchive
+#ifndef _WINDOWS
+  , symbolicLinkEntryTarget
+#endif
+  )
 import Data.Functor ((<&>))
 import Data.Maybe (catMaybes, fromMaybe)
 import Data.Time.Clock.POSIX (getPOSIXTime)
@@ -58,6 +63,11 @@ import HsLua.Typing
 import qualified Codec.Archive.Zip as Zip
 import qualified Data.Text as T
 
+#ifdef _WINDOWS
+-- | Windows replacement; always returns Nothing.
+symbolicLinkEntryTarget :: Entry -> Maybe FilePath
+symbolicLinkEntryTarget = const Nothing
+#endif
 
 -- | The @zip@ module specification.
 documentedModule :: forall e. LuaError e => Module e
@@ -299,7 +309,7 @@ symlink = defun "symlink"
         "link target if entry represents a symbolic link"
   #? T.unlines
      [ "Returns the target if the Entry represents a symbolic link,"
-     , "and `nil` otherwise."
+     , "and `nil` otherwise. Always returns `nil` on Windows. "
      ]
 
 peekEntryFuzzy :: LuaError e => Peeker e Entry

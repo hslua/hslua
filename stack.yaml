@@ -11,6 +11,7 @@ packages:
 - 'hslua-module-system'
 - 'hslua-module-text'
 - 'hslua-module-version'
+- 'hslua-module-zip'
 - 'hslua-objectorientation'
 - 'hslua-packaging'
 - 'hslua-repl'
