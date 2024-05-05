@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -28,6 +27,7 @@ module HsLua.Module.Zip (
   , peekEntryFuzzy
   -- ** entry methods
   , contents
+  , symlink
   -- * Zip Options
   , peekZipOptions
   )
@@ -36,7 +36,8 @@ where
 import Prelude hiding (zip)
 import Control.Applicative (optional)
 import Control.Monad ((<$!>))
-import Codec.Archive.Zip (Archive, Entry, ZipOption (..), emptyArchive)
+import Codec.Archive.Zip
+  ( Archive, Entry, ZipOption (..), emptyArchive, symbolicLinkEntryTarget )
 import Data.Functor ((<&>))
 import Data.Maybe (catMaybes, fromMaybe)
 import Data.Time.Clock.POSIX (getPOSIXTime)
@@ -44,7 +45,7 @@ import Data.Version (Version, makeVersion)
 import HsLua.Core
   ( LuaError, NumArgs (..), NumResults (..), Type(..), call, failLua
   , fromStackIndex, getfield, gettop, replace, liftIO, ltype
-  , nth, nthBottom, setmetatable )
+  , nth, nthBottom, pushnil, setmetatable )
 import HsLua.List (newListMetatable)
 import HsLua.Marshalling
   ( Peeker, Pusher, choice, failPeek, liftLua, peekBool
@@ -253,6 +254,7 @@ typeEntry = deftype "zip.Entry"
     (pushIntegral, Zip.eLastModified)
     (peekIntegral, \entry modtime -> entry { Zip.eLastModified = modtime})
   , method contents
+  , method symlink
   ]
 
 -- | Creates a new 'ZipEntry' from a file; wraps 'Zip.readEntry'.
@@ -286,6 +288,18 @@ contents = defun "contents"
      [ "Get the uncompressed contents of a zip entry. If `password` is given,"
      , "then that password is used to decrypt the contents. An error is throws"
      , "if decrypting fails."
+     ]
+
+-- | Returns the target if the Entry represents a symbolic link.
+symlink :: LuaError e => DocumentedFunction e
+symlink = defun "symlink"
+  ### liftPure symbolicLinkEntryTarget
+  <#> udparam typeEntry "self" ""
+  =#> functionResult (maybe pushnil pushString) "string|nil"
+        "link target if entry represents a symbolic link"
+  #? T.unlines
+     [ "Returns the target if the Entry represents a symbolic link,"
+     , "and `nil` otherwise."
      ]
 
 peekEntryFuzzy :: LuaError e => Peeker e Entry

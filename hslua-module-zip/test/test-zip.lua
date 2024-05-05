@@ -172,6 +172,21 @@ return {
           )
         end)
       end)
+    end),
+
+    -- Can't reliably test this for actual symlinks, as Windows doesn't
+    -- support them. Only the behavior for normal files is tested.
+    test('has symlink function', function ()
+      system.with_tmpdir('archive', function (tmpdir)
+        system.with_wd(tmpdir, function ()
+          local filename = 'greetings.txt'
+          local fh = io.open(filename, 'w')
+          fh:write('Hallo!\n')
+          fh:close()
+          local entry = zip.read_entry(filename)
+          assert.is_nil(entry:symlink())
+        end)
+      end)
     end)
   },
 
