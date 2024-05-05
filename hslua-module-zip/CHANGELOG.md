@@ -2,6 +2,14 @@
 
 `hslua-module-zips` uses [PVP Versioning][].
 
+## hslua-module-zip-1.1.3
+
+Released 2024-05-05.
+
+-   Fix build on Windows. There are no symlinks on Windows;
+    functions dealing with symlinks are missing from zip-archive
+    and need a placeholder function.
+
 ## hslua-module-zip-1.1.2
 
 Released 2024-05-05.
