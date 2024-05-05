@@ -2,6 +2,14 @@
 
 `hslua-module-zips` uses [PVP Versioning][].
 
+## hslua-module-zip-1.1.2
+
+Released 2024-05-05.
+
+-   Added a `symlink` method to Entry objects. This allows to
+    check whether an entry represents a symbolic link, and where
+    it links.
+
 ## hslua-module-zip-1.1.1
 
 Released 2024-01-18.
