@@ -245,7 +245,7 @@ luaOptions =
 
   , Option "i" []
     (NoArg $ \opt -> opt { optInteractive = True })
-    "interactive mode -- currently not supported"
+    "interactive mode"
 
   , Option "l" []
     (flip ReqArg "mod" $ \mod' opt ->
