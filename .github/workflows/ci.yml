@@ -79,6 +79,11 @@ jobs:
             lua: 'bundled'
             flags: '+apicheck'
             aeson: '>= 2'
+          - ghc: '9.10'
+            cabal: '3.10'
+            lua: 'bundled'
+            flags: '+apicheck'
+            aeson: '>= 2'
 
     steps:
     - name: Checkout
