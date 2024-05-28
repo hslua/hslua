@@ -19,7 +19,6 @@ module HsLua.CLI
 import Control.Monad (unless, void, when, zipWithM_)
 import Data.Bifunctor (first)
 import Data.ByteString (ByteString)
-import Data.Foldable (foldl')
 import Data.Maybe (listToMaybe)
 import Data.Text (Text)
 import Foreign.C.String (withCString)
@@ -27,13 +26,16 @@ import HsLua.Core (LuaE, LuaError)
 import HsLua.REPL (Config (..), defaultConfig, repl, setup)
 import System.Console.GetOpt
 import System.Environment (lookupEnv)
+import qualified Data.Text as T
+import qualified Data.Text.IO as T
 import qualified Lua.Constants as Lua
 import qualified Lua.Primary as Lua
 import qualified HsLua.Core as Lua
-import qualified HsLua.Marshalling as Lua
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import qualified HsLua.Core.Utf8 as UTF8
+import qualified HsLua.Marshalling as Lua
+#if !MIN_VERSION_base(4,20,0)
+import Data.Foldable (foldl')
+#endif
 
 #ifndef _WINDOWS
 import System.Posix.IO (stdOutput)
