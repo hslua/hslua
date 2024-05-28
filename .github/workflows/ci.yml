@@ -95,7 +95,7 @@ jobs:
         ghc-version: ${{ matrix.versions.ghc }}
         cabal-version: ${{ matrix.versions.cabal }}
 
-    - uses: actions/cache@v3
+    - uses: actions/cache@v4
       name: Cache ~/.cabal/store
       with:
         path: ~/.cabal/store
@@ -135,7 +135,7 @@ jobs:
 
       - name: Cache stack global package db
         id:   stack-global-package-db
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: 'C:\Users\runneradmin\AppData\Roaming\stack\'
           key: ${{ runner.os }}-stack-${{ hashFiles('stack.yaml') }}
