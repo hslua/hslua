@@ -2,6 +2,13 @@
 
 `hslua-module-system` uses [PVP Versioning][].
 
+## hslua-module-system-1.1.2
+
+Released 2024-05-28.
+
+-   Fixed error handling in `with_wd`: exceptions when changing
+    directories are now properly converted to Lua errors.
+
 ## hslua-module-system-1.1.1
 
 Released 2024-01-18.
