@@ -216,5 +216,13 @@ return {
       end)
       assert.are_same({a, b, c}, {'a', 'b', 'c'})
     end),
+    test('raises an error on nonexistent directory', function ()
+      assert.error_matches(
+        function ()
+          system.with_wd('does-not-exist', function () end)
+        end,
+        'does not exist'
+      )
+    end)
   },
 }

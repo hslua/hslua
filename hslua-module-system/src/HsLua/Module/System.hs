@@ -47,7 +47,6 @@ import HsLua.Packaging
 import HsLua.Module.SystemUtils
 
 import qualified Data.Text as T
-import qualified HsLua.Core as Lua
 import qualified System.CPUTime as CPUTime
 import qualified System.Directory as Directory
 import qualified System.Environment as Env
@@ -291,10 +290,10 @@ tmpdirname = defun "tmpdirname"
 with_wd :: LuaError e => DocumentedFunction e
 with_wd = defun "with_wd"
   ### (\fp callback ->
-        bracket (Lua.liftIO Directory.getCurrentDirectory)
-                (Lua.liftIO . Directory.setCurrentDirectory)
-        (\_ -> do
-              Lua.liftIO (Directory.setCurrentDirectory fp)
+        bracket (ioToLua Directory.getCurrentDirectory)
+                (ioToLua . Directory.setCurrentDirectory)
+           (\_ -> do
+              ioToLua (Directory.setCurrentDirectory fp)
               callback `invokeWithFilePath` fp))
   <#> filepathParam "directory"
         "Directory in which the given `callback` should be executed"
@@ -312,7 +311,7 @@ with_wd = defun "with_wd"
 with_env :: LuaError e => DocumentedFunction e
 with_env = defun "with_env"
   ### (\environment callback ->
-        bracket (Lua.liftIO Env.getEnvironment)
+        bracket (ioToLua Env.getEnvironment)
                 setEnvironment
                 (\_ -> setEnvironment environment *> invoke callback))
   <#> parameter (peekKeyValuePairs peekString peekString) "table"
@@ -330,7 +329,7 @@ with_env = defun "with_env"
      , "action."
      ]
  where
-  setEnvironment newEnv = Lua.liftIO $ do
+  setEnvironment newEnv = ioToLua $ do
     -- Crude, but fast enough: delete all entries in new environment,
     -- then restore old environment one-by-one.
     curEnv <- Env.getEnvironment
