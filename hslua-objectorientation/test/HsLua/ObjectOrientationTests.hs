@@ -274,7 +274,7 @@ tests = testGroup "Object Orientation"
     , "Infinite lists are ok" =:
       233 `shouldBeResultOf` do
         openlibs
-        let fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
+        let fibs = 0 : 1 : zipWith (+) fibs (drop 1 fibs)
         pushUD typeLazyIntList $ LazyIntList fibs
         setglobal "fibs"
         dostring "return fibs[14]" >>= \case

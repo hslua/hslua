@@ -22,7 +22,7 @@ tests = testGroup "Userdata"
   [ testGroup "pushIterator"
     [ "iterate over list" =:
       Just "0,1,1,2,3,5,8,13,21" `shouldBeResultOf` do
-        let fibs = 0 : 1 : zipWith (+) fibs (tail fibs)
+        let fibs = 0 : 1 : zipWith (+) fibs (drop 1 fibs)
         Lua.openlibs
         Lua.pushHaskellFunction $
           pushIterator (\n -> 1 <$ Lua.pushinteger n) (take 9 fibs)
