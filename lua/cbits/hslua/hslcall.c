@@ -67,9 +67,10 @@ int hslua_call_hs(lua_State *L)
 }
 
 /*
-** Retrieves a HsStablePtr to a Haskell function from a
-** function-wrapping userdata when it's been called and removes
-** the userdata from the stack.
+** Retrieves a HsStablePtr pointer to a Haskell function from a
+** function-wrapping userdata and removes the userdata from the
+** stack. This will be used when the userdata is being called as a
+** function.
 */
 void *hslua_extracthsfun(lua_State *L)
 {
@@ -79,8 +80,10 @@ void *hslua_extracthsfun(lua_State *L)
 }
 
 /*
-** Pushes a metatable for Haskell function wrapping userdata to
-** the stack.
+** Ensures the existence of a metatable for userdata objects that
+** serve as Haskell function wrappers. If the table with name
+** `HSLUA_HSFUN_NAME` does not exist yet in the registry, then
+** create it, otherwise do nothing.
 */
 void hslua_registerhsfunmetatable(lua_State *L)
 {
