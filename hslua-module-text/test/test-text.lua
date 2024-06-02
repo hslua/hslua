@@ -84,7 +84,7 @@ return {
     end),
     test('throws error for unknown encoding', function ()
       assert.error_matches(
-        function () text.toencoding('a', 'utf9') end,
+        function () text.fromencoding('a', 'utf9') end,
         "unknown encoding"
       )
     end),
