@@ -1,5 +1,5 @@
-{-# LANGUAGE LambdaCase                 #-}
-{-# OPTIONS_GHC -Wno-unused-do-bind        #-}
+{-# LANGUAGE LambdaCase             #-}
+{-# OPTIONS_GHC -Wno-unused-do-bind #-}
 {-|
 Module      : Lua.PrimaryTests
 Copyright   : © 2021-2024 Albert Krewinkel
@@ -52,6 +52,15 @@ tests = testGroup "Primary"
     , "memory consumption should be between 0 and 10 kB" =:
       (\count -> count > 0 && count < 10) `shouldHoldForResultOf` \l -> do
           lua_gc l LUA_GCCOUNT 0 0 0
+    ]
+
+  , testGroup "constants"
+    [ "LUA_RIDX_GLOBALS" =:
+      TRUE `shouldBeResultOf` \l -> do
+        lua_pushvalue l LUA_REGISTRYINDEX
+        lua_rawgeti l (-1) LUA_RIDX_GLOBALS
+        lua_pushglobaltable l
+        lua_rawequal l (-1) (-2)
     ]
 
   , testGroup "lua_stringtonumber"

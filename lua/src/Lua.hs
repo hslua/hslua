@@ -261,6 +261,9 @@ module Lua
     -- * Push Haskell functions
   , hslua_pushhsfunction
 
+    -- * Predefined values in the registry
+  , pattern LUA_RIDX_GLOBALS
+
     -- * Version and copyright info
   , pattern LUA_VERSION
   , pattern LUA_RELEASE

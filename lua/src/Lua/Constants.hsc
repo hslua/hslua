@@ -73,6 +73,8 @@ module Lua.Constants
     -- * Predefined references
   , pattern LUA_REFNIL
   , pattern LUA_NOREF
+    -- * Predefined values in the registry
+  , pattern LUA_RIDX_GLOBALS
     -- * Boolean
   , pattern TRUE
   , pattern FALSE
@@ -326,6 +328,10 @@ pattern LUA_GCINC = GCCode #{const LUA_GCINC}
 --
 -- Special registry values
 --
+
+-- | The registry index that holds the global environment.
+pattern LUA_RIDX_GLOBALS :: Lua.Types.Integer
+pattern LUA_RIDX_GLOBALS = #{const LUA_RIDX_GLOBALS}
 
 -- | Value signaling that no reference was created.
 pattern LUA_REFNIL :: CInt
