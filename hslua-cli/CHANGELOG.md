@@ -4,7 +4,7 @@
 
 ## hslua-cli-1.4.3
 
-Release pending.
+Released 2024-06-28.
 
 -   Include copyright notice when printing version info; i.e., the
     behavior is now closer to that of the default `lua`
