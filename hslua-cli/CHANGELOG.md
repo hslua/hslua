@@ -10,6 +10,8 @@ Release pending.
     behavior is now closer to that of the default `lua`
     interpreter.
 
+-   Avoid "redundant import" warning when compiling with GHC 9.10.
+
 ## hslua-cli-1.4.2
 
 Released 2024-01-18.
