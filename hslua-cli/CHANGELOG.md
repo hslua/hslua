@@ -2,6 +2,14 @@
 
 `hslua-cli` uses [PVP Versioning](https://pvp.haskell.org).
 
+## hslua-cli-1.4.3
+
+Release pending.
+
+-   Include copyright notice when printing version info; i.e., the
+    behavior is now closer to that of the default `lua`
+    interpreter.
+
 ## hslua-cli-1.4.2
 
 Released 2024-01-18.

@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP               #-}
 {-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE PatternSynonyms   #-}
 {- |
 Module      : HsLua.CLI
 Copyright   : Copyright © 2017-2024 Albert Krewinkel
@@ -22,6 +23,7 @@ import Data.ByteString (ByteString)
 import Data.Maybe (listToMaybe)
 import Data.Text (Text)
 import Foreign.C.String (withCString)
+import Lua (pattern LUA_COPYRIGHT)
 import HsLua.Core (LuaE, LuaError)
 import HsLua.REPL (Config (..), defaultConfig, repl, setup)
 import System.Console.GetOpt
@@ -96,11 +98,10 @@ getOptions progName rawArgs = do
     }
 
 -- | Print version information to the terminal.
-showVersion :: LuaError e => Text -> LuaE e ()
+showVersion :: Text -> LuaE e ()
 showVersion extraInfo = do
-  _ <- Lua.getglobal "_VERSION"
-  versionString <- Lua.forcePeek $ Lua.peekText Lua.top `Lua.lastly` Lua.pop 1
-  Lua.liftIO . T.putStrLn $ versionString `T.append` extraInfo
+  let copyrightString = T.pack LUA_COPYRIGHT
+  Lua.liftIO . T.putStrLn $ copyrightString `T.append` extraInfo
 
 -- | Runs code given on the command line
 runCode :: LuaError e => LuaCode -> LuaE e ()
