@@ -2,6 +2,12 @@
 
 `hslua-aeson` uses [PVP Versioning][].
 
+## hslua-aeson-2.3.1.1
+
+Released 2024-07-09.
+
+-   Relaxed upper bound for hashable, allowing hashable-1.5.
+
 ## hslua-aeson-2.3.1
 
 Released 2024-01-18.
