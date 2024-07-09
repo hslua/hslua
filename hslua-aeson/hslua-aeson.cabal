@@ -35,7 +35,7 @@ common common-options
                      , aeson                >= 1.5    && < 2.3
                      , bytestring           >= 0.10.2 && < 0.13
                      , containers           >= 0.5.9  && < 0.8
-                     , hashable             >= 1.2    && < 1.5
+                     , hashable             >= 1.2    && < 1.6
                      , hslua-core           >= 2.0    && < 2.4
                      , hslua-marshalling    >= 2.1    && < 2.4
                      , mtl                  >= 2.2    && < 2.4
