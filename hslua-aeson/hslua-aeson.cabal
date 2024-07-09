@@ -42,7 +42,7 @@ common common-options
                      , scientific           >= 0.3    && < 0.4
                      , unordered-containers >= 0.2    && < 0.3
                      , text                 >= 1.2    && < 2.2
-                     , vector               >= 0.7
+                     , vector               >= 0.7    && < 0.14
   default-extensions:  BangPatterns
                      , CPP
                      , LambdaCase
