@@ -9,6 +9,8 @@ Release pending.
 -   Add pattern constant `LUA_RIDX_GLOBALS`; that value is the
     registry index that holds the global environment.
 
+-   Update Lua to version 5.4.7.
+
 ## lua-2.3.2
 
 Released 2024-01-19.
