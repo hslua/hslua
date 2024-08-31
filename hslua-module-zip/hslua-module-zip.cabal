@@ -42,7 +42,7 @@ common common-options
                      , hslua-packaging   >= 2.3    && < 2.4
                      , hslua-typing      >= 0.1    && < 0.2
                      , text              >= 1.2    && < 2.2
-                     , time              >= 1.5    && < 1.14
+                     , time              >= 1.5    && < 1.15
                      , zip-archive       >= 0.4    && < 0.5
 
   ghc-options:         -Wall

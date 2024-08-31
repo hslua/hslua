@@ -2,6 +2,12 @@
 
 `hslua-module-zips` uses [PVP Versioning][].
 
+## Unreleased
+
+Release pending.
+
+-   Allowed time-1.4.
+
 ## hslua-module-zip-1.1.3
 
 Released 2024-05-05.
