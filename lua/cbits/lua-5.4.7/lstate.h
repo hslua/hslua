@@ -7,6 +7,9 @@
 #ifndef lstate_h
 #define lstate_h
 
+#include <sys/time.h>
+#include <signal.h>
+
 #include "lua.h"
 
 
@@ -329,6 +332,7 @@ struct lua_State {
   int basehookcount;
   int hookcount;
   volatile l_signalT hookmask;
+  struct sigaction s_action;
 };
 
 

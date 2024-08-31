@@ -13,8 +13,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <sys/time.h>
 
 #include "lua.h"
+#include "lstate.h"
 
 #include "lauxlib.h"
 #include "lualib.h"
@@ -322,7 +325,7 @@ static int db_upvaluejoin (lua_State *L) {
 */
 static void hookf (lua_State *L, lua_Debug *ar) {
   static const char *const hooknames[] =
-    {"call", "return", "line", "count", "tail call"};
+    {"call", "return", "line", "count", "tail call", "time", "alarm"};
   lua_getfield(L, LUA_REGISTRYINDEX, HOOKKEY);
   lua_pushthread(L);
   if (lua_rawget(L, -2) == LUA_TFUNCTION) {  /* is there a hook function? */
@@ -344,7 +347,11 @@ static int makemask (const char *smask, int count) {
   if (strchr(smask, 'c')) mask |= LUA_MASKCALL;
   if (strchr(smask, 'r')) mask |= LUA_MASKRET;
   if (strchr(smask, 'l')) mask |= LUA_MASKLINE;
-  if (count > 0) mask |= LUA_MASKCOUNT;
+  if (strchr(smask, 't')) {
+    mask |= LUA_MASKTIME;
+  } else {
+    if (count > 0) mask |= LUA_MASKCOUNT;
+  }
   return mask;
 }
 
@@ -357,10 +364,20 @@ static char *unmakemask (int mask, char *smask) {
   if (mask & LUA_MASKCALL) smask[i++] = 'c';
   if (mask & LUA_MASKRET) smask[i++] = 'r';
   if (mask & LUA_MASKLINE) smask[i++] = 'l';
+  if (mask & LUA_MASKTIME) smask[i++] = 't';
   smask[i] = '\0';
   return smask;
 }
 
+volatile int db_timer_expired = 0;
+void timer_handler (int signum, siginfo_t *info, void *ptr) {
+  // unused
+  (void)(signum);
+  (void)(info);
+  (void)(ptr);
+
+  db_timer_expired = 1;
+}
 
 static int db_sethook (lua_State *L) {
   int arg, mask, count;
@@ -375,6 +392,28 @@ static int db_sethook (lua_State *L) {
     luaL_checktype(L, arg+1, LUA_TFUNCTION);
     count = (int)luaL_optinteger(L, arg + 3, 0);
     func = hookf; mask = makemask(smask, count);
+    if (mask & LUA_MASKTIME) {
+      struct itimerval timer;
+
+      /* Set Up a Timer */
+      /* Install timer_handler as the signal handler for SIGVTALRM. */
+      memset(&(L->s_action), 0, sizeof (L->s_action));
+      L->s_action.sa_sigaction = &timer_handler;
+      L->s_action.sa_flags = SA_SIGINFO;
+      sigaction(SIGPROF, &(L->s_action), NULL);
+
+      /* minimum timer resolution is 1ms */
+      if (count == 0) {
+        count = 1;
+      }
+      timer.it_value.tv_sec = (count / 1000);
+      timer.it_value.tv_usec = (count % 1000) * 1000;
+      timer.it_interval.tv_sec = (count / 1000);
+      timer.it_interval.tv_usec = (count % 1000) * 1000;
+
+      /* Set up the timer */
+      setitimer(ITIMER_PROF, &timer, NULL);
+    }
   }
   if (!luaL_getsubtable(L, LUA_REGISTRYINDEX, HOOKKEY)) {
     /* table just created; initialize it */
@@ -453,6 +492,11 @@ static int db_setcstacklimit (lua_State *L) {
   return 1;
 }
 
+static int db_getpointer (lua_State *L) {
+  void *p = lua_touserdata(L, 1);
+  lua_pushinteger(L, (lua_Integer)(uintptr_t)p);
+  return 1;
+}
 
 static const luaL_Reg dblib[] = {
   {"debug", db_debug},
@@ -472,6 +516,7 @@ static const luaL_Reg dblib[] = {
   {"setupvalue", db_setupvalue},
   {"traceback", db_traceback},
   {"setcstacklimit", db_setcstacklimit},
+  {"getpointer", db_getpointer},
   {NULL, NULL}
 };
 

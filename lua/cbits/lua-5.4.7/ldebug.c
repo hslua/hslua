@@ -13,6 +13,11 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <string.h>
+#include <stdio.h>
+#include <time.h>
+#ifdef LUA_USE_MACOSX
+#include <mach/mach_time.h>
+#endif
 
 #include "lua.h"
 
@@ -137,7 +142,7 @@ LUA_API void lua_sethook (lua_State *L, lua_Hook func, int mask, int count) {
   L->basehookcount = count;
   resethookcount(L);
   L->hookmask = cast_byte(mask);
-  if (mask)
+  if (mask & ~LUA_MASKTIME) /* don't set traps for time events */
     settraps(L->ci);  /* to trace inside 'luaV_execute' */
 }
 
@@ -904,6 +909,8 @@ int luaG_tracecall (lua_State *L) {
 }
 
 
+extern volatile int db_timer_expired;
+
 /*
 ** Traces the execution of a Lua function. Called before the execution
 ** of each opcode, when debug is on. 'L->oldpc' stores the last
@@ -921,7 +928,14 @@ int luaG_traceexec (lua_State *L, const Instruction *pc) {
   lu_byte mask = L->hookmask;
   const Proto *p = ci_func(ci)->p;
   int counthook;
-  if (!(mask & (LUA_MASKLINE | LUA_MASKCOUNT))) {  /* no hooks? */
+  if (db_timer_expired) {
+    int npci = pcRel(pc, p);
+    int newline = luaG_getfuncline(p, npci);
+    db_timer_expired = 0;
+    luaD_hook(L, LUA_HOOKALARM, newline, 0, 0);  /* call alarm hook */
+    ci->u.l.trap = 0;  /* don't need to stop again */
+    return 0;
+  }  if (!(mask & (LUA_MASKLINE | LUA_MASKCOUNT | LUA_MASKTIME | LUA_MASKALARM))) {  /* no hooks? */
     ci->u.l.trap = 0;  /* don't need to stop again */
     return 0;  /* turn off 'trap' */
   }
@@ -930,8 +944,8 @@ int luaG_traceexec (lua_State *L, const Instruction *pc) {
   counthook = (mask & LUA_MASKCOUNT) && (--L->hookcount == 0);
   if (counthook)
     resethookcount(L);  /* reset count */
-  else if (!(mask & LUA_MASKLINE))
-    return 1;  /* no line hook and count != 0; nothing to be done now */
+  else if (!(mask & (LUA_MASKLINE | LUA_MASKTIME)))
+    return 1;  /* no line hook or time hook and count != 0; nothing to be done now */
   if (ci->callstatus & CIST_HOOKYIELD) {  /* hook yielded last time? */
     ci->callstatus &= ~CIST_HOOKYIELD;  /* erase mark */
     return 1;  /* do not call hook again (VM yielded, so it did not move) */
@@ -959,4 +973,3 @@ int luaG_traceexec (lua_State *L, const Instruction *pc) {
   }
   return 1;  /* keep 'trap' on */
 }
-
