@@ -2,9 +2,9 @@
 
 `lua` uses [PVP Versioning][].
 
-## Unreleased
+## lua-2.3.3
 
-Release pending.
+Released 2024-08-31.
 
 -   Add pattern constant `LUA_RIDX_GLOBALS`; that value is the
     registry index that holds the global environment.
