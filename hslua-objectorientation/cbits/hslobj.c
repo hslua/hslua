@@ -15,16 +15,17 @@
 */
 void hsluaO_get_caching_table(lua_State *L, int idx)
 {
-  int absidx = lua_absindex(L, idx);
   if (lua_getuservalue(L, idx) == LUA_TTABLE) {
     return;
   }
 
   /* No caching table set yet; create table and add to object. */
   lua_pop(L, 1);                        /* remove nil */
+
+  int absidx = lua_absindex(L, idx);
   lua_createtable(L, 0, 0);
   lua_pushvalue(L, -1);
-  lua_setuservalue(L, idx);
+  lua_setuservalue(L, absidx);
 }
 
 /*
