@@ -13,7 +13,7 @@
 ** Creates and sets a new table if none has been attached to the
 ** userdata yet.
 */
-void hsluaO_get_caching_table(lua_State *L, int idx)
+static void hsluaO_get_caching_table(lua_State *L, int idx)
 {
   if (lua_getuservalue(L, idx) == LUA_TTABLE) {
     return;
@@ -34,7 +34,7 @@ void hsluaO_get_caching_table(lua_State *L, int idx)
 ** found and is at the top of the stack, 0 otherwise. Does not clean-up
 ** on success.
 */
-int hsluaO_get_from_cache(lua_State *L)
+static int hsluaO_get_from_cache(lua_State *L)
 {
   /* Use value in caching table if present */
   hsluaO_get_caching_table(L, 1);       /* table */
@@ -52,7 +52,7 @@ int hsluaO_get_from_cache(lua_State *L)
 ** Retrieve a value from the wrapped userdata project.
 ** The userdata must be in position 1, and the key in position 2.
  */
-int hsluaO_get_via_getter(lua_State *L)
+static int hsluaO_get_via_getter(lua_State *L)
 {
   /* Bail if there are no getterns, or no getter for the given key. */
   if (luaL_getmetafield(L, 1, "getters") != LUA_TTABLE) {
@@ -83,7 +83,7 @@ int hsluaO_get_via_getter(lua_State *L)
 ** property. The userdata must be in position 1, and the key in position
 ** 2.
 */
-int hsluaO_get_via_alias(lua_State *L)
+static int hsluaO_get_via_alias(lua_State *L)
 {
   if (luaL_getmetafield(L, 1, "aliases") != LUA_TTABLE) {
     return 0;             /* no aliases available */
@@ -112,7 +112,7 @@ int hsluaO_get_via_alias(lua_State *L)
 ** Retrieve a method for this object. The userdata must be in position
 ** 1, and the key in position 2.
 */
-int hsluaO_get_method(lua_State *L)
+static int hsluaO_get_method(lua_State *L)
 {
   if (luaL_getmetafield(L, 1, "methods") != LUA_TTABLE) {
     lua_pop(L, 1);
@@ -127,7 +127,7 @@ int hsluaO_get_method(lua_State *L)
 ** Retrieve a numerical index from this object. The userdata must be in
 ** position 1, and the key in position 2.
 */
-int hsluaO_get_numerical(lua_State *L)
+static int hsluaO_get_numerical(lua_State *L)
 {
   hsluaO_get_caching_table(L, 1);
   lua_Integer requested = lua_tointeger(L, 2);
@@ -192,7 +192,7 @@ int hslua_udindex(lua_State *L)
 ** Set value via a property alias. Assumes the stack to be in a state as
 ** after __newindex is called. Returns 1 on success, and 0 otherwise.
  */
-int hsluaO_set_via_alias(lua_State *L)
+static int hsluaO_set_via_alias(lua_State *L)
 {
   if (luaL_getmetafield(L, 1, "aliases") != LUA_TTABLE) {
     return 0;
@@ -222,7 +222,7 @@ int hsluaO_set_via_alias(lua_State *L)
 ** position 1, the key in position 2, and the new value in position 3.
 ** Returns 1 on success and 0 otherwise.
 */
-int hsluaO_set_numerical(lua_State *L)
+static int hsluaO_set_numerical(lua_State *L)
 {
   hsluaO_get_caching_table(L, 1);
   lua_Integer target = lua_tointeger(L, 2);
@@ -259,7 +259,7 @@ int hsluaO_set_numerical(lua_State *L)
 ** readonly, and throws an error if there is no setter for the given
 ** key.
 */
-int hsluaO_set_via_setter(lua_State *L)
+static int hsluaO_set_via_setter(lua_State *L)
 {
   if (luaL_getmetafield(L, 1, "setters") != LUA_TTABLE)
     return 0;
