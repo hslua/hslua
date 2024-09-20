@@ -2,6 +2,17 @@
 
 `hslua-list` uses [PVP Versioning](https://pvp.haskell.org).
 
+## hslua-list-1.1.2
+
+Released 2024-09-20.
+
+-   Lists can now be constructed from iterators.
+
+-   Added method `:at` to access list elements by index; negative
+    indices are counted from the end. A second value can be
+    passed, which will be returned if there is no item at the
+    given index.
+
 ## hslua-list-1.1.1
 
 Released 2023-03-17.
