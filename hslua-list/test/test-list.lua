@@ -16,6 +16,19 @@ return {
       test('returns a new list if called without args', function ()
         assert.are_same(List(), {})
       end),
+
+      test('works with a simple iterator function', function ()
+        local text = "two words"
+        local result = List(string.gmatch(text, '[^%s]+'))
+        assert.are_same({'two', 'words'}, result)
+      end),
+
+      test('can convert an interator into a list', function ()
+        local tbl = {one = 1, two = 2}
+        local result = List(next, tbl, nil)
+        result:sort()
+        assert.are_same(List{'one', 'two'}, result)
+      end),
     },
 
     group 'clone' {

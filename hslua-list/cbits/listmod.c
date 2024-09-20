@@ -45,12 +45,32 @@ static void checkcallable (lua_State *L, int arg) {
 ** given.
 */
 static int list_new (lua_State *L) {
-  lua_settop(L, 2);
   if (lua_isnoneornil(L, 2)) {
+    lua_settop(L, 1);
     lua_newtable(L);
-    lua_remove(L, 2);
+  } else if (lua_type(L, 2) == LUA_TFUNCTION) {
+    /* try to use the function as an iterator */
+    lua_settop(L, 5);
+    /* create new table */
+    lua_newtable(L);
+    lua_insert(L, 2);
+    /* move toclose variable out of the way */
+    lua_insert(L, 3);
+    lua_toclose(L, 3);
+    lua_Integer i = 0;   /* list index */
+    do {
+      lua_pushvalue(L, 4);  /* iterator function */
+      lua_pushvalue(L, 5);  /* state */
+      lua_rotate(L, 6, -1); /* move control variable to the top */
+      lua_call(L, 2, 1);    /* get next list element */
+      /* add return value to table */
+      lua_pushvalue(L, -1);
+      lua_rawseti(L, 2, ++i);
+    } while (lua_type(L, -1) != LUA_TNIL);
+    lua_settop(L, 2);      /* keep only the new table */
   } else {
     luaL_checktype(L, 2, LUA_TTABLE);
+    lua_settop(L, 2);
   }
   lua_pushvalue(L, 1);
   lua_setmetatable(L, 2);
