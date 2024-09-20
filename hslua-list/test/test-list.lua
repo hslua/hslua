@@ -31,6 +31,20 @@ return {
       end),
     },
 
+    group 'at' {
+      test('gets the item at the given index', function ()
+        assert.are_equal(2, List{1, 1, 2, 3, 5}:at(3))
+      end),
+
+      test('negative indices are counted from the end', function ()
+        assert.are_equal(5, List{1, 1, 2, 3, 5}:at(-1))
+      end),
+
+      test('the default value is returned if no item is found', function ()
+        assert.are_equal(0, List{1, 1, 2, 3, 5}:at(9, 0))
+      end)
+    },
+
     group 'clone' {
       test('changing the clone does not affect original', function ()
         local orig = List:new {23, 42}

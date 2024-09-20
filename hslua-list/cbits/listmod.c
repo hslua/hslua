@@ -51,10 +51,9 @@ static int list_new (lua_State *L) {
   } else if (lua_type(L, 2) == LUA_TFUNCTION) {
     /* try to use the function as an iterator */
     lua_settop(L, 5);
-    /* create new table */
-    lua_newtable(L);
+    lua_newtable(L);     /* create new table */
+    /* move the table and toclose variable out of the way */
     lua_insert(L, 2);
-    /* move toclose variable out of the way */
     lua_insert(L, 3);
     lua_toclose(L, 3);
     lua_Integer i = 0;   /* list index */
@@ -74,6 +73,27 @@ static int list_new (lua_State *L) {
   }
   lua_pushvalue(L, 1);
   lua_setmetatable(L, 2);
+  return 1;
+}
+
+/*
+** Returns the item at that index, or the default value if no item was
+** found.
+*/
+static int list_at (lua_State *L) {
+  lua_settop(L, 3); /* table; index; default value */
+  lua_Integer i = luaL_checkinteger(L, 2);
+  lua_Integer len = luaL_len(L, 1);
+
+  if (i < -len || i > len) {
+    /* out of bounds, do not try to get a value */
+    return 1;        /* return the default value */
+  }
+
+  i = i >= 0 ? i : len + i + 1;
+  if (lua_rawgeti(L, 1, i) == LUA_TNIL) {
+    lua_pop(L, 1);  /* pop result; default value is now at the top */
+  };
   return 1;
 }
 
@@ -363,6 +383,7 @@ static const luaL_Reg list_funcs[] = {
   {"__concat", list_concat},
   {"__eq", list_eq},
   {"__tostring", list_tostring},
+  {"at", list_at},
   {"clone", list_clone},
   {"extend", list_extend},
   {"filter", list_filter},
