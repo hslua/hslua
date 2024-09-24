@@ -203,7 +203,7 @@ static int list_filter (lua_State *L) {
   luaL_checkstack(L, 4, NULL);
   lua_Integer len = luaL_len(L, 1);
   lua_createtable(L, len, 0);  /* create new table */
-  lua_getmetatable(L, 1);
+  lua_getmetatable(L, 1) || luaL_getmetatable(L, LIST_T); /* ensure mt */
   lua_setmetatable(L, 3);
   for (lua_Integer i = 1, j = 0; i <= len; i++) {
     lua_pushvalue(L, 2);  /* push predicate function */

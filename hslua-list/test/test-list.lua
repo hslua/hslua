@@ -101,6 +101,15 @@ return {
           'bad argument %#1 to \'filter\' %(function expected, got table%)'
         )
       end),
+      test('can be used with metatable-less tables', function ()
+        assert.are_same(
+          List{64, 256},
+          List.filter({64, 127, 256}, function (x)
+              local lb = math.log(x, 2)
+              return lb == math.floor(lb)
+          end)
+        )
+      end)
     },
 
     group 'find' {
