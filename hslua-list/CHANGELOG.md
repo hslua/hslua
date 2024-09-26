@@ -2,6 +2,19 @@
 
 `hslua-list` uses [PVP Versioning](https://pvp.haskell.org).
 
+## hslua-list-1.1.3
+
+Released 2024-09-26.
+
+-   Fixed a bug that prevented `List.filter` to be used on tables
+    that don't have a metatable.
+
+-   Added a stub function to ensure that the module can be
+    compiled against Lua 5.3.
+
+-   Lowered the lower bound for hslua-core, allowing hslua-core
+    2.1.
+
 ## hslua-list-1.1.2
 
 Released 2024-09-20.
