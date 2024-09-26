@@ -12,6 +12,14 @@
 #define LUA_LOADED_TABLE	"_LOADED"
 #endif
 
+/* compatibility with older Lua versions (pre 5.4) */
+#if LUA_VERSION_NUM < 504
+/* non-functional replacement for lua_toclose */
+static void lua_toclose(lua_State *L, int index) {
+  return;
+}
+#endif
+
 /*
 ** Placeholder function.
 */
