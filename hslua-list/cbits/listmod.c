@@ -198,6 +198,7 @@ static int list_extend (lua_State *L) {
     lua_geti(L, 2, i);
     lua_seti(L, 1, len1 + i);
   }
+  lua_pop(L, 1); /* remove the appended table */
   return 1;
 }
 

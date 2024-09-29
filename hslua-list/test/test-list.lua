@@ -64,7 +64,12 @@ return {
         local primes = List:new {2, 3, 5, 7}
         primes:extend {11, 13, 17}
         assert.are_same({2, 3, 5, 7, 11, 13, 17}, primes)
-      end)
+      end),
+
+      test('returns the extended table', function ()
+        local primes = List:new {2, 3, 5, 7}
+        assert.are_same(primes, primes:extend{11, 13, 17, 19})
+      end),
     },
 
     group 'filter' {
