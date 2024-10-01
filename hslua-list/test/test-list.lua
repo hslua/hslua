@@ -219,6 +219,42 @@ return {
       end)
     },
 
+    group 'iter' {
+      test('is a function', function ()
+        assert.are_equal('function', type(List.iter))
+      end),
+      test('produces a function', function ()
+        assert.are_equal('function', type(List{1}:iter()))
+      end),
+      test('function steps through the list', function ()
+        local iterator = List{3,4}:iter()
+        assert.are_equal(3, iterator());
+        assert.are_equal(4, iterator());
+        assert.are_equal(nil, iterator());
+      end),
+      test('iterator produces `nil` for an empty list', function ()
+        assert.is_nil(List.iter({})())
+      end),
+      test('first argument is the step size', function ()
+        local iterator = List{3,4,5,6}:iter(2)
+        assert.are_equal(3, iterator());
+        assert.are_equal(5, iterator());
+        assert.are_equal(nil, iterator());
+      end),
+      test('starts from the end for negative step sizes', function ()
+        local iterator = List{3,4,5,6}:iter(-2)
+        assert.are_equal(6, iterator());
+        assert.are_equal(4, iterator());
+        assert.are_equal(nil, iterator());
+      end),
+      test('third argument is the initial index', function ()
+        local iterator = List{3,4,5,6}:iter(2, 2)
+        assert.are_equal(4, iterator());
+        assert.are_equal(6, iterator());
+        assert.are_equal(nil, iterator());
+      end),
+    },
+
     group 'map' {
       test('applies function to elements', function ()
         local primes = List:new {2, 3, 5, 7}

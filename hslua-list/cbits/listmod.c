@@ -292,6 +292,41 @@ static int list_includes(lua_State *L) {
 }
 
 /*
+** Closure that returns the next element in the list each time it's called.
+*/
+static int list_item_iterator(lua_State *L) {
+  lua_Integer step = lua_tointeger(L, lua_upvalueindex(2));
+  lua_Integer i = lua_tointeger(L, lua_upvalueindex(3));
+  lua_geti(L, lua_upvalueindex(1), i);
+  lua_pushinteger(L, i + step);
+  lua_replace(L, lua_upvalueindex(3));
+  return 1;
+}
+
+/*
+** Returns an iterator triple that returns all values, but not the keys.
+*/
+static int list_iter(lua_State *L) {
+  lua_settop(L, 3);
+  luaL_checktype(L, 1, LUA_TTABLE);
+  lua_Integer step = luaL_optinteger(L, 2, 1);
+  lua_Integer len = luaL_len(L, 1);
+  lua_Integer start = luaL_optinteger(L, 3, (step > 0 || len <= 0) ? 1 : len);
+
+  if (step == 0) {
+    lua_pushstring(L, "List.iter: step size must not be 0");
+    return lua_error(L);
+  }
+
+  luaL_checkstack(L, 3, "List.iter");
+  lua_pushvalue(L, 1);
+  lua_pushinteger(L, step);
+  lua_pushinteger(L, start);
+  lua_pushcclosure(L, list_item_iterator, 3);
+  return 1;
+}
+
+/*
 ** Returns a copy of the current list by applying the given function to
 ** all elements.
 */
@@ -400,6 +435,7 @@ static const luaL_Reg list_funcs[] = {
   {"find_if", list_find_if},
   {"includes", list_includes},
   {"insert", missing},
+  {"iter", list_iter},
   {"map", list_map},
   {"new", list_new},
   {"remove", missing},
