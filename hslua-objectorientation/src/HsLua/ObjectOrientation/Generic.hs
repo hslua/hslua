@@ -1,6 +1,6 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
-{-# LANGUAGE OverloadedStrings     #-}
-{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE OverloadedStrings        #-}
+{-# LANGUAGE ScopedTypeVariables      #-}
 {-|
 Module      : HsLua.ObjectOrientation.Generic
 Copyright   : © 2021-2024 Albert Krewinkel
@@ -15,7 +15,7 @@ The terminology in this module refers to the userdata values as /UD
 objects/, and to their type as /UD type/.
 -}
 module HsLua.ObjectOrientation.Generic
-  ( UDTypeWithList (..)
+  ( UDTypeGeneric (..)
     -- * Defining types
   , deftypeGeneric'
     -- ** Methods
@@ -29,6 +29,9 @@ module HsLua.ObjectOrientation.Generic
   , readonly'
     -- ** Aliases
   , alias
+    -- ** Type extension
+  , UDTypeHooks (..)
+  , emptyHooks
     -- * Marshaling
   , peekUDGeneric
   , pushUDGeneric
@@ -40,7 +43,6 @@ module HsLua.ObjectOrientation.Generic
   , Member
   , Property (..)
   , Operation (..)
-  , ListSpec
   , Possible (..)
   , Alias
   , AliasIndex (..)
@@ -54,7 +56,6 @@ import Data.Text (Text)
 import Foreign.Ptr (FunPtr)
 import HsLua.Core as Lua
 import HsLua.Marshalling
-import HsLua.ObjectOrientation.ListType
 import HsLua.ObjectOrientation.Operation
 import HsLua.Typing ( TypeDocs (..), TypeSpec (..), anyType, userdataType )
 import qualified Data.Map.Strict as Map
@@ -68,32 +69,67 @@ import qualified HsLua.Core.Utf8 as Utf8
 --
 -- This type includes methods to define how the object should behave as
 -- a read-only list of type @itemtype@.
-data UDTypeWithList e fn a itemtype = UDTypeWithList
+data UDTypeGeneric e fn a = UDType
   { udName          :: Name
   , udOperations    :: [(Operation, fn)]
   , udProperties    :: Map Name (Property e a)
   , udMethods       :: Map Name fn
   , udAliases       :: Map AliasIndex Alias
-  , udListSpec      :: Maybe (ListSpec e a itemtype)
+  , udHooks         :: UDTypeHooks e fn a
   , udFnPusher      :: fn -> LuaE e ()
   }
 
--- | Defines a new type that could also be treated as a list; defines
--- the behavior of objects in Lua. Note that the type name must be
--- unique.
+-- | Extensions for userdata types.
+data UDTypeHooks e fn a =
+  UDTypeHooks
+  { hookUservalues :: Int
+    -- ^ Number of uservalues required for this extension, *including* the
+    -- uservalue for the default caching table.
+
+  , hookMetatableSetup :: LuaE e ()
+    -- ^ Run after the metatable has been set up; the new metatable is
+    -- at the top of the stack when this hook is run.
+
+  , hookPeekUD :: a
+               -> StackIndex
+               -> Peek e a
+    -- ^ Peek extra data and modify the peeked object
+
+  , hookPushUD :: a -> LuaE e ()
+    -- ^ Push extra data
+  }
+
+-- | No extension.
+emptyHooks :: UDTypeHooks e fn a
+emptyHooks = UDTypeHooks
+  { hookMetatableSetup = return ()
+
+  , hookPeekUD = \x _idx -> return x
+
+  , hookPushUD = \_x -> return ()
+
+  , hookUservalues = 1
+  }
+
+-- | Defines a new "Lua type" and sets the behavior of the Lua object
+-- instances. It's possible to pass custom type extensions, which modify
+-- the default object behavior. Furthermore, the /function pusher/
+-- parameter controls how functions are marshaled to Lua.
+--
+-- Note that the type name must be unique.
 deftypeGeneric' :: Pusher e fn          -- ^ function pusher
                 -> Name                 -- ^ type name
                 -> [(Operation, fn)]    -- ^ operations
                 -> [Member e fn a]      -- ^ methods
-                -> Maybe (ListSpec e a itemtype)  -- ^ list access
-                -> UDTypeWithList e fn a itemtype
-deftypeGeneric' pushFunction name ops members mbListSpec = UDTypeWithList
+                -> UDTypeHooks e fn a   -- ^ behavior modifying hooks
+                -> UDTypeGeneric e fn a
+deftypeGeneric' pushFunction name ops members extension = UDType
   { udName          = name
   , udOperations    = ops
   , udProperties    = Map.fromList $ mapMaybe mbproperties members
   , udMethods       = Map.fromList $ mapMaybe mbmethods members
   , udAliases       = Map.fromList $ mapMaybe mbaliases members
-  , udListSpec      = mbListSpec
+  , udHooks         = extension
   , udFnPusher      = pushFunction
   }
   where
@@ -248,8 +284,8 @@ alias name _desc = MemberAlias name
 -- the type's metatable already existed before this function was
 -- invoked.
 initTypeGeneric :: LuaError e
-                => (UDTypeWithList e fn a itemtype -> LuaE e ())
-                -> UDTypeWithList e fn a itemtype
+                => (UDTypeGeneric e fn a -> LuaE e ())
+                -> UDTypeGeneric e fn a
                 -> LuaE e Name
 initTypeGeneric hook ty = do
   pushUDMetatable hook ty
@@ -267,9 +303,10 @@ initTypeGeneric hook ty = do
 -- the stack at that point. Note that the hook will /not/ be called if
 -- the type's metatable already existed before this function was
 -- invoked.
-pushUDMetatable :: LuaError e
-  => (UDTypeWithList e fn a itemtype -> LuaE e ())  -- ^ @hook@
-  -> UDTypeWithList e fn a itemtype
+pushUDMetatable
+  :: forall e fn a. LuaError e
+  => (UDTypeGeneric e fn a -> LuaE e ())  -- ^ @hook@
+  -> UDTypeGeneric e fn a
   -> LuaE e ()
 pushUDMetatable hook ty = do
   created <- newudmetatable (udName ty)
@@ -283,13 +320,10 @@ pushUDMetatable hook ty = do
     add "setters" $ pushSetters ty
     add "methods" $ pushMethods ty
     add "aliases" $ pushAliases ty
-    case udListSpec ty of
-      Nothing -> pure ()
-      Just ((pushItem, _), _) -> do
-        add "lazylisteval" $ pushHaskellFunction (lazylisteval pushItem)
+    hookMetatableSetup (udHooks ty)
     hook ty
   where
-    add :: LuaError e => Name -> LuaE e () -> LuaE e ()
+    add :: Name -> LuaE e () -> LuaE e ()
     add name op = do
       pushName name
       op
@@ -327,7 +361,9 @@ foreign import ccall "hslobj.c &hslua_udreadonly"
   hslua_udreadonly_ptr :: FunPtr (State -> IO NumResults)
 
 -- | Pushes the metatable's @getters@ field table.
-pushGetters :: LuaError e => UDTypeWithList e fn a itemtype -> LuaE e ()
+pushGetters
+  :: LuaError e
+  => UDTypeGeneric e fn a -> LuaE e ()
 pushGetters ty = do
   newtable
   void $ flip Map.traverseWithKey (udProperties ty) $ \name prop -> do
@@ -336,7 +372,7 @@ pushGetters ty = do
     rawset (nth 3)
 
 -- | Pushes the metatable's @setters@ field table.
-pushSetters :: LuaError e => UDTypeWithList e fn a itemtype -> LuaE e ()
+pushSetters :: LuaError e => UDTypeGeneric e fn a -> LuaE e ()
 pushSetters ty = do
   newtable
   void $ flip Map.traverseWithKey (udProperties ty) $ \name prop -> do
@@ -347,7 +383,7 @@ pushSetters ty = do
     rawset (nth 3)
 
 -- | Pushes the metatable's @methods@ field table.
-pushMethods :: LuaError e => UDTypeWithList e fn a itemtype -> LuaE e ()
+pushMethods :: LuaError e => UDTypeGeneric e fn a -> LuaE e ()
 pushMethods ty = do
   newtable
   void $ flip Map.traverseWithKey (udMethods ty) $ \name fn -> do
@@ -355,7 +391,7 @@ pushMethods ty = do
     udFnPusher ty fn
     rawset (nth 3)
 
-pushAliases :: LuaError e => UDTypeWithList e fn a itemtype -> LuaE e ()
+pushAliases :: LuaError e => UDTypeGeneric e fn a -> LuaE e ()
 pushAliases ty = do
   newtable
   void $ flip Map.traverseWithKey (udAliases ty) $ \name propSeq -> do
@@ -370,8 +406,9 @@ pushAliasIndex = \case
 
 -- | Pushes the function used to iterate over the object's key-value
 -- pairs in a generic *for* loop.
-pairsFunction :: forall e fn a itemtype. LuaError e
-              => UDTypeWithList e fn a itemtype -> LuaE e NumResults
+pairsFunction
+  :: LuaError err
+  => UDTypeGeneric err fn a -> LuaE err NumResults
 pairsFunction ty = do
   obj <- forcePeek $ peekUDGeneric ty (nthBottom 1)
   let pushMember = \case
@@ -391,65 +428,57 @@ pairsFunction ty = do
     map (uncurry MemberMethod) (Map.toAscList (udMethods ty))
 
 -- | Pushes a userdata value of the given type.
-pushUDGeneric :: LuaError e
-  => (UDTypeWithList e fn a itemtype -> LuaE e ()) -- ^ push docs
-  -> UDTypeWithList e fn a itemtype                -- ^ userdata type
-  -> a                                             -- ^ value to push
+pushUDGeneric
+  :: LuaError e
+  => (UDTypeGeneric e fn a -> LuaE e ()) -- ^ push docs
+  -> UDTypeGeneric e fn a                -- ^ userdata type
+  -> a                                   -- ^ value to push
   -> LuaE e ()
 pushUDGeneric pushDocs ty x = do
-  newhsuserdatauv x 1
+  newhsuserdatauv x (hookUservalues (udHooks ty))
   pushUDMetatable pushDocs ty
   setmetatable (nth 2)
-  -- add list as value in caching table
-  case udListSpec ty of
-    Nothing -> pure ()
-    Just ((_, toList), _) -> do
-      newtable
-      pushName "__lazylist"
-      newhsuserdatauv (toList x) 1
-      void (newudmetatable lazyListStateName)
-      setmetatable (nth 2)
-      rawset (nth 3)
-      void (setiuservalue (nth 2) 1)
+  hookPushUD (udHooks ty) x
 
 -- | Retrieves a userdata value of the given type.
-peekUDGeneric :: LuaError e => UDTypeWithList e fn a itemtype -> Peeker e a
+peekUDGeneric :: LuaError e
+              => UDTypeGeneric e fn a -> Peeker e a
 peekUDGeneric ty idx = do
   let name = udName ty
-  x <- reportValueOnFailure name (`fromuserdata` name) idx
-  (`lastly` pop 1) $ liftLua (getiuservalue idx 1) >>= \case
-    TypeTable -> do
-      -- set list
-      xWithList <- maybe pure setList (udListSpec ty) x
-      liftLua $ do
-        pushnil
-        setProperties (udProperties ty) xWithList
-    _ -> return x
+  old <- reportValueOnFailure name (`fromuserdata` name) idx
+  -- get caching table and update the Haskell value
+  updated <- liftLua (getiuservalue idx 1) >>= \case
+    TypeTable -> liftLua $ do
+      pushnil
+      setProperties (udProperties ty) old
+    _other -> return old
+  liftLua $ pop 1  -- pop caching table
+  hookPeekUD (udHooks ty) updated idx
 
 -- | Retrieves object properties from a uservalue table and sets them on
 -- the given value. Expects the uservalue table at the top of the stack.
 setProperties :: LuaError e => Map Name (Property e a) -> a -> LuaE e a
 setProperties props x = do
   hasNext <- Unsafe.next (nth 2)
+  let continue value = pop 1 *> setProperties props value
   if not hasNext
     then return x
     else ltype (nth 2) >>= \case
       TypeString -> do
         propName <- forcePeek $ peekName (nth 2)
         case Map.lookup propName props >>= propertySet of
-          Nothing -> pop 1 *> setProperties props x
+          Nothing -> continue x
           Just setter -> do
             x' <- setter top x
-            pop 1
-            setProperties props x'
-      _ -> x <$ pop 1
+            continue x'
+      _ -> continue x
 
 --
 -- Typing
 --
 
 -- | Returns documentation for this type.
-udDocs :: UDTypeWithList e fn a itemtype
+udDocs :: UDTypeGeneric e fn a
        -> TypeDocs
 udDocs ty = TypeDocs
   { typeDescription = mempty
@@ -458,6 +487,6 @@ udDocs ty = TypeDocs
   }
 
 -- | Type specifier for a UDType
-udTypeSpec :: UDTypeWithList e fn a itemtype
+udTypeSpec :: UDTypeGeneric e fn a
            -> TypeSpec
 udTypeSpec = NamedType . udName

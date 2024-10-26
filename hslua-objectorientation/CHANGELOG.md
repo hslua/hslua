@@ -10,6 +10,11 @@ Release pending.
     `HsLua.ObjectOrientation.Generic` and
     `HsLua.ObjectOrientation.ListType` have been added.
 
+-   The `UDTypeGeneric` type has been updated, the definitions for
+    Lua types can now contain additional hooks to modify the
+    behavior when initializing the type and when pushing and
+    pulling objects to and from Lua.
+
 ## hslua-objectorientation-2.3.1
 
 Released 2024-01-18.

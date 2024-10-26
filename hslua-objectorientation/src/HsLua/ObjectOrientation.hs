@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-|
 Module      : HsLua.ObjectOrientation
@@ -16,18 +18,19 @@ module HsLua.ObjectOrientation
   ( UDType
   , deftypeGeneric
   , module HsLua.ObjectOrientation.Generic
+  , module HsLua.ObjectOrientation.ListType
   ) where
 
-import Data.Void (Void)
-import HsLua.Core as Lua
-import HsLua.Marshalling
+import HsLua.Core (Name)
+import HsLua.Marshalling (Pusher)
 import HsLua.ObjectOrientation.Generic
+import HsLua.ObjectOrientation.ListType
 
 -- | A userdata type, capturing the behavior of Lua objects that wrap
 -- Haskell values. The type name must be unique; once the type has been
 -- used to push or retrieve a value, the behavior can no longer be
 -- modified through this type.
-type UDType e fn a = UDTypeWithList e fn a Void
+type UDType e fn a = UDTypeGeneric e fn a
 
 -- | Defines a new type, defining the behavior of objects in Lua.
 -- Note that the type name must be unique.
@@ -37,4 +40,4 @@ deftypeGeneric :: Pusher e fn           -- ^ function pusher
                -> [Member e fn a]       -- ^ methods
                -> UDType e fn a
 deftypeGeneric pushFunction name ops members =
-  deftypeGeneric' pushFunction name ops members Nothing
+  deftypeGeneric' pushFunction name ops members emptyHooks

@@ -78,7 +78,9 @@ deftype' :: LuaError e
          -> [Member e (DocumentedFunction e) a]  -- ^ methods
          -> Maybe (ListSpec e a itemtype)  -- ^ list access
          -> DocumentedTypeWithList e a itemtype
-deftype' = deftypeGeneric' pushDocumentedFunction
+deftype' name ops methods mlistSpec =
+  deftypeGeneric' pushDocumentedFunction name ops methods $
+    maybe emptyHooks listExtension mlistSpec
 
 -- | Use a documented function as an object method.
 method :: DocumentedFunction e
