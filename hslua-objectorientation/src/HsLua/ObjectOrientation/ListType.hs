@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleInstances        #-}
+{-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE MultiParamTypeClasses    #-}
 {-# LANGUAGE OverloadedStrings        #-}
 {-# LANGUAGE ScopedTypeVariables      #-}
@@ -9,9 +10,11 @@ module HsLua.ObjectOrientation.ListType
   ) where
 
 import Control.Monad ((<$!>), forM_, void)
+import Foreign.Ptr (FunPtr)
 import HsLua.Core as Lua
 import HsLua.Marshalling
 import HsLua.ObjectOrientation.Generic
+import HsLua.ObjectOrientation.Operation (metamethodName)
 
 -- | Userdata type that (also) behaves like a list.
 type UDTypeWithList e fn a itemtype =
@@ -32,6 +35,14 @@ instance LuaError e => UDTypeExtension e a (ListSpec e a itemtype) where
     let ListSpec ((pushItem, _), _) = udExtension ty
     pushName "lazylisteval"
     pushHaskellFunction (lazylisteval pushItem)
+    rawset (nth 3)
+    -- Use different field getter
+    pushName (metamethodName Index)
+    pushcfunction hslua_list_udindex_ptr
+    rawset (nth 3)
+    -- Use different field setter
+    pushName (metamethodName Newindex)
+    pushcfunction hslua_list_udnewindex_ptr
     rawset (nth 3)
 
   extensionPeekUD ty x idx =
@@ -131,3 +142,14 @@ setList (ListSpec (_pushspec, (peekItem, updateList))) x = (x `updateList`) <$!>
                   (y:) <$!> itemsAfter (i + 1)
               else getLazyList
       itemsAfter 1
+
+
+-- | Sets a new value in the userdata caching table via a setter
+-- functions; numerical values are treated as list indices.
+foreign import ccall "hslobj.c &hslua_list_udindex"
+  hslua_list_udindex_ptr :: FunPtr (State -> IO NumResults)
+
+-- | Sets a new value in the userdata caching table via a setter
+-- functions; numerical values are treated as list indices.
+foreign import ccall "hslobj.c &hslua_list_udnewindex"
+  hslua_list_udnewindex_ptr :: FunPtr (State -> IO NumResults)
