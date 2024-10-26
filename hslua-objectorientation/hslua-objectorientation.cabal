@@ -71,7 +71,11 @@ library
                      , FlexibleInstances
                      , MultiParamTypeClasses
                      , ScopedTypeVariables
+  includes:            hslobj.h
+  install-includes:    hslobj.h
+  include-dirs:        cbits
   c-sources:           cbits/hslobj.c
+                     , cbits/hsllist.c
 
 test-suite test-hslua-objectorientation
   import:              common-options
