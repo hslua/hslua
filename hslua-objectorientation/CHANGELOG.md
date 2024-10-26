@@ -22,6 +22,16 @@ Release pending.
     to `initType`. The hook, if one is needed, must now be part of
     the UDTypeGeneric object.
 
+-   The default `__index` and `__newindex` functions have been
+    simplified and no longer handle integer keys. Consequently,
+    list-like types now need their own `__index` and `__newindex`
+    functions. These can handle numerical indices and fall back to
+    the default functions for other keys.
+
+    The new file `hslobj.h` contains the headers of the default
+    access functions. It is added to the `install-includes` cabal
+    field.
+
 ## hslua-objectorientation-2.3.1
 
 Released 2024-01-18.
