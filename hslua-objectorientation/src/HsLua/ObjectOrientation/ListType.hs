@@ -1,27 +1,58 @@
+{-# LANGUAGE FlexibleInstances        #-}
+{-# LANGUAGE MultiParamTypeClasses    #-}
 {-# LANGUAGE OverloadedStrings        #-}
 {-# LANGUAGE ScopedTypeVariables      #-}
 {-# LANGUAGE TypeApplications         #-}
 module HsLua.ObjectOrientation.ListType
-  ( ListSpec
-    -- * Semi-internal
-  , lazyListStateName
-  , lazylisteval
-  , setList
+  ( UDTypeWithList
+  , ListSpec (..)
   ) where
 
 import Control.Monad ((<$!>), forM_, void)
-import HsLua.Core
+import HsLua.Core as Lua
 import HsLua.Marshalling
+import HsLua.ObjectOrientation.Generic
+
+-- | Userdata type that (also) behaves like a list.
+type UDTypeWithList e fn a itemtype =
+  UDTypeGeneric e fn a (ListSpec e a itemtype)
 
 -- | Pair of pairs, describing how a type can be used as a Lua list. The
 -- first pair describes how to push the list items, and how the list is
 -- extracted from the type; the second pair contains a method to
 -- retrieve list items, and defines how the list is used to create an
 -- updated value.
-type ListSpec e a itemtype =
+newtype ListSpec e a itemtype = ListSpec
   ( (Pusher e itemtype, a -> [itemtype])
   , (Peeker e itemtype, a -> [itemtype] -> a)
   )
+
+instance LuaError e => UDTypeExtension e a (ListSpec e a itemtype) where
+  extensionMetatableSetup ty = do
+    let ListSpec ((pushItem, _), _) = udExtension ty
+    pushName "lazylisteval"
+    pushHaskellFunction (lazylisteval pushItem)
+    rawset (nth 3)
+
+  extensionPeekUD ty x idx =
+    (`lastly` pop 1) $ liftLua (getiuservalue idx 1) >>= \case
+      TypeTable -> setList (udExtension ty) x
+      _other    -> pure x
+  {-# INLINEABLE extensionPeekUD #-}
+
+  extensionPushUD ty x = do
+    let ListSpec ((_peekList, toList), _pushSpec) = udExtension ty
+    newtable
+    pushName "__lazylist"
+    newhsuserdatauv (toList x) 1
+    void (newudmetatable lazyListStateName)
+    setmetatable (nth 2)
+    rawset (nth 3)
+    void (setiuservalue (nth 2) 1)
+  {-# INLINEABLE extensionPushUD #-}
+
+  extensionUservalues _ty = 1
+
 
 -- | Evaluate part of a lazy list. Takes the following arguments, in
 -- this order:
@@ -66,10 +97,10 @@ lazyListStateName = "HsLua unevalled lazy list"
 -- | Gets a list from a uservalue table and sets it on the given value.
 -- Expects the uservalue (i.e., caching) table to be at the top of the
 -- stack.
-setList :: forall itemtype e a. LuaError e
+setList :: forall itemtype a e. LuaError e
         => ListSpec e a itemtype -> a
         -> Peek e a
-setList (_pushspec, (peekItem, updateList)) x = (x `updateList`) <$!> do
+setList (ListSpec (_pushspec, (peekItem, updateList))) x = (x `updateList`) <$!> do
   liftLua (getfield top "__lazylistindex") >>= \case
     TypeBoolean -> do
       -- list had been fully evaluated
@@ -79,7 +110,11 @@ setList (_pushspec, (peekItem, updateList)) x = (x `updateList`) <$!> do
       let getLazyList = do
             liftLua (getfield top "__lazylist") >>= \case
               TypeUserdata -> pure ()
-              _ -> failPeek "unevaled items of lazy list cannot be peeked"
+              otherType -> do
+                tyname <- liftLua $ typename otherType
+                failPeek $
+                  "unevaled items of lazy list cannot be peeked: got " <>
+                  tyname
             (`lastly` pop 1) $ reportValueOnFailure
               lazyListStateName
               (\idx -> fromuserdata @[itemtype] idx lazyListStateName)
