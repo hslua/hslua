@@ -63,6 +63,7 @@ library
                      , HsLua.ObjectOrientation.Generic
                      , HsLua.ObjectOrientation.ListType
                      , HsLua.ObjectOrientation.Operation
+                     , HsLua.ObjectOrientation.SumType
   hs-source-dirs:      src
   default-extensions:  LambdaCase
                      , StrictData
@@ -76,6 +77,7 @@ library
   include-dirs:        cbits
   c-sources:           cbits/hslobj.c
                      , cbits/hsllist.c
+                     , cbits/hslsum.c
 
 test-suite test-hslua-objectorientation
   import:              common-options
@@ -84,6 +86,7 @@ test-suite test-hslua-objectorientation
   hs-source-dirs:      test
   ghc-options:         -threaded -Wno-unused-do-bind
   other-modules:       HsLua.ObjectOrientationTests
+                     , HsLua.ObjectOrientation.SumTypeTests
   build-depends:       hslua-objectorientation
                      , lua-arbitrary        >= 1.0
                      , QuickCheck           >= 2.7
