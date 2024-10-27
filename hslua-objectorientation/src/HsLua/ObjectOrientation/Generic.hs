@@ -46,6 +46,8 @@ module HsLua.ObjectOrientation.Generic
   , Possible (..)
   , Alias
   , AliasIndex (..)
+    -- * Extension helpers
+  , setProperties
   ) where
 
 import Control.Monad (forM_, void, when)
@@ -478,10 +480,6 @@ peekUDGeneric ty idx = do
     _other -> return old
   liftLua $ pop 2  -- pop caching table and peekers table
   extensionPeekUD ty updated absidx
-
-{-# SPECIALIZE peekUDGeneric :: (LuaError e)
-  => UDTypeGeneric e fn a ()
-  -> Peeker e a #-}
 
 -- | Retrieves object properties from a uservalue table and sets them on the
 -- given value. Expects the uservalue table at the top of the stack, and the

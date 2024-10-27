@@ -34,7 +34,7 @@ void hslua_get_caching_table(lua_State *L, int idx)
 ** found and is at the top of the stack, 0 otherwise. Does not clean-up
 ** on success.
 */
-static int hsluaO_get_from_cache(lua_State *L)
+int hsluaO_get_from_cache(lua_State *L)
 {
   /* Use value in caching table if present */
   hslua_get_caching_table(L, 1);        /* table */
