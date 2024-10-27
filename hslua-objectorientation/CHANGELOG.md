@@ -2,6 +2,14 @@
 
 `hslua-objectorientation` uses [PVP Versioning][].
 
+## Development
+
+Release pending.
+
+-   The code has been reorganized: the new submodules
+    `HsLua.ObjectOrientation.Generic` and
+    `HsLua.ObjectOrientation.ListType` have been added.
+
 ## hslua-objectorientation-2.3.1
 
 Released 2024-01-18.
