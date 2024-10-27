@@ -60,6 +60,8 @@ common common-options
 library
   import:              common-options
   exposed-modules:     HsLua.ObjectOrientation
+                     , HsLua.ObjectOrientation.Generic
+                     , HsLua.ObjectOrientation.ListType
                      , HsLua.ObjectOrientation.Operation
   hs-source-dirs:      src
   default-extensions:  LambdaCase
