@@ -36,6 +36,7 @@ common common-options
                      , filepath          >= 1.4    && < 1.6
                      , hslua-core        >= 2.3    && < 2.4
                      , hslua-marshalling >= 2.3    && < 2.4
+                     , hslua-objectorientation >= 2.3    && < 2.4
                      , hslua-packaging   >= 2.3    && < 2.4
                      , text              >= 1.2    && < 2.2
 
