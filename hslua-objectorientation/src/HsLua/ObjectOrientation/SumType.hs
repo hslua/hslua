@@ -82,6 +82,20 @@ constructorProperty name typespec desc (push, get) (peek, set) =
     }
   )
 
+combineGetters :: LuaError e
+               => UDSumTypeGeneric e fn a
+               -> [(Name, Property e a)]
+               -> HaskellFunction e
+combineGetters ty constrProps = do
+  obj <- forcePeek (peekUDGeneric ty 1)
+  key <- forcePeek (peekName 2)
+  let useFirst [] = return (NumResults 0)
+      useFirst (p:ps) = propertyGet p obj >>= \case
+        (NumResults 0) -> useFirst ps
+        hasResult      -> return hasResult
+  let props = map snd $ filter ((== key) . fst) constrProps
+  useFirst props
+
 -- | Defines a new type that could also be treated as a list; defines
 -- the behavior of objects in Lua. Note that the type name must be
 -- unique.
@@ -108,7 +122,9 @@ instance (LuaError e) => UDTypeExtension e a (OOSumType e a) where
     _ <- getfield top "getters"
     addField "tag" $ pushcfunction hslua_sum_get_tag_ptr
     pop 1 -- getters table
-    forM_ (ooSumConstructors $ udExtension ty) $ \constr -> do
+
+    let constructors = ooSumConstructors $ udExtension ty
+    forM_ constructors $ \constr -> do
       addField (constrName constr) $ do
         newtable
         addField "getters" $ do
@@ -117,6 +133,13 @@ instance (LuaError e) => UDTypeExtension e a (OOSumType e a) where
         addField "setters" $ do
           let pushSetter = const $ pushcfunction hslua_udsetter_ptr
           pushMap pushName pushSetter (constrProperties constr)
+    let allProps =
+          concatMap (Map.toList . constrProperties . snd)
+                    (Map.toList constructors)
+          <>
+          Map.toList (udProperties ty)
+    addField "get" $
+      pushHaskellFunction (combineGetters ty allProps)
 
   extensionPeekUD ty x idx = do
     tag <- liftLua $ do

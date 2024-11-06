@@ -69,6 +69,33 @@ static int hsluaS_get_constructor_field(lua_State *L)
   return 1;
 }
 
+int hsluaS_get_from_object(lua_State *L)
+{
+  if (luaL_getmetafield(L, 1, "get") != LUA_TFUNCTION) {
+    return 0;
+  }
+
+  lua_pushvalue(L, 1);
+  lua_pushvalue(L, 2);
+  lua_call(L, 2, 1);
+
+  if (lua_type(L, -1) == LUA_TNIL) {
+    lua_pop(L, 1);
+    return 0;
+  }
+
+  /* FIXME: this was copy-pasted, dry it up! */
+  /* key found in wrapped userdata, add to caching table */
+  hslua_get_caching_table(L, 1);        /* object's caching table */
+  lua_pushvalue(L, 2);                  /* key */
+  lua_pushvalue(L, -3);                 /* value */
+  lua_rawset(L, -3);
+  lua_pop(L, 1);                        /* pop caching table */
+  /* return value */
+  return 1;
+}
+
+
 /*
 ** FIXME
 */
@@ -77,7 +104,8 @@ int hslua_sum_udindex(lua_State *L)
   lua_settop(L, 2);
   return
     hsluaO_get_from_cache(L) ||
-    hsluaS_get_constructor_field(L) ||
+    hsluaS_get_from_object(L) ||
+    /* hsluaS_get_constructor_field(L) || */
     hslua_udindex(L);
 }
 
