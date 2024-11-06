@@ -31,6 +31,7 @@ import HsLua.Core
 import HsLua.Marshalling
   ( Peeker, Pusher, failPeek, liftLua, peekIntegral, peekList, peekString
   , pushIntegral, pushIterator, pushString, retrieving )
+import HsLua.ObjectOrientation ( ListSpec (..) )
 import HsLua.Packaging
 import Text.ParserCombinators.ReadP (readP_to_S)
 
@@ -78,8 +79,8 @@ typeVersion = deftype' "Version"
     =#> stringResult "stringified version"
   ]
   [ method must_be_at_least ]
-  (Just ( (pushIntegral, versionBranch)
-        , (peekIntegral, const makeVersion)))
+  (ListSpec ( (pushIntegral, versionBranch)
+            , (peekIntegral, const makeVersion)))
   where
     versionComparison f descr = lambda
       ### liftPure2 f

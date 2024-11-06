@@ -380,16 +380,19 @@ deftype :: LuaError e
         -> UDType e (HaskellFunction e) a
 deftype = deftypeGeneric pushHaskellFunction
 
-deftype' :: LuaError e
-         => Name                  -- ^ type name
-         -> [(Operation, HaskellFunction e)]  -- ^ operations
-         -> [Member e (HaskellFunction e) a]  -- ^ methods
-         -> Maybe (ListSpec e a itemtype)  -- ^ list access
-         -> UDTypeWithList e (HaskellFunction e) a itemtype
-deftype' = deftypeGeneric' pushHaskellFunction
+deflisttype
+  :: LuaError e
+  => Name                              -- ^ type name
+  -> [(Operation, HaskellFunction e)]  -- ^ operations
+  -> [Member e (HaskellFunction e) a]  -- ^ methods
+  -> ListSpec e a itemtype             -- ^ list access
+  -> UDTypeWithList e (HaskellFunction e) a itemtype
+deflisttype = deftypeGeneric' pushHaskellFunction
 
 -- | Pushes a userdata value of the given type.
-pushUD :: LuaError e => UDTypeWithList e fn a itemtype -> a -> LuaE e ()
+pushUD
+  :: UDTypeExtension e a extension
+  => UDTypeGeneric e fn a extension -> a -> LuaE e ()
 pushUD = pushUDGeneric (const (pure ()))
 
 -- | Define a (meta) operation on a type.
@@ -433,14 +436,15 @@ newtype LazyIntList = LazyIntList { fromLazyIntList :: [Int] }
 
 typeLazyIntList :: LuaError e
                 => UDTypeWithList e (HaskellFunction e) LazyIntList Int
-typeLazyIntList = deftype' "LazyIntList"
+typeLazyIntList = deflisttype "LazyIntList"
   [ operation Tostring $ do
       lazyList <- forcePeek $ peekUDGeneric typeLazyIntList (nthBottom 1)
       pushString (show lazyList)
       return (NumResults 1)
   ]
   [ alias "seq" "sequence" [] ]
-  (Just ( (pushIntegral, fromLazyIntList)
+  (ListSpec
+        ( (pushIntegral, fromLazyIntList)
         , (peekIntegral, \_ lst -> LazyIntList lst)
         ))
 
