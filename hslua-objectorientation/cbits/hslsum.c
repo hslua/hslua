@@ -3,31 +3,42 @@
 #include <string.h>
 #include "hslobj.h"
 
+#define HSLUA_TAG_UVINDEX 2
+
 /* ***************************************************************
  * Abstract Data Type access
  * ***************************************************************/
 
-int hslua_gettag(lua_State *L, int idx, int i)
+int hslua_gettag(lua_State *L, int idx)
 {
-  return lua_getiuservalue(L, idx, i);
+  int absidx = lua_absindex(L, idx);
+  luaL_getmetafield(L, absidx, "tags");
+  if (lua_getiuservalue(L, absidx, HSLUA_TAG_UVINDEX) != LUA_TNUMBER) {
+    luaL_error(L, "Couldn't get tag");
+  }
+
+  int tt = lua_rawget(L, -2);
+  lua_remove(L, -2);  /* tags table */
+  return tt;
 }
 
 int hslua_sum_get_tag(lua_State *L)
 {
-  if (hslua_gettag(L, 1, 2) == LUA_TSTRING) {
+  if (hslua_gettag(L, 1) == LUA_TSTRING) {
     return 1;
   }
 
-  lua_pop(L, 1);
-  return 0;
+  return luaL_error(L, "Object has no tag!");
 }
 
 static int hsluaS_get_constructor_table(lua_State *L, int obj)
 {
+  obj = lua_absindex(L, obj);
   if (!lua_getmetatable(L, obj))  /* no metatable? */
     return LUA_TNIL;
   else {
-    hslua_sum_get_tag(L);
+    lua_getiuservalue(L, obj, HSLUA_TAG_UVINDEX);
+    /* hslua_sum_get_tag(L); */
     int tt = lua_rawget(L, -2);
     if (tt != LUA_TTABLE) {
       lua_pop(L, 2);  /* remove metatable and metafield */

@@ -22,11 +22,16 @@ module HsLua.ObjectOrientation.SumType
   , constructorProperty
   ) where
 
+import Control.Arrow ((&&&))
 import Control.Monad (forM_)
+import Data.Data
 import Data.Map (Map)
+import Data.String (fromString)
 import Data.Text (Text)
+import Foreign.C (CInt(..))
 import Foreign.Ptr (FunPtr)
 import HsLua.Core as Lua
+import qualified HsLua.Core.Types as Lua
 import HsLua.Marshalling
 import HsLua.ObjectOrientation.Generic
 import HsLua.ObjectOrientation.Operation
@@ -101,10 +106,18 @@ defsumtypeGeneric fn name ops members tagName constrs =
     , ooSumTag = tagName
     }
 
-instance (LuaError e) => UDTypeExtension e a (OOSumType e a) where
+tagMap :: DataType -> Map.Map ConIndex String
+tagMap = Map.fromList . map (constrIndex &&& showConstr) . dataTypeConstrs
+
+tagIdxAssoc :: Data a => a -> [(Name, ConIndex)]
+tagIdxAssoc = map (\(a, b) -> (fromString b, a)) . Map.toList . tagMap . dataTypeOf
+
+instance (Data a, LuaError e) => UDTypeExtension e a (OOSumType e a) where
   extensionMetatableSetup ty = do
     addOp Index    $ pushcfunction hslua_sum_udindex_ptr
     addOp Newindex $ pushcfunction hslua_sum_udnewindex_ptr
+    addField "tags" $
+      pushMap pushIntegral pushString (tagMap $ dataTypeOf (undefined :: a))
     _ <- getfield top "getters"
     addField "tag" $ pushcfunction hslua_sum_get_tag_ptr
     pop 1 -- getters table
@@ -117,10 +130,15 @@ instance (LuaError e) => UDTypeExtension e a (OOSumType e a) where
         addField "setters" $ do
           let pushSetter = const $ pushcfunction hslua_udsetter_ptr
           pushMap pushName pushSetter (constrProperties constr)
+        pushvalue top
+        case lookup (constrName constr) (tagIdxAssoc (undefined :: a)) of
+          Just i -> rawseti (nth 4) (fromIntegral i)
+          Nothing -> failLua "Unknown sum-type constructor"
 
   extensionPeekUD ty x idx = do
     tag <- liftLua $ do
-      TypeString <- getiuservalue idx 2
+      l <- state
+      _ <- Lua.liftIO $ hslua_gettag l idx
       forcePeek $ peekName top `lastly` pop 1
     let constrs = ooSumConstructors $ udExtension ty
     case Map.lookup tag constrs of
@@ -133,9 +151,11 @@ instance (LuaError e) => UDTypeExtension e a (OOSumType e a) where
             setProperties props x <* pop 1
           _otherwise -> x <$ pop 1
 
-  extensionPushUD ty x = do
-    let tag = (ooSumTag $ udExtension ty) x
-    pushName tag
+  extensionPushUD _ty x = do
+    -- let tag = (ooSumTag $ udExtension ty) x
+    -- pushName tag
+    let tagIdx = constrIndex $ toConstr x
+    pushIntegral tagIdx
     setiuservalue (nth 2) 2 >>= \case
       True -> pure ()
       False -> failLua "Couldn't set tag, object has no second uservalue."
@@ -187,6 +207,10 @@ foreign import ccall "hslsum.c &hslua_sum_udnewindex"
 -- | Get the sum-type's @tag@, i.e., the constructor name.
 foreign import ccall "hslsum.c &hslua_sum_get_tag"
   hslua_sum_get_tag_ptr :: FunPtr (State -> IO NumResults)
+
+-- | Get the sum-type's @tag@, i.e., the constructor name.
+foreign import ccall "hslsum.c hslua_gettag"
+  hslua_gettag :: (State -> StackIndex -> IO CInt)
 
 -- | Sets a value in the caching table.
 foreign import ccall "hslobj.c &hslua_udsetter"

@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications  #-}
@@ -9,6 +10,7 @@ Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 -}
 module HsLua.ObjectOrientation.SumTypeTests (tests) where
 
+import Data.Data (Data, Typeable)
 import HsLua.Core
 import HsLua.ObjectOrientation
 import HsLua.ObjectOrientation.SumType
@@ -29,12 +31,14 @@ tests = testGroup "Sample sum type"
 
   , "get property" =:
     17 `shouldBeResultOf` do
+      openlibs
       pushUD typeQux $ Quux 17
       getfield top "int"
       forcePeek $ peekIntegral @Int top
 
   , "peek element" =:
     Quux 19 `shouldBeResultOf` do
+      openlibs
       pushUD typeQux $ Quux 7
       pushinteger 19
       setfield (nth 2) "int"
@@ -53,7 +57,7 @@ pushUD = pushUDGeneric (const (pure ()))
 data Qux
   = Quux Int
   | Quuz String
-  deriving (Eq, Show)
+  deriving (Eq, Show, Data, Typeable)
 
 peekQux :: LuaError e => Peeker e Qux
 peekQux = peekUDGeneric typeQux
@@ -76,5 +80,18 @@ typeQux = defsumtypeGeneric pushHaskellFunction "Qux"
       (peekIntegral, \case
           Quux _ -> Actual . Quux
           Quuz _ -> const Absent)
+    ]
+
+  , defconstructor "Quuz"
+    "string container"
+    [ constructorProperty "str"
+      integerType
+      "some integer property"
+      (pushString, \case
+          Quuz str -> Actual str
+          Quux _   -> Absent)
+      (peekString, \case
+          Quuz _ -> Actual . Quuz
+          Quux _ -> const Absent)
     ]
   ]
