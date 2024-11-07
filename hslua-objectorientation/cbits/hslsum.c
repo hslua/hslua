@@ -7,14 +7,14 @@
  * Abstract Data Type access
  * ***************************************************************/
 
-int hslua_gettag(lua_State *L, int idx, int i)
+int hslua_gettag(lua_State *L, int idx)
 {
-  return lua_getiuservalue(L, idx, i);
+  return lua_getiuservalue(L, idx, 2);
 }
 
 int hslua_sum_get_tag(lua_State *L)
 {
-  if (hslua_gettag(L, 1, 2) == LUA_TSTRING) {
+  if (hslua_gettag(L, 1) == LUA_TSTRING) {
     return 1;
   }
 

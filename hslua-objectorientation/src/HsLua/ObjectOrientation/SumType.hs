@@ -118,20 +118,25 @@ instance (LuaError e) => UDTypeExtension e a (OOSumType e a) where
           let pushSetter = const $ pushcfunction hslua_udsetter_ptr
           pushMap pushName pushSetter (constrProperties constr)
 
-  extensionPeekUD ty x idx = do
-    tag <- liftLua $ do
-      TypeString <- getiuservalue idx 2
-      forcePeek $ peekName top `lastly` pop 1
-    let constrs = ooSumConstructors $ udExtension ty
-    case Map.lookup tag constrs of
-      Nothing -> return x
-      Just constr -> do
-        let props = constrProperties constr
-        liftLua $ getiuservalue idx 1 >>= \case
-          TypeTable -> do
-            pushnil
-            setProperties props x <* pop 1
-          _otherwise -> x <$ pop 1
+  extensionPeekUD ty x idx = pure x
+    -- let ooext = udExtension ty
+    -- let tag = ooSumTag ooext x
+    -- let constrs = ooSumConstructors ooext
+    -- case Map.lookup tag constrs of
+    --   Nothing -> return x
+    --   Just constr -> do
+    --     let props = constrProperties constr
+    --     liftLua $ getiuservalue idx 1 >>= \case
+    --       TypeTable -> do
+    --         pushnil
+    --         setProperties props x <* pop 1
+    --       _otherwise -> x <$ pop 1
+
+  extensionProperties ty x =
+    let ooext = udExtension ty
+        tag = ooSumTag ooext x
+        constrs = ooSumConstructors ooext
+    in maybe mempty constrProperties (Map.lookup tag constrs)
 
   extensionPushUD ty x = do
     let tag = (ooSumTag $ udExtension ty) x

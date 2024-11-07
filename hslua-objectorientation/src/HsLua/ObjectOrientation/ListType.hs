@@ -61,6 +61,8 @@ instance LuaError e => UDTypeExtension e a (ListSpec e a itemtype) where
     void (setiuservalue (nth 2) 1)
   {-# INLINEABLE extensionPushUD #-}
 
+  extensionProperties _ty _x = mempty
+
   extensionUservalues _ty = 1
 
 

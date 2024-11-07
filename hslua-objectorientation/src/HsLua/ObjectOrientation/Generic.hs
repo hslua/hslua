@@ -99,6 +99,10 @@ class LuaError e => UDTypeExtension e a extension where
   -- | Push extra data
   extensionPushUD :: UDTypeGeneric e fn a extension -> a -> LuaE e ()
 
+  extensionProperties :: UDTypeGeneric e fn a extension
+                      -> a
+                      -> Map Name (Property e a)
+
 -- | Basic instance.
 instance LuaError e => UDTypeExtension e a () where
   extensionMetatableSetup _ty = return ()
@@ -108,6 +112,8 @@ instance LuaError e => UDTypeExtension e a () where
 
   extensionPushUD _ty _x = return ()
   {-# INLINEABLE extensionPushUD #-}
+
+  extensionProperties _ _ = Map.empty
 
   extensionUservalues _ty = 1
 
@@ -449,7 +455,7 @@ peekUDGeneric ty idx = do
   updated <- liftLua (getiuservalue idx 1) >>= \case
     TypeTable -> liftLua $ do
       pushnil
-      setProperties (udProperties ty) old
+      setProperties (extensionProperties ty old <> udProperties ty) old
     _other -> return old
   liftLua $ pop 1  -- pop caching table
   extensionPeekUD ty updated idx
