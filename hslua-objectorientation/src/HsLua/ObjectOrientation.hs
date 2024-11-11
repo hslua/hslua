@@ -311,6 +311,7 @@ pushUDMetatable hook ty = do
     add "getters" $ pushGetters ty
     add "setters" $ pushSetters ty
     add "methods" $ pushMethods ty
+    add "peekers" $ pushPeekers ty
     add "aliases" $ pushAliases ty
     case udListSpec ty of
       Nothing -> pure ()
@@ -374,6 +375,19 @@ pushSetters ty = do
       Just _  -> hslua_udsetter_ptr
       Nothing -> hslua_udreadonly_ptr
     rawset (nth 3)
+
+pushPeekers :: LuaError e => UDTypeWithList e fn a itemtype -> LuaE e ()
+pushPeekers ty = do
+  newtable
+  void $ flip Map.traverseWithKey (udProperties ty) $ \name prop -> do
+    case propertySet prop of
+      Just p  -> do
+        pushName name
+        newhsuserdatauv p 0
+        newudmetatable "HsLuaOOPeeker"
+        setmetatable (nth 2)
+        rawset (nth 3)
+      Nothing -> pure ()
 
 -- | Pushes the metatable's @methods@ field table.
 pushMethods :: LuaError e => UDTypeWithList e fn a itemtype -> LuaE e ()
@@ -485,18 +499,24 @@ pushUDGeneric pushDocs ty x = do
 peekUDGeneric :: LuaError e => UDTypeWithList e fn a itemtype -> Peeker e a
 peekUDGeneric ty idx = do
   let name = udName ty
-  x <- reportValueOnFailure name (`fromuserdata` name) idx
-  (`lastly` pop 1) $ liftLua (getiuservalue idx 1) >>= \case
-    TypeTable -> do
-      -- set list
-      xWithList <- maybe pure setList (udListSpec ty) x
-      liftLua $ do
-        pushnil
-        setProperties (udProperties ty) xWithList
-    _ -> return x
+  absidx <- liftLua (absindex idx)
+  x <- reportValueOnFailure name (`fromuserdata` name) absidx
+  (`lastly` pop 2) $ do
+    liftLua (getmetafield absidx "peekers") >>= \case
+      TypeTable -> pure ()
+      otherType -> liftLua $ failLua $ show otherType
+    liftLua (getiuservalue absidx 1) >>= \case
+      TypeTable -> do
+        -- set list
+        xWithList <- maybe pure setList (udListSpec ty) x
+        liftLua $ do
+          pushnil
+          setProperties (udProperties ty) xWithList
+      _ -> return x
 
--- | Retrieves object properties from a uservalue table and sets them on
--- the given value. Expects the uservalue table at the top of the stack.
+-- | Retrieves object properties from a uservalue table and sets them on the
+-- given value. Expects the uservalue table at the top of the stack, and the
+-- @peekers@ table below that.
 setProperties :: LuaError e => Map Name (Property e a) -> a -> LuaE e a
 setProperties props x = do
   hasNext <- Unsafe.next (nth 2)
@@ -504,14 +524,18 @@ setProperties props x = do
     then return x
     else ltype (nth 2) >>= \case
       TypeString -> do
-        propName <- forcePeek $ peekName (nth 2)
-        case Map.lookup propName props >>= propertySet of
-          Nothing -> pop 1 *> setProperties props x
-          Just setter -> do
-            x' <- setter top x
-            pop 1
-            setProperties props x'
-      _ -> x <$ pop 1
+        pushvalue (nth 2)  -- property name
+        -- get property setter from peeker table
+        rawget (nth 5) >>= \case
+          TypeUserdata ->
+            fromuserdata top "HsLuaOOPeeker" <* pop 1 >>= \case
+              Nothing -> pop 1 *> setProperties props x
+              Just setter -> do
+                x' <- setter top x
+                pop 1
+                setProperties props x'
+          _lty -> x <$ pop 1
+      _keyLuaType -> x <$ pop 1
 
 -- | Gets a list from a uservalue table and sets it on the given value.
 -- Expects the uservalue (i.e., caching) table to be at the top of the
