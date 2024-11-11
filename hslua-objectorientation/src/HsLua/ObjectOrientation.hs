@@ -55,7 +55,7 @@ import Data.Map (Map)
 import Data.String (IsString (..))
 import Data.Text (Text)
 import Data.Void (Void)
-import Foreign.Ptr (FunPtr)
+import Foreign.Ptr (FunPtr, castPtr, nullPtr)
 import HsLua.Core as Lua
 import HsLua.Marshalling
 import HsLua.ObjectOrientation.Operation
@@ -63,6 +63,8 @@ import HsLua.Typing ( TypeDocs (..), TypeSpec (..), anyType, userdataType )
 import qualified Data.Map.Strict as Map
 import qualified HsLua.Core.Unsafe as Unsafe
 import qualified HsLua.Core.Utf8 as Utf8
+import Foreign.StablePtr (deRefStablePtr)
+import Foreign.Storable (peek)
 
 -- | A userdata type, capturing the behavior of Lua objects that wrap
 -- Haskell values. The type name must be unique; once the type has been
@@ -511,14 +513,14 @@ peekUDGeneric ty idx = do
         xWithList <- maybe pure setList (udListSpec ty) x
         liftLua $ do
           pushnil
-          setProperties (udProperties ty) xWithList
+          setProperties xWithList
       _ -> return x
 
 -- | Retrieves object properties from a uservalue table and sets them on the
 -- given value. Expects the uservalue table at the top of the stack, and the
 -- @peekers@ table below that.
-setProperties :: LuaError e => Map Name (Property e a) -> a -> LuaE e a
-setProperties props x = do
+setProperties :: LuaError e => a -> LuaE e a
+setProperties x = do
   hasNext <- Unsafe.next (nth 2)
   if not hasNext
     then return x
@@ -527,13 +529,13 @@ setProperties props x = do
         pushvalue (nth 2)  -- property name
         -- get property setter from peeker table
         rawget (nth 5) >>= \case
-          TypeUserdata ->
-            fromuserdata top "HsLuaOOPeeker" <* pop 1 >>= \case
-              Nothing -> pop 1 *> setProperties props x
-              Just setter -> do
+          TypeUserdata -> (touserdata top <* pop 1) >>= \case
+            Just udPtr | udPtr /= nullPtr -> do
+                setter <- liftIO $ peek (castPtr udPtr) >>= deRefStablePtr
                 x' <- setter top x
-                pop 1
-                setProperties props x'
+                pop 1  -- value
+                setProperties x'
+            _notASetter -> pop 1 *> setProperties x
           _lty -> x <$ pop 1
       _keyLuaType -> x <$ pop 1
 
