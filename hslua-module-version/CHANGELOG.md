@@ -2,6 +2,12 @@
 
 `hslua-module-version` uses [PVP Versioning][].
 
+## hslua-module-version-1.1.2
+
+Release pending.
+
+-   Require hslua-packaging-2.4.\*.
+
 ## hslua-module-version-1.1.1
 
 Released 2024-01-18.
