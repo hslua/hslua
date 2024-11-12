@@ -2,9 +2,11 @@
 
 `hslua-module-zips` uses [PVP Versioning][].
 
-## Unreleased
+## hslua-module-path-1.1.4
 
 Release pending.
+
+-   Relax upper bound for hslua-packaging.
 
 -   Allowed time-1.4.
 
