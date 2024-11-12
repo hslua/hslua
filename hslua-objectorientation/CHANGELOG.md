@@ -2,6 +2,22 @@
 
 `hslua-objectorientation` uses [PVP Versioning][].
 
+## hslua-objectorientation-2.4.0
+
+Release pending.
+
+-   Modified the types of userdata type specifiers to make them
+    more flexible and extensible. The types now take an additional
+    parameter, which must be an instance of the new typeclass
+    `UDTypeExtension`. The behavior of UDType objects can be
+    modified through this parameter and the corresponding
+    typeclass instances.
+
+    E.g., list types are now types with a `ListSpec` type
+    extension. See `HsLua.Module.Version` for an example.
+
+-   The code was split and spread across additional submodules.
+
 ## hslua-objectorientation-2.3.1
 
 Released 2024-01-18.
