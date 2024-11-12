@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                hslua-module-version
-version:             1.1.1
+version:             1.1.2
 synopsis:            Lua module to work with version specifiers.
 description:         Wrapper for the Data.Version.Version Haskell type.
 homepage:            https://hslua.org/
