@@ -2,6 +2,14 @@
 
 `hslua-packaging` uses [PVP Versioning][].
 
+## hslua-packaging-2.4.0
+
+Release pending.
+
+-   Use hslua-objectorientation-2.4, which large parts of which
+    are re-exported. See the changelog there for the relevant
+    changes.
+
 ## hslua-packaging-2.3.1
 
 Released 2024-01-18.

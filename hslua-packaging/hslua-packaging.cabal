@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                hslua-packaging
-version:             2.3.1
+version:             2.4.0
 synopsis:            Utilities to build Lua modules.
 description:         Utilities to package up Haskell functions and
                      values into a Lua module.

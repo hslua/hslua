@@ -51,7 +51,7 @@ common common-options
                      , hslua-classes           >= 2.2.1  && < 2.4
                      , hslua-marshalling       >= 2.3.1  && < 2.4
                      , hslua-objectorientation >= 2.4    && < 2.5
-                     , hslua-packaging         >= 2.3.1  && < 2.4
+                     , hslua-packaging         >= 2.4    && < 2.5
                      , hslua-typing            >= 0.1.1  && < 0.2
                      , mtl                     >= 2.2    && < 2.4
                      , text                    >= 1.2    && < 2.2
