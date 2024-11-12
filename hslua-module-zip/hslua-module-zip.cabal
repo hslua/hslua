@@ -34,7 +34,7 @@ source-repository head
 common common-options
   build-depends:       base              >= 4.11   && < 5
                      , hslua-core        >= 2.3    && < 2.4
-                     , hslua-packaging   >= 2.3    && < 2.4
+                     , hslua-packaging   >= 2.3    && < 2.5
 
   ghc-options:         -Wall
                        -Wcpp-undef
