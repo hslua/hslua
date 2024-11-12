@@ -2,6 +2,12 @@
 
 `hslua-module-system` uses [PVP Versioning][].
 
+## hslua-module-system-1.1.3
+
+Release pending.
+
+-   Relax upper bound for hslua-packaging.
+
 ## hslua-module-system-1.1.2
 
 Released 2024-05-28.
