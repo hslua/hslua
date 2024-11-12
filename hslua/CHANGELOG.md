@@ -6,6 +6,8 @@
 
 Release pending.
 
+-   Require versions 2.4.* of HsLua packages.
+
 -   Provide a full Lua app with Haskell-defined modules preloaded.
     The app is only built if the `executable` flag is enabled.
 
