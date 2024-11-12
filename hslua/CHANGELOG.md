@@ -2,6 +2,12 @@
 
 `hslua` uses [PVP Versioning][].
 
+## hslua-2.4.0
+
+Release pending.
+
+-   Require versions 2.4.* of HsLua packages.
+
 ## hslua-2.3.1
 
 Released 2024-01-18.
