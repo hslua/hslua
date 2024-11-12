@@ -53,12 +53,14 @@ import Data.Maybe (mapMaybe)
 import Data.Map (Map)
 import Data.String (IsString (..))
 import Data.Text (Text)
-import Foreign.Ptr (FunPtr)
+import Foreign.Ptr (FunPtr, castPtr, nullPtr)
+import Foreign.StablePtr (deRefStablePtr)
 import HsLua.Core as Lua
 import HsLua.Marshalling
 import HsLua.ObjectOrientation.Operation
 import HsLua.Typing ( TypeDocs (..), TypeSpec (..), anyType, userdataType )
 import qualified Data.Map.Strict as Map
+import qualified Foreign.Storable as F
 import qualified HsLua.Core.Unsafe as Unsafe
 import qualified HsLua.Core.Utf8 as Utf8
 
@@ -316,6 +318,7 @@ pushUDMetatable hook ty = do
     add "getters" $ pushGetters ty
     add "setters" $ pushSetters ty
     add "methods" $ pushMethods ty
+    add "peekers" $ pushPeekers ty
     add "aliases" $ pushAliases ty
     extensionMetatableSetup ty
     hook ty
@@ -378,6 +381,19 @@ pushSetters ty = do
       Just _  -> hslua_udsetter_ptr
       Nothing -> hslua_udreadonly_ptr
     rawset (nth 3)
+
+pushPeekers :: LuaError e => UDTypeGeneric e fn a extension -> LuaE e ()
+pushPeekers ty = do
+  newtable
+  void $ flip Map.traverseWithKey (udProperties ty) $ \name prop -> do
+    case propertySet prop of
+      Just p  -> do
+        pushName name
+        newhsuserdatauv p 0
+        -- newudmetatable "HsLuaOOPeeker"
+        -- setmetatable (nth 2)
+        rawset (nth 3)
+      Nothing -> pure ()
 
 -- | Pushes the metatable's @methods@ field table.
 pushMethods :: LuaError e => UDTypeGeneric e fn a extension -> LuaE e ()
@@ -442,33 +458,43 @@ peekUDGeneric :: forall e extension fn a. (UDTypeExtension e a extension)
               => UDTypeGeneric e fn a extension -> Peeker e a
 peekUDGeneric ty idx = do
   let name = udName ty
-  old <- reportValueOnFailure name (`fromuserdata` name) idx
+  absidx <- liftLua (absindex idx)
+  old <- reportValueOnFailure name (`fromuserdata` name) absidx
   -- get caching table and update the Haskell value
-  updated <- liftLua (getiuservalue idx 1) >>= \case
+  liftLua (getmetafield absidx "peekers") >>= \case
+    TypeTable -> pure ()
+    otherType -> liftLua $ failLua $ show otherType
+  updated <- liftLua (getiuservalue absidx 1) >>= \case
     TypeTable -> liftLua $ do
       pushnil
-      setProperties (udProperties ty) old
+      setProperties old
     _other -> return old
-  liftLua $ pop 1  -- pop caching table
-  extensionPeekUD ty updated idx
+  liftLua $ pop 2  -- pop caching table and peekers table
+  extensionPeekUD ty updated absidx
 
--- | Retrieves object properties from a uservalue table and sets them on
--- the given value. Expects the uservalue table at the top of the stack.
-setProperties :: LuaError e => Map Name (Property e a) -> a -> LuaE e a
-setProperties props x = do
+-- | Retrieves object properties from a uservalue table and sets them on the
+-- given value. Expects the uservalue table at the top of the stack, and the
+-- @peekers@ table below that.
+setProperties :: LuaError e => a -> LuaE e a
+setProperties x = do
   hasNext <- Unsafe.next (nth 2)
-  let continue value = pop 1 *> setProperties props value
+  let continue = pop 1 *> setProperties x
   if not hasNext
     then return x
     else ltype (nth 2) >>= \case
       TypeString -> do
-        propName <- forcePeek $ peekName (nth 2)
-        case Map.lookup propName props >>= propertySet of
-          Nothing -> continue x
-          Just setter -> do
-            x' <- setter top x
-            continue x'
-      _ -> continue x
+        pushvalue (nth 2)  -- property name
+        -- get property setter from peeker table
+        rawget (nth 5) >>= \case
+          TypeUserdata -> (touserdata top <* pop 1) >>= \case
+            Just udPtr | udPtr /= nullPtr -> do
+                setter <- liftIO $ F.peek (castPtr udPtr) >>= deRefStablePtr
+                x' <- setter top x
+                pop 1
+                setProperties x'
+            _notASetter -> continue
+          _lty -> pop 1 *> continue
+      _keyLuaType -> continue
 
 --
 -- Typing
