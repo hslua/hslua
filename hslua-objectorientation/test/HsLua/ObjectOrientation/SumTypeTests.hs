@@ -57,7 +57,15 @@ tests = testGroup "Sample sum type"
       forcePeek $ peekQux top
 
   , testGroup "stack usage"
-    [ "pushing adds one element to the stack" =:
+    [ "initializing does not affect the stack" =:
+      0 `shouldBeResultOf` do
+        openlibs
+        before <- gettop
+        _ <- initTypeGeneric (\_ -> pure ()) typeQux
+        after <- gettop
+        return $ after - before
+
+    , "pushing adds one element to the stack" =:
       1 `shouldBeResultOf` do
         before <- gettop
         pushUD typeQux $ Quuy (Quux 1)
