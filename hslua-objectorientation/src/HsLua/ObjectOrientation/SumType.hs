@@ -141,14 +141,17 @@ instance (LuaError e) => UDTypeExtension e a (OOSumType e a) where
           l <- state
           liftIO $ hslua_sum_peekers l idx'
     liftLua (getpeekers absidx) >>= \case
-      LUA_TTABLE -> liftLua $ getiuservalue absidx 1 >>= \case
-        TypeTable -> do
-          pushnil
-          setProperties x <* pop 2
-        _otherwise -> x <$ pop 2
-      otherType  -> liftLua $ do
+      LUA_TTABLE -> do
+        liftLua (getiuservalue absidx 1) >>= (`lastly` pop 2) . \case
+          TypeTable  -> liftLua $ do
+            pushnil
+            setProperties x
+          _otherwise ->
+            -- no caching table
+            pure x
+      _typeCode  -> liftLua $ do
         -- no peekers table, so nothing to do
-        -- pop 1
+        pop 1
         -- failLua $ "Could not get peekers table, got: " <> show otherType
         pure x
 

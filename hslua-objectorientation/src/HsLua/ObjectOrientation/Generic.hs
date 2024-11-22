@@ -470,15 +470,17 @@ peekUDGeneric ty idx = do
   absidx <- liftLua (absindex idx)
   old <- reportValueOnFailure name (`fromuserdata` name) absidx
   -- get caching table and update the Haskell value
-  liftLua (getmetafield absidx "peekers") >>= \case
-    TypeTable -> pure ()
-    otherType -> liftLua $ failLua $ show otherType
-  updated <- liftLua (getiuservalue absidx 1) >>= \case
-    TypeTable -> liftLua $ do
-      pushnil
-      setProperties old
-    _other -> return old
-  liftLua $ pop 2  -- pop caching table and peekers table
+  updated <- liftLua (getmetafield absidx "peekers") >>= \case
+    TypeTable -> do
+      -- pop caching table and peekers table when done
+      liftLua (getiuservalue absidx 1) >>= (`lastly` pop 2) . \case
+        TypeTable -> liftLua $ do
+          pushnil
+          setProperties old
+        _other -> pure old
+    otherType -> liftLua $ do
+      pop 1
+      failLua $ show otherType
   extensionPeekUD ty updated absidx
 
 -- | Retrieves object properties from a uservalue table and sets them on the
