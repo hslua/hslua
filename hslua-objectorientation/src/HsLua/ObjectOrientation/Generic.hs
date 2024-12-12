@@ -102,6 +102,7 @@ class LuaError e => UDTypeExtension e a extension where
 -- | Basic instance.
 instance LuaError e => UDTypeExtension e a () where
   extensionMetatableSetup _ty = return ()
+  {-# INLINEABLE extensionMetatableSetup #-}
 
   extensionPeekUD _ty x _idx = return x
   {-# INLINEABLE extensionPeekUD #-}
@@ -453,6 +454,12 @@ pushUDGeneric pushDocs ty x = do
   setmetatable (nth 2)
   extensionPushUD ty x
 
+{-# SPECIALIZE pushUDGeneric :: (LuaError e)
+  => (UDTypeGeneric e fn a () -> LuaE e ())
+  -> UDTypeGeneric e fn a ()
+  -> a
+  -> LuaE e () #-}
+
 -- | Retrieves a userdata value of the given type.
 peekUDGeneric :: forall e extension fn a. (UDTypeExtension e a extension)
               => UDTypeGeneric e fn a extension -> Peeker e a
@@ -471,6 +478,10 @@ peekUDGeneric ty idx = do
     _other -> return old
   liftLua $ pop 2  -- pop caching table and peekers table
   extensionPeekUD ty updated absidx
+
+{-# SPECIALIZE peekUDGeneric :: (LuaError e)
+  => UDTypeGeneric e fn a ()
+  -> Peeker e a #-}
 
 -- | Retrieves object properties from a uservalue table and sets them on the
 -- given value. Expects the uservalue table at the top of the stack, and the
