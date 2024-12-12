@@ -72,13 +72,13 @@ import qualified HsLua.Core.Utf8 as Utf8
 -- This type includes methods to define how the object should behave as
 -- a read-only list of type @itemtype@.
 data UDTypeGeneric e fn a extension = UDType
-  { udName          :: Name
-  , udOperations    :: [(Operation, fn)]
-  , udProperties    :: Map Name (Property e a)
-  , udMethods       :: Map Name fn
-  , udAliases       :: Map AliasIndex Alias
-  , udExtension     :: extension
-  , udFnPusher      :: fn -> LuaE e ()
+  { udName          :: !Name
+  , udOperations    :: ![(Operation, fn)]
+  , udProperties    :: !(Map Name (Property e a))
+  , udMethods       :: !(Map Name fn)
+  , udAliases       :: !(Map AliasIndex Alias)
+  , udExtension     :: !extension
+  , udFnPusher      :: !(fn -> LuaE e ())
   }
 
 -- | Typeclass for data userdata object extensions.
