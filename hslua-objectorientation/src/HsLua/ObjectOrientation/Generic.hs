@@ -55,12 +55,12 @@ import Data.String (IsString (..))
 import Data.Text (Text)
 import Foreign.Ptr (FunPtr, castPtr, nullPtr)
 import Foreign.StablePtr (deRefStablePtr)
-import Foreign.Storable (peek)
 import HsLua.Core as Lua
 import HsLua.Marshalling
 import HsLua.ObjectOrientation.Operation
 import HsLua.Typing ( TypeDocs (..), TypeSpec (..), anyType, userdataType )
 import qualified Data.Map.Strict as Map
+import qualified Foreign.Storable as F
 import qualified HsLua.Core.Unsafe as Unsafe
 import qualified HsLua.Core.Utf8 as Utf8
 
@@ -499,7 +499,7 @@ setProperties x = do
         rawget (nth 5) >>= \case
           TypeUserdata -> (touserdata top <* pop 1) >>= \case
             Just udPtr | udPtr /= nullPtr -> do
-                setter <- liftIO $ peek (castPtr udPtr) >>= deRefStablePtr
+                setter <- liftIO $ F.peek (castPtr udPtr) >>= deRefStablePtr
                 x' <- setter top x
                 pop 1
                 setProperties x'
