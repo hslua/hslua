@@ -143,7 +143,11 @@ os :: Field e
 os = Field
   { fieldName = "os"
   , fieldType = "string"
-  , fieldDescription = "The operating system on which the program is running."
+  , fieldDescription = T.unlines
+    [ "The operating system on which the program is running."
+    , "The most common values are `darwin` (macOS), `freebsd`, `linux`,"
+    , "`linux-android`, `mingw32` (Windows), `netbsd`, `openbsd`."
+    ]
   , fieldPushValue = pushString Info.os
   }
 
