@@ -6,7 +6,7 @@ Copyright   : © 2019-2024 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 
-Lua module to work with file paths.
+Lua module to work with version specifiers.
 -}
 module HsLua.Module.Version (
   -- * Module
