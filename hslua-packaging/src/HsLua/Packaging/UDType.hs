@@ -17,6 +17,7 @@ module HsLua.Packaging.UDType
   , DocumentedTypeWithList
   , deftype
   , deftype'
+  , deflisttype
   , method
   , property
   , property'
@@ -45,13 +46,15 @@ import Data.Text (Text)
 import HsLua.Core
 import HsLua.Marshalling
 import HsLua.ObjectOrientation
-import HsLua.ObjectOrientation.Operation (metamethodName)
 import HsLua.Packaging.Function
 import HsLua.Typing (pushTypeSpec)
 import qualified Data.Map as Map
 
 -- | Type definitions containing documented functions.
 type DocumentedType e a = UDType e (DocumentedFunction e) a
+
+type DocumentedType' e a extension =
+  UDTypeGeneric e (DocumentedFunction e) a extension
 
 -- | A userdata type, capturing the behavior of Lua objects that wrap
 -- Haskell values. The type name must be unique; once the type has been
@@ -69,16 +72,28 @@ deftype :: LuaError e
         -> DocumentedType e a
 deftype = deftypeGeneric pushDocumentedFunction
 
+-- | Defines a new type, defining the behavior of objects in Lua.
+-- Note that the type name must be unique.
+deftype'
+  :: UDTypeExtension e a extension
+  => Name                                 -- ^ type name
+  -> [(Operation, DocumentedFunction e)]  -- ^ operations
+  -> [Member e (DocumentedFunction e) a]  -- ^ methods
+  -> extension
+  -> DocumentedType' e a extension
+deftype' = deftypeGeneric' pushDocumentedFunction
+
 -- | Defines a new type that could also be treated as a list; defines
 -- the behavior of objects in Lua. Note that the type name must be
 -- unique.
-deftype' :: LuaError e
-         => Name                                 -- ^ type name
-         -> [(Operation, DocumentedFunction e)]  -- ^ operations
-         -> [Member e (DocumentedFunction e) a]  -- ^ methods
-         -> Maybe (ListSpec e a itemtype)  -- ^ list access
-         -> DocumentedTypeWithList e a itemtype
-deftype' = deftypeGeneric' pushDocumentedFunction
+deflisttype
+  :: LuaError e
+  => Name                                 -- ^ type name
+  -> [(Operation, DocumentedFunction e)]  -- ^ operations
+  -> [Member e (DocumentedFunction e) a]  -- ^ methods
+  -> ListSpec e a itemtype                -- ^ list access
+  -> DocumentedTypeWithList e a itemtype
+deflisttype = deftype'
 
 -- | Use a documented function as an object method.
 method :: DocumentedFunction e
@@ -92,39 +107,43 @@ operation :: Operation             -- ^ the kind of operation
 operation op f = (,) op $ setName (metamethodName op) f
 
 -- | Defines a function parameter that takes the given type.
-udparam :: LuaError e
-        => DocumentedTypeWithList e a itemtype  -- ^ expected type
+udparam :: UDTypeExtension e a ext
+        => DocumentedType' e a ext  -- ^ expected type
         -> Text            -- ^ parameter name
         -> Text            -- ^ parameter description
         -> Parameter e a
 udparam ty = parameter (peekUDGeneric ty) (udTypeSpec ty)
 
 -- | Defines a function result of the given type.
-udresult :: LuaError e
-         => DocumentedTypeWithList e a itemtype -- ^ result type
+udresult :: UDTypeExtension e a ext
+         => DocumentedType' e a ext -- ^ result type
          -> Text           -- ^ result description
          -> FunctionResults e a
 udresult ty = functionResult (pushUD ty) (udTypeSpec ty)
 
 -- | Pushes a userdata value of the given type.
-pushUD :: LuaError e => DocumentedTypeWithList e a itemtype -> a -> LuaE e ()
+pushUD :: UDTypeExtension e a extension
+       => DocumentedType' e a extension
+       -> a
+       -> LuaE e ()
 pushUD = pushUDGeneric pushUDTypeDocs
 
 -- | Retrieves a userdata value of the given type.
-peekUD :: LuaError e => DocumentedTypeWithList e a itemtype -> Peeker e a
+peekUD :: UDTypeExtension e a extension
+       => DocumentedType' e a extension -> Peeker e a
 peekUD = peekUDGeneric
 
 -- | Ensures that the type has been fully initialized, i.e., that all
 -- metatables have been created and stored in the registry. Returns the
 -- name of the initialized type.
-initType :: LuaError e
-         => DocumentedTypeWithList e a itemtype
+initType :: UDTypeExtension e a extension
+         => DocumentedType' e a extension
          -> LuaE e Name
 initType = initTypeGeneric pushUDTypeDocs
 
 -- | Pushes a documentation table for the given UD type.
-pushUDTypeDocs :: LuaError e
-               => DocumentedTypeWithList e a itemtype
+pushUDTypeDocs :: UDTypeExtension e a extension
+               => DocumentedType' e a extension
                -> LuaE e ()
 pushUDTypeDocs ty = do
   -- metadata table is at the top of the stack

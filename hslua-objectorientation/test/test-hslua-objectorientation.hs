@@ -15,10 +15,14 @@ module Main (main) where
 import Test.Tasty (TestTree, defaultMain, testGroup)
 
 import qualified HsLua.ObjectOrientationTests
+import qualified HsLua.ObjectOrientation.SumTypeTests
 
 main :: IO ()
 main = defaultMain $ testGroup "hslua-objectorientation" tests
 
 -- | HSpec tests
 tests :: [TestTree]
-tests = [ HsLua.ObjectOrientationTests.tests ]
+tests =
+  [ HsLua.ObjectOrientationTests.tests
+  , HsLua.ObjectOrientation.SumTypeTests.tests
+  ]
