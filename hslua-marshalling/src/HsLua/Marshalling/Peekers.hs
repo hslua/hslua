@@ -126,6 +126,7 @@ peekNoneOrNil = typeChecked "none or nil" Lua.isnoneornil $ const (return ())
 -- | Retrieves a 'Bool' as a Lua boolean.
 peekBool :: Peeker e Bool
 peekBool = liftLua . toboolean
+{-# INLINABLE peekBool #-}
 
 --
 -- Strings

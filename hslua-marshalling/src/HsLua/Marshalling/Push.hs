@@ -50,26 +50,32 @@ type Pusher e a = a -> LuaE e ()
 -- | Pushes a 'Bool' as a Lua boolean.
 pushBool :: Pusher e Bool
 pushBool = pushboolean
+{-# INLINE pushBool #-}
 
 -- | Pushes a 'T.Text' value as a UTF-8 encoded string.
 pushText :: Pusher e T.Text
 pushText = pushstring . Utf8.fromText
+{-# INLINABLE pushText #-}
 
 -- | Pushes a 'ByteString' as a raw string.
 pushByteString :: Pusher e ByteString
 pushByteString = pushstring
+{-# INLINE pushByteString #-}
 
 -- | Pushes a lazy 'BL.ByteString' as a raw string.
 pushLazyByteString :: Pusher e BL.ByteString
 pushLazyByteString = pushstring . BL.toStrict
+{-# INLINABLE pushLazyByteString #-}
 
 -- | Pushes a 'String' as a UTF-8 encoded Lua string.
 pushString :: String -> LuaE e ()
 pushString = pushstring . Utf8.fromString
+{-# INLINABLE pushString #-}
 
 -- | Pushes a 'Name' as a UTF-8 encoded Lua string.
 pushName :: Name -> LuaE e ()
 pushName (Name n) = pushByteString n
+{-# INLINE pushName #-}
 
 -- | Pushes an @Integer@ to the Lua stack. Values representable as Lua
 -- integers are pushed as such; bigger integers are represented using
