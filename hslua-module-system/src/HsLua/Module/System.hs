@@ -27,6 +27,7 @@ module HsLua.Module.System (
   , ls
   , mkdir
   , rmdir
+  , run
   , setenv
   , setwd
   , tmpdirname
@@ -50,8 +51,10 @@ import qualified Data.Text as T
 import qualified System.CPUTime as CPUTime
 import qualified System.Directory as Directory
 import qualified System.Environment as Env
+import qualified System.Exit as Exit
 import qualified System.Info as Info
 import qualified System.IO.Temp as Temp
+import qualified System.Process as Process
 
 -- | The "system" module.
 documentedModule :: LuaError e => Module e
@@ -65,7 +68,8 @@ documentedModule = Module
       , os
       ]
   , moduleFunctions =
-      [ cputime
+      [ cmd
+      , cputime
       , env
       , getenv
       , getwd
@@ -155,6 +159,29 @@ os = Field
 --
 -- Functions
 --
+
+-- | Run a system command
+cmd :: LuaError e => DocumentedFunction e
+cmd = defun "cmd"
+  ### (\command args minput opts -> do
+          let input = fromMaybe "" minput
+          let cp_opts = (Process.proc command args)
+                        { Process.env = processOptsEnv =<< opts
+                        , Process.cwd = processOptsCwd =<< opts
+                        }
+          liftIO $ Process.readCreateProcessWithExitCode cp_opts input)
+  <#> filepathParam "command" "command to execute"
+  <#> parameter (peekList peekString) "{string,...}" "args" "command arguments"
+  <#> opt (parameter peekString "string" "input" "input on stdin")
+  <#> opt (parameter peekProcessOptions "table" "opts" "process options")
+  =#> (functionResult (pushExitCode . (\(a,_,_) -> a)) "integer|boolean"
+                      "exit code – `false` on success, an integer otherwise" <>
+       functionResult (pushString . \(_,b,_) -> b) "string" "stdout" <>
+       functionResult (pushString . \(_,_,c) -> c) "string" "stderr")
+  #? T.unlines
+     [ "Executes a system command with the given arguments and `input`"
+     , "on *stdin*."
+     ]
 
 -- | Access the CPU time, e.g. for benchmarking.
 cputime :: LuaError e => DocumentedFunction e
@@ -389,3 +416,32 @@ filepathParam = stringParam
 filepathResult :: Text -- ^ Description
                -> [FunctionResult e FilePath]
 filepathResult = functionResult pushString "string"
+
+--
+-- Process parameters
+--
+
+-- | Process options
+data ProcessOpts = ProcessOpts
+  { processOptsEnv  :: Maybe [(String, String)]
+  , processOptsCwd  :: Maybe FilePath
+  }
+
+-- | Peek process creation options
+peekProcessOptions :: LuaError e => Peeker e ProcessOpts
+peekProcessOptions = typeChecked "table" istable $ \idx -> do
+  let peekEnv = peekKeyValuePairs peekString peekString
+  env' <- peekFieldRaw (peekNilOr peekEnv)    "env" idx
+  cwd' <- peekFieldRaw (peekNilOr peekString) "cwd" idx
+  return $ ProcessOpts
+    { processOptsEnv = env'
+    , processOptsCwd = cwd'
+    }
+
+-- | Pushes an exit code; failure codes are pushed as integers, and
+-- success is pushed as `false`. This means that the value can be
+-- interpreted as a boolean `failed` value.
+pushExitCode :: Pusher e Exit.ExitCode
+pushExitCode = \case
+  Exit.ExitSuccess   -> pushBool False
+  Exit.ExitFailure n -> pushIntegral n

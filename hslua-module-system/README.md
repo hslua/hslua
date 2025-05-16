@@ -50,6 +50,37 @@ The operating system on which the program is running.
 
 ### General Functions
 
+#### cmd
+
+`cmd (command, args[, input[, opts]])`
+
+Executes a system command with the given arguments and `input` on
+*stdin*.
+
+Parameters:
+
+`command`
+:   command to execute (string)
+
+`args`
+:   command arguments ({string,...})
+
+`input`
+:   input on stdin (string)
+
+`opts`
+:   process options (table)
+
+Returns:
+
+- exit code – `false` on success, an integer otherwise
+  (integer|boolean)
+
+- stdout (string)
+
+- stderr (string)
+
+
 #### cputime
 
 `cputime ()`
