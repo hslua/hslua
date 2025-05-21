@@ -71,7 +71,7 @@ library
                      , StrictData
   other-extensions:    DeriveFunctor
                      , OverloadedStrings
-  build-depends:       containers              >= 0.5.9    && < 0.8
+  build-depends:       containers              >= 0.5.9    && < 0.9
 
 test-suite test-hslua-packaging
   import:              common-options

@@ -57,7 +57,7 @@ library
   import:              common-options
   exposed-modules:     HsLua.Typing
   hs-source-dirs:      src
-  build-depends:       containers           >= 0.5.9  && < 0.8
+  build-depends:       containers           >= 0.5.9  && < 0.9
                      , hslua-core           >= 2.3    && < 2.4
                      , hslua-marshalling    >= 2.3    && < 2.4
                      , text                 >= 1.2    && < 2.2
