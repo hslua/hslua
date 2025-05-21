@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                hslua-module-system
-version:             1.1.2
+version:             1.1.3
 synopsis:            Lua module wrapper around Haskell's System module.
 
 description:         Provides access to system information and
@@ -15,7 +15,7 @@ license:             MIT
 license-file:        LICENSE
 author:              Albert Krewinkel
 maintainer:          tarleb@hslua.org
-copyright:           © 2019-2024 Albert Krewinkel <tarleb@hslua.org>
+copyright:           © 2019-2025 Albert Krewinkel <tarleb@hslua.org>
 category:            Foreign
 extra-source-files:  test/test-system.lua
 extra-doc-files:     CHANGELOG.md

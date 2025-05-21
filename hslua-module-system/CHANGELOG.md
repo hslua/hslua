@@ -2,6 +2,17 @@
 
 `hslua-module-system` uses [PVP Versioning][].
 
+## hslua-module-system-1.1.3
+
+Released 2025-05-21.
+
+-   Improved docs for the `os` field.
+
+-   Added new function `cmd` that runs system commands.
+
+-   Moved `CHANGELOG.md` to the `extra-doc-files` field in the
+    cabal file and also added `README.md` to that field.
+
 ## hslua-module-system-1.1.2
 
 Released 2024-05-28.
