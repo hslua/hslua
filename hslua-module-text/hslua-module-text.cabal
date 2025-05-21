@@ -15,8 +15,9 @@ author:              Albert Krewinkel
 maintainer:          tarleb@hslua.org
 copyright:           © 2017-2024 Albert Krewinkel
 category:            Foreign
-extra-source-files:  CHANGELOG.md
-                   , test/test-text.lua
+extra-source-files:  test/test-text.lua
+extra-doc-files:     CHANGELOG.md
+                   , README.md
 tested-with:         GHC == 8.4.4
                    , GHC == 8.6.5
                    , GHC == 8.8.3
