@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-|
 Module      : HsLua.Module.System
 Copyright   : © 2019-2025 Albert Krewinkel
@@ -34,10 +35,11 @@ module HsLua.Module.System (
   , with_env
   , with_tmpdir
   , with_wd
+  , xdg
   )
 where
 
-import Control.Monad (forM_)
+import Control.Monad ((>=>), forM_)
 import Control.Monad.Catch (bracket)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
@@ -48,6 +50,7 @@ import HsLua.Packaging
 import HsLua.Module.SystemUtils
 
 import qualified Data.Text as T
+import qualified HsLua.Core.Utf8 as Utf8
 import qualified System.CPUTime as CPUTime
 import qualified System.Directory as Directory
 import qualified System.Environment as Env
@@ -82,6 +85,7 @@ documentedModule = Module
       , with_env
       , with_tmpdir
       , with_wd
+      , xdg
       ]
   , moduleOperations = []
   , moduleTypeInitializers = []
@@ -401,6 +405,44 @@ with_tmpdir = defun "with_tmpdir"
           return Nothing
         else Just <$> peekString idx
 
+-- | Obtain the paths to special directories.
+xdg :: LuaError e => DocumentedFunction e
+xdg = defun "xdg"
+  ### (\xdgDirTypeOrList mfp->
+         case xdgDirTypeOrList of
+           Left xdgDirType -> Left <$>
+             let fp = fromMaybe "" mfp
+             in ioToLua $ Directory.getXdgDirectory xdgDirType fp
+           Right xdgDirList ->
+             ioToLua $ Right <$> Directory.getXdgDirectoryList xdgDirList)
+
+  <#> parameter peekXdgDirectory "string" "xdg_directory_type"
+        (T.unlines
+         [ "The type of the XDG directory or search path."
+         , "Must be one of `config`, `data`, `cache`, `state`,"
+         , "`datadirs`, or `configdirs`."
+         , ""
+         , "Matching is case-insensitive, and underscores and `XDG`"
+         , "prefixes are ignored, so a value like"
+         , "`XDG_DATA_DIRS` is also acceptable."
+         , ""
+         , "The `state` directory might not be available, depending"
+         , "on the version of the underlying Haskell library."
+         ])
+  <#> opt (filepathParam "filepath"
+           ("relative path that is appended to the path; ignored " <>
+            "if the result is a list of search paths."))
+  =#> functionResult (either pushString (pushList pushString))
+        "string|{string,...}"
+        "Either a single file path, or a list of search paths."
+  #? T.unlines
+     [ "Access special directories and directory search paths."
+     , ""
+     , "Special directories for storing user-specific application"
+     , "data, configuration, and cache files, as specified by the"
+     , "[XDG Base Directory Specification](" <>
+       "https://specifications.freedesktop.org/basedir-spec/latest/)."
+     ]
 
 --
 -- Parameters
@@ -445,3 +487,29 @@ pushExitCode :: Pusher e Exit.ExitCode
 pushExitCode = \case
   Exit.ExitSuccess   -> pushBool False
   Exit.ExitFailure n -> pushIntegral n
+
+-- | Get an XDG directory type identifier.
+peekXdgDirectory :: Peeker e
+                    (Either Directory.XdgDirectory Directory.XdgDirectoryList)
+peekXdgDirectory =
+  (fmap cleanupXdgSpec . peekText) >=> \case
+    "cache"       -> pure (Left Directory.XdgCache)
+    "config"      -> pure (Left Directory.XdgConfig)
+    "data"        -> pure (Left Directory.XdgData)
+#if MIN_VERSION_directory(1,3,7)
+    "state"       -> pure (Left Directory.XdgState)
+#endif
+    "datadirs"    -> pure (Right Directory.XdgDataDirs)
+    "configdirs"  -> pure (Right Directory.XdgConfigDirs)
+    s             -> failPeek $
+      "Expected 'cache', 'config', 'data', or 'state', got: " <>
+      Utf8.fromText s
+  where
+    -- Cleanup the XDG directory specifier as to make matching easier
+    -- while keeping things permissive.
+    -- Remove underscores, any 'xdg' prefix, and
+    -- make sure everything is lowercase
+    cleanupXdgSpec =
+      (\s -> fromMaybe s $ T.stripPrefix "xdg" s)
+      . T.filter (/= '_')
+      . T.toLower
