@@ -225,4 +225,28 @@ return {
       )
     end)
   },
+
+  group 'xdg' {
+    test('returns a cache directory', function ()
+      assert.is_truthy(#system.xdg('cache') > 1)
+    end),
+    test("second argument get's appended" , function ()
+      local rel_path = 'pandoc/lua'
+      local data_path = system.xdg('data', rel_path)
+      assert.are_equal(
+        -- replace backslashes with slashes to make this work on windows
+        data_path:sub(- #rel_path, -1):gsub('\\', '/'),
+        rel_path
+      )
+    end),
+    test("raises an error if the XDG directory is unknown" , function ()
+      assert.error_matches(function () system.xdg('foo') end, 'got: foo')
+    end),
+    test('`xdg_` prefix is accepted', function ()
+      assert.is_truthy(#system.xdg('xdg_cache') > 1)
+    end),
+    test('returns a list of `XDG_DATA_DIRS`', function ()
+      assert.are_equal(type(system.xdg('XDG_DATA_DIRS')), 'table')
+    end),
+  },
 }
