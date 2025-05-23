@@ -34,16 +34,11 @@ jobs:
       fail-fast: false
       matrix:
         versions:
-          - ghc: '8.4.4'
-            cabal: '2.4'
-            lua: 'bundled'
-            flags: '-export-dynamic'
-            aeson: '< 2'
           - ghc: '8.6.5'
             cabal: '3.2'
             lua: 'bundled'
             flags: '-allow-unsafe-gc'
-            aeson: '>= 2'
+            aeson: '< 2'
           - ghc: '8.8.4'
             cabal: '3.2'
             lua: 'bundled'
@@ -72,7 +67,7 @@ jobs:
           - ghc: '9.6'
             cabal: '3.10'
             lua: 'bundled'
-            flags: '+apicheck'
+            flags: '-export-dynamic'
             aeson: '>= 2'
           - ghc: '9.8'
             cabal: '3.10'
