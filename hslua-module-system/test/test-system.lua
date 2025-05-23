@@ -53,6 +53,17 @@ return {
     end),
   },
 
+  group 'copy' {
+    test('copys the file', in_tmpdir(function ()
+      local content = 'Це тестовий контент.'
+      local fh = io.open('a.txt', 'w')
+      fh:write(content)
+      fh:close()
+      system.cp('a.txt', 'b.txt')
+      assert.are_equal(content, io.open('b.txt'):read('a'))
+    end))
+  },
+
   group 'cputime' {
     test('returns a number', function ()
       assert.are_equal(type(system.cputime()), 'number')
