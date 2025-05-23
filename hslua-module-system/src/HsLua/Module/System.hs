@@ -22,6 +22,7 @@ module HsLua.Module.System (
 
   -- ** Functions
   , cmd
+  , cp
   , cputime
   , env
   , getenv
@@ -73,6 +74,7 @@ documentedModule = Module
       ]
   , moduleFunctions =
       [ cmd
+      , cp
       , cputime
       , env
       , getenv
@@ -187,6 +189,18 @@ cmd = defun "cmd"
   #? T.unlines
      [ "Executes a system command with the given arguments and `input`"
      , "on *stdin*."
+     ]
+
+-- | Copy a file
+cp :: LuaError e => DocumentedFunction e
+cp = defun "cp"
+  ### (\src tgt -> ioToLua $ Directory.copyFile src tgt)
+  <#> filepathParam "source" "source file"
+  <#> filepathParam "target" "target destination"
+  =#> []
+  #? T.unlines
+     [ "Copy a file with its permissions."
+     , "If the destination file already exists, it is overwritten."
      ]
 
 -- | Access the CPU time, e.g. for benchmarking.
