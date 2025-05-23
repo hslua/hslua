@@ -20,6 +20,7 @@ module HsLua.Module.System (
   , os
 
   -- ** Functions
+  , cmd
   , cputime
   , env
   , getenv
@@ -27,7 +28,6 @@ module HsLua.Module.System (
   , ls
   , mkdir
   , rmdir
-  , run
   , setenv
   , setwd
   , tmpdirname
