@@ -28,6 +28,7 @@ module HsLua.Module.System (
   , getwd
   , ls
   , mkdir
+  , rm
   , rmdir
   , setenv
   , setwd
@@ -78,6 +79,7 @@ documentedModule = Module
       , getwd
       , ls
       , mkdir
+      , rm
       , rmdir
       , setenv
       , setwd
@@ -263,6 +265,14 @@ mkdir = defun "mkdir"
        , "then all directories, including parent directories, are "
        , "created as necessary.\n"
        ]
+
+-- | Remove a file.
+rm :: LuaError e => DocumentedFunction e
+rm = defun "rm"
+  ### ioToLua . Directory.removeFile
+  <#> filepathParam "filename" "file to remove"
+  =#> []
+  #? "Removes the directory entry for an existing file."
 
 -- | Remove an existing directory.
 rmdir :: LuaError e => DocumentedFunction e

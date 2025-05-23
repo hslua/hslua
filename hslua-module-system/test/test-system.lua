@@ -1,6 +1,8 @@
 --
 -- Tests for the system module
 --
+local io = require 'io'
+
 local system = require 'system'
 local tasty = require 'tasty'
 
@@ -125,6 +127,21 @@ return {
     test('normal operation', in_tmpdir(function () system.mkdir 'foo' end)),
   },
 
+  group 'rm' {
+    test('removes a file', in_tmpdir(function ()
+      local fh = io.open('test.txt', 'w')
+      fh:write('Hello\n')
+      fh:close()
+      system.rm('test.txt')
+      assert.are_same(system.ls '.', {})
+    end)),
+    test('fails if file does not exist', in_tmpdir(function ()
+      assert.error_matches(
+        function () system.rm('nope.txt') end,
+        'does not exist'
+      )
+    end)),
+  },
 
   group 'rmdir' {
     test('remove empty directory', in_tmpdir(function ()
