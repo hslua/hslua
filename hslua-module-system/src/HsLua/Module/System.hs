@@ -381,6 +381,7 @@ with_env = defun "with_env"
     forM_ curEnv (Env.unsetEnv . fst)
     forM_ newEnv (uncurry Env.setEnv)
 
+-- | Provides a temporary directory for the given action.
 with_tmpdir :: LuaError e => DocumentedFunction e
 with_tmpdir = defun "with_tmpdir"
   ### (\mParentDir tmpl callback -> case mParentDir of
