@@ -30,6 +30,7 @@ module HsLua.Module.System (
   , ls
   , mkdir
   , read_file
+  , rename
   , rm
   , rmdir
   , setenv
@@ -85,6 +86,7 @@ documentedModule = Module
       , ls
       , mkdir
       , read_file
+      , rename
       , rm
       , rmdir
       , setenv
@@ -291,6 +293,33 @@ read_file = defun "read_file"
   ### (ioToLua . B.readFile)
   <#> filepathParam "filepath" "File to read"
   =#> functionResult pushByteString "string" "file contents"
+
+-- | Rename a file path.
+rename :: LuaError e => DocumentedFunction e
+rename = defun "rename"
+  ### (\old new -> ioToLua $ do
+          isDir <- Directory.doesDirectoryExist old
+          if isDir
+            then Directory.renameDirectory old new
+            else Directory.renameFile old new)
+  <#> filepathParam "old" "original path"
+  <#> filepathParam "new" "new path"
+  =#> []
+  #? T.unlines
+     [ "Change the name of an existing path from `old` to `new`."
+     , ""
+     , "If `old` is a directory and `new` is a directory that already"
+     , "exists, then `new` is atomically replaced by the `old` directory."
+     , "On Win32 platforms, this function fails if `new` is an existing"
+     , "directory."
+     , ""
+     , "If `old` does not refer to a directory, then neither may `new`."
+     , ""
+     , "Renaming may not work across file system boundaries or due to"
+     , "other system-specific reasons.  It's generally more robust to"
+     , "copy the source path to its destination before deleting the"
+     , "source."
+     ]
 
 -- | Remove a file.
 rm :: LuaError e => DocumentedFunction e
