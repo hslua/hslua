@@ -181,6 +181,45 @@ return {
     end)),
   },
 
+  group 'rename' {
+    test('renames a file', in_tmpdir(function ()
+      local contents = 'Le café au lait es très délicieux.'
+      local old = 'original.txt'
+      local new = 'moved.txt'
+      local fh = io.open(old, 'wb')
+      fh:write(contents)
+      fh:close()
+      system.rename(old, new)
+      assert.are_equal(io.open(new, 'rb'):read('a'), contents)
+    end)),
+    test('renames a directory', in_tmpdir(function ()
+      local old = 'folder'
+      local new = 'moved'
+      -- Create folder that contains a file.
+      system.mkdir(old)
+      system.with_wd(old, function () io.open('test.txt', 'wb'):close() end)
+      local filelist = system.ls(old)
+      -- Move folder to new path
+      system.rename(old, new)
+      assert.are_same(filelist, system.ls(new))
+    end)),
+    test(
+      'fails if source path is a file and target is a directory',
+      in_tmpdir(function ()
+          local old = 'foo.txt'
+          local new = 'folder'
+          io.open(old, 'wb'):close()
+          system.mkdir(new)
+          assert.error_matches(
+            function () system.rename(old, new) end,
+            os.system == 'mingw32' and
+              'permission denied' or
+              'inappropriate type'
+          )
+      end)
+    ),
+  },
+
   group 'rm' {
     test('removes a file', in_tmpdir(function ()
       local fh = io.open('test.txt', 'w')
