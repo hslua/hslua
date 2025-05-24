@@ -2,6 +2,13 @@
 
 `hslua` uses [PVP Versioning][].
 
+## Dev
+
+Release pending.
+
+-   Provide a full Lua app with Haskell-defined modules preloaded.
+    The app is only built if the `executable` flag is enabled.
+
 ## hslua-2.3.1
 
 Released 2024-01-18.

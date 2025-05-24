@@ -122,6 +122,7 @@ jobs:
         cabal v2-configure \
           --flags "${{ matrix.versions.flags }}" \
           --constraint="aeson ${{ matrix.versions.aeson }}" \
+          --constraint="hslua +executable" \
           --enable-tests \
           --extra-include-dirs=${HOME}/usr/include \
           --extra-lib-dirs=${HOME}/usr/lib \
@@ -131,6 +132,9 @@ jobs:
 
     - name: Test all
       run: cabal v2-test all
+
+    - name: Run hslua executable
+      run: cabal run hslua:hslua -- -e 'print "Success!"'
 
   windows:
     name: Windows (stack)
