@@ -2,6 +2,31 @@
 
 `hslua-module-system` uses [PVP Versioning][].
 
+## hslua-module-system-1.2.0
+
+Release pending.
+
+-   Added new functions `read_file` and `write_file`: These are
+    convenience functions that makes it easier to work with UTF-8
+    encoded filenames. The functions in the Lua standard library
+    expect filenames encoded in the system's codepage, often
+    leading to subtle bugs.
+
+-   Added new functions `cp`, `rename`, and `rm`, which can be
+    used similar to the functions in the `os` standard library,
+    but expect paths to be given as UTF-8 instead of a file system
+    specific encoding.
+
+-   Added new function `times`: the function allows to obtain the
+    modification time and access time of a file or directory.
+
+-   Added new function `xdg`: this function gives easy access to
+    XDG directories and search paths.
+
+-   Fixed module export list: the function `cmd` was only added to
+    the Lua module, but not exported from the Haskell module.
+    Instead, `HsLua.Core.run` was erroneously reexported.
+
 ## hslua-module-system-1.1.3
 
 Released 2025-05-21.
