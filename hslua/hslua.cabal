@@ -41,6 +41,10 @@ source-repository head
   type:                git
   location:            https://github.com/hslua/hslua.git
 
+Flag executable
+  description:         Compile `hslua` standalone executable.
+  default:             False
+
 common common-options
   default-language:    Haskell2010
   build-depends:       base                    >= 4.11  && < 5
@@ -114,3 +118,21 @@ test-suite test-hslua
   other-extensions:    LambdaCase
                      , OverloadedStrings
                      , TypeApplications
+
+executable hslua
+  import:              common-options
+  hs-source-dirs:      app
+  main-is:             hslua.hs
+  ghc-options:         -rtsopts -with-rtsopts=-A8m -threaded
+  if flag(executable)
+    buildable:           True
+    build-depends:       hslua-cli
+                       , hslua-core
+                       , hslua-packaging
+                       , hslua-module-path
+                       , hslua-module-system
+                       , hslua-module-text
+                       , hslua-module-version
+                       , hslua-module-zip
+  else
+   buildable:            False
