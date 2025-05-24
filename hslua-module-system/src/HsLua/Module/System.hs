@@ -29,6 +29,7 @@ module HsLua.Module.System (
   , getwd
   , ls
   , mkdir
+  , read_file
   , rm
   , rmdir
   , setenv
@@ -37,6 +38,7 @@ module HsLua.Module.System (
   , with_env
   , with_tmpdir
   , with_wd
+  , write_file
   , xdg
   )
 where
@@ -51,6 +53,7 @@ import HsLua.Marshalling
 import HsLua.Packaging
 import HsLua.Module.SystemUtils
 
+import qualified Data.ByteString as B
 import qualified Data.Text as T
 import qualified HsLua.Core.Utf8 as Utf8
 import qualified System.CPUTime as CPUTime
@@ -81,6 +84,7 @@ documentedModule = Module
       , getwd
       , ls
       , mkdir
+      , read_file
       , rm
       , rmdir
       , setenv
@@ -89,6 +93,7 @@ documentedModule = Module
       , with_env
       , with_tmpdir
       , with_wd
+      , write_file
       , xdg
       ]
   , moduleOperations = []
@@ -280,6 +285,13 @@ mkdir = defun "mkdir"
        , "created as necessary.\n"
        ]
 
+-- | Returns the contents of a file.
+read_file :: LuaError e => DocumentedFunction e
+read_file = defun "read_file"
+  ### (ioToLua . B.readFile)
+  <#> filepathParam "filepath" "File to read"
+  =#> functionResult pushByteString "string" "file contents"
+
 -- | Remove a file.
 rm :: LuaError e => DocumentedFunction e
 rm = defun "rm"
@@ -429,6 +441,16 @@ with_tmpdir = defun "with_tmpdir"
           insert idx
           return Nothing
         else Just <$> peekString idx
+
+-- | Write a string to a file.
+write_file :: LuaError e => DocumentedFunction e
+write_file = defun "write_file"
+  ### (\filepath contents ->
+         ioToLua $ B.writeFile filepath contents)
+  <#> filepathParam "filepath" "path to target file"
+  <#> parameter peekByteString "string" "contents" "file contents"
+  =#> []
+  #? "Writes a string to a file."
 
 -- | Obtain the paths to special directories.
 xdg :: LuaError e => DocumentedFunction e

@@ -138,6 +138,49 @@ return {
     test('normal operation', in_tmpdir(function () system.mkdir 'foo' end)),
   },
 
+  group 'read_file' {
+    test('reads the contents of a file', in_tmpdir(function ()
+      local contents = '# Topic\n\nSome contents.\n'
+      local filename = 'my-test.md'
+      local fh = io.open(filename, 'wb')
+      fh:write(contents)
+      fh:close()
+      assert.are_equal(system.read_file(filename), contents)
+    end)),
+    test('can read non-UTF-8 binary data', in_tmpdir(function ()
+      local contents = table.concat({
+        'Valid ASCII: a',
+        'Valid 2 Octet Sequence: "\xc3\xb1"',
+        'Invalid 2 Octet Sequence: "\xc3\x28"',
+        'Invalid Sequence Identifier: "\xa0\xa1"',
+        'Valid 3 Octet Sequence: "\xe2\x82\xa1"',
+        'Invalid 3 Octet Sequence (in 2nd Octet): "\xe2\x28\xa1"',
+        'Invalid 3 Octet Sequence (in 3rd Octet): "\xe2\x82\x28"',
+        'Valid 4 Octet Sequence: "\xf0\x90\x8c\xbc"',
+        'Invalid 4 Octet Sequence (in 2nd Octet): "\xf0\x28\x8c\xbc"',
+        'Invalid 4 Octet Sequence (in 3rd Octet): "\xf0\x90\x28\xbc"',
+        'Invalid 4 Octet Sequence (in 4th Octet): "\xf0\x28\x8c\x28"',
+      }, '\n')
+      local fh = io.open('my-other-test.md', 'wb')
+      fh:write(contents)
+      fh:close()
+      assert.are_equal(system.read_file('my-other-test.md'), contents)
+    end)),
+    test('fails if file does not exist', in_tmpdir(function ()
+      assert.error_matches(
+        function () system.read_file('does-not-exist.org') end,
+        'No such file or directory'
+      )
+    end)),
+    test('fails when trying to read a directory', in_tmpdir(function ()
+      system.mkdir 'folder'
+      assert.error_matches(
+        function () system.read_file('folder') end,
+        system.os == 'mingw32' and 'permission denied' or 'inappropriate type'
+      )
+    end)),
+  },
+
   group 'rm' {
     test('removes a file', in_tmpdir(function ()
       local fh = io.open('test.txt', 'w')
@@ -252,6 +295,21 @@ return {
         'does not exist'
       )
     end)
+  },
+
+  group 'write_file' {
+    test('writes a string to a file', in_tmpdir(function ()
+      local contents = 'Das ist ein Satz auf deutsch.\n'
+      local filename = 'deutsch.txt'
+      system.write_file(filename, contents)
+      assert.are_equal(io.open(filename, 'rb'):read('a'), contents)
+    end)),
+    test('works with `read_file` on Unicode filenames', in_tmpdir(function ()
+      local contents = 'Речення українською для перевірки Юнікоду.'
+      local filename = 'український_текст.txt'
+      system.write_file(filename, contents)
+      assert.are_equal(system.read_file(filename), contents)
+    end)),
   },
 
   group 'xdg' {
