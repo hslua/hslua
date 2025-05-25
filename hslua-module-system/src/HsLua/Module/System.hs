@@ -35,6 +35,7 @@ module HsLua.Module.System (
   , rmdir
   , setenv
   , setwd
+  , times
   , tmpdirname
   , with_env
   , with_tmpdir
@@ -56,6 +57,8 @@ import HsLua.Module.SystemUtils
 
 import qualified Data.ByteString as B
 import qualified Data.Text as T
+import qualified Data.Time as Time
+import qualified Data.Time.Format.ISO8601 as ISO8601
 import qualified HsLua.Core.Utf8 as Utf8
 import qualified System.CPUTime as CPUTime
 import qualified System.Directory as Directory
@@ -91,6 +94,7 @@ documentedModule = Module
       , rmdir
       , setenv
       , setwd
+      , times
       , tmpdirname
       , with_env
       , with_tmpdir
@@ -360,6 +364,22 @@ setwd = defun "setwd"
   =#> []
   #? "Change the working directory to the given path."
 
+-- | Get the modification time and access time of a file.
+times :: LuaError e => DocumentedFunction e
+times = defun "times"
+  ### (\filepath -> ioToLua $
+       (,) <$> Directory.getModificationTime filepath
+           <*> Directory.getAccessTime filepath)
+  <#> filepathParam "filepath" "file or directory path"
+  =#> (functionResult (pushUTCTime . fst) "table"
+       "time at which the file or directory was last modified" <>
+       functionResult (pushUTCTime . snd) "table"
+       "time at which the file or directory was last accessed")
+  #? T.unlines
+     [ "Obtain the modification and access time of a file or directory."
+     , "The times are returned as strings using the ISO 8601 format."
+     ]
+
 -- | Get the current directory for temporary files.
 tmpdirname :: LuaError e => DocumentedFunction e
 tmpdirname = defun "tmpdirname"
@@ -563,6 +583,10 @@ pushExitCode :: Pusher e Exit.ExitCode
 pushExitCode = \case
   Exit.ExitSuccess   -> pushBool False
   Exit.ExitFailure n -> pushIntegral n
+
+-- | Pushes a time as ISO 8601 string.
+pushUTCTime :: Pusher e Time.UTCTime
+pushUTCTime = pushString . ISO8601.iso8601Show
 
 -- | Get an XDG directory type identifier.
 peekXdgDirectory :: Peeker e

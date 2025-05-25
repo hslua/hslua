@@ -253,6 +253,29 @@ return {
     end))
   },
 
+  group 'times' {
+    test('returns two strings', in_tmpdir(function ()
+      system.write_file('foo.txt', 'test')
+      local mtime, atime = system.times('foo.txt')
+      assert.are_equal(type(mtime), 'string')
+      assert.are_equal(type(atime), 'string')
+    end)),
+    test('mtime can be parsed as ISO 8601 ', in_tmpdir(function ()
+      system.write_file('foo.txt', 'test')
+      local mtime = system.times('foo.txt')
+      local year, month, day, hour, min, sec =
+        string.match(mtime, '(%d%d%d%d)%-(%d%d)-(%d%d)T(%d%d):(%d%d):(%d%d)')
+      assert.is_truthy(year and month and day and hour and min and sec)
+    end)),
+    test('atime can be parsed as ISO 8601 ', in_tmpdir(function ()
+      system.write_file('foo.txt', 'test')
+      local _, atime = system.times('foo.txt')
+      local year, month, day, hour, min, sec =
+        string.match(atime, '(%d%d%d%d)%-(%d%d)-(%d%d)T(%d%d):(%d%d):(%d%d)')
+      assert.is_truthy(year and month and day and hour and min and sec)
+    end)),
+  },
+
   group 'tmpdirname' {
     test('returns a string', function ()
       assert.are_equal(type(system.tmpdirname()), 'string')
