@@ -38,7 +38,6 @@ common common-options
   build-depends:       base                 >= 4.11   && < 5
                      , hslua-core           >= 2.3    && < 2.4
                      , hslua-packaging      >= 2.3    && < 2.4
-                     , text                 >= 1.2    && < 2.2
 
   ghc-options:         -Wall
                        -Wcpp-undef
@@ -60,6 +59,7 @@ library
   exposed-modules:     HsLua.Module.Text
   hs-source-dirs:      src
   build-depends:       hslua-marshalling    >= 2.1    && < 2.4
+                     , text                 >= 1.2    && < 2.2
   other-extensions:    OverloadedStrings
 
 test-suite test-hslua-module-text
@@ -72,4 +72,3 @@ test-suite test-hslua-module-text
                      , tasty                >= 0.11
                      , tasty-hunit          >= 0.9
                      , tasty-lua            >= 1.0    && < 1.2
-                     , text

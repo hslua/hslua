@@ -33,14 +33,9 @@ source-repository head
 common common-options
   default-language:    Haskell2010
   build-depends:       base              >= 4.11   && < 5
-                     , bytestring        >= 0.10.2 && < 0.13
-                     , containers        >= 0.5.9  && < 0.9
-                     , exceptions        >= 0.8    && < 0.11
                      , hslua-core        >= 2.2.1  && < 2.4
                      , hslua-marshalling >= 2.2.1  && < 2.4
                      , hslua-typing      >= 0.1    && < 0.2
-                     , mtl               >= 2.2    && < 2.4
-                     , text              >= 1.2    && < 2.2
 
   ghc-options:         -Wall
                        -Wcpp-undef
@@ -65,6 +60,8 @@ library
   exposed-modules:     HsLua.ObjectOrientation
                      , HsLua.ObjectOrientation.Operation
   hs-source-dirs:      src
+  build-depends:       containers           >= 0.5.9  && < 0.9
+                     , text                 >= 1.2    && < 2.2
   default-extensions:  LambdaCase
                      , StrictData
   other-extensions:    AllowAmbiguousTypes
@@ -82,10 +79,6 @@ test-suite test-hslua-objectorientation
   ghc-options:         -threaded -Wno-unused-do-bind
   other-modules:       HsLua.ObjectOrientationTests
   build-depends:       hslua-objectorientation
-                     , lua-arbitrary        >= 1.0
-                     , QuickCheck           >= 2.7
-                     , quickcheck-instances >= 0.3
+                     , bytestring           >= 0.10.2 && < 0.13
                      , tasty                >= 0.11
                      , tasty-hslua          >= 1.0
-                     , tasty-hunit          >= 0.9
-                     , tasty-quickcheck     >= 0.8

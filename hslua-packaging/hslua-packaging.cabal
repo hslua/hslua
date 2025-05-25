@@ -38,9 +38,6 @@ common common-options
   build-depends:       base                    >= 4.11   && < 5
                      , hslua-core              >= 2.2.1  && < 2.4
                      , hslua-marshalling       >= 2.2.1  && < 2.4
-                     , hslua-objectorientation >= 2.3    && < 2.4
-                     , hslua-typing            >= 0.1    && < 0.2
-                     , mtl                     >= 2.2    && < 2.4
                      , text                    >= 1.2    && < 2.2
 
   ghc-options:         -Wall
@@ -73,7 +70,9 @@ library
                      , StrictData
   other-extensions:    DeriveFunctor
                      , OverloadedStrings
-  build-depends:       containers              >= 0.5.9    && < 0.9
+  build-depends:       containers              >= 0.5.9  && < 0.9
+                     , hslua-objectorientation >= 2.3    && < 2.4
+                     , hslua-typing            >= 0.1    && < 0.2
 
 test-suite test-hslua-packaging
   import:              common-options

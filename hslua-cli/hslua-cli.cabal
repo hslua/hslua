@@ -38,7 +38,6 @@ Flag executable
 
 common common-options
   build-depends:       base              >= 4.9.1  && < 5
-                     , bytestring
                      , hslua-core        >= 2.3    && < 2.4
 
   ghc-options:         -Wall
@@ -63,6 +62,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     HsLua.CLI
   build-depends:       base              >= 4.11   && < 5
+                     , bytestring        >= 0.10.2 && < 0.13
                      , hslua-marshalling >= 2.2    && < 2.4
                      , hslua-repl        >= 0.1    && < 0.2
                      , lua               >= 2.3    && < 2.4

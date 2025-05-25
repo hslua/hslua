@@ -41,7 +41,6 @@ common common-options
                      , bytestring        >= 0.10.2 && < 0.13
                      , containers        >= 0.5.9  && < 0.9
                      , hslua-core        >= 2.2.1  && < 2.4
-                     , mtl               >= 2.2    && < 2.4
                      , text              >= 1.2    && < 2.2
   ghc-options:         -Wall
                        -Wcpp-undef

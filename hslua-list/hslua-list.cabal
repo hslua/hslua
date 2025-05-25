@@ -56,7 +56,7 @@ library
   hs-source-dirs:      src
   c-sources:           cbits/listmod.c
   exposed-modules:     HsLua.List
-  build-depends:       bytestring    >= 0.10.2 && < 0.13
+  build-depends:       bytestring            >= 0.10.2 && < 0.13
 
 test-suite hslua-list-test
   import:              common-options
