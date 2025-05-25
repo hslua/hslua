@@ -45,12 +45,11 @@ common common-options
                        -Wpartial-fields
                        -Wredundant-constraints
                        -fhide-source-paths
-
   if impl(ghc >= 8.10)
-    ghc-options:       -Wunused-packages
+    ghc-options:         -Wunused-packages
 
   if impl(ghc >= 9.0)
-    ghc-options:       -Winvalid-haddock
+    ghc-options:         -Winvalid-haddock
 
 library
   import:              common-options

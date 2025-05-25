@@ -43,18 +43,21 @@ common common-options
                      , text                 >= 1.2    && < 2.2
   default-extensions:  LambdaCase
                      , OverloadedStrings
+
   ghc-options:         -Wall
+                       -Wcpp-undef
+                       -Werror=missing-home-modules
+                       -Widentities
                        -Wincomplete-record-updates
+                       -Wincomplete-uni-patterns
                        -Wnoncanonical-monad-instances
+                       -Wpartial-fields
                        -Wredundant-constraints
-  if impl(ghc >= 8.2)
-    ghc-options:         -Wcpp-undef
-                         -Werror=missing-home-modules
-  if impl(ghc >= 8.4)
-    ghc-options:         -Widentities
-                         -Wincomplete-uni-patterns
-                         -Wpartial-fields
-                         -fhide-source-paths
+                       -fhide-source-paths
+  if impl(ghc >= 8.10)
+    ghc-options:         -Wunused-packages
+  if impl(ghc >= 9.0)
+    ghc-options:         -Winvalid-haddock
 
 library
   import:              common-options
