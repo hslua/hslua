@@ -20,9 +20,7 @@ category:            Foreign
 extra-source-files:  test/test-system.lua
 extra-doc-files:     CHANGELOG.md
                    , README.md
-tested-with:         GHC == 8.4.4
-                   , GHC == 8.6.5
-                   , GHC == 8.8.3
+tested-with:         GHC == 8.8.4
                    , GHC == 8.10.7
                    , GHC == 9.0.2
                    , GHC == 9.2.8
