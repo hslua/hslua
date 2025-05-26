@@ -19,18 +19,9 @@ import Test.Tasty.QuickCheck
 import Test.QuickCheck.Instances ()
 
 import qualified Data.Aeson as Aeson
+import qualified Data.Aeson.KeyMap as KeyMap
 import qualified Data.Vector as Vector
 import qualified Test.QuickCheck.Monadic as QC
-
-#if MIN_VERSION_aeson(2,0,0)
-import qualified Data.Aeson.KeyMap as KeyMap
-#if !MIN_VERSION_aeson(2,0,3)
-import Data.Aeson.Key (Key, fromText)
-#endif
-#else
-import qualified Data.HashMap.Strict as KeyMap
-#endif
-
 
 -- | Run this spec.
 main :: IO ()
@@ -131,34 +122,6 @@ numbersToDoubles x = x
 -- numbers.
 luaNumberToScientific :: Lua.Number -> Scientific
 luaNumberToScientific = fromFloatDigits . (realToFrac :: Lua.Number -> Double)
-
--- aeson defines instances for Arbitrary since 2.0.3.0
-#if !MIN_VERSION_aeson(2,0,3)
-instance Arbitrary Aeson.Value where
-  arbitrary = arbitraryValue 9
-
-#if MIN_VERSION_aeson(2,0,0)
-instance Arbitrary Key where
-  arbitrary = fmap fromText arbitrary
-
-instance Arbitrary a => Arbitrary (KeyMap.KeyMap a) where
-  arbitrary = fmap KeyMap.fromList arbitrary
-#endif
-
-arbitraryValue :: Int -> Gen Aeson.Value
-arbitraryValue size = frequency
-    [ (1, return Aeson.Null)
-    , (4, Aeson.Bool <$> arbitrary)
-    -- Note: we don't draw numbers from the whole possible range, but
-    -- only from the range of numbers that Lua can handle without
-    -- rounding errors. This is ok, as JSON doesn't define a required
-    -- precision, and (usually) matches the behavior of JavaScript.
-    , (4, Aeson.Number . luaNumberToScientific . Lua.Number <$> arbitrary)
-    , (4, Aeson.String <$> arbitrary)
-    , (2, resize (size - 1) $ Aeson.Array <$> arbitrary)
-    , (2, resize (size - 1) $ Aeson.Object <$> arbitrary)
-    ]
-#endif
 
 --
 -- Type for __toaeson tests

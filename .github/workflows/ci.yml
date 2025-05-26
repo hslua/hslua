@@ -28,7 +28,7 @@ jobs:
   build:
     name: >-
       ${{ matrix.versions.ghc }}; ${{ matrix.versions.lua }};
-      ${{ matrix.versions.flags }}; aeson ${{ matrix.versions.aeson }}
+      ${{ matrix.versions.flags }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -38,47 +38,38 @@ jobs:
             cabal: '3.2'
             lua: 'bundled'
             flags: '+rely-on-shared-lpeg-library'
-            aeson: '< 2'
           - ghc: '8.10.7'
             cabal: '3.4'
             lua: 'bundled'
             flags: '-system-lua'
-            aeson: '== 2.0.2.0'
           - ghc: '9.0.2'
             cabal: '3.4'
             lua: '5.4.4'
             flags: '+system-lua'
-            aeson: '>= 2'
           - ghc: '9.2'
             cabal: '3.6.2'
             lua: 'bundled'
             flags: '-allow-unsafe-gc'
-            aeson: '>= 2'
           - ghc: '9.4'
             cabal: '3.8'
             lua: 'bundled'
             flags: '+apicheck'
-            aeson: '>= 2'
           - ghc: '9.6'
             cabal: '3.10'
             lua: 'bundled'
             flags: '-export-dynamic'
-            aeson: '>= 2'
           - ghc: '9.8'
             cabal: '3.10'
             lua: 'bundled'
             flags: '+apicheck'
-            aeson: '>= 2'
           - ghc: '9.10'
             cabal: '3.12'
             lua: 'bundled'
             flags: '-export-dynamic'
-            aeson: '>= 2'
           - ghc: '9.12'
             cabal: '3.14'
             lua: 'bundled'
             flags: '+apicheck'
-            aeson: '>= 2'
 
     steps:
     - name: Checkout
@@ -111,7 +102,6 @@ jobs:
       run: |
         cabal v2-configure \
           --flags "${{ matrix.versions.flags }}" \
-          --constraint="aeson ${{ matrix.versions.aeson }}" \
           --constraint="hslua +executable" \
           --enable-tests \
           --extra-include-dirs=${HOME}/usr/include \

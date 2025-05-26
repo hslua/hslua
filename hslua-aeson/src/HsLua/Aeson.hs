@@ -34,27 +34,17 @@ module HsLua.Aeson
 
 import Control.Applicative ((<|>))
 import Control.Monad ((<$!>), void)
+import Data.Aeson.Key (toText, fromText)
 import Data.Scientific (toRealFloat, fromFloatDigits)
 import Foreign.Ptr (nullPtr)
 import HsLua.Core as Lua
 import HsLua.Marshalling as Lua
 
 import qualified Data.Aeson as Aeson
+import qualified Data.Aeson.KeyMap as KeyMap
 import qualified Data.ByteString as B
 import qualified Data.Vector as Vector
 import qualified HsLua.Core.Utf8 as UTF8
-
-#if MIN_VERSION_aeson(2,0,0)
-import Data.Aeson.Key (toText, fromText)
-import qualified Data.Aeson.KeyMap as KeyMap
-#else
-import Data.Text (Text)
-import qualified Data.HashMap.Strict as KeyMap
-
-toText, fromText :: Text -> Text
-toText = id
-fromText = id
-#endif
 
 -- | Hslua StackValue instance for the Aeson Value data type.
 pushValue :: LuaError e => Pusher e Aeson.Value

@@ -31,19 +31,12 @@ source-repository head
 common common-options
   default-language:    Haskell2010
   build-depends:       base                 >= 4.11   && < 5
-                     , aeson                >= 1.5    && < 2.3
-                     , bytestring           >= 0.10.2 && < 0.13
-                     , containers           >= 0.5.9  && < 0.9
-                     , hashable             >= 1.2    && < 1.6
+                     , aeson                >= 2.0    && < 2.3
                      , hslua-core           >= 2.0    && < 2.4
                      , hslua-marshalling    >= 2.1    && < 2.4
-                     , mtl                  >= 2.2    && < 2.4
                      , scientific           >= 0.3    && < 0.4
-                     , unordered-containers >= 0.2    && < 0.3
-                     , text                 >= 1.2    && < 2.2
                      , vector               >= 0.7    && < 0.14
   default-extensions:  BangPatterns
-                     , CPP
                      , LambdaCase
                      , OverloadedStrings
                      , TypeApplications
@@ -66,7 +59,7 @@ library
   import:              common-options
   exposed-modules:     HsLua.Aeson
   hs-source-dirs:      src
-  build-depends:       base                 >= 4.7    && < 5
+  build-depends:       bytestring           >= 0.10.2 && < 0.13
   default-language:    Haskell2010
 
 test-suite test-hslua-aeson
@@ -75,10 +68,12 @@ test-suite test-hslua-aeson
   main-is:             test-hslua-aeson.hs
   hs-source-dirs:      test
   build-depends:       hslua-aeson
+                     , aeson                >= 2.0.3  && < 2.3
                      , QuickCheck
                      , quickcheck-instances
                      , tasty                >= 0.11
                      , tasty-quickcheck     >= 0.8
                      , tasty-hunit          >= 0.10
+                     , text                 >= 1.2    && < 2.2
   ghc-options:         -threaded
   default-language:    Haskell2010
