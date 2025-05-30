@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                hslua
-version:             2.3.1
+version:             2.4.0
 synopsis:            Bindings to Lua, an embeddable scripting language
 description:         HsLua provides wrappers and helpers
                      to bridge Haskell and <https://www.lua.org/ Lua>.
@@ -87,8 +87,8 @@ library
                      , hslua-classes            >= 2.2.1  && < 2.4
                      , hslua-core               >= 2.3.2  && < 2.4
                      , hslua-marshalling        >= 2.3.1  && < 2.4
-                     , hslua-objectorientation  >= 2.3.1  && < 2.4
-                     , hslua-packaging          >= 2.3.1  && < 2.4
+                     , hslua-objectorientation  >= 2.4    && < 2.5
+                     , hslua-packaging          >= 2.3.1  && < 2.5
                      , hslua-typing             >= 0.1.1  && < 0.2
 
 test-suite test-hslua

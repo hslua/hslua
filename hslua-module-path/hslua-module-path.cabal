@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                hslua-module-path
-version:             1.1.1
+version:             1.1.2
 synopsis:            Lua module to work with file paths.
 description:         Lua module to work with file paths in a platform
                      independent way.
@@ -34,7 +34,7 @@ source-repository head
 common common-options
   build-depends:       base              >= 4.9.1  && < 5
                      , hslua-core        >= 2.1    && < 2.4
-                     , hslua-packaging   >= 2.3    && < 2.4
+                     , hslua-packaging   >= 2.3    && < 2.5
 
   ghc-options:         -Wall
                        -Wcpp-undef

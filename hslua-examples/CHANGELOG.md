@@ -2,6 +2,12 @@
 
 `hslua-examples` uses [PVP Versioning][].
 
+## hslua-examples-2.0.3
+
+Release pending.
+
+-   Allowed hslua*-2.4.
+
 ## hslua-examples-2.0.2
 
 Released 2023-03-13.

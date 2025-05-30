@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                hslua-objectorientation
-version:             2.3.1
+version:             2.4.0
 synopsis:            Object orientation tools for HsLua
 description:         Expose Haskell objects to Lua with an object oriented
                      interface.
@@ -58,6 +58,8 @@ common common-options
 library
   import:              common-options
   exposed-modules:     HsLua.ObjectOrientation
+                     , HsLua.ObjectOrientation.Generic
+                     , HsLua.ObjectOrientation.ListType
                      , HsLua.ObjectOrientation.Operation
   hs-source-dirs:      src
   build-depends:       containers           >= 0.5.9  && < 0.9
@@ -69,7 +71,11 @@ library
                      , FlexibleInstances
                      , MultiParamTypeClasses
                      , ScopedTypeVariables
+  includes:            hslobj.h
+  install-includes:    hslobj.h
+  include-dirs:        cbits
   c-sources:           cbits/hslobj.c
+                     , cbits/hsllist.c
 
 test-suite test-hslua-objectorientation
   import:              common-options

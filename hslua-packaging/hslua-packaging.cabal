@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                hslua-packaging
-version:             2.3.1
+version:             2.4.0
 synopsis:            Utilities to build Lua modules.
 description:         Utilities to package up Haskell functions and
                      values into a Lua module.
@@ -71,7 +71,7 @@ library
   other-extensions:    DeriveFunctor
                      , OverloadedStrings
   build-depends:       containers              >= 0.5.9  && < 0.9
-                     , hslua-objectorientation >= 2.3    && < 2.4
+                     , hslua-objectorientation >= 2.4    && < 2.5
                      , hslua-typing            >= 0.1    && < 0.2
 
 test-suite test-hslua-packaging
