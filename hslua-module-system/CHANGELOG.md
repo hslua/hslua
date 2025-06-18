@@ -27,6 +27,8 @@ Release pending.
     the Lua module, but not exported from the Haskell module.
     Instead, `HsLua.Core.run` was erroneously reexported.
 
+-   Relax upper bound for hslua-packaging.
+
 ## hslua-module-system-1.1.3
 
 Released 2025-05-21.
