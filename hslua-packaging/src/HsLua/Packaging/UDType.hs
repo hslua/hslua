@@ -28,7 +28,7 @@ module HsLua.Packaging.UDType
   , operation
   , peekUD
   , pushUD
-  , initType
+  , initType  -- Reexported from ObjectOrientation
   , udparam
   , udresult
   , udDocs
@@ -67,7 +67,8 @@ deftype :: LuaError e
         -> [(Operation, DocumentedFunction e)]  -- ^ operations
         -> [Member e (DocumentedFunction e) a]  -- ^ methods
         -> DocumentedType e a
-deftype = deftypeGeneric pushDocumentedFunction
+deftype name ops methods = addDocHooks $
+  deftypeGeneric' pushDocumentedFunction name ops methods emptyHooks
 
 -- | Defines a new type that could also be treated as a list; defines
 -- the behavior of objects in Lua. Note that the type name must be
@@ -78,7 +79,7 @@ deftype' :: LuaError e
          -> [Member e (DocumentedFunction e) a]  -- ^ methods
          -> Maybe (ListSpec e a itemtype)  -- ^ list access
          -> DocumentedTypeWithList e a itemtype
-deftype' name ops methods mlistSpec =
+deftype' name ops methods mlistSpec = addDocHooks .
   deftypeGeneric' pushDocumentedFunction name ops methods $
     maybe emptyHooks listExtension mlistSpec
 
@@ -110,19 +111,26 @@ udresult ty = functionResult (pushUD ty) (udTypeSpec ty)
 
 -- | Pushes a userdata value of the given type.
 pushUD :: LuaError e => DocumentedTypeWithList e a itemtype -> a -> LuaE e ()
-pushUD = pushUDGeneric pushUDTypeDocs
+pushUD = pushUDGeneric
 
 -- | Retrieves a userdata value of the given type.
 peekUD :: LuaError e => DocumentedTypeWithList e a itemtype -> Peeker e a
 peekUD = peekUDGeneric
 
--- | Ensures that the type has been fully initialized, i.e., that all
--- metatables have been created and stored in the registry. Returns the
--- name of the initialized type.
-initType :: LuaError e
-         => DocumentedTypeWithList e a itemtype
-         -> LuaE e Name
-initType = initTypeGeneric pushUDTypeDocs
+-- | Adds a hook to the type that pushes the documentation.
+addDocHooks
+  :: LuaError e
+  => UDTypeGeneric e (DocumentedFunction e) a
+  -> UDTypeGeneric e (DocumentedFunction e) a
+addDocHooks ty =
+  let hooks = udHooks ty
+  in ty
+     { udHooks = hooks
+       { hookMetatableSetup = do
+           hookMetatableSetup hooks
+           pushUDTypeDocs ty
+       }
+     }
 
 -- | Pushes a documentation table for the given UD type.
 pushUDTypeDocs :: LuaError e

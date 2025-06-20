@@ -15,6 +15,13 @@ Release pending.
     behavior when initializing the type and when pushing and
     pulling objects to and from Lua.
 
+-   The function `pushUDGeneric` is modified and no longer takes a
+    `pushDocs` parameter. Use the new type hooks instead.
+
+-   Removed the extra hook from `initTypeGeneric` and renamed it
+    to `initType`. The hook, if one is needed, must now be part of
+    the UDTypeGeneric object.
+
 ## hslua-objectorientation-2.3.1
 
 Released 2024-01-18.

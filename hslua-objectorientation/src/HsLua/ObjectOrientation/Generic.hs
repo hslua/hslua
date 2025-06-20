@@ -35,7 +35,7 @@ module HsLua.ObjectOrientation.Generic
     -- * Marshaling
   , peekUDGeneric
   , pushUDGeneric
-  , initTypeGeneric
+  , initType
     -- * Type docs
   , udDocs
   , udTypeSpec
@@ -276,19 +276,11 @@ alias name _desc = MemberAlias name
 -- | Ensures that the type has been fully initialized, i.e., that all
 -- metatables have been created and stored in the registry. Returns the
 -- name of the initialized type.
---
--- The @hook@ can be used to perform additional setup operations. The
--- function is called as the last step after the type metatable has been
--- initialized: the fully initialized metatable will be at the top of
--- the stack at that point. Note that the hook will /not/ be called if
--- the type's metatable already existed before this function was
--- invoked.
-initTypeGeneric :: LuaError e
-                => (UDTypeGeneric e fn a -> LuaE e ())
-                -> UDTypeGeneric e fn a
-                -> LuaE e Name
-initTypeGeneric hook ty = do
-  pushUDMetatable hook ty
+initType :: LuaError e
+         => UDTypeGeneric e fn a
+         -> LuaE e Name
+initType ty = do
+  pushUDMetatable ty
   pop 1
   return (udName ty)
 
@@ -305,10 +297,9 @@ initTypeGeneric hook ty = do
 -- invoked.
 pushUDMetatable
   :: forall e fn a. LuaError e
-  => (UDTypeGeneric e fn a -> LuaE e ())  -- ^ @hook@
-  -> UDTypeGeneric e fn a
+  => UDTypeGeneric e fn a
   -> LuaE e ()
-pushUDMetatable hook ty = do
+pushUDMetatable ty = do
   created <- newudmetatable (udName ty)
   when created $ do
     add (metamethodName Index)    $ pushcfunction hslua_udindex_ptr
@@ -321,7 +312,6 @@ pushUDMetatable hook ty = do
     add "methods" $ pushMethods ty
     add "aliases" $ pushAliases ty
     hookMetatableSetup (udHooks ty)
-    hook ty
   where
     add :: Name -> LuaE e () -> LuaE e ()
     add name op = do
@@ -430,13 +420,12 @@ pairsFunction ty = do
 -- | Pushes a userdata value of the given type.
 pushUDGeneric
   :: LuaError e
-  => (UDTypeGeneric e fn a -> LuaE e ()) -- ^ push docs
-  -> UDTypeGeneric e fn a                -- ^ userdata type
+  => UDTypeGeneric e fn a                -- ^ userdata type
   -> a                                   -- ^ value to push
   -> LuaE e ()
-pushUDGeneric pushDocs ty x = do
+pushUDGeneric ty x = do
   newhsuserdatauv x (hookUservalues (udHooks ty))
-  pushUDMetatable pushDocs ty
+  pushUDMetatable ty
   setmetatable (nth 2)
   hookPushUD (udHooks ty) x
 
