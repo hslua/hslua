@@ -2,6 +2,12 @@
 
 `hslua-packaging` uses [PVP Versioning][].
 
+## Development
+
+Release pending.
+
+-   Require hslua-objectorientation-2.4.
+
 ## hslua-packaging-2.3.1
 
 Released 2024-01-18.
