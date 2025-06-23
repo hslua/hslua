@@ -4,7 +4,9 @@
 
 ## Dev
 
-Release pending.
+Released 2025-06-23.
+
+-   Require hslua-objectorientation-2.4.0
 
 -   Provide a full Lua app with Haskell-defined modules preloaded.
     The app is only built if the `executable` flag is enabled.

@@ -49,27 +49,27 @@ executable print-version
   import:              common-options
   main-is:             print-version.hs
   hs-source-dirs:      print-version
-  build-depends:       lua               >= 2.0 && < 2.4
+  build-depends:       lua               >= 2.0 && < 2.5
 
 executable run-lua
   import:              common-options
   main-is:             run-lua.hs
   hs-source-dirs:      run-lua
   build-depends:       bytestring
-                     , hslua             >= 2.0 && < 2.4
+                     , hslua             >= 2.0 && < 2.5
 
 executable wishlist
   import:              common-options
   main-is:             wishlist.hs
   hs-source-dirs:      wishlist
-  build-depends:       hslua             >= 2.0 && < 2.4
+  build-depends:       hslua             >= 2.0 && < 2.5
                      , text
 
 executable factorial
   import:              common-options
   main-is:             factorial.hs
   hs-source-dirs:      factorial
-  build-depends:       hslua             >= 2.0 && < 2.4
+  build-depends:       hslua             >= 2.0 && < 2.5
 
 executable low-level-factorial
   import:              common-options
