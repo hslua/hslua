@@ -4,7 +4,7 @@
 
 ## hslua-module-system-1.2.0
 
-Release pending.
+Released 2025-06-23.
 
 -   Added new functions `read_file` and `write_file`: These are
     convenience functions that makes it easier to work with UTF-8
