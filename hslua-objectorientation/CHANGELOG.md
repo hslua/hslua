@@ -2,7 +2,7 @@
 
 `hslua-objectorientation` uses [PVP Versioning][].
 
-## Development
+## hslua-objectorientation-2.4.0
 
 Release pending.
 
