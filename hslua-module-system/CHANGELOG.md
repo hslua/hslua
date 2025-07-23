@@ -2,6 +2,12 @@
 
 `hslua-module-system` uses [PVP Versioning][].
 
+## hslua-module-system-1.2.1.1
+
+Released 2025-07-23.
+
+-   Fixed the docstring of `exists`.
+
 ## hslua-module-system-1.2.1
 
 Released 2025-07-23.
