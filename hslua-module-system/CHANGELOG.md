@@ -2,6 +2,14 @@
 
 `hslua-module-system` uses [PVP Versioning][].
 
+## hslua-module-system-1.2.1
+
+Released 2025-07-23.
+
+-   Add new function `exists`, which allows to check the existance
+    and, optionally, type of a filesystem object at the given
+    path.
+
 ## hslua-module-system-1.2.0
 
 Released 2025-06-23.
