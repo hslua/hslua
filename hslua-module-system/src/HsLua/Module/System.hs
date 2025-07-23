@@ -25,6 +25,7 @@ module HsLua.Module.System (
   , cp
   , cputime
   , env
+  , exists
   , getenv
   , getwd
   , ls
@@ -84,6 +85,7 @@ documentedModule = Module
       , cp
       , cputime
       , env
+      , exists
       , getenv
       , getwd
       , ls
@@ -232,6 +234,40 @@ env = defun "env"
   =#> functionResult (pushKeyValuePairs pushString pushString) "table"
         "A table mapping environment variable names to their value."
   #? "Retrieves the entire environment as a string-indexed table."
+
+-- | Check the existence of a file path.
+exists :: LuaError e => DocumentedFunction e
+exists = defun "exists"
+  ### (\fp mbType -> do
+          case T.toLower <$> mbType of
+            Nothing ->
+              -- any file type is fine
+              ioToLua $ Directory.doesPathExist fp
+            Just "directory" ->
+              -- must be a directory or a symlink pointing to one
+              ioToLua $ Directory.doesDirectoryExist fp
+            Just "file" ->
+              -- must be a file or a symlink pointing to one
+              ioToLua $ Directory.doesFileExist fp
+            Just "symlink" ->
+              -- must exist and be a symlink
+              ioToLua $ (&&) <$> Directory.doesPathExist fp
+                             <*> Directory.pathIsSymbolicLink fp
+            Just otherType ->
+              failLua $
+              "Unsupported filesystem object type: " <> T.unpack otherType)
+  <#> filepathParam "path" "file path to check"
+  <#> opt (textParam "type" "the required type of the filesystem object")
+  =#> functionResult pushBool "boolean"
+        "whether a filesystem object of type `type` exists at `path`."
+  #? T.unlines
+     [ "Check whether there exists a filesystem object at the given path."
+     , "If `type` is given and either *directory* or *file*`, then the"
+     , "function returns `true` if and only if the file system object has"
+     , "the given type, or if it's a symlink pointing to an object of that"
+     , "type. Passing *symlink* as type requires the path itself to be a"
+     , "symlink. Types other than those will cause an error."
+     ]
 
 -- | Return the current working directory as an absolute path.
 getwd :: LuaError e => DocumentedFunction e

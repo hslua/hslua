@@ -95,6 +95,48 @@ return {
     end)
   },
 
+  group 'exists' {
+    test('returns `false` if the path does not exist', in_tmpdir(function ()
+      -- the temporary dir should be empty
+      assert.is_falsy(system.exists('does-not-exist.txt'))
+    end)),
+    test('returns `true` if the path does not exist', in_tmpdir(function ()
+      io.open('README.md', 'w'):close()
+      assert.is_truthy(system.exists('README.md'))
+    end)),
+    test('returns `false` for non-existing files', in_tmpdir(function ()
+      assert.is_falsy(system.exists('README.md', 'file'))
+    end)),
+    test('returns `true` for existing files', in_tmpdir(function ()
+      io.open('README.md', 'w'):close()
+      assert.is_truthy(system.exists('README.md', 'file'))
+    end)),
+    test('returns `false` for missing directories', in_tmpdir(function ()
+      assert.is_falsy(system.exists('folder', 'directory'))
+    end)),
+    test('returns `true` for existing directories', in_tmpdir(function ()
+      system.mkdir 'folder'
+      assert.is_truthy(system.exists('folder', 'directory'))
+    end)),
+    test('returns `false` for missing directories', in_tmpdir(function ()
+      assert.is_falsy(system.exists('folder', 'directory'))
+    end)),
+    test('returns `false` for file when checking for dir', in_tmpdir(function ()
+      io.open('folder', 'w'):close()
+      assert.is_falsy(system.exists('folder', 'directory'))
+    end)),
+    test('returns `true` for dir when checking for file', in_tmpdir(function ()
+      system.mkdir 'README.md'
+      assert.is_falsy(system.exists('README.md', 'file'))
+    end)),
+    test('errors for unknown type', in_tmpdir(function ()
+      assert.error_matches(
+        function () system.exists('x', 'device') end,
+        'Unsupported filesystem object'
+      )
+    end)),
+  },
+
   group 'ls' {
     test('returns a table', function ()
       assert.are_equal(type(system.ls('.')), 'table')
