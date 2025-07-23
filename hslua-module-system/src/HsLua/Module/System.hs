@@ -262,7 +262,7 @@ exists = defun "exists"
         "whether a filesystem object of type `type` exists at `path`."
   #? T.unlines
      [ "Check whether there exists a filesystem object at the given path."
-     , "If `type` is given and either *directory* or *file*`, then the"
+     , "If `type` is given and either *directory* or *file*, then the"
      , "function returns `true` if and only if the file system object has"
      , "the given type, or if it's a symlink pointing to an object of that"
      , "type. Passing *symlink* as type requires the path itself to be a"
