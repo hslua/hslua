@@ -295,7 +295,7 @@ ls = defun "ls"
   <#> opt (stringParam "directory"
            ("Path of the directory whose contents should be listed. "
             `T.append` "Defaults to `.`."))
-  =#> functionResult (pushFilePathList pushString) "table"
+  =#> functionResult pushFilePathList "table"
         ("A table of all entries in `directory`, except for the "
           `T.append` "special entries (`.`  and `..`).")
   #? "List the contents of a directory."
@@ -565,7 +565,7 @@ xdg = defun "xdg"
   <#> opt (filepathParam "filepath"
            ("relative path that is appended to the path; ignored " <>
             "if the result is a list of search paths."))
-  =#> functionResult (either pushString (pushFilePathList pushString))
+  =#> functionResult (either pushString pushFilePathList)
         "string|{string,...}"
         "Either a single file path, or a list of search paths."
   #? T.unlines
