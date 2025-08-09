@@ -52,6 +52,7 @@ import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import Data.Version (versionBranch)
 import HsLua.Core
+import HsLua.List (newListMetatable)
 import HsLua.Marshalling
 import HsLua.Packaging
 import HsLua.Module.SystemUtils
@@ -294,7 +295,7 @@ ls = defun "ls"
   <#> opt (stringParam "directory"
            ("Path of the directory whose contents should be listed. "
             `T.append` "Defaults to `.`."))
-  =#> functionResult (pushList pushString) "table"
+  =#> functionResult (pushFilePathList pushString) "table"
         ("A table of all entries in `directory`, except for the "
           `T.append` "special entries (`.`  and `..`).")
   #? "List the contents of a directory."
@@ -564,7 +565,7 @@ xdg = defun "xdg"
   <#> opt (filepathParam "filepath"
            ("relative path that is appended to the path; ignored " <>
             "if the result is a list of search paths."))
-  =#> functionResult (either pushString (pushList pushString))
+  =#> functionResult (either pushString (pushFilePathList pushString))
         "string|{string,...}"
         "Either a single file path, or a list of search paths."
   #? T.unlines
@@ -649,3 +650,10 @@ peekXdgDirectory =
       (\s -> fromMaybe s $ T.stripPrefix "xdg" s)
       . T.filter (/= '_')
       . T.toLower
+
+-- | Pushes a list of file paths.
+pushFilePathList :: LuaError e => Pusher e [FilePath]
+pushFilePathList fps = do
+  pushList pushString fps
+  newListMetatable "FilePath list" (pure ())
+  setmetatable (nth 2)
