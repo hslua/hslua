@@ -2,6 +2,13 @@
 
 `hslua-module-system` uses [PVP Versioning][].
 
+## hslua-module-system-1.2.2
+
+Released 2025-08-09.
+
+-   Lists of file paths now have a "FilePath list" metatable that
+    add list methods.
+
 ## hslua-module-system-1.2.1.1
 
 Released 2025-07-23.
