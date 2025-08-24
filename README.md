@@ -17,7 +17,7 @@ Overview
 --------
 
 HsLua provides the glue to use Lua with Haskell, and the other way
-around. It provides foreign function interace (FFI) bindings,
+around. It provides foreign function interface (FFI) bindings,
 helper functions, and as well as many utilities.
 
 [Lua][] is a small, well-designed, embeddable scripting language.
