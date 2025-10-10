@@ -2,11 +2,17 @@
 
 `tasty-lua` uses [PVP Versioning][].
 
+## tasty-lua-1.1.2
+
+Released 2025-10-10.
+
+-   Allow QuickCheck-2.17.
+
 ## tasty-lua-1.1.1.1
 
 Released 2025-06-18.
 
--   Relax upper bound for QuickCheck, allowing QuickCheck-2.6.
+-   Relax upper bound for QuickCheck, allowing QuickCheck-2.16.
 
 ## tasty-lua-1.1.1
 
