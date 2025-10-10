@@ -68,7 +68,7 @@ library
                      , process              >= 1.2.3  && < 1.7
                      , temporary            >= 1.2    && < 1.4
                      , text                 >= 1.2    && < 2.2
-                     , time                 >= 1.9    && < 1.15
+                     , time                 >= 1.9    && < 1.16
   exposed-modules:     HsLua.Module.System
   other-modules:       HsLua.Module.SystemUtils
   hs-source-dirs:      src
