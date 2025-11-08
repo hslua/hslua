@@ -3,7 +3,7 @@
 Module      : Lua.Constants
 Copyright   : © 2007–2012 Gracjan Polak;
               © 2012–2016 Ömer Sinan Ağacan;
-              © 2017-2024 Albert Krewinkel
+              © 2017-2025 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 Stability   : beta
@@ -101,8 +101,8 @@ pattern LUA_COPYRIGHT :: String
 
 #ifdef _LUA_NO_CONST_STR
 pattern LUA_VERSION = "Lua 5.4"
-pattern LUA_RELEASE = "Lua 5.4.7"
-pattern LUA_COPYRIGHT = "Lua 5.4.7  Copyright (C) 1994-2024 Lua.org, PUC-Rio"
+pattern LUA_RELEASE = "Lua 5.4.8"
+pattern LUA_COPYRIGHT = "Lua 5.4.8  Copyright (C) 1994-2025 Lua.org, PUC-Rio"
 #else
 pattern LUA_RELEASE = #{const_str LUA_RELEASE}
 pattern LUA_VERSION = #{const_str LUA_VERSION}

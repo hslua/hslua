@@ -25,7 +25,7 @@ enable coders to embed the language into their programs, making
 them scriptable.
 
 This package ships with the official Lua interpreter, version
-5.4.7. Cabal flags allow to compile against a system-wide Lua
+5.4.8. Cabal flags allow to compile against a system-wide Lua
 installation instead, if desired.
 
 Build flags
