@@ -188,11 +188,12 @@ returnResults bldr fnResults = DocumentedFunction
           forM_ fnResults $ \(FunctionResult push _) -> push result
           return $! NumResults (fromIntegral $ length fnResults)
   , functionName = hsFnName bldr
-  , functionDoc = FunctionDoc
-    { functionDescription = ""
-    , parameterDocs = reverse $ hsFnParameterDocs bldr
-    , functionResultsDocs = ResultsDocList $ map fnResultDoc fnResults
-    , functionSince = Nothing
+  , functionDoc = FunDoc
+    { funDocName = Utf8.toText . fromName $ hsFnName bldr
+    , funDocDescription = ""
+    , funDocParameters = reverse $ hsFnParameterDocs bldr
+    , funDocResults = ResultsDocList $ map fnResultDoc fnResults
+    , funDocSince = Nothing
     }
   }
 
@@ -213,11 +214,12 @@ returnResultsOnStack bldr desc = DocumentedFunction
           Lua.error
         Right x -> x
   , functionName = hsFnName bldr
-  , functionDoc = FunctionDoc
-    { functionDescription = ""
-    , parameterDocs = reverse $ hsFnParameterDocs bldr
-    , functionResultsDocs = ResultsDocMult desc
-    , functionSince = Nothing
+  , functionDoc = FunDoc
+    { funDocName = Utf8.toText . fromName $ hsFnName bldr
+    , funDocDescription = ""
+    , funDocParameters = reverse $ hsFnParameterDocs bldr
+    , funDocResults = ResultsDocMult desc
+    , funDocSince = Nothing
     }
   }
 
@@ -234,18 +236,23 @@ updateFunctionDescription :: DocumentedFunction e
                           -> DocumentedFunction e
 updateFunctionDescription fn desc =
   let fnDoc = functionDoc fn
-  in fn { functionDoc = fnDoc { functionDescription = desc} }
+  in fn { functionDoc = fnDoc { funDocDescription = desc} }
 
 -- | Renames a documented function.
 setName :: Name -> DocumentedFunction e -> DocumentedFunction e
-setName name fn = fn { functionName = name }
+setName name fn =
+  let fnDoc = functionDoc fn
+  in fn
+     { functionName = name
+     , functionDoc = fnDoc { funDocName = Utf8.toText $ fromName name }
+     }
 
 -- | Sets the library version at which the function was introduced in its
 -- current form.
 since :: DocumentedFunction e -> Version -> DocumentedFunction e
 since fn version =
   let fnDoc = functionDoc fn
-  in fn { functionDoc = fnDoc { functionSince = Just version  }}
+  in fn { functionDoc = fnDoc { funDocSince = Just version  }}
 
 --
 -- Operators
@@ -291,7 +298,7 @@ pushDocumentedFunction :: LuaError e
                        => DocumentedFunction e -> LuaE e ()
 pushDocumentedFunction fn = do
   Lua.pushHaskellFunction $ callFunction fn  -- push function
-  pushFunctionDoc fn                         -- function documentation
+  pushFunctionDoc $ functionDoc fn           -- function documentation
   registerDocumentation (Lua.nth 2)          -- store documentation
 
 --

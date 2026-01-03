@@ -29,10 +29,11 @@ documentation =
   DocumentedFunction
   { callFunction = documentationHaskellFunction
   , functionName = "documentation"
-  , functionDoc = FunctionDoc
-    { functionDescription =
+  , functionDoc = FunDoc
+    { funDocName = "documentation"
+    , funDocDescription =
       "Retrieves the documentation of the given object."
-    , parameterDocs =
+    , funDocParameters =
       [ ParameterDoc
         { parameterName = "value"
         , parameterType = "any"
@@ -40,9 +41,9 @@ documentation =
         , parameterIsOptional = False
         }
       ]
-    , functionResultsDocs =  ResultsDocList
+    , funDocResults =  ResultsDocList
       [ ResultValueDoc "string|nil" "docstring" ]
-    , functionSince = Nothing
+    , funDocSince = Nothing
     }
   }
 
@@ -110,7 +111,7 @@ pushModuleDoc = pushAsTable
   [ ("name", pushName . moduleName)
   , ("description", pushText . moduleDescription)
   , ("fields", pushList pushFieldDoc . moduleFields)
-  , ("functions", pushList pushFunctionDoc . moduleFunctions)
+  , ("functions", pushList pushFunctionDoc . map functionDoc . moduleFunctions)
   ]
 
 -- | Pushes the documentation of a field as a table with string fields
@@ -125,14 +126,14 @@ pushFieldDoc = pushAsTable
 -- | Pushes the documentation of a function as a table with string
 -- fields, @name@, @description@, and @since@, sequence field
 -- @parameters@, and sequence or string field @results@.
-pushFunctionDoc :: LuaError e => Pusher e (DocumentedFunction e)
-pushFunctionDoc fun = pushAsTable
-  [ ("name", pushName . const (functionName fun))
-  , ("description", pushText . functionDescription)
-  , ("parameters", pushList pushParameterDoc . parameterDocs)
-  , ("results", pushResultsDoc . functionResultsDocs)
-  , ("since", maybe pushnil (pushString . showVersion) . functionSince)
-  ] (functionDoc fun)
+pushFunctionDoc :: LuaError e => Pusher e FunctionDoc
+pushFunctionDoc = pushAsTable
+  [ ("name", pushText . funDocName)
+  , ("description", pushText . funDocDescription)
+  , ("parameters", pushList pushParameterDoc . funDocParameters)
+  , ("results", pushResultsDoc . funDocResults)
+  , ("since", maybe pushnil (pushString . showVersion) . funDocSince)
+  ]
 
 -- | Pushes the documentation of a parameter as a table with boolean
 -- field @optional@ and string fields @name@, @type@, and @description@.

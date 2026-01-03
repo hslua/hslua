@@ -62,11 +62,12 @@ data DocumentedFunction e = DocumentedFunction
 --
 
 -- | Documentation for a Haskell function
-data FunctionDoc = FunctionDoc
-  { functionDescription :: Text
-  , parameterDocs       :: [ParameterDoc]
-  , functionResultsDocs :: ResultsDoc
-  , functionSince       :: Maybe Version  -- ^ Version in which the function
+data FunctionDoc = FunDoc
+  { funDocName          :: Text
+  , funDocDescription   :: Text
+  , funDocParameters    :: [ParameterDoc]
+  , funDocResults       :: ResultsDoc
+  , funDocSince         :: Maybe Version  -- ^ Version in which the function
                                           -- was introduced.
   }
   deriving (Eq, Ord, Show)

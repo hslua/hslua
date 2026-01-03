@@ -2,6 +2,13 @@
 
 `hslua-packaging` uses [PVP Versioning][].
 
+## dev
+
+Release pending.
+
+- Modified the *FunctionDoc* type: added the function name to the
+  type and changed field names to be more consistent.
+
 ## hslua-packaging-2.3.2
 
 Released 2025-06-23.
