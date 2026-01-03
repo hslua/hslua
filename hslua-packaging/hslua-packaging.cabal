@@ -14,7 +14,7 @@ license:             MIT
 license-file:        LICENSE
 author:              Albert Krewinkel
 maintainer:          tarleb@hslua.org
-copyright:           © 2019-2024 Albert Krewinkel
+copyright:           © 2019-2026 Albert Krewinkel
 category:            Foreign
 extra-source-files:  README.md
                    , CHANGELOG.md
@@ -57,7 +57,6 @@ library
                      , HsLua.Packaging.Documentation
                      , HsLua.Packaging.Function
                      , HsLua.Packaging.Module
-                     , HsLua.Packaging.Rendering
                      , HsLua.Packaging.Types
                      , HsLua.Packaging.UDType
   hs-source-dirs:      src
@@ -79,7 +78,6 @@ test-suite test-hslua-packaging
                      , HsLua.Packaging.DocumentationTests
                      , HsLua.Packaging.FunctionTests
                      , HsLua.Packaging.ModuleTests
-                     , HsLua.Packaging.RenderingTests
                      , HsLua.Packaging.UDTypeTests
   build-depends:       hslua-packaging
                      , bytestring

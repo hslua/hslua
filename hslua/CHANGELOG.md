@@ -4,6 +4,12 @@
 
 ## Dev
 
+Release pending.
+
+- Remove deprecated module `HsLua.Packaging.Rendering`.
+
+## hslua-2.4.0
+
 Released 2025-06-23.
 
 -   Require hslua-objectorientation-2.4.0
