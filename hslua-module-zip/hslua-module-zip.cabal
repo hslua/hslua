@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                hslua-module-zip
-version:             1.1.4
+version:             1.1.5
 synopsis:            Lua module to work with file zips.
 description:         Module with function for creating, modifying, and
                      extracting files from zip archives.
@@ -10,7 +10,7 @@ license:             MIT
 license-file:        LICENSE
 author:              Albert Krewinkel
 maintainer:          Albert Krewinkel <tarleb@hslua.org>
-copyright:           © 2020-2025 Albert Krewinkel
+copyright:           © 2020-2026 Albert Krewinkel
 category:            Foreign
 build-type:          Simple
 extra-doc-files:     README.md
@@ -29,7 +29,7 @@ source-repository head
 common common-options
   build-depends:       base              >= 4.11   && < 5
                      , hslua-core        >= 2.3    && < 2.4
-                     , hslua-packaging   >= 2.3    && < 2.5
+                     , hslua-packaging   >= 2.4    && < 2.5
 
   ghc-options:         -Wall
                        -Wcpp-undef
