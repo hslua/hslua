@@ -59,7 +59,7 @@ pushModule mdl = do
   pushAsTable
     [ ("name", pushName . moduleName)
     , ("description", pushText . moduleDescription)
-    , ("fields", pushList pushFieldDoc . moduleFields)
+    , ("fields", pushList (pushFieldDoc . fieldDoc) . moduleFields)
     , ("types", pushTypesFunction . moduleTypeInitializers)
     ] mdl
   create        -- module table

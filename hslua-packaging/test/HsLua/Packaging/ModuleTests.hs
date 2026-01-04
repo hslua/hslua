@@ -19,6 +19,7 @@ import HsLua.Marshalling
 import HsLua.Packaging.Documentation
 import HsLua.Packaging.Function
 import HsLua.Packaging.Module
+import HsLua.Packaging.Types (FieldDoc (..))
 import HsLua.Packaging.UDType (deftype, initType)
 import Test.Tasty.HsLua ((=:), shouldBeResultOf)
 import Test.Tasty (TestTree, testGroup)
@@ -117,7 +118,8 @@ mymath = Module
   { moduleName = "mymath"
   , moduleDescription = "A math module."
   , moduleFields = [
-      Field "unit" "integer" "additive unit" (pushinteger 1)
+      let docs = FieldDoc "unit" "integer" "additive unit"
+      in Field "unit" docs (pushinteger 1)
     ]
   , moduleFunctions = [factorial]
   , moduleOperations =

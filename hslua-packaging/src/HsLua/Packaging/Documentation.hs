@@ -113,17 +113,17 @@ pushModuleDoc :: LuaError e => Pusher e (Module e)
 pushModuleDoc = pushAsTable
   [ ("name", pushName . moduleName)
   , ("description", pushText . moduleDescription)
-  , ("fields", pushList pushFieldDoc . moduleFields)
+  , ("fields", pushList pushFieldDoc . map fieldDoc . moduleFields)
   , ("functions", pushList pushFunctionDoc . map functionDoc . moduleFunctions)
   ]
 
 -- | Pushes the documentation of a field as a table with string fields
 -- @name@ and @description@.
-pushFieldDoc :: LuaError e => Pusher e (Field e)
+pushFieldDoc :: LuaError e => Pusher e FieldDoc
 pushFieldDoc = pushAsTable
-  [ ("name", pushText . fieldName)
-  , ("type", pushTypeSpec . fieldType)
-  , ("description", pushText . fieldDescription)
+  [ ("name", pushText . fieldDocName)
+  , ("type", pushTypeSpec . fieldDocType)
+  , ("description", pushText . fieldDocDescription)
   ]
 
 -- | Pushes the documentation of a function as a table with string

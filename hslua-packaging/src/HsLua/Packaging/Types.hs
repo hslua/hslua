@@ -1,6 +1,6 @@
 {-|
 Module      : HsLua.Packaging.Types
-Copyright   : © 2020-2024 Albert Krewinkel
+Copyright   : © 2020-2026 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 Stability   : alpha
@@ -19,6 +19,7 @@ module HsLua.Packaging.Types
   , ParameterDoc (..)
   , ResultsDoc (..)
   , ResultValueDoc (..)
+  , FieldDoc (..)
   ) where
 
 import Data.Text (Text)
@@ -40,8 +41,7 @@ data Module e = Module
 -- | Self-documenting module field
 data Field e = Field
   { fieldName :: Text
-  , fieldType :: TypeSpec
-  , fieldDescription :: Text
+  , fieldDoc :: FieldDoc
   , fieldPushValue :: LuaE e ()
   }
 
@@ -93,3 +93,10 @@ data ResultValueDoc = ResultValueDoc
   , resultValueDescription :: Text
   }
   deriving (Eq, Ord, Show)
+
+-- | Documentation for a module field.
+data FieldDoc = FieldDoc
+  { fieldDocName :: Text
+  , fieldDocType :: TypeSpec
+  , fieldDocDescription :: Text
+  }

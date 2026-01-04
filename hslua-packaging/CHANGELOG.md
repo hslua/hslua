@@ -12,6 +12,10 @@ Release pending.
 - Added function `peekFunctionDoc` to retrieve function
   documentation from the Lua stack.
 
+- Added a new data type `FieldDoc` that contains all the
+  documentation for a module field. The `Field` type was modified
+  to use this type for docs.
+
 ## hslua-packaging-2.3.2
 
 Released 2025-06-23.
