@@ -13,7 +13,7 @@ license:             MIT
 license-file:        LICENSE
 author:              Albert Krewinkel
 maintainer:          tarleb@hslua.org
-copyright:           © 2017-2024 Albert Krewinkel
+copyright:           © 2017-2026 Albert Krewinkel
 category:            Foreign
 extra-source-files:  test/test-text.lua
 extra-doc-files:     CHANGELOG.md
@@ -32,7 +32,7 @@ common common-options
   default-language:    Haskell2010
   build-depends:       base                 >= 4.11   && < 5
                      , hslua-core           >= 2.3    && < 2.4
-                     , hslua-packaging      >= 2.3    && < 2.4
+                     , hslua-packaging      >= 2.3    && < 2.5
 
   ghc-options:         -Wall
                        -Wcpp-undef

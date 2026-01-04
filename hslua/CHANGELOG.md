@@ -2,11 +2,13 @@
 
 `hslua` uses [PVP Versioning][].
 
-## Dev
+## hslua-2.5.0
 
 Release pending.
 
 - Remove deprecated module `HsLua.Packaging.Rendering`.
+
+- Require *hslua-packaging* version 2.4.0
 
 ## hslua-2.4.0
 
