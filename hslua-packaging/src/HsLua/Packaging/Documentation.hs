@@ -11,17 +11,20 @@ module HsLua.Packaging.Documentation
   ( documentation
   , getdocumentation
   , registerDocumentation
+  , peekFunctionDoc
   , pushModuleDoc
   , pushFunctionDoc
   , pushFieldDoc
   , docsField
   ) where
 
-import Data.Version (showVersion)
+import Data.Version (parseVersion, showVersion)
 import HsLua.Core as Lua
 import HsLua.Marshalling
 import HsLua.Packaging.Types
-import HsLua.Typing (pushTypeSpec)
+import HsLua.Typing (peekTypeSpec, pushTypeSpec)
+import Text.ParserCombinators.ReadP (readP_to_S)
+import qualified HsLua.Core.Utf8 as Utf8
 
 -- | Function that retrieves documentation.
 documentation :: LuaError e => DocumentedFunction e
@@ -135,6 +138,23 @@ pushFunctionDoc = pushAsTable
   , ("since", maybe pushnil (pushString . showVersion) . funDocSince)
   ]
 
+-- | Retrieve function documentation from the Lua stack.
+peekFunctionDoc :: LuaError e => Peeker e FunctionDoc
+peekFunctionDoc idx = FunDoc
+  <$> peekFieldRaw peekText "name" idx
+  <*> peekFieldRaw peekText "description" idx
+  <*> peekFieldRaw (peekList peekParameterDoc) "parameters" idx
+  <*> peekFieldRaw peekResultsDoc "results" idx
+  <*> peekFieldRaw (peekNilOr peekVersion) "since" idx
+ where
+  peekVersion idx' = do
+    versionStr <- peekString idx'
+    case readP_to_S parseVersion versionStr of
+      (v,_):_ -> return v
+      _       -> failPeek $
+                 "Couldn't parse version: " <> Utf8.fromString versionStr
+
+
 -- | Pushes the documentation of a parameter as a table with boolean
 -- field @optional@ and string fields @name@, @type@, and @description@.
 pushParameterDoc :: LuaError e => Pusher e ParameterDoc
@@ -145,6 +165,14 @@ pushParameterDoc = pushAsTable
   , ("optional", pushBool . parameterIsOptional)
   ]
 
+-- | Retrieve function parameter documentation from the Lua stack.
+peekParameterDoc :: LuaError e => Peeker e ParameterDoc
+peekParameterDoc idx = ParameterDoc
+  <$> peekFieldRaw peekText "name" idx
+  <*> peekFieldRaw peekTypeSpec "type" idx
+  <*> peekFieldRaw peekText "description" idx
+  <*> peekFieldRaw peekBool "optional" idx
+
 -- | Pushes a the documentation for a function's return values as either
 -- a simple string, or as a sequence of tables with @type@ and
 -- @description@ fields.
@@ -153,6 +181,14 @@ pushResultsDoc = \case
   ResultsDocMult desc -> pushText desc
   ResultsDocList resultDocs -> pushList pushResultValueDoc resultDocs
 
+-- | Retrieves the documentation for a function's return values from the Lua
+-- stack.
+peekResultsDoc :: LuaError e => Peeker e ResultsDoc
+peekResultsDoc = choice
+  [ fmap ResultsDocList . peekList peekResultValueDoc
+  , fmap ResultsDocMult . peekText
+  ]
+
 -- | Pushes the documentation of a single result value as a table with
 -- fields @type@ and @description@.
 pushResultValueDoc :: LuaError e => Pusher e ResultValueDoc
@@ -160,3 +196,9 @@ pushResultValueDoc = pushAsTable
   [ ("type", pushTypeSpec . resultValueType)
   , ("description", pushText . resultValueDescription)
   ]
+
+-- | Retrieves the documentation of a single result value from the Lua stack.
+peekResultValueDoc :: LuaError e => Peeker e ResultValueDoc
+peekResultValueDoc idx = ResultValueDoc
+  <$> peekFieldRaw peekTypeSpec "type" idx
+  <*> peekFieldRaw peekText "description" idx

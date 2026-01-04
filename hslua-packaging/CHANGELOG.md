@@ -9,6 +9,9 @@ Release pending.
 - Modified the *FunctionDoc* type: added the function name to the
   type and changed field names to be more consistent.
 
+- Added function `peekFunctionDoc` to retrieve function
+  documentation from the Lua stack.
+
 ## hslua-packaging-2.3.2
 
 Released 2025-06-23.
