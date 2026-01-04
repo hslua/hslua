@@ -2,7 +2,7 @@
 
 `hslua-packaging` uses [PVP Versioning][].
 
-## dev
+## hslua-packaging-2.4.0
 
 Release pending.
 
