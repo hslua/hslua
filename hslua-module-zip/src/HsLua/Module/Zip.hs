@@ -58,7 +58,6 @@ import HsLua.Marshalling
   , pushLazyByteString, pushList, pushIntegral, pushString
   , retrieving, typeMismatchMessage )
 import HsLua.Packaging
-import HsLua.Typing
 
 import qualified Codec.Archive.Zip as Zip
 import qualified Data.Text as T

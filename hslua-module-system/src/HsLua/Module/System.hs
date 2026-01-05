@@ -118,64 +118,58 @@ documentedModule = Module
 -- | Module field containing the machine architecture on which the
 -- program is running. Wraps @'Info.arch'@
 arch :: Field e
-arch = Field
-  { fieldName = "arch"
-  , fieldType = "string"
-  , fieldDescription =
-      "The machine architecture on which the program is running."
-  , fieldPushValue = pushString Info.arch
-  }
+arch = deffield "arch"
+  `withType`
+    stringType
+  `withDescription`
+    "The machine architecture on which the program is running."
+  `withValue`
+    pushString Info.arch
 
 -- | Module field containing the Haskell implementation with which the
 -- host program was compiled. Wraps @'Info.compilerName'@.
 compiler_name :: Field e
-compiler_name = Field
-  { fieldName = "compiler_name"
-  , fieldType = "string"
-  , fieldDescription = "The Haskell implementation with which the host "
-                       `T.append` "program was compiled."
-  , fieldPushValue = pushString Info.compilerName
-  }
+compiler_name = deffield "compiler_name"
+  `withType`
+    stringType
+  `withDescription`
+    "The Haskell implementation with which the host program was compiled."
+  `withValue`
+    pushString Info.compilerName
 
 -- | Module field containing the version of `compiler_name` with which
 -- the host program was compiled.
 compiler_version :: LuaError e => Field e
-compiler_version = Field
-  { fieldName = "compiler_version"
-  , fieldType = "string"
-  , fieldDescription = T.unwords
-      [ "The Haskell implementation with which the host "
-      , "program was compiled." ]
-  , fieldPushValue = pushList pushIntegral $
-                     versionBranch Info.compilerVersion
-  }
+compiler_version = deffield "compiler_version"
+  `withType`
+    stringType
+  `withDescription`
+    "The Haskell implementation with which the host program was compiled."
+  `withValue`
+    pushList pushIntegral (versionBranch Info.compilerVersion)
 
 -- | Field containing the smallest measurable difference in CPU time.
 cputime_precision :: Field e
-cputime_precision = Field
-  { fieldName = "cputime_precision"
-  , fieldType = "integer"
-  , fieldDescription = T.unlines
+cputime_precision = deffield "cputime_precision"
+  `withType` integerType
+  `withDescription` T.unlines
       [ "The smallest measurable difference in CPU time that the"
       , "implementation can record, and is given as an integral number of"
       , "picoseconds."
       ]
-  , fieldPushValue = pushIntegral CPUTime.cpuTimePrecision
-  }
+  `withValue` pushIntegral CPUTime.cpuTimePrecision
 
 -- | Field containing the operating system on which the program is
 -- running.
 os :: Field e
-os = Field
-  { fieldName = "os"
-  , fieldType = "string"
-  , fieldDescription = T.unlines
+os = deffield "os"
+  `withType` "string"
+  `withDescription` T.unlines
     [ "The operating system on which the program is running."
     , "The most common values are `darwin` (macOS), `freebsd`, `linux`,"
     , "`linux-android`, `mingw32` (Windows), `netbsd`, `openbsd`."
     ]
-  , fieldPushValue = pushString Info.os
-  }
+  `withValue` pushString Info.os
 
 
 --

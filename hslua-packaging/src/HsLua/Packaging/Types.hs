@@ -40,7 +40,7 @@ data Module e = Module
 
 -- | Self-documenting module field
 data Field e = Field
-  { fieldName :: Text
+  { fieldName :: Name
   , fieldDoc :: FieldDoc
   , fieldPushValue :: LuaE e ()
   }

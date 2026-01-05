@@ -16,6 +16,10 @@ Release pending.
   documentation for a module field. The `Field` type was modified
   to use this type for docs.
 
+- Fields should no longer use the data type constructor directly.
+  Instead, use the newly introduced functions `deffield`,
+  `withName`, `withValue`, and `withDescription`.
+
 ## hslua-packaging-2.3.2
 
 Released 2025-06-23.

@@ -67,22 +67,19 @@ fields =
 
 -- | Wrapper for @'Path.pathSeparator'@.
 separator :: Field e
-separator = Field
-  { fieldName = "separator"
-  , fieldType = "string"
-  , fieldDescription = "The character that separates directories."
-  , fieldPushValue = pushString [Path.pathSeparator]
-  }
+separator = deffield "separator"
+  `withType` "string"
+  `withDescription` "The character that separates directories."
+  `withValue` pushString [Path.pathSeparator]
 
 -- | Wrapper for @'Path.searchPathSeparator'@.
 search_path_separator :: Field e
-search_path_separator = Field
-  { fieldName = "search_path_separator"
-  , fieldType = "string"
-  , fieldDescription = "The character that is used to separate the entries in "
-                    <> "the `PATH` environment variable."
-  , fieldPushValue = pushString [Path.searchPathSeparator]
-  }
+search_path_separator = deffield "search_path_separator"
+  `withType` "string"
+  `withDescription`
+    "The character that is used to separate the entries in " <>
+    "the `PATH` environment variable."
+  `withValue` pushString [Path.searchPathSeparator]
 
 --
 -- Functions

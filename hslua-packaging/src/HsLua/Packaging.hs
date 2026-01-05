@@ -17,6 +17,7 @@ module HsLua.Packaging
   , module HsLua.Packaging.Documentation
     -- * Types
   , module HsLua.Packaging.Types
+  , module HsLua.Typing
   ) where
 
 import HsLua.Packaging.Convenience
@@ -25,3 +26,4 @@ import HsLua.Packaging.Function
 import HsLua.Packaging.Module
 import HsLua.Packaging.UDType
 import HsLua.Packaging.Types
+import HsLua.Typing
