@@ -2,9 +2,15 @@
 
 `hslua-module-system` uses [PVP Versioning][].
 
+## hslua-module-system-1.3.0
+
+Release pending.
+
+- Require hslua-packaging 2.4 or later.
+
 ## hslua-module-system-1.2.3
 
-Release pending
+Release 2025-08-09.
 
 -   Allowed time-1.15.
 
