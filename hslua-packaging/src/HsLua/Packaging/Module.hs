@@ -12,6 +12,7 @@ Utility functions for HsLua modules.
 module HsLua.Packaging.Module
   ( -- * Documented module
     Module (..)
+  , ModuleDoc (..)
   , Field (..)
     -- * Constructors
     -- ** Module
@@ -41,11 +42,11 @@ where
 import Control.Monad (forM_)
 import Data.Text (Text)
 import HsLua.Core
-import HsLua.Marshalling (Pusher, pushAsTable, pushList, pushName, pushText)
+import HsLua.Marshalling (pushName)
 import HsLua.ObjectOrientation.Operation (Operation (..), metamethodName)
 import HsLua.Packaging.Documentation
 import HsLua.Packaging.Types
-import HsLua.Packaging.UDType (DocumentedType, initType)
+import HsLua.Packaging.UDType (initType)
 import HsLua.Typing (TypeSpec, anyType)
 import qualified HsLua.Core.Utf8 as Utf8
 import qualified HsLua.Packaging.Function as Fun
@@ -58,6 +59,7 @@ defmodule name = Module
   , moduleFields = mempty
   , moduleFunctions = mempty
   , moduleOperations = mempty
+  , moduleTypeDocs = mempty
   , moduleTypeInitializers = mempty
   }
 
@@ -67,7 +69,13 @@ withFields mdl fields = mdl { moduleFields = fields }
 
 -- | Set the list of functions in the module.
 withFunctions :: Module e -> [DocumentedFunction e] -> Module e
-withFunctions mdl fns = mdl { moduleFunctions = fns }
+withFunctions mdl fns =
+  let addPrefix fn =
+        let doc = functionDoc fn
+            prefixed = Utf8.toText (fromName $ getName mdl) <> "." <>
+                       funDocName doc
+        in fn { functionDoc = doc { funDocName = prefixed } }
+  in mdl { moduleFunctions = map addPrefix fns }
 
 -- | Set operations that can be performed on the module object.
 withOperations :: Module e -> [(Operation, DocumentedFunction e)] -> Module e
@@ -80,8 +88,10 @@ withDescription = setDescription
 -- | Associate a type with this module. An associated type is listed in the
 -- module documentation.
 associateType :: LuaError e => Module e -> DocumentedType e a -> Module e
-associateType mdl tp =
-  mdl { moduleTypeInitializers = initType tp : moduleTypeInitializers mdl }
+associateType mdl tp = mdl
+  { moduleTypeInitializers = initType tp : moduleTypeInitializers mdl
+  , moduleTypeDocs = generateTypeDocumentation tp : moduleTypeDocs mdl
+  }
 
 -- | Gives a different name
 renameTo :: HasName a => a -> Name -> a
@@ -145,40 +155,19 @@ preloadModule mdl =
 pushModule :: LuaError e => Module e -> LuaE e ()
 pushModule mdl = do
   checkstack' 10 "pushModule"
-  pushAsTable
-    [ ("name", pushName . moduleName)
-    , ("description", pushText . moduleDescription)
-    , ("fields", pushList (pushFieldDoc . fieldDoc) . moduleFields)
-    , ("types", pushTypesFunction . moduleTypeInitializers)
-    ] mdl
   create        -- module table
-  pushvalue (nth 2)              -- push documentation object
+  pushModuleDoc (generateModuleDocumentation mdl)
   registerDocumentation (nth 2)  -- set and pop doc
 
   -- # Functions
   --
   -- module table now on top
-  -- documentation table in pos 2
-  newtable -- function documention
-  pushName "functions"
-  pushvalue (nth 2)
-  rawset (nth 5)
-  -- function documentation table now on top
-  -- module table in position 2
-  -- module documentation table in pos 3
-  forM_ (zip [1..] (moduleFunctions mdl)) $ \(i, fn) -> do
-    -- push documented function, thereby registering the function docs
-    Fun.pushDocumentedFunction fn
+  forM_ (moduleFunctions mdl) $ \fn -> do
     -- add function to module
     pushName (functionName fn)
-    pushvalue (nth 2) -- C function
-    rawset (nth 5)    -- module table
-    -- set documentation
-    _ <- getdocumentation top
-    rawseti (nth 3) i
-    pop 1 -- C Function
-  pop 1 -- function documentation table
-  remove (nth 2) -- module documentation table
+    -- push documented function, thereby registering the function docs
+    Fun.pushDocumentedFunction fn
+    rawset (nth 3)    -- module table
 
   -- # Fields
   --
@@ -196,8 +185,3 @@ pushModule mdl = do
         Fun.pushDocumentedFunction $ fn `setName` ""
         rawset (nth 3)
       setmetatable (nth 2)
-
-pushTypesFunction :: LuaError e => Pusher e [LuaE e Name]
-pushTypesFunction initializers = pushHaskellFunction $ do
-  sequence initializers >>= pushList pushName
-  pure 1

@@ -46,12 +46,9 @@ import HsLua.Marshalling
 import HsLua.ObjectOrientation
 import HsLua.ObjectOrientation.Operation (metamethodName)
 import HsLua.Packaging.Function
-import HsLua.Packaging.Types (setName)
+import HsLua.Packaging.Types (DocumentedType, setName)
 import HsLua.Typing (pushTypeSpec)
 import qualified Data.Map as Map
-
--- | Type definitions containing documented functions.
-type DocumentedType e a = UDType e (DocumentedFunction e) a
 
 -- | A userdata type, capturing the behavior of Lua objects that wrap
 -- Haskell values. The type name must be unique; once the type has been

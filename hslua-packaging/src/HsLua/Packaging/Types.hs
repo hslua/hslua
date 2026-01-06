@@ -9,13 +9,16 @@ Portability : Portable
 Marshaling and documenting Haskell functions.
 -}
 module HsLua.Packaging.Types
-  ( -- * Documented module
+  ( -- * Documented Lua objects
     Module (..)
   , Field (..)
-    -- * Documented functions
   , DocumentedFunction (..)
-    -- ** Documentation types
+  , DocumentedType
+    -- * Documentation types
+  , DocumentationObject (..)
+  , ModuleDoc (..)
   , FunctionDoc (..)
+  , TypeDoc (..)
   , ParameterDoc (..)
   , ResultsDoc (..)
   , ResultValueDoc (..)
@@ -28,9 +31,12 @@ module HsLua.Packaging.Types
 import Data.Text (Text)
 import Data.Version (Version)
 import HsLua.Core (LuaE, Name (fromName), NumResults)
-import HsLua.ObjectOrientation (Operation)
+import HsLua.ObjectOrientation (Operation, UDType)
 import HsLua.Typing (TypeSpec)
 import qualified HsLua.Core.Utf8 as Utf8
+
+-- | Type definitions containing documented functions.
+type DocumentedType e a = UDType e (DocumentedFunction e) a
 
 -- | Named and documented Lua module.
 data Module e = Module
@@ -40,6 +46,10 @@ data Module e = Module
   , moduleFunctions :: [DocumentedFunction e]
   , moduleOperations :: [(Operation, DocumentedFunction e)]
   , moduleTypeInitializers :: [LuaE e Name]
+    -- ^ Lua initializers for the types that come with this module.
+    --   Useful to force full initialization of all metatables.
+  , moduleTypeDocs :: [TypeDoc]
+    -- ^ Documentation for the types that are associated with this module.
   }
 
 -- | Self-documenting module field
@@ -64,6 +74,16 @@ data DocumentedFunction e = DocumentedFunction
 --
 -- Documentation types
 --
+
+-- | Module documentation
+data ModuleDoc = ModuleDoc
+  { moduleDocName        :: Text          -- ^ module name
+  , moduleDocDescription :: Text          -- ^ textual module description
+  , moduleDocFields      :: [FieldDoc]    -- ^ module fields
+  , moduleDocFunctions   :: [FunctionDoc] -- ^ module functions
+  , moduleDocTypes       :: [TypeDoc]     -- ^ module-associated types
+  }
+  deriving (Eq, Ord, Show)
 
 -- | Documentation for a Haskell function
 data FunctionDoc = FunDoc
@@ -104,6 +124,23 @@ data FieldDoc = FieldDoc
   , fieldDocType :: TypeSpec
   , fieldDocDescription :: Text
   }
+  deriving (Eq, Ord, Show)
+
+-- | Documentation of a data type.
+data TypeDoc = TypeDoc
+  { typeDocName        :: Text
+  , typeDocDescription :: Text
+  , typeDocOperations  :: [(Operation, FunctionDoc)]
+  , typeDocMethods     :: [FunctionDoc]
+  }
+  deriving (Eq, Ord, Show)
+
+-- | Documentation for any of the supported Lua objects.
+data DocumentationObject
+  = DocObjectFunction FunctionDoc
+  | DocObjectModule   ModuleDoc
+  | DocObjectType     TypeDoc
+  deriving (Eq, Ord, Show)
 
 --
 -- Type Classes
@@ -121,6 +158,10 @@ instance HasDescription FieldDoc where
 instance HasDescription (Module e) where
   getDescription = moduleDescription
   setDescription mdl descr = mdl { moduleDescription = descr }
+
+instance HasDescription ModuleDoc where
+  getDescription = moduleDocDescription
+  setDescription md descr = md { moduleDocDescription = descr }
 
 instance HasDescription (Field e) where
   getDescription = fieldDocDescription . fieldDoc

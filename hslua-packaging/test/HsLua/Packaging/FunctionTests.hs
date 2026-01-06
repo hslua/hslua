@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-|
@@ -14,7 +15,7 @@ import Data.Maybe (fromMaybe)
 import Data.Version (makeVersion)
 import HsLua.Core (StackIndex, top)
 import HsLua.Packaging.Convenience
-import HsLua.Packaging.Documentation (getdocumentation)
+import HsLua.Packaging.Documentation (getdocumentation, peekFunctionDoc)
 import HsLua.Packaging.Function
 import HsLua.Packaging.Types
 import HsLua.Marshalling
@@ -96,9 +97,8 @@ tests = testGroup "Call"
     , "getdocumentation" =:
       "factorial" `shouldBeResultOf` do
         pushDocumentedFunction (factLuaAtIndex 0)
-        Lua.TypeTable <- getdocumentation top
-        Lua.TypeString <- Lua.getfield top "name"
-        forcePeek (peekText top)
+        Lua.TypeUserdata <- getdocumentation top
+        forcePeek (funDocName <$> peekFunctionDoc top)
 
     , "undocumented value" =:
       Lua.TypeNil `shouldBeResultOf` do

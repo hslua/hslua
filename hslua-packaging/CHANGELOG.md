@@ -16,9 +16,16 @@ Release pending.
   documentation for a module field. The `Field` type was modified
   to use this type for docs.
 
-- Fields should no longer use the data type constructor directly.
-  Instead, use the newly introduced functions `deffield`,
-  `withName`, `withValue`, and `withDescription`.
+- Fields and modules should no longer use the data type
+  constructor directly. Instead, values should be created through
+  the newly introduced functions `deffield`, `withName`,
+  `withValue`, and `withDescription` for fields, and `defmodule`,
+  `withFields`, `withFunctions`, `withOperations`, `withDescription`,
+  and `associateType` for modules.
+
+- The module *HsLua.Typing* is re-exported from *HsLua.Packaging*.
+
+- Modules have an additional field `moduleTypeDocs`.
 
 - Require *hslua-objectorientation* 2.5.0.
 

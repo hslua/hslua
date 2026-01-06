@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-|
@@ -14,12 +15,12 @@ module HsLua.Packaging.ModuleTests (tests) where
 
 import HsLua.Core
 import HsLua.Marshalling
-  ( forcePeek, peekFieldRaw, peekIntegral, peekList, peekName, peekString
-  , pushIntegral, pushText)
+  ( forcePeek, peekIntegral, peekString, pushIntegral, pushText )
 import HsLua.Packaging.Documentation
 import HsLua.Packaging.Function
 import HsLua.Packaging.Module
-import HsLua.Packaging.UDType (deftype, initType)
+import HsLua.Packaging.UDType (deftype)
+import HsLua.Packaging.Types
 import Test.Tasty.HsLua ((=:), shouldBeResultOf)
 import Test.Tasty (TestTree, testGroup)
 
@@ -29,9 +30,9 @@ import qualified HsLua.Core as Lua
 tests :: TestTree
 tests = testGroup "Module"
   [ testGroup "creation helpers"
-    [ "create produces a table" =:
+    [ "pushing a module produces a table" =:
       Lua.TypeTable `shouldBeResultOf` do
-        Lua.newtable
+        pushModule $ defmodule "test"
         Lua.ltype Lua.top
     ]
   , testGroup "module type"
@@ -64,17 +65,18 @@ tests = testGroup "Module"
       "mymath" `shouldBeResultOf` do
         Lua.openlibs
         registerModule mymath
-        TypeTable <- getdocumentation top
-        forcePeek $ peekFieldRaw peekString "name" Lua.top
+        TypeUserdata <- getdocumentation top
+        forcePeek $ moduleDocName <$> peekModuleDoc Lua.top
 
-    , "first function name in docs" =:
-      "factorial" `shouldBeResultOf` do
+    , "function name in docs is prefixed with module name" =:
+      "mymath.factorial" `shouldBeResultOf` do
         Lua.openlibs
         registerModule mymath
-        TypeTable <- getdocumentation top
-        TypeTable <- getfield top "functions"
-        TypeTable <- rawgeti top 1
-        forcePeek $ peekFieldRaw peekString "name" Lua.top
+        TypeUserdata <- getdocumentation top
+        mdldoc <- forcePeek $ peekModuleDoc Lua.top
+        case moduleDocFunctions mdldoc of
+          fd:_ -> pure $ funDocName fd
+          _    -> fail "No documented functions"
 
     , "function doc is shared" =:
       True `shouldBeResultOf` do
@@ -83,53 +85,54 @@ tests = testGroup "Module"
         pushvalue top
         setglobal "mymath"
         -- get doc table via module docs
-        TypeTable <- getdocumentation top
-        TypeTable <- getfield top "functions"
-        TypeTable <- rawgeti top 1
-        -- get doc table via function
+        TypeUserdata <- getdocumentation top
+        fndoc <- forcePeek $
+          moduleDocFunctions <$> peekModuleDoc Lua.top >>= \case
+            fd:_ -> pure fd
+            _    -> fail "No documented functions"
+
+        -- get the function documenation via Lua
         OK <- dostring "return mymath.factorial"
-        TypeTable <- getdocumentation top
+        TypeUserdata <- getdocumentation top
+        fndoc' <- forcePeek $ peekFunctionDoc Lua.top
         -- must be the same
-        rawequal (nth 1) (nth 3)
+        return (fndoc == fndoc')
 
     , "first field name in docs" =:
-      "unit" `shouldBeResultOf` do
+      "mymath.unit" `shouldBeResultOf` do
         Lua.openlibs
         registerModule mymath
-        TypeTable <- getdocumentation top
-        TypeTable <- getfield top "fields"
-        TypeTable <- rawgeti top 1
-        forcePeek $ peekFieldRaw peekString "name" Lua.top
+        TypeUserdata <- getdocumentation top
+        mdl <- forcePeek $ peekModuleDoc Lua.top
+        case moduleDocFields mdl of
+          f:_ -> pure $ fieldDocName f
+          [] -> fail "No fields"
 
     , "document object has associated types" =:
       ["Void"] `shouldBeResultOf` do
         Lua.openlibs
         registerModule mymath
-        TypeTable <- getdocumentation top
-        TypeFunction <- getfield top "types"
-        call 0 1
-        forcePeek $ peekList peekName top
+        TypeUserdata <- getdocumentation top
+        mdl <- forcePeek $ peekModuleDoc Lua.top
+        return . map typeDocName $ moduleDocTypes mdl
     ]
   ]
 
 mymath :: Module Lua.Exception
-mymath = Module
-  { moduleName = "mymath"
-  , moduleDescription = "A math module."
-  , moduleFields = [
-      deffield "unit"
+mymath = defmodule "mymath"
+  `withFields`
+    [ deffield "unit"
       `withType` "integer"
       `withDescription` "additive unit"
-      `withValue` (pushinteger 1)
+      `withValue` pushinteger 1
     ]
-  , moduleFunctions = [factorial]
-  , moduleOperations =
+  `withFunctions` [factorial]
+  `withOperations`
     [ (,) Call $ lambda
       ### (1 <$ pushText "call me maybe")
       =?> "call result"
     ]
-  , moduleTypeInitializers = [initType (deftype "Void" [] [])]
-  }
+  `associateType` deftype "Void" [] []
 
 factorial :: DocumentedFunction Lua.Exception
 factorial =

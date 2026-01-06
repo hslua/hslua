@@ -1,28 +1,42 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : HsLua.Packaging.Documentation
-Copyright   : © 2020-2024 Albert Krewinkel
+Copyright   : © 2020-2026 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 
 Provides a function to print documentation if available.
 -}
 module HsLua.Packaging.Documentation
-  ( getdocumentation
+  ( -- * Setting and retrieving documentation
+    getdocumentation
   , registerDocumentation
-  , peekFunctionDoc
-  , pushModuleDoc
-  , pushFunctionDoc
-  , pushFieldDoc
   , docsField
+    -- * Documentation Types
+  , ModuleDoc (..)
+  , FunctionDoc (..)
+  , DocumentationObject (..)
+  , pushDocumentationObject
+  , peekDocumentationObject
+  , pushModuleDoc
+  , peekModuleDoc
+  , pushFunctionDoc
+  , peekFunctionDoc
+  , pushTypeDoc
+  , peekTypeDoc
+  -- * Creating documentation values
+  , generateFunctionDocumentation
+  , generateModuleDocumentation
+  , generateTypeDocumentation
   ) where
 
-import Data.Version (parseVersion, showVersion)
+import Control.Monad (void)
 import HsLua.Core as Lua
 import HsLua.Marshalling
+import HsLua.ObjectOrientation (UDTypeGeneric (..))
 import HsLua.Packaging.Types
-import HsLua.Typing (peekTypeSpec, pushTypeSpec)
-import Text.ParserCombinators.ReadP (readP_to_S)
+import qualified Data.Map.Strict as Map
+import qualified Data.Text as T
 import qualified HsLua.Core.Utf8 as Utf8
 
 -- | Pushes the documentation for the element at the given stack index.
@@ -48,6 +62,15 @@ registerDocumentation idx = do
   rawset (nth 3)    -- add to docs table
   pop 2             -- docs table and documentation object
 
+-- | Name of the registry field holding the documentation table. The
+-- documentation table is indexed by the documented objects, like module
+-- tables and functions, and contains documentation objects as values.
+--
+-- The table is an ephemeron table, i.e., an entry gets garbage
+-- collected if the key is no longer reachable.
+docsField :: Name
+docsField = "HsLua docs"
+
 -- | Pushes the documentation table that's stored in the registry to the
 -- top of the stack, creating it if necessary. The documentation table
 -- is indexed by the documented objects, like module tables and
@@ -66,107 +89,108 @@ pushDocumentationTable = Lua.getfield registryindex docsField >>= \case
     pushvalue top    -- add copy of table to registry
     setfield registryindex docsField
 
--- | Name of the registry field holding the documentation table. The
--- documentation table is indexed by the documented objects, like module
--- tables and functions, and contains documentation strings as values.
 --
--- The table is an ephemeron table, i.e., an entry gets garbage
--- collected if the key is no longer reachable.
-docsField :: Name
-docsField = "HsLua docs"
+-- Generating
+--
 
--- | Pushes the documentation of a module as a table with string fields
--- @name@ and @description@.
-pushModuleDoc :: LuaError e => Pusher e (Module e)
-pushModuleDoc = pushAsTable
-  [ ("name", pushName . moduleName)
-  , ("description", pushText . moduleDescription)
-  , ("fields", pushList pushFieldDoc . map fieldDoc . moduleFields)
-  , ("functions", pushList pushFunctionDoc . map functionDoc . moduleFunctions)
-  ]
+-- | Generate documentation for a module.
+generateModuleDocumentation :: Module e -> ModuleDoc
+generateModuleDocumentation mdl =
+  let name = moduleName mdl
+  in ModuleDoc
+    { moduleDocName = nameToText name
+    , moduleDocDescription = moduleDescription mdl
+    , moduleDocFields = map (generateFieldDocumentation name) $ moduleFields mdl
+    , moduleDocFunctions = map (generateFunctionDocumentation Nothing) $
+                               moduleFunctions mdl
+    , moduleDocTypes = moduleTypeDocs mdl
+    }
 
--- | Pushes the documentation of a field as a table with string fields
--- @name@ and @description@.
-pushFieldDoc :: LuaError e => Pusher e FieldDoc
-pushFieldDoc = pushAsTable
-  [ ("name", pushText . fieldDocName)
-  , ("type", pushTypeSpec . fieldDocType)
-  , ("description", pushText . fieldDocDescription)
-  ]
+-- | Generate 'FieldDoc' documentation for a module field.
+generateFieldDocumentation :: Name     -- ^ module name
+                           -> Field e  -- ^ field that's part of the module
+                           -> FieldDoc
+generateFieldDocumentation mdlName fld =
+  let doc = fieldDoc fld
+  in doc { fieldDocName = nameToText mdlName <> "." <> fieldDocName doc }
 
--- | Pushes the documentation of a function as a table with string
--- fields, @name@, @description@, and @since@, sequence field
--- @parameters@, and sequence or string field @results@.
-pushFunctionDoc :: LuaError e => Pusher e FunctionDoc
-pushFunctionDoc = pushAsTable
-  [ ("name", pushText . funDocName)
-  , ("description", pushText . funDocDescription)
-  , ("parameters", pushList pushParameterDoc . funDocParameters)
-  , ("results", pushResultsDoc . funDocResults)
-  , ("since", maybe pushnil (pushString . showVersion) . funDocSince)
-  ]
+-- | Generate 'FunctionDoc' documentation for module functions.
+generateFunctionDocumentation :: Maybe Name
+                              -> DocumentedFunction e
+                              -> FunctionDoc
+generateFunctionDocumentation name fn =
+  let doc = functionDoc fn
+      prefix = maybe mempty (\n -> nameToText n <> ".") name
+  in doc { funDocName = prefix <> funDocName doc }
+
+-- | Generate documentation for a 'UDType'.
+generateTypeDocumentation :: DocumentedType e a -> TypeDoc
+generateTypeDocumentation ty =
+  let name = udName ty
+  in TypeDoc
+  { typeDocName = nameToText name
+  , typeDocDescription = ""
+  , typeDocOperations = []
+  , typeDocMethods = map (generateFunctionDocumentation (Just name) . snd) $
+                         Map.toList (udMethods ty)
+  }
+
+-- | Convert a Lua name to UTF-8 text.
+nameToText :: Name -> T.Text
+nameToText = Utf8.toText . fromName
+
+--
+-- Retrieving and pushing documentation
+--
+
+-- | The metatable name of documentation objecs
+documentationObjectName :: Name
+documentationObjectName = "HsLua DocumentationObject"
+
+-- | Pushes the metatable for documentation objects.
+peekDocumentationObject :: Peeker e DocumentationObject
+peekDocumentationObject idx = do
+  liftLua (fromuserdata idx documentationObjectName) >>= \case
+    Nothing  -> failPeek "Not a documentation object"
+    Just doc -> pure doc
+
+-- | Pushes a 'DocumentationObject' to the Lua stack.
+pushDocumentationObject :: Pusher e DocumentationObject
+pushDocumentationObject obj = do
+  newhsuserdatauv obj 0
+  pushDocumentationObjectMT
+  setmetatable (nth 2)
+
+-- | Pushes the metatable for documentation objects.
+pushDocumentationObjectMT :: LuaE e ()
+pushDocumentationObjectMT = void $ newudmetatable documentationObjectName
+
+-- | Pushes the documentation of a module as userdata.
+pushModuleDoc :: Pusher e ModuleDoc
+pushModuleDoc = pushDocumentationObject . DocObjectModule
+
+-- | Retrieves a module documentation object from the Lua stack.
+peekModuleDoc :: Peeker e ModuleDoc
+peekModuleDoc idx = peekDocumentationObject idx >>= \case
+  DocObjectModule mdldoc -> pure mdldoc
+  _ -> failPeek "Not a module documentation object"
+
+-- | Pushes function documentation as userdata.
+pushFunctionDoc :: Pusher e FunctionDoc
+pushFunctionDoc = pushDocumentationObject . DocObjectFunction
 
 -- | Retrieve function documentation from the Lua stack.
-peekFunctionDoc :: LuaError e => Peeker e FunctionDoc
-peekFunctionDoc idx = FunDoc
-  <$> peekFieldRaw peekText "name" idx
-  <*> peekFieldRaw peekText "description" idx
-  <*> peekFieldRaw (peekList peekParameterDoc) "parameters" idx
-  <*> peekFieldRaw peekResultsDoc "results" idx
-  <*> peekFieldRaw (peekNilOr peekVersion) "since" idx
- where
-  peekVersion idx' = do
-    versionStr <- peekString idx'
-    case readP_to_S parseVersion versionStr of
-      (v,_):_ -> return v
-      _       -> failPeek $
-                 "Couldn't parse version: " <> Utf8.fromString versionStr
+peekFunctionDoc :: Peeker e FunctionDoc
+peekFunctionDoc idx = peekDocumentationObject idx >>= \case
+  DocObjectFunction fndoc -> pure fndoc
+  _ -> failPeek "Not a function documentation"
 
+-- | Pushes documentation type documentation as userdata.
+pushTypeDoc :: Pusher e FunctionDoc
+pushTypeDoc = pushDocumentationObject . DocObjectFunction
 
--- | Pushes the documentation of a parameter as a table with boolean
--- field @optional@ and string fields @name@, @type@, and @description@.
-pushParameterDoc :: LuaError e => Pusher e ParameterDoc
-pushParameterDoc = pushAsTable
-  [ ("name", pushText . parameterName)
-  , ("type", pushTypeSpec . parameterType)
-  , ("description", pushText . parameterDescription)
-  , ("optional", pushBool . parameterIsOptional)
-  ]
-
--- | Retrieve function parameter documentation from the Lua stack.
-peekParameterDoc :: LuaError e => Peeker e ParameterDoc
-peekParameterDoc idx = ParameterDoc
-  <$> peekFieldRaw peekText "name" idx
-  <*> peekFieldRaw peekTypeSpec "type" idx
-  <*> peekFieldRaw peekText "description" idx
-  <*> peekFieldRaw peekBool "optional" idx
-
--- | Pushes a the documentation for a function's return values as either
--- a simple string, or as a sequence of tables with @type@ and
--- @description@ fields.
-pushResultsDoc :: LuaError e => Pusher e ResultsDoc
-pushResultsDoc = \case
-  ResultsDocMult desc -> pushText desc
-  ResultsDocList resultDocs -> pushList pushResultValueDoc resultDocs
-
--- | Retrieves the documentation for a function's return values from the Lua
--- stack.
-peekResultsDoc :: LuaError e => Peeker e ResultsDoc
-peekResultsDoc = choice
-  [ fmap ResultsDocList . peekList peekResultValueDoc
-  , fmap ResultsDocMult . peekText
-  ]
-
--- | Pushes the documentation of a single result value as a table with
--- fields @type@ and @description@.
-pushResultValueDoc :: LuaError e => Pusher e ResultValueDoc
-pushResultValueDoc = pushAsTable
-  [ ("type", pushTypeSpec . resultValueType)
-  , ("description", pushText . resultValueDescription)
-  ]
-
--- | Retrieves the documentation of a single result value from the Lua stack.
-peekResultValueDoc :: LuaError e => Peeker e ResultValueDoc
-peekResultValueDoc idx = ResultValueDoc
-  <$> peekFieldRaw peekTypeSpec "type" idx
-  <*> peekFieldRaw peekText "description" idx
+-- | Retrieve function documentation from the Lua stack.
+peekTypeDoc :: Peeker e TypeDoc
+peekTypeDoc idx = peekDocumentationObject idx >>= \case
+  DocObjectType tydoc -> pure tydoc
+  _ -> failPeek "Not a type documentation"

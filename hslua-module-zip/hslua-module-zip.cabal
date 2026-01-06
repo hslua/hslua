@@ -57,7 +57,6 @@ library
   build-depends:
                      , hslua-list        >= 1.1    && < 1.2
                      , hslua-marshalling >= 2.3    && < 2.4
-                     , hslua-typing      >= 0.1    && < 0.3
                      , text              >= 1.2    && < 2.2
                      , time              >= 1.5    && < 1.16
                      , zip-archive       >= 0.4    && < 0.5
