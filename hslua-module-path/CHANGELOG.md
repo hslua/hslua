@@ -2,6 +2,12 @@
 
 `hslua-module-paths` uses [PVP Versioning][].
 
+## hslua-module-path-1.2.0
+
+Release pending.
+
+- Require hslua-packaging 2.4 or later.
+
 ## hslua-module-path-1.1.1
 
 Released 2024-01-18.
