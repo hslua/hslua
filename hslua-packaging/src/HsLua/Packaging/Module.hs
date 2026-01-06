@@ -14,11 +14,22 @@ module HsLua.Packaging.Module
     Module (..)
   , Field (..)
     -- * Constructors
+    -- ** Module
+  , defmodule
+  , withFields
+  , withFunctions
+  , withOperations
+  , associateType
+  , renameTo
+    -- ** Field
   , deffield
   , withType
   , withDescription
   , withValue
-    -- * Loading
+    -- ** Type Classes
+  , HasName (..)
+  , HasDescription (..)
+    -- * Module Loading
   , registerModule
   , preloadModule
   , preloadModuleWithName
@@ -34,9 +45,54 @@ import HsLua.Marshalling (Pusher, pushAsTable, pushList, pushName, pushText)
 import HsLua.ObjectOrientation.Operation (Operation (..), metamethodName)
 import HsLua.Packaging.Documentation
 import HsLua.Packaging.Types
+import HsLua.Packaging.UDType (DocumentedType, initType)
 import HsLua.Typing (TypeSpec, anyType)
 import qualified HsLua.Core.Utf8 as Utf8
 import qualified HsLua.Packaging.Function as Fun
+
+-- | Define a Lua module.
+defmodule :: Name -> Module e
+defmodule name = Module
+  { moduleName = name
+  , moduleDescription = mempty
+  , moduleFields = mempty
+  , moduleFunctions = mempty
+  , moduleOperations = mempty
+  , moduleTypeInitializers = mempty
+  }
+
+-- | Set the list of module fields.
+withFields :: Module e -> [Field e] -> Module e
+withFields mdl fields = mdl { moduleFields = fields }
+
+-- | Set the list of functions in the module.
+withFunctions :: Module e -> [DocumentedFunction e] -> Module e
+withFunctions mdl fns = mdl { moduleFunctions = fns }
+
+-- | Set operations that can be performed on the module object.
+withOperations :: Module e -> [(Operation, DocumentedFunction e)] -> Module e
+withOperations mdl ops = mdl { moduleOperations = ops }
+
+-- | Sets a textual description
+withDescription :: HasDescription a => a -> Text -> a
+withDescription = setDescription
+
+-- | Associate a type with this module. An associated type is listed in the
+-- module documentation.
+associateType :: LuaError e => Module e -> DocumentedType e a -> Module e
+associateType mdl tp =
+  mdl { moduleTypeInitializers = initType tp : moduleTypeInitializers mdl }
+
+-- | Gives a different name
+renameTo :: HasName a => a -> Name -> a
+renameTo = setName
+
+infixl 0 `withFields`, `withFunctions`, `withDescription`, `withOperations`
+infixl 0 `associateType`
+
+--
+-- Field constructor and setters
+--
 
 -- | Create a new module field.
 deffield :: Name -> Field e
@@ -60,13 +116,7 @@ withType fld typespec =
 withValue :: Field e -> LuaE e () -> Field e
 withValue fld pusher = fld { fieldPushValue = pusher }
 
--- | Add a textual description to a field.
-withDescription :: Field e -> Text -> Field e
-withDescription fld descr =
-  let doc = fieldDoc fld
-  in fld { fieldDoc = doc { fieldDocDescription = descr } }
-
-infixl 0 `withType`, `withValue`, `withDescription`
+infixl 0 `withType`, `withValue`
 
 -- | Create a new module (i.e., a Lua table).
 create :: LuaE e ()
@@ -143,7 +193,7 @@ pushModule mdl = do
       newtable
       forM_ ops $ \(op, fn) -> do
         pushName $ metamethodName op
-        Fun.pushDocumentedFunction $ Fun.setName "" fn
+        Fun.pushDocumentedFunction $ fn `setName` ""
         rawset (nth 3)
       setmetatable (nth 2)
 

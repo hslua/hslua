@@ -47,6 +47,7 @@ import HsLua.Marshalling
 import HsLua.ObjectOrientation
 import HsLua.ObjectOrientation.Operation (metamethodName)
 import HsLua.Packaging.Function
+import HsLua.Packaging.Types (setName)
 import HsLua.Typing (pushTypeSpec)
 import qualified Data.Map as Map
 
@@ -92,7 +93,7 @@ method f = methodGeneric (functionName f) f
 operation :: Operation             -- ^ the kind of operation
           -> DocumentedFunction e  -- ^ function used to perform the operation
           -> (Operation, DocumentedFunction e)
-operation op f = (,) op $ setName (metamethodName op) f
+operation op f = (,) op $ f `setName` metamethodName op
 
 -- | Defines a function parameter that takes the given type.
 udparam :: LuaError e

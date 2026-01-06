@@ -20,13 +20,17 @@ module HsLua.Packaging.Types
   , ResultsDoc (..)
   , ResultValueDoc (..)
   , FieldDoc (..)
+  -- * Type classes
+  , HasName (..)
+  , HasDescription (..)
   ) where
 
 import Data.Text (Text)
 import Data.Version (Version)
-import HsLua.Core (LuaE, Name, NumResults)
+import HsLua.Core (LuaE, Name (fromName), NumResults)
 import HsLua.ObjectOrientation (Operation)
-import HsLua.Typing (TypeSpec)
+import HsLua.Typing (TypeDocs, TypeSpec)
+import qualified HsLua.Core.Utf8 as Utf8
 
 -- | Named and documented Lua module.
 data Module e = Module
@@ -100,3 +104,53 @@ data FieldDoc = FieldDoc
   , fieldDocType :: TypeSpec
   , fieldDocDescription :: Text
   }
+
+--
+-- Type Classes
+--
+
+-- | Objects that have descriptions.
+class HasDescription a where
+  getDescription :: a -> Text
+  setDescription :: a -> Text -> a
+
+instance HasDescription FieldDoc where
+  getDescription = fieldDocDescription
+  setDescription fd descr = fd { fieldDocDescription = descr }
+
+instance HasDescription (Module e) where
+  getDescription = moduleDescription
+  setDescription mdl descr = mdl { moduleDescription = descr }
+
+instance HasDescription (Field e) where
+  getDescription = fieldDocDescription . fieldDoc
+  setDescription fld descr =
+    let doc = fieldDoc fld
+    in fld { fieldDoc = setDescription doc descr }
+
+-- | Named objects
+class HasName a where
+  getName :: a -> Name
+  setName :: a -> Name -> a
+
+instance HasName (Field e) where
+  getName = fieldName
+  setName fd name =
+    let doc = fieldDoc fd
+    in fd
+    { fieldName = name
+    , fieldDoc = doc { fieldDocName = Utf8.toText $ fromName name }
+    }
+
+instance HasName (Module e) where
+  getName = moduleName
+  setName mdl name = mdl { moduleName = name }
+
+instance HasName (DocumentedFunction e) where
+  getName = functionName
+  setName fn name =
+    let fnDoc = functionDoc fn
+    in fn
+       { functionName = name
+       , functionDoc = fnDoc { funDocName = Utf8.toText $ fromName name }
+       }

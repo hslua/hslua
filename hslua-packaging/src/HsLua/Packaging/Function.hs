@@ -37,7 +37,6 @@ module HsLua.Packaging.Function
   , (=?>)
   , (#?)
     -- * Modifying functions
-  , setName
   , since
     -- * Pushing to Lua
   , pushDocumentedFunction
@@ -237,15 +236,6 @@ updateFunctionDescription :: DocumentedFunction e
 updateFunctionDescription fn desc =
   let fnDoc = functionDoc fn
   in fn { functionDoc = fnDoc { funDocDescription = desc} }
-
--- | Renames a documented function.
-setName :: Name -> DocumentedFunction e -> DocumentedFunction e
-setName name fn =
-  let fnDoc = functionDoc fn
-  in fn
-     { functionName = name
-     , functionDoc = fnDoc { funDocName = Utf8.toText $ fromName name }
-     }
 
 -- | Sets the library version at which the function was introduced in its
 -- current form.
