@@ -38,20 +38,16 @@ import qualified HsLua.Core.Utf8 as UTF8
 
 -- | The @path@ module specification.
 documentedModule :: LuaError e => Module e
-documentedModule = Module
-  { moduleName = "Version"
-  , moduleDescription = "Version specifier handling"
-  , moduleFields = []
-  , moduleFunctions = [must_be_at_least]
-  , moduleOperations =
+documentedModule = defmodule "Version"
+  `withDescription` "Version specifier handling"
+  `withFunctions` [must_be_at_least]
+  `withOperations`
     [ operation Call $ lambda
       ### liftPure2 (\_ v -> v)
       <#> parameter (const $ pure ()) "table" "module table" "ignored"
       <#> versionParam "version" "version-like object"
       =#> udresult typeVersion "new Version object"
     ]
-  , moduleTypeInitializers = []
-  }
 
 -- | Type definition of Lua Version values.
 typeVersion :: LuaError e => DocumentedTypeWithList e Version Int

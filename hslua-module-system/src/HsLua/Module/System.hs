@@ -72,16 +72,15 @@ import qualified System.Process as Process
 
 -- | The "system" module.
 documentedModule :: LuaError e => Module e
-documentedModule = Module
-  { moduleName = "system"
-  , moduleFields =
+documentedModule = defmodule "system"
+  `withFields`
       [ arch
       , compiler_name
       , compiler_version
       , cputime_precision
       , os
       ]
-  , moduleFunctions =
+  `withFunctions`
       [ cmd
       , cp
       , cputime
@@ -105,11 +104,8 @@ documentedModule = Module
       , write_file
       , xdg
       ]
-  , moduleOperations = []
-  , moduleTypeInitializers = []
-  , moduleDescription =
+  `withDescription`
       "Access to the system's information and file functionality."
-  }
 
 --
 -- Fields

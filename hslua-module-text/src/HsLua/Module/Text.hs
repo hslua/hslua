@@ -41,11 +41,8 @@ import qualified HsLua.Marshalling as Lua
 
 -- | The @text@ module.
 documentedModule :: LuaError e => Module e
-documentedModule = Module
-  { moduleName = "text"
-  , moduleOperations = []
-  , moduleFields = []
-  , moduleFunctions =
+documentedModule = defmodule "text"
+  `withFunctions`
     [ fromencoding
     , len
     , lower
@@ -54,10 +51,8 @@ documentedModule = Module
     , toencoding
     , upper
     ]
-  , moduleDescription =
+  `withDescription`
       "UTF-8 aware text manipulation functions, implemented in Haskell."
-  , moduleTypeInitializers = []
-  }
 
 --
 -- Functions

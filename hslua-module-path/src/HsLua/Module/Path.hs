@@ -45,14 +45,10 @@ import qualified System.FilePath as Path
 
 -- | The @path@ module specification.
 documentedModule :: LuaError e => Module e
-documentedModule = Module
-  { moduleName = "path"
-  , moduleDescription = "Module for file path manipulations."
-  , moduleFields = fields
-  , moduleFunctions = functions
-  , moduleOperations = []
-  , moduleTypeInitializers = []
-  }
+documentedModule = defmodule "path"
+  `withDescription` "Module for file path manipulations."
+  `withFields` fields
+  `withFunctions` functions
 
 --
 -- Fields
@@ -288,7 +284,7 @@ treat_strings_as_paths = defun "treat_strings_as_paths"
          -- non-metamethods.
          pushString "" *> getmetatable top *> remove (nth 2)
          mapM_ addFunction
-           [setName "__add" add_extension, setName "__div" combine]
+           [ setName add_extension "__add", setName combine "__div"]
          pop 1  -- string metatable
 
          _ <- getglobal "string"

@@ -70,9 +70,8 @@ symbolicLinkEntryTarget = const Nothing
 
 -- | The @zip@ module specification.
 documentedModule :: forall e. LuaError e => Module e
-documentedModule = Module
-  { moduleName = "zip"
-  , moduleDescription = T.unlines
+documentedModule = defmodule "zip"
+  `withDescription` T.unlines
     [ "Functions to create, modify, and extract files from zip archives."
     , ""
     , "The module can be called as a function, in which case it behaves"
@@ -91,9 +90,8 @@ documentedModule = Module
     , "    symbolic links are preserved as such. This option is ignored"
     , "    on Windows."
     ]
-  , moduleFields = fields
-  , moduleFunctions = functions
-  , moduleOperations =
+  `withFunctions` functions
+  `withOperations`
     [ operation Call $ lambda
       ### (do
               -- call function `zip`
@@ -104,23 +102,12 @@ documentedModule = Module
               pure (NumResults 1))
       =?> "new Archive"
     ]
-  , moduleTypeInitializers =
-      [ initType typeArchive
-      , initType typeEntry
-      ]
-  }
+  `associateType` typeArchive
+  `associateType` typeEntry
 
 -- | First published version of this library.
 initialVersion :: Version
 initialVersion = makeVersion [1,0,0]
-
---
--- Fields
---
-
--- | Exported fields.
-fields :: [Field e]
-fields = []
 
 
 --
