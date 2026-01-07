@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                hslua-typing
-version:             0.1.1
+version:             0.2.0
 synopsis:            Type specifiers for Lua.
 description:         Structure to hold detailed type information. The primary
                      use-case at this time are auto-generated docs.
@@ -9,7 +9,7 @@ license:             MIT
 license-file:        LICENSE
 author:              Albert Krewinkel
 maintainer:          Albert Krewinkel <tarleb@hslua.org>
-copyright:           © 2023-2024 Albert Krewinkel
+copyright:           © 2023-2026 Albert Krewinkel
 category:            Foreign
 extra-source-files:  README.md
                    , CHANGELOG.md

@@ -65,7 +65,7 @@ library
                      , OverloadedStrings
   build-depends:       containers              >= 0.5.9  && < 0.9
                      , hslua-objectorientation >= 2.5    && < 2.6
-                     , hslua-typing            >= 0.1    && < 0.2
+                     , hslua-typing            >= 0.1    && < 0.3
                      , text                    >= 1.2    && < 2.2
 
 test-suite test-hslua-packaging

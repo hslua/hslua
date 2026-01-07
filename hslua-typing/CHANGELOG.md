@@ -2,6 +2,13 @@
 
 `hslua-typing` uses [PVP Versioning][].
 
+## hslua-typing-0.2.0
+
+Release pending.
+
+- Drop type *TypeDocs* together with the peeker and pusher
+  functions `peekTypeDoc` and `pushTypeDoc`.
+
 ## hslua-typing-0.1.1
 
 Released 2024-01-18.

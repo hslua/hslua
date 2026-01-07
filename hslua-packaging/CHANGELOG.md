@@ -22,6 +22,8 @@ Release pending.
 
 - Require *hslua-objectorientation* 2.5.0.
 
+- Allow *hslua-typing* 0.2.\*.
+
 ## hslua-packaging-2.3.2
 
 Released 2025-06-23.

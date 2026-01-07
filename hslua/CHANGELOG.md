@@ -12,6 +12,8 @@ Release pending.
 
 - Require *hslua-packaging* version 2.4.0.
 
+- Require *hslua-typing* 0.2.\*.
+
 ## hslua-2.4.0
 
 Released 2025-06-23.

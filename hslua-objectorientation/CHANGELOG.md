@@ -9,6 +9,8 @@ Release pending.
 - Removed function `udDocs`. It is not very useful and appears to
   be unused.
 
+- Allow *hslua-typing* 0.2.\*.
+
 ## hslua-objectorientation-2.4.0
 
 Released 2025-06-23.

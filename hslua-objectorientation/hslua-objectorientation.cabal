@@ -30,7 +30,7 @@ common common-options
   build-depends:       base              >= 4.11   && < 5
                      , hslua-core        >= 2.2.1  && < 2.4
                      , hslua-marshalling >= 2.2.1  && < 2.4
-                     , hslua-typing      >= 0.1    && < 0.2
+                     , hslua-typing      >= 0.1    && < 0.3
 
   ghc-options:         -Wall
                        -Wcpp-undef
