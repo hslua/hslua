@@ -20,6 +20,8 @@ Release pending.
   Instead, use the newly introduced functions `deffield`,
   `withName`, `withValue`, and `withDescription`.
 
+- Require *hslua-objectorientation* 2.5.0.
+
 ## hslua-packaging-2.3.2
 
 Released 2025-06-23.

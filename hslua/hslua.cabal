@@ -81,7 +81,7 @@ library
                      , hslua-classes            >= 2.2.1  && < 2.4
                      , hslua-core               >= 2.3.2  && < 2.4
                      , hslua-marshalling        >= 2.3.1  && < 2.4
-                     , hslua-objectorientation  >= 2.4    && < 2.5
+                     , hslua-objectorientation  >= 2.5    && < 2.6
                      , hslua-packaging          >= 2.4    && < 2.5
                      , hslua-typing             >= 0.1.1  && < 0.2
 

@@ -8,7 +8,9 @@ Release pending.
 
 - Remove deprecated module `HsLua.Packaging.Rendering`.
 
-- Require *hslua-packaging* version 2.4.0
+- Require *hslua-objectorientation* version 2.5.0
+
+- Require *hslua-packaging* version 2.4.0.
 
 ## hslua-2.4.0
 

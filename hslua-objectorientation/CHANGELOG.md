@@ -2,6 +2,13 @@
 
 `hslua-objectorientation` uses [PVP Versioning][].
 
+## hslua-objectorientation-2.5.0
+
+Release pending.
+
+- Removed function `udDocs`. It is not very useful and appears to
+  be unused.
+
 ## hslua-objectorientation-2.4.0
 
 Released 2025-06-23.
