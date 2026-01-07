@@ -37,7 +37,6 @@ module HsLua.ObjectOrientation.Generic
   , pushUDGeneric
   , initType
     -- * Type docs
-  , udDocs
   , udTypeSpec
     -- * Helper types for building
   , Member
@@ -57,7 +56,7 @@ import Foreign.Ptr (FunPtr)
 import HsLua.Core as Lua
 import HsLua.Marshalling
 import HsLua.ObjectOrientation.Operation
-import HsLua.Typing ( TypeDocs (..), TypeSpec (..), anyType, userdataType )
+import HsLua.Typing ( TypeSpec (..), anyType )
 import qualified Data.Map.Strict as Map
 import qualified HsLua.Core.Unsafe as Unsafe
 import qualified HsLua.Core.Utf8 as Utf8
@@ -465,15 +464,6 @@ setProperties props x = do
 --
 -- Typing
 --
-
--- | Returns documentation for this type.
-udDocs :: UDTypeGeneric e fn a
-       -> TypeDocs
-udDocs ty = TypeDocs
-  { typeDescription = mempty
-  , typeSpec = userdataType
-  , typeRegistry = Just (udName ty)
-  }
 
 -- | Type specifier for a UDType
 udTypeSpec :: UDTypeGeneric e fn a

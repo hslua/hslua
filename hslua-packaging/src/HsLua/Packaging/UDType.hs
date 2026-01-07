@@ -31,7 +31,6 @@ module HsLua.Packaging.UDType
   , initType  -- Reexported from ObjectOrientation
   , udparam
   , udresult
-  , udDocs
   , udTypeSpec
     -- * Helper types for building
   , Member
