@@ -89,22 +89,12 @@ tests = testGroup "hslua-typespec"
   , testGroup "Marshalling"
     [ testProperty "Roundtrip TypeSpec" $
       assertRoundtripEqual pushTypeSpec peekTypeSpec
-
-    , testProperty "Roundtrip TypeDocs" $
-      assertRoundtripEqual pushTypeDoc peekTypeDoc
     ]
   ]
 
 instance Arbitrary TypeSpec where
   arbitrary = arbitraryTypeSpec 3
   shrink = shrinkTypeSpec
-
-instance Arbitrary TypeDocs where
-  arbitrary = TypeDocs
-    <$> arbitrary
-    <*> arbitrary
-    <*> arbitrary
-  shrink td = (\ts -> td{ typeSpec = ts}) <$> shrink (typeSpec td)
 
 instance Arbitrary Name where
   arbitrary = Name . fromString <$> arbitrary

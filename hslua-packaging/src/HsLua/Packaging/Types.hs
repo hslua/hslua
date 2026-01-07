@@ -29,7 +29,7 @@ import Data.Text (Text)
 import Data.Version (Version)
 import HsLua.Core (LuaE, Name (fromName), NumResults)
 import HsLua.ObjectOrientation (Operation)
-import HsLua.Typing (TypeDocs, TypeSpec)
+import HsLua.Typing (TypeSpec)
 import qualified HsLua.Core.Utf8 as Utf8
 
 -- | Named and documented Lua module.

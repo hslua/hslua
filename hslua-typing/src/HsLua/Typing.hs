@@ -12,7 +12,6 @@ describe and declare the types of Lua values.
 -}
 module HsLua.Typing
   ( TypeSpec (..)
-  , TypeDocs (..)
   , (#|#)
   , typeSpecToString
   , typeSpecFromString
@@ -36,15 +35,12 @@ module HsLua.Typing
     -- * Marshalling
   , pushTypeSpec
   , peekTypeSpec
-  , pushTypeDoc
-  , peekTypeDoc
   ) where
 
 import Control.Monad (when)
 import Data.Char (toLower, toUpper)
 import Data.List (find, intercalate)
 import Data.String (IsString (..))
-import Data.Text (Text)
 import GHC.Generics (Generic)
 import HsLua.Core
 import HsLua.Core.Utf8 (toString)
@@ -63,14 +59,6 @@ data TypeSpec =
   | RecType (Map.Map Name TypeSpec)   -- ^ Record type (type product).
   | FunType [TypeSpec] [TypeSpec]     -- ^ Function type.
   | AnyType                           -- ^ Unconstrained type.
-  deriving (Eq, Generic, Ord, Show)
-
--- | Documented custom type.
-data TypeDocs = TypeDocs
-  { typeDescription :: Text
-  , typeSpec        :: TypeSpec
-  , typeRegistry    :: Maybe Name
-  }
   deriving (Eq, Generic, Ord, Show)
 
 -- | Returns the sum of two type specifiers, declaring that a Lua value
@@ -223,25 +211,6 @@ recType = RecType . Map.fromList
 --
 -- Marshalling
 --
-
--- | Pushes documentation for a custom type.
-pushTypeDoc :: LuaError e => Pusher e TypeDocs
-pushTypeDoc td = do
-  checkstack' 8 "HsLua.Typing.pushTypeDoc"
-  pushAsTable
-    [ ("description", pushText . typeDescription)
-    , ("typespec", pushTypeSpec . typeSpec)
-    , ("registry", maybe pushnil pushName . typeRegistry)
-    ] td
-
--- | Retrieves a custom type specifier.
-peekTypeDoc :: LuaError e => Peeker e TypeDocs
-peekTypeDoc = typeChecked "TypeDoc" istable $ \idx -> do
-  liftLua $ checkstack' 8 "HsLua.Typing.peekTypeDoc"
-  desc <- peekFieldRaw peekText "description" idx
-  spec <- peekFieldRaw peekTypeSpec "typespec" idx
-  regn <- peekFieldRaw (peekNilOr peekName) "registry" idx
-  return $ TypeDocs desc spec regn
 
 -- | Pushes a table representation of a 'TypeSpec' to the stack.
 pushTypeSpec :: LuaError e
