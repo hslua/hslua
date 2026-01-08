@@ -2,6 +2,11 @@
 
 `hslua-classes` uses [PVP Versioning][].
 
+## hslua-classes-2.3.2
+
+Released 2026-01-08.
+
+-   Allow containers-0.8.
 
 ## hslua-classes-2.3.1
 
