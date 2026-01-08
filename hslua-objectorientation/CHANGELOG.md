@@ -4,7 +4,7 @@
 
 ## hslua-objectorientation-2.5.0
 
-Release pending.
+Released 2026-01-08.
 
 - Removed function `udDocs`. It is not very useful and appears to
   be unused.
