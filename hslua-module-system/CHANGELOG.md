@@ -4,7 +4,7 @@
 
 ## hslua-module-system-1.3.0
 
-Release pending.
+Released 2026-01-08.
 
 - Require hslua-packaging 2.4 or later.
 
