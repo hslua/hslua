@@ -4,7 +4,7 @@
 
 ## hslua-module-zip-1.2.0
 
-Release pending
+Released 2026-01-08
 
 -   Require hslua-packaging-2.4.
 
