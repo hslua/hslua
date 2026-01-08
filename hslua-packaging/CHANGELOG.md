@@ -4,7 +4,7 @@
 
 ## hslua-packaging-2.4.0
 
-Release pending.
+Released 2026-01-08.
 
 - Modified the *FunctionDoc* type: added the function name to the
   type and changed field names to be more consistent.
