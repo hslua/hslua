@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                hslua-examples
-version:             2.0.2
+version:             2.0.3
 synopsis:            Examples of how to combine Haskell and Lua.
 description:         The HsLua modules provide wrappers of Lua language
                      interpreter as described on the official
@@ -14,7 +14,7 @@ bug-reports:         https://github.com/hslua/hslua/issues
 license:             MIT
 license-File:        LICENSE
 author:              Albert Krewinkel
-copyright:           © 2020–2024 Albert Krewinkel
+copyright:           © 2020-2026 Albert Krewinkel
 maintainer:          Albert Krewinkel <tarleb@hslua.org>
 category:            Foreign
 build-type:          Simple
