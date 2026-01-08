@@ -2,6 +2,13 @@
 
 `tasty-hslua` uses [PVP Versioning][].
 
+## tasty-hslua-1.1.1.1
+
+Released 2026-01-08.
+
+-   Updated the cabal file, including the list of tested GHC
+    versions.
+
 ## tasty-hslua-1.1.1
 
 Released 2024-01-18.

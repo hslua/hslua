@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                tasty-hslua
-version:             1.1.1
+version:             1.1.1.1
 synopsis:            Tasty helpers to test HsLua.
 description:         Various tasty helpers and utilities to test HsLua
                      oparations. Built on top of tasty-hunit.
