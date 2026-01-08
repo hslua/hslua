@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeApplications  #-}
 {-|
 Module      : Main
-Copyright   : © 2021-2024 Albert Krewinkel
+Copyright   : © 2021-2026 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 

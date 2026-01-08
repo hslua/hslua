@@ -8,7 +8,7 @@ license:             MIT
 license-file:        LICENSE
 author:              Albert Krewinkel
 maintainer:          tarleb@hslua.org
-copyright:           © 2019-2025 Albert Krewinkel <tarleb@hslua.org>
+copyright:           © 2019-2026 Albert Krewinkel <tarleb@hslua.org>
 category:            Foreign
 build-type:          Simple
 extra-source-files:  CHANGELOG.md

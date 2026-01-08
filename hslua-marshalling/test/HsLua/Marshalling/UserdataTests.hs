@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : HsLua.Marshalling.UserdataTests
-Copyright   : © 2018-2024 Albert Krewinkel
+Copyright   : © 2018-2026 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 

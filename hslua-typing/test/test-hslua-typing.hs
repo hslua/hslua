@@ -3,7 +3,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-|
 Module      : Main
-Copyright   : © 2023-2024 Albert Krewinkel
+Copyright   : © 2023-2026 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 

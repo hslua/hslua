@@ -10,7 +10,7 @@ license:             MIT
 license-file:        LICENSE
 author:              Albert Krewinkel
 maintainer:          tarleb@hslua.org
-copyright:           © 2017-2024 Albert Krewinkel
+copyright:           © 2017-2026 Albert Krewinkel
 category:            Foreign
 build-type:          Simple
 extra-source-files:  README.md
