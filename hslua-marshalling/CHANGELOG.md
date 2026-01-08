@@ -2,6 +2,14 @@
 
 `hslua-marshalling` uses [PVP Versioning][].
 
+## hslua-marshalling-2.3.2
+
+Released 2026-01-08.
+
+-   Relaxed upper bound for containers.
+
+-   Dropped support for GHC older than 9.6.
+
 ## hslua-marshalling-2.3.1
 
 Released 2024-01-18.
