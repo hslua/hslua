@@ -2,6 +2,12 @@
 
 `hslua-cli` uses [PVP Versioning](https://pvp.haskell.org).
 
+## hslua-cli-1.4.4
+
+Released 2026-01-08.
+
+-   Dropped support for GHC older than 9.6.
+
 ## hslua-cli-1.4.3
 
 Released 2024-06-28.
