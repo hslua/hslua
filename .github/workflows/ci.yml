@@ -47,7 +47,7 @@ jobs:
             lua: '5.4.4'
             flags: '+system-lua'
           - ghc: '9.2'
-            cabal: '3.6.2'
+            cabal: '3.6'
             lua: 'bundled'
             flags: '-allow-unsafe-gc'
           - ghc: '9.4'
