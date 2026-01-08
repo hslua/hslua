@@ -2,6 +2,12 @@
 
 `lua-arbitrary` uses [PVP Versioning][].
 
+## lua-arbitrary-1.0.1.2
+
+Released 2026-01-08.
+
+-   Cabal cleanups, update list of tested GHC versions.
+
 ## lua-arbitrary-1.0.1.1
 
 Released 2023-03-13.
