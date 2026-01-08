@@ -8,8 +8,7 @@ Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 Provides a function to print documentation if available.
 -}
 module HsLua.Packaging.Documentation
-  ( documentation
-  , getdocumentation
+  ( getdocumentation
   , registerDocumentation
   , peekFunctionDoc
   , pushModuleDoc
@@ -25,37 +24,6 @@ import HsLua.Packaging.Types
 import HsLua.Typing (peekTypeSpec, pushTypeSpec)
 import Text.ParserCombinators.ReadP (readP_to_S)
 import qualified HsLua.Core.Utf8 as Utf8
-
--- | Function that retrieves documentation.
-documentation :: LuaError e => DocumentedFunction e
-documentation =
-  DocumentedFunction
-  { callFunction = documentationHaskellFunction
-  , functionName = "documentation"
-  , functionDoc = FunDoc
-    { funDocName = "documentation"
-    , funDocDescription =
-      "Retrieves the documentation of the given object."
-    , funDocParameters =
-      [ ParameterDoc
-        { parameterName = "value"
-        , parameterType = "any"
-        , parameterDescription = "documented object"
-        , parameterIsOptional = False
-        }
-      ]
-    , funDocResults =  ResultsDocList
-      [ ResultValueDoc "string|nil" "docstring" ]
-    , funDocSince = Nothing
-    }
-  }
-
--- | Function that returns the documentation of a given object, or @nil@
--- if no documentation is available.
-documentationHaskellFunction :: LuaError e => LuaE e NumResults
-documentationHaskellFunction = isnoneornil (nthBottom 1) >>= \case
-  True -> failLua "expected a non-nil value as argument 1"
-  _ -> NumResults 1 <$ getdocumentation top
 
 -- | Pushes the documentation for the element at the given stack index.
 -- Returns the type of the documentation object.

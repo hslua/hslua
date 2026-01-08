@@ -27,19 +27,14 @@ tests = testGroup "Documentation"
     [ "retrieves function docs" =:
       "factorial" `shouldBeResultOf` do
         pushDocumentedFunction factorial
-        Lua.setglobal (functionName factorial)
-        pushDocumentedFunction documentation
-        Lua.setglobal "documentation"
-        OK <- Lua.dostring "return documentation(factorial)"
+        _ <- getdocumentation top
         TypeString <- Lua.getfield top "name"
         forcePeek $ peekText top
 
     , "returns nil for undocumented function" =:
       TypeNil `shouldBeResultOf` do
-        pushDocumentedFunction documentation
-        Lua.setglobal "documentation"
-        OK <- Lua.dostring "return documentation(function () return 1 end)"
-        Lua.ltype top
+        OK <- Lua.dostring "return function () return 1 end"
+        getdocumentation top
     ]
   ]
 
