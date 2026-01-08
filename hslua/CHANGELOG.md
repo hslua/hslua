@@ -4,7 +4,7 @@
 
 ## hslua-2.5.0
 
-Release pending.
+Released 2026-01-08.
 
 - Remove deprecated module `HsLua.Packaging.Rendering`.
 
