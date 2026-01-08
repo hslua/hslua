@@ -4,7 +4,7 @@
 
 ## lua-2.3.4
 
-Released 2025-11-08.
+Released 2026-01-08.
 
 -   Update Lua to version 5.4.8.
 
