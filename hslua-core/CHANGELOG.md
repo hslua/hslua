@@ -2,6 +2,12 @@
 
 `hslua-core` uses [PVP Versioning][].
 
+## hslua-core-2.3.2.1
+
+Released 2026-01-08.
+
+-   Cleaned-up dependencies.
+
 ## hslua-core-2.3.2
 
 Released 2024-01-18.
