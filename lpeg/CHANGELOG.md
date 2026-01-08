@@ -2,6 +2,13 @@
 
 `lpeg` uses [PVP Versioning][].
 
+## lpeg-1.1.0.1
+
+Released 2026-01-08.
+
+-   Updated cabal files, list of tested GHC versions, copyright
+    years.
+
 ## lpeg-1.1.0
 
 Released 2023-09-27.

@@ -1,6 +1,6 @@
 cabal-version:       2.2
 name:                lpeg
-version:             1.1.0
+version:             1.1.0.1
 synopsis:            LPeg – Parsing Expression Grammars For Lua
 description:         This package contains the C sources of LPeg, as well
                      as some tiny Haskell helper to load the package.
