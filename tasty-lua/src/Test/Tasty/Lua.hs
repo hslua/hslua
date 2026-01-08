@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-|
 Module      : Test.Tasty.Lua
-Copyright   : © 2019-2024 Albert Krewinkel
+Copyright   : © 2019-2026 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 Stability   : alpha

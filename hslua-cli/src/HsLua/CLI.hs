@@ -4,7 +4,7 @@
 {-# LANGUAGE PatternSynonyms   #-}
 {- |
 Module      : HsLua.CLI
-Copyright   : Copyright © 2017-2024 Albert Krewinkel
+Copyright   : Copyright © 2017-2026 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 

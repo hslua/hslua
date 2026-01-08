@@ -1,7 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-|
 Module      : HsLua.Module.System
-Copyright   : © 2019-2025 Albert Krewinkel
+Copyright   : © 2019-2026 Albert Krewinkel
 License     : MIT
 Maintainer  : Albert Krewinkel <tarleb@hslua.org>
 Stability   : alpha
