@@ -4,7 +4,7 @@
 
 ## hslua-typing-0.2.0
 
-Release pending.
+Released 2026-01-08.
 
 - Drop type *TypeDocs* together with the peeker and pusher
   functions `peekTypeDoc` and `pushTypeDoc`.
