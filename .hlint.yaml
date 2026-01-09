@@ -12,6 +12,11 @@
       - HsLua.Class.Pushable
       - HsLua.Peek
 
+- ignore:
+    name: "Redundant <$>"
+    within:
+      - HsLua.Packaging.ModuleTests
+
 # Lua functions use snake_case, not camelCase
 - ignore:
     name: "Use camelCase"
@@ -20,6 +25,8 @@
       - "Lua.LPeg"
       - "Lua.Userdata"
       - "HsLua.Core.Trace"
+      # DocLayout is in a separate git repo
+      - "HsLua.Module.DocLayout"
       - "HsLua.Module.Path"
       - "HsLua.Module.System"
       - "HsLua.Module.Version"
