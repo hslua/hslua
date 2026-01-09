@@ -45,7 +45,7 @@ documentedModule = defmodule "Version"
     [ operation Call $ lambda
       ### liftPure2 (\_ v -> v)
       <#> parameter (const $ pure ()) "table" "module table" "ignored"
-      <#> versionParam "version" "version-like object"
+      <#> versionParam "version" "{Version,string,{integer,...},number}"
       =#> udresult typeVersion "new Version object"
     ]
 
