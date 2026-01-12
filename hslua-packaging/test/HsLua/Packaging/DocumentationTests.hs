@@ -33,6 +33,14 @@ tests = testGroup "Documentation"
       Lua.TypeNil `shouldBeResultOf` do
         OK <- Lua.dostring "return function () return 1 end"
         getdocumentation top
+
+    , "Calling the doc object returns a table" =:
+      Lua.TypeTable `shouldBeResultOf` do
+        pushDocumentedFunction factorial
+        _ <- getdocumentation top
+        Lua.pushvalue top
+        Lua.call 1 1
+        Lua.ltype top
     ]
   ]
 

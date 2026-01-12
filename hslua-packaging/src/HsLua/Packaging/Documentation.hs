@@ -30,11 +30,12 @@ module HsLua.Packaging.Documentation
   , generateTypeDocumentation
   ) where
 
-import Control.Monad (void)
+import Data.Version (showVersion)
 import HsLua.Core as Lua
 import HsLua.Marshalling
 import HsLua.ObjectOrientation (UDTypeGeneric (..))
 import HsLua.Packaging.Types
+import HsLua.Typing (pushTypeSpec)
 import qualified Data.Map.Strict as Map
 import qualified Data.Text as T
 import qualified HsLua.Core.Utf8 as Utf8
@@ -155,18 +156,30 @@ peekDocumentationObject idx = do
     Just doc -> pure doc
 
 -- | Pushes a 'DocumentationObject' to the Lua stack.
-pushDocumentationObject :: Pusher e DocumentationObject
+pushDocumentationObject :: LuaError e => Pusher e DocumentationObject
 pushDocumentationObject obj = do
   newhsuserdatauv obj 0
   pushDocumentationObjectMT
   setmetatable (nth 2)
 
 -- | Pushes the metatable for documentation objects.
-pushDocumentationObjectMT :: LuaE e ()
-pushDocumentationObjectMT = void $ newudmetatable documentationObjectName
+pushDocumentationObjectMT :: LuaError e => LuaE e ()
+pushDocumentationObjectMT = newudmetatable documentationObjectName >>= \case
+  False -> return ()
+  True -> do -- newly created metatable at the top of the stack
+    -- Allow to "call" the documentation object, in which case it should
+    -- return a Lua table that has all the relevant info.
+    pushHaskellFunction $ do
+      -- object is the first argument
+      forcePeek (peekDocumentationObject (nthBottom 1)) >>= \case
+        DocObjectFunction fn -> pushFunctionDocAsTable fn
+        DocObjectModule mdl  -> pushModuleDocAsTable mdl
+        DocObjectType ty     -> pushTypeDocAsTable ty
+      return (NumResults 1)
+    setfield (nth 2) "__call"
 
 -- | Pushes the documentation of a module as userdata.
-pushModuleDoc :: Pusher e ModuleDoc
+pushModuleDoc :: LuaError e => Pusher e ModuleDoc
 pushModuleDoc = pushDocumentationObject . DocObjectModule
 
 -- | Retrieves a module documentation object from the Lua stack.
@@ -176,7 +189,7 @@ peekModuleDoc idx = peekDocumentationObject idx >>= \case
   _ -> failPeek "Not a module documentation object"
 
 -- | Pushes function documentation as userdata.
-pushFunctionDoc :: Pusher e FunctionDoc
+pushFunctionDoc :: LuaError e => Pusher e FunctionDoc
 pushFunctionDoc = pushDocumentationObject . DocObjectFunction
 
 -- | Retrieve function documentation from the Lua stack.
@@ -186,7 +199,7 @@ peekFunctionDoc idx = peekDocumentationObject idx >>= \case
   _ -> failPeek "Not a function documentation"
 
 -- | Pushes documentation type documentation as userdata.
-pushTypeDoc :: Pusher e FunctionDoc
+pushTypeDoc :: LuaError e => Pusher e FunctionDoc
 pushTypeDoc = pushDocumentationObject . DocObjectFunction
 
 -- | Retrieve function documentation from the Lua stack.
@@ -194,3 +207,70 @@ peekTypeDoc :: Peeker e TypeDoc
 peekTypeDoc idx = peekDocumentationObject idx >>= \case
   DocObjectType tydoc -> pure tydoc
   _ -> failPeek "Not a type documentation"
+
+
+-- | Pushes the documentation of a module as a table with string fields
+-- @name@ and @description@.
+pushModuleDocAsTable :: LuaError e => Pusher e ModuleDoc
+pushModuleDocAsTable = pushAsTable
+  [ ("name", pushText . moduleDocName)
+  , ("description", pushText . moduleDocDescription)
+  , ("fields", pushList pushFieldDocAsTable . moduleDocFields)
+  , ("functions", pushList pushFunctionDocAsTable . moduleDocFunctions)
+  , ("types", pushList pushTypeDocAsTable . moduleDocTypes)
+  ]
+
+-- | Pushes the documentation of a field as a table with string fields
+-- @name@ and @description@.
+pushFieldDocAsTable :: LuaError e => Pusher e FieldDoc
+pushFieldDocAsTable = pushAsTable
+  [ ("name", pushText . fieldDocName)
+  , ("type", pushTypeSpec . fieldDocType)
+  , ("description", pushText . fieldDocDescription)
+  ]
+
+-- | Pushes the documentation of a function as a table with string
+-- fields, @name@, @description@, and @since@, sequence field
+-- @parameters@, and sequence or string field @results@.
+pushFunctionDocAsTable :: LuaError e => Pusher e FunctionDoc
+pushFunctionDocAsTable = pushAsTable
+  [ ("name", pushText . funDocName)
+  , ("description", pushText . funDocDescription)
+  , ("parameters", pushList pushParameterDocAsTable . funDocParameters)
+  , ("results", pushResultsDoc . funDocResults)
+  , ("since", maybe pushnil (pushString . showVersion) . funDocSince)
+  ]
+
+-- | Pushes the documentation of a parameter as a table with boolean
+-- field @optional@ and string fields @name@, @type@, and @description@.
+pushParameterDocAsTable :: LuaError e => Pusher e ParameterDoc
+pushParameterDocAsTable = pushAsTable
+  [ ("name", pushText . parameterName)
+  , ("type", pushTypeSpec . parameterType)
+  , ("description", pushText . parameterDescription)
+  , ("optional", pushBool . parameterIsOptional)
+  ]
+
+-- | Pushes a the documentation for a function's return values as either
+-- a simple string, or as a sequence of tables with @type@ and
+-- @description@ fields.
+pushResultsDoc :: LuaError e => Pusher e ResultsDoc
+pushResultsDoc = \case
+  ResultsDocMult desc -> pushText desc
+  ResultsDocList resultDocs -> pushList pushResultValueDoc resultDocs
+
+-- | Pushes the documentation of a single result value as a table with
+-- fields @type@ and @description@.
+pushResultValueDoc :: LuaError e => Pusher e ResultValueDoc
+pushResultValueDoc = pushAsTable
+  [ ("type", pushTypeSpec . resultValueType)
+  , ("description", pushText . resultValueDescription)
+  ]
+
+-- | Pushes the documentation of a UDType as a Lua table.
+pushTypeDocAsTable :: LuaError e => Pusher e TypeDoc
+pushTypeDocAsTable = pushAsTable
+  [ ("name", pushText . typeDocName)
+  , ("description", pushText . typeDocDescription)
+  , ("methods", pushList pushFunctionDoc . typeDocMethods)
+  ]
