@@ -145,6 +145,23 @@ Returns:
 - A table of all entries in `directory` without the special entries (`.`
   and `..`).
 
+#### ls_with_metadata
+
+`ls_with_metadata ([directory])`
+
+List the contents of a directory and include file metadata for each
+entry.
+
+Parameters:
+
+`directory`
+:   Path of the directory whose contents should be listed (string).
+    Defaults to `.`.
+
+Returns:
+
+- A table of entries in `directory`, with file metadata for each entry.
+
 #### mkdir
 
 `mkdir (dirname [, create_parent])`
@@ -207,6 +224,22 @@ Parameters:
 `directory`
 :   Path of the directory which is to become the new working
     directory (string)
+
+#### stat
+
+`stat (filepath)`
+
+Obtain metadata for a file or directory. The returned table contains
+the path, type, size, permissions, access time, and modification time.
+
+Parameters:
+
+`filepath`
+:   file or directory path (string)
+
+Returns:
+
+- file metadata (table)
 
 #### tmpdirname
 

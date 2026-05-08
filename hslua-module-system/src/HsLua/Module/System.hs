@@ -29,6 +29,7 @@ module HsLua.Module.System (
   , getenv
   , getwd
   , ls
+  , ls_with_metadata
   , mkdir
   , read_file
   , rename
@@ -36,6 +37,7 @@ module HsLua.Module.System (
   , rmdir
   , setenv
   , setwd
+  , stat
   , times
   , tmpdirname
   , with_env
@@ -66,6 +68,7 @@ import qualified System.CPUTime as CPUTime
 import qualified System.Directory as Directory
 import qualified System.Environment as Env
 import qualified System.Exit as Exit
+import qualified System.FilePath as FilePath
 import qualified System.Info as Info
 import qualified System.IO.Temp as Temp
 import qualified System.Process as Process
@@ -89,6 +92,7 @@ documentedModule = defmodule "system"
       , getenv
       , getwd
       , ls
+      , ls_with_metadata
       , mkdir
       , read_file
       , rename
@@ -96,6 +100,7 @@ documentedModule = defmodule "system"
       , rmdir
       , setenv
       , setwd
+      , stat
       , times
       , tmpdirname
       , with_env
@@ -290,6 +295,25 @@ ls = defun "ls"
           `T.append` "special entries (`.`  and `..`).")
   #? "List the contents of a directory."
 
+-- | List the contents of a directory with file metadata.
+ls_with_metadata :: LuaError e => DocumentedFunction e
+ls_with_metadata = defun "ls_with_metadata"
+  ### (\mdir -> do
+          let dir = fromMaybe "." mdir
+          ioToLua $ do
+            names <- Directory.listDirectory dir
+            traverse (\name -> getFileMetadata name (dir FilePath.</> name))
+              names)
+  <#> opt (filepathParam "directory"
+           ("Path of the directory whose contents should be listed. "
+            `T.append` "Defaults to `.`."))
+  =#> functionResult (pushList pushFileMetadata) "table"
+        ("A table of entries in `directory`, with file metadata for "
+         `T.append` "each entry.")
+  #? T.unlines
+     [ "List the contents of a directory and include file metadata for"
+     , "each entry."
+     ]
 
 -- | Create a new directory which is initially empty, or as near to
 -- empty as the operating system allows.
@@ -390,6 +414,19 @@ setwd = defun "setwd"
   <#> filepathParam "directory" "Path of the new working directory"
   =#> []
   #? "Change the working directory to the given path."
+
+-- | Get metadata for a file or directory.
+stat :: LuaError e => DocumentedFunction e
+stat = defun "stat"
+  ### (\filepath -> ioToLua $
+          getFileMetadata (FilePath.takeFileName filepath) filepath)
+  <#> filepathParam "filepath" "file or directory path"
+  =#> functionResult pushFileMetadata "table" "file metadata"
+  #? T.unlines
+     [ "Obtain metadata for a file or directory."
+     , "The returned table contains the path, type, size, permissions,"
+     , "access time, and modification time."
+     ]
 
 -- | Get the modification time and access time of a file.
 times :: LuaError e => DocumentedFunction e
@@ -614,6 +651,75 @@ pushExitCode = \case
 -- | Pushes a time as ISO 8601 string.
 pushUTCTime :: Pusher e Time.UTCTime
 pushUTCTime = pushString . ISO8601.iso8601Show
+
+-- | Metadata for a file system object.
+data FileMetadata = FileMetadata
+  { fileMetadataName             :: FilePath
+  , fileMetadataPath             :: FilePath
+  , fileMetadataType             :: String
+  , fileMetadataSize             :: Maybe Prelude.Integer
+  , fileMetadataModificationTime :: Time.UTCTime
+  , fileMetadataAccessTime       :: Time.UTCTime
+  , fileMetadataPermissions      :: Directory.Permissions
+  , fileMetadataIsSymlink        :: Bool
+  }
+
+-- | Get metadata for a file system object.
+getFileMetadata :: FilePath -> FilePath -> IO FileMetadata
+getFileMetadata name path = do
+  pathExists <- Directory.doesPathExist path
+  isSymlink <- if pathExists
+               then Directory.pathIsSymbolicLink path
+               else pure False
+  isFile <- Directory.doesFileExist path
+  isDirectory <- Directory.doesDirectoryExist path
+  let fileType
+        | isSymlink   = "symlink"
+        | isDirectory = "directory"
+        | isFile      = "file"
+        | otherwise   = "other"
+  size <- if isFile
+          then Just <$> Directory.getFileSize path
+          else pure Nothing
+  modificationTime <- Directory.getModificationTime path
+  accessTime <- Directory.getAccessTime path
+  permissions <- Directory.getPermissions path
+  pure FileMetadata
+    { fileMetadataName = name
+    , fileMetadataPath = path
+    , fileMetadataType = fileType
+    , fileMetadataSize = size
+    , fileMetadataModificationTime = modificationTime
+    , fileMetadataAccessTime = accessTime
+    , fileMetadataPermissions = permissions
+    , fileMetadataIsSymlink = isSymlink
+    }
+
+-- | Push file metadata as a table.
+pushFileMetadata :: LuaError e => Pusher e FileMetadata
+pushFileMetadata = pushAsTable
+  [ ("name", pushString . fileMetadataName)
+  , ("path", pushString . fileMetadataPath)
+  , ("type", pushString . fileMetadataType)
+  , ("size", pushMaybe pushIntegral . fileMetadataSize)
+  , ("modification_time", pushUTCTime . fileMetadataModificationTime)
+  , ("access_time", pushUTCTime . fileMetadataAccessTime)
+  , ("permissions", pushPermissions . fileMetadataPermissions)
+  , ("is_symlink", pushBool . fileMetadataIsSymlink)
+  ]
+
+-- | Push file permissions as a table.
+pushPermissions :: LuaError e => Pusher e Directory.Permissions
+pushPermissions = pushAsTable
+  [ ("readable", pushBool . Directory.readable)
+  , ("writable", pushBool . Directory.writable)
+  , ("executable", pushBool . Directory.executable)
+  , ("searchable", pushBool . Directory.searchable)
+  ]
+
+-- | Push 'Nothing' as nil, or push the contained value.
+pushMaybe :: Pusher e a -> Pusher e (Maybe a)
+pushMaybe pushValue = maybe pushnil pushValue
 
 -- | Get an XDG directory type identifier.
 peekXdgDirectory :: Peeker e

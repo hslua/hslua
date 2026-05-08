@@ -160,6 +160,46 @@ return {
     end)
   },
 
+  group 'ls_with_metadata' {
+    test('returns a table', function ()
+      assert.are_equal(type(system.ls_with_metadata('.')), 'table')
+    end),
+    test('lists files with metadata', in_tmpdir(function ()
+      system.write_file('README.org', 'test')
+      local entry = system.ls_with_metadata('.')[1]
+      assert.are_equal(entry.name, 'README.org')
+      assert.is_truthy(entry.path:match 'README%.org$')
+      assert.are_equal(entry.type, 'file')
+      assert.are_equal(entry.size, 4)
+      assert.are_equal(type(entry.modification_time), 'string')
+      assert.are_equal(type(entry.access_time), 'string')
+      assert.are_equal(type(entry.permissions), 'table')
+      assert.are_equal(type(entry.permissions.readable), 'boolean')
+      assert.are_equal(entry.is_symlink, false)
+    end)),
+    test('includes directory metadata', in_tmpdir(function ()
+      system.mkdir 'folder'
+      local entry = system.ls_with_metadata('.')[1]
+      assert.are_equal(entry.name, 'folder')
+      assert.are_equal(entry.type, 'directory')
+      assert.is_nil(entry.size)
+      assert.are_equal(type(entry.permissions.searchable), 'boolean')
+    end)),
+    test('argument defaults to `.`', function ()
+      assert.are_equal(#system.ls_with_metadata('.'), #system.ls_with_metadata())
+    end),
+    test('fails when arg is not a directory', function ()
+      assert.error_matches(
+        function () system.ls_with_metadata('thisdoesnotexist') end,
+        'thisdoesnotexist'
+      )
+      assert.error_matches(
+        function () system.ls_with_metadata('README.md') end,
+        'README%.md'
+      )
+    end)
+  },
+
   group 'mkdir' {
     test('create directory', in_tmpdir(function ()
       system.mkdir 'foo'
@@ -293,6 +333,36 @@ return {
       system.rmdir('outer', true)
       assert.are_same(system.ls(), {})
     end))
+  },
+
+  group 'stat' {
+    test('returns file metadata', in_tmpdir(function ()
+      system.write_file('foo.txt', 'test')
+      local info = system.stat('foo.txt')
+      assert.are_equal(info.name, 'foo.txt')
+      assert.are_equal(info.path, 'foo.txt')
+      assert.are_equal(info.type, 'file')
+      assert.are_equal(info.size, 4)
+      assert.are_equal(type(info.modification_time), 'string')
+      assert.are_equal(type(info.access_time), 'string')
+      assert.are_equal(type(info.permissions), 'table')
+      assert.are_equal(type(info.permissions.writable), 'boolean')
+      assert.are_equal(info.is_symlink, false)
+    end)),
+    test('returns directory metadata', in_tmpdir(function ()
+      system.mkdir 'folder'
+      local info = system.stat('folder')
+      assert.are_equal(info.name, 'folder')
+      assert.are_equal(info.type, 'directory')
+      assert.is_nil(info.size)
+      assert.are_equal(type(info.permissions.searchable), 'boolean')
+    end)),
+    test('fails if path does not exist', in_tmpdir(function ()
+      assert.error_matches(
+        function () system.stat('does-not-exist.org') end,
+        'does%-not%-exist%.org'
+      )
+    end)),
   },
 
   group 'times' {
