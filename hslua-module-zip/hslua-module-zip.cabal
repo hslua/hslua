@@ -59,7 +59,7 @@ library
                      , hslua-marshalling >= 2.3    && < 2.4
                      , text              >= 1.2    && < 2.2
                      , time              >= 1.5    && < 1.16
-                     , zip-archive       >= 0.4    && < 0.5
+                     , zip-archive       >= 0.4    && < 0.6
 
 test-suite hslua-module-zip-test
   import:              common-options
