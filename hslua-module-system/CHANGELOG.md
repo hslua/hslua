@@ -2,6 +2,14 @@
 
 `hslua-module-system` uses [PVP Versioning][].
 
+## hslua-module-system-1.3.1
+
+Released pending.
+
+- Added new functions `stat` and `ls_with_metadata`, which return
+  file metadata such as type, size, permissions, access time, and
+  modification time.
+
 ## hslua-module-system-1.3.0
 
 Released 2026-01-08.
