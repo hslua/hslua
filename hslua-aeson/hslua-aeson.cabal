@@ -11,7 +11,7 @@ author:              Albert Krewinkel
 maintainer:          Albert Krewinkel <tarleb@hslua.org>
 copyright:           © 2017-2026 Albert Krewinkel
 category:            Foreign
-extra-source-files:  README.md
+extra-doc-files:     README.md
                    , CHANGELOG.md
 tested-with:         GHC == 9.6
                    , GHC == 9.8
