@@ -2,6 +2,12 @@
 
 `hslua-aeson` uses [PVP Versioning][].
 
+## hslua-aeson-2.3.2.1
+
+Released 2026-11-11
+
+-  Allow aeson 2.3.x.
+
 ## hslua-aeson-2.3.2
 
 Released 2026-01-08.
