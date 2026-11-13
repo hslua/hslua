@@ -59,7 +59,7 @@ library
   exposed-modules:     HsLua.REPL
   build-depends:       base              >= 4.11   && < 5
                      , bytestring        >= 0.10   && < 0.13
-                     , isocline          >= 1.0    && < 1.1
+                     , isocline          >= 1.0    && < 1.2
                      , lua               >= 2.3    && < 2.4
 
 executable luarepl
